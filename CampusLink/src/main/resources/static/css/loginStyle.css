@@ -1,0 +1,100 @@
+/* Fonte Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: #EBEBEB;
+    font-family: "Inter", sans-serif;
+    background-image: url('../images/bg.png');
+    background-size: cover;
+}
+
+.title{
+    text-align: center;
+    margin-top: 20px;
+    color: #1B4965;
+    font-weight: 800;
+}
+
+.form-login{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    padding: 30px;
+    width: 100%;
+    max-width: 350px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.label_info{
+    margin-top: 15px;
+    color: #1B4965;
+    font-weight: 800;
+
+    align-self: flex-start;
+
+}
+
+.textbox{
+    height: 35px;
+    width: 100%;
+    margin-top: 5px;
+    padding: 5px 10px;
+
+    border-radius: 8px;
+    border: 1px solid #ccc;
+
+}
+
+.Sendbutton{
+    margin-top: 25px;
+    width: 100%;
+    height: 40px;
+
+    border: none;
+    border-radius: 10px;
+    background-color: #5FA8D3;
+
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.Sendbutton:hover{
+    background-color: #1B4965;
+}
+
+.linksuteis{
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.link_pull{
+    text-decoration: none;
+    color: #1B4965;
+    font-weight: 800;
+    margin-top: 10px;
+
+}
+
+.link_pull:hover{
+    color: #5FA8D3;
+}
+
+p[name="mensagemDeErro"]{
+    margin-top: 10px;
+    color: red;
+    font-size: 14px;
+    text-align: center;
+}

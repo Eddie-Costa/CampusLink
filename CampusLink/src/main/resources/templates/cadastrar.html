@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/cadastrarStyle.css}">
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="col-md-3 text-end">
+        <a href="/cadastrarAluno" class="btn btn-outline-primary btn-sm me-2">Aluno</a>
+        <a href="/cadastrarProfessor" class="btn btn-primary btn-sm">Professor</a>
+    </div>
+
+</body>
+</html>
