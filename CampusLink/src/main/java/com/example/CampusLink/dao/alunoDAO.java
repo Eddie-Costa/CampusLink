@@ -14,14 +14,14 @@ import java.util.ArrayList;
 public class alunoDAO {
 
     @Autowired
-    private static DataSource dataSource;
+    private DataSource dataSource;
 
-    public static void InsertCadastroAlunoIntoBD(String RGM, String NOME, String EMAIL, String TELEFONE, String DATANASC, String SENHA) throws SQLException {
+    public  void InsertCadastroAlunoIntoBD(String RGM, String NOME, String EMAIL, String TELEFONE, String DATANASC, String SENHA) throws SQLException {
         // conexão
         Connection conn = dataSource.getConnection();
 
         // SQL
-        String sql = "INSERT INTO Alunos (\"RGM\", \"NOME\", \"EMAIL\", \"TELEFONE\", \"DATANASC\", \"SENHA\") VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO public.Alunos (\"rgm\", \"nome\", \"email\", \"telefone\", \"dataNasc\", \"senha\") VALUES (?, ?, ?, ?, ?, ?)";
 
         // preparar
         PreparedStatement stmt = conn.prepareStatement(sql);
