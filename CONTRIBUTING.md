@@ -1,3 +1,3 @@
-Matheus Santhiago
-Eddie Alencar Costa
-Riquelmy Christofer
+- Matheus Santhiago
+- Eddie Alencar Costa
+- Riquelmy Christofer
