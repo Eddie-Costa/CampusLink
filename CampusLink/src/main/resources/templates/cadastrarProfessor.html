@@ -72,20 +72,20 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <label class="label_info">Matricula</label>
-            <input name="matricula" th:value="${matricula}" type="number" id="matricula" required pattern="^.{11,}$" title="A matrícula deve ter pelo menos 11 caracteres" class="textbox">
+            <input name="matricula" th:value="${matricula}" type="text" inputmode="numeric" id="matricula" required pattern="^\d{11}$" maxlength="11" minlength="11" title="A matrícula deve ter exatamente 11 números" placeholder="Ex: 12345678901" class="textbox">
 
             <label class="label_info">Nome</label>
-            <input name="nome" th:value="${nome}" type="text" id="nome" required class="textbox">
+            <input name="nome" th:value="${nome}" type="text" id="nome" required pattern="^[a-zA-Z\s]{2,50}$" maxlength="50" minlength="1" title="O nome deve ter entre 2 e 50 caracteres" placeholder="Ex: João da Silva" class="textbox">
 
             <label class="label_info">E-mail</label>
-            <input name="email" th:value="${email}" type="email" id="email" required class="textbox">
+            <input name="email" th:value="${email}" type="email" id="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{5,100}$" maxlength="100" minlength="5" title="O e-mail deve ser válido" placeholder="Ex: joao@email.com" class="textbox">
 
             <label class="label_info">Telefone</label>
-            <input name="telefone" th:value="${telefone}" type="number" id="telefone" required class="textbox">
+            <input name="telefone" th:value="${telefone}" type="text" inputmode="numeric" id="telefone" required pattern="^\d{10,13}$" maxlength="11" minlength="10" title="O telefone deve ter entre 10 e 11 números, não deve conter codigo de pais (DDI)" placeholder="Ex: 11991234567" class="textbox">
 
             <label class="label_info">Data de nascimento</label>
-            <input name="dataNasc" th:value="${dataNasc}" type="date" id="datanasc" required class="textbox">
-
+            <input name="dataNasc" th:value="${dataNasc}" type="date" id="datanasc" required title="Selecione sua data de nascimento" class="textbox">
+            
             <div class="termos-container">
 
                 <label for="termos" class="label_info">Eu aceito os</label>
@@ -97,7 +97,7 @@
             </div>
 
             <label class="label_info">Senha:</label>
-            <input name="senha" th:value="${senha}" type="password" id="senha" required pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$" title="A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial" class="textbox">
+            <input name="senha" th:value="${senha}" type="password" id="senha" required pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$" title="A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial" placeholder="Digite sua senha" class="textbox">
 
             <button type="submit" id="btnSubmit" disabled class="Sendbutton">Registrar</button>
 
