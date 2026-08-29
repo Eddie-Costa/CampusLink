@@ -12,7 +12,7 @@ import lombok.Setter;
 
 
 public class cadastrarAlunoDTO {
-    @Size(max = 11, message = "O rgm deve ter no maximo 11 caracteres")
+    @Size(max = 11, message = "O rgm deve ter no minimo 11 caracteres")
     @NotBlank(message = "O rgm é obrigatório")
     private String rgm;
     

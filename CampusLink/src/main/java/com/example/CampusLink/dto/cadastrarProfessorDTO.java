@@ -12,7 +12,7 @@ import lombok.Setter;
 
 
 public class cadastrarProfessorDTO {
-    @Size(max = 11, message = "A matricula deve ter no maximo 11 caracteres")
+    @Size(max = 11, message = "A matricula deve ter no minimo 11 caracteres")
     @NotBlank(message = "A matricula é obrigatória")
     private String matricula;
 

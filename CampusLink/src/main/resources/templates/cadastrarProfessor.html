@@ -68,9 +68,11 @@
 
     <main>
         <h1 class="title">Cadastrar Professor</h1>
-        <form action="/Subscription" th:object="${usuario}" method="post" class="form-login">
+        <form action="/cadastrarProfessor" th:object="${professor}" method="post" class="form-cadastrarProfessor">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
             <label class="label_info">Matricula</label>
-            <input name="matricula" th:value="${matricula}" type="number" id="matricula" required class="textbox">
+            <input name="matricula" th:value="${matricula}" type="number" id="matricula" required pattern="^.{11,}$" title="A matrícula deve ter pelo menos 11 caracteres" class="textbox">
 
             <label class="label_info">Nome</label>
             <input name="nome" th:value="${nome}" type="text" id="nome" required class="textbox">
@@ -82,7 +84,7 @@
             <input name="telefone" th:value="${telefone}" type="number" id="telefone" required class="textbox">
 
             <label class="label_info">Data de nascimento</label>
-            <input name="datanasc" th:value="${datanasc}" type="date" id="datanasc" required class="textbox">
+            <input name="dataNasc" th:value="${dataNasc}" type="date" id="datanasc" required class="textbox">
 
             <div class="termos-container">
 
