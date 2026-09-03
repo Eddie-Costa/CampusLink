@@ -1,5 +1,7 @@
 package com.example.CampusLink.dao;
 
+import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
@@ -107,34 +109,40 @@ public class usuarioDAO {
         }
     }
 
-//    public String QueryLoginUsuario(String EMAIL) throws SQLException {
-//        String resultado = "";
-//
-//        // conexão
-//        Connection conn = dataSource.getConnection();
-//
-//        // SQL
-//        String sql = "SELECT \"SENHA\" FROM pessoas WHERE \"EMAIL\" = ?";
-//
-//        // preparar
-//        PreparedStatement stmt = conn.prepareStatement(sql);
-//        stmt.setString(1, EMAIL);
-//
-//        //Realizar Querys
-//        ResultSet rs = stmt.executeQuery();
-//
-//        if (rs.next()) {
-//            resultado = rs.getString("SENHA");
-//        }
-//
-//        // fechar
-//
-//        rs.close();
-//        stmt.close();
-//        conn.close();
-//
-//        return resultado;
-//    }
+    public String QueryLoginUsuario(String tipoUsuario, String EMAIL) throws SQLException {
+        String resultado = "";
+        String sql = "";
+
+        // conexão
+        Connection conn = dataSource.getConnection();
+
+        //define o tipo de usuario
+        if(tipoUsuario.equalsIgnoreCase("Aluno")){
+            sql = "SELECT \"senha\" FROM public.\"Alunos\" WHERE \"email\" = ?";
+        } else if (tipoUsuario.equalsIgnoreCase("Professor")) {
+            sql = "SELECT \"senha\" FROM public.\"Professores\" WHERE \"email\" = ?";
+        }
+
+        // preparar
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, EMAIL);
+
+        //Realizar Querys
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            resultado = rs.getString("SENHA");
+        }
+
+        // fechar
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return resultado;
+    }
+
 //
 //    public void DeleteUser(String EMAIL) throws SQLException {
 //        // conexão
@@ -209,25 +217,47 @@ public class usuarioDAO {
 //        stmt.close();
 //        conn.close();
 //    }
-//    public LoginDTO buscarPorEmail(String email) throws SQLException {
-//
-//        String sql = "SELECT * FROM pessoas WHERE \"EMAIL\" = ?";
-//        Connection conn = dataSource.getConnection();
-//        PreparedStatement stmt = conn.prepareStatement(sql);
-//        stmt.setString(1, email);
-//        ResultSet rs = stmt.executeQuery();
-//
-//        if (rs.next()) {
-//            LoginDTO usuario = new LoginDTO();
-//            usuario.setEmail(rs.getString("EMAIL"));
-//            usuario.setSenha(rs.getString("SENHA"));
-//
-//            return usuario;
-//        }
-//
-//        rs.close();
-//        stmt.close();
-//        conn.close();
-//        return null;
-//    }
+    public loginAlunoDTO buscarPorEmailAluno(String email) throws SQLException {
+
+        String sql = "SELECT * FROM public.\"Alunos\" WHERE \"email\" = ?";
+        Connection conn = dataSource.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            loginAlunoDTO usuario = new loginAlunoDTO();
+            usuario.setEmail(rs.getString("EMAIL"));
+            usuario.setSenha(rs.getString("SENHA"));
+
+            return usuario;
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+        return null;
+    }
+
+    public loginProfessorDTO buscarPorEmailProfessor(String email) throws SQLException {
+
+        String sql = "SELECT * FROM public.\"Professores\" WHERE \"email\" = ?";
+        Connection conn = dataSource.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, email);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            loginProfessorDTO usuario = new loginProfessorDTO();
+            usuario.setEmail(rs.getString("EMAIL"));
+            usuario.setSenha(rs.getString("SENHA"));
+
+            return usuario;
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+        return null;
+    }
 }

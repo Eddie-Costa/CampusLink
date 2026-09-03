@@ -1,6 +1,5 @@
-package com.example.CampusLink.controller;
+package com.example.CampusLink.controller.Geral;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -9,9 +8,7 @@ public class cadastrarController {
 
     @GetMapping("/cadastrar")
     public String Cadastrar() {
-        return "cadastrar";
+        return "Geral/cadastrar";
     }
-
-    
 
 }

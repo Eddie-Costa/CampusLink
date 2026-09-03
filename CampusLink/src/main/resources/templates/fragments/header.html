@@ -33,10 +33,10 @@
                     <div th:if="${session.usuarioLogado != null}">
                         
                         <!-- Links para alunos -->
-                        <div th:if="${session.tipoUsuario == aluno}">
+                        <div th:if="${session.tipoUsuario == 'aluno'}">
                             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0"> 
                                 <li>
-                                    <a href="/turmas" class="nav-link px-2 link-secondary">Turmas</a>
+                                    <a href="/turmas" class="nav-link px-2">Turmas</a>
                                 </li> 
                                 <li>
                                     <a href="/score" class="nav-link px-2">Score</a>
@@ -48,11 +48,14 @@
                         </div>
 
                         <!-- Links para professores -->
-                        <div th:if="${session.tipoUsuario == professor}">
+                        <div th:if="${session.tipoUsuario == 'professor'}">
                             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0"> 
                                 <li>
-                                    <a href="/turmas" class="nav-link px-2 link-secondary">Turmas</a>
-                                </li> 
+                                    <a href="/turmas" class="nav-link px-2">Turmas</a>
+                                </li>
+                                <li>
+                                    <a href="/eventos" class="nav-link px-2">Eventos</a>
+                                </li>
                                 <li>
                                     <a href="/acompanhamento" class="nav-link px-2">Acompanhamento</a>
                                 </li>  

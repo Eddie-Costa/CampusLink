@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar</title>
+    <title>Cadastrar Professores</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/cadastrarProfessorStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/cadastrarStyle.css}">
 </head>
 
 <div id="modalTermos" class="modal">
@@ -64,7 +64,7 @@
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: nav}"></div>
 
     <main>
         <h1 class="title">Cadastrar Professor</h1>
@@ -105,7 +105,7 @@
 
             <div class="linksuteis" >
                 <a href="/login" class="link_pull">Ja tem cadastro em nossa plataforma? clique aqui para Logar</a>
-                <a href="/cadastrarAluno" class="link_pull">É um aluno? clique aqui para Logar</a>
+                <a href="/cadastrarAluno" class="link_pull">É um aluno? cadastrar-se</a>
             </div>
         </form>
     </main>

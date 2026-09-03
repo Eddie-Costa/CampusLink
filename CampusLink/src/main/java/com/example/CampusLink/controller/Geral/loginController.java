@@ -1,4 +1,4 @@
-package com.example.CampusLink.controller;
+package com.example.CampusLink.controller.Geral;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +8,6 @@ public class loginController {
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return "Geral/login";
     }
 }

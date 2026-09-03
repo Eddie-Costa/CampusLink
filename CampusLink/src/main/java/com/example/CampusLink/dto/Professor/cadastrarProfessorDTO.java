@@ -1,4 +1,4 @@
-package com.example.CampusLink.dto;
+package com.example.CampusLink.dto.Professor;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,11 +11,11 @@ import lombok.Setter;
 @Setter
 
 
-public class cadastrarAlunoDTO {
-    @Size(max = 11, message = "O rgm deve ter no minimo 11 caracteres")
-    @NotBlank(message = "O rgm é obrigatório")
-    private String rgm;
-    
+public class cadastrarProfessorDTO {
+    @Size(max = 11, message = "A matricula deve ter no minimo 11 caracteres")
+    @NotBlank(message = "A matricula é obrigatória")
+    private String matricula;
+
     @Size(max = 50, message = "O nome deve ter no maximo 50 caracteres")
     @NotBlank(message = "O nome é obrigatório")
     private String nome;

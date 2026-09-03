@@ -1,7 +1,7 @@
-package com.example.CampusLink.controller;
+package com.example.CampusLink.controller.Usuarios.Aluno;
 
 import com.example.CampusLink.dao.usuarioDAO;
-import com.example.CampusLink.dto.cadastrarAlunoDTO;
+import com.example.CampusLink.dto.Aluno.cadastrarAlunoDTO;
 import com.example.CampusLink.exception.SQLErrorHandler;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class cadastrarAlunoController {
     @GetMapping("/cadastrarAluno")
     public String CadastrarAluno(org.springframework.ui.Model model) {
         model.addAttribute("aluno", new cadastrarAlunoDTO());
-        return "cadastrarAluno";
+        return "Usuarios/Aluno/cadastrarAluno";
     }
 
     @PostMapping("/cadastrarAluno")
@@ -42,7 +42,7 @@ public class cadastrarAlunoController {
         if (result.hasErrors()) {
             logger.warn("Erro ao registrar o aluno com email:" + aluno.getEmail() + " Erro: " + result.getAllErrors());
             model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
-            return "cadastrarAluno";
+            return "Usuarios/Aluno/cadastrarAluno";
         }
 
         List<String> erros = usuarioDAO.validarDadosDuplicados(
@@ -56,7 +56,7 @@ public class cadastrarAlunoController {
         if (!erros.isEmpty()) {
             SQLErrorHandler.VerificarErro("aluno", erros, model);
             model.addAttribute("aluno", aluno);
-            return "cadastrarAluno";
+            return "Usuarios/Aluno/cadastrarAluno";
         }
 
         try {
@@ -72,13 +72,13 @@ public class cadastrarAlunoController {
             );
 
             logger.info("Sucesso ao cadastrar novo aluno com email: " + aluno.getEmail());
-            return "loginPage";
+            return "Usuarios/Aluno/loginAluno";
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir aluno no banco com email: {}", aluno.getEmail(), e);
 
             model.addAttribute("aluno", aluno);
-            return "cadastrarAluno";
+            return "Usuarios/Aluno/cadastrarAluno";
         }
     }
     

@@ -1,7 +1,7 @@
-package com.example.CampusLink.controller;
+package com.example.CampusLink.controller.Usuarios.Professor;
 
 import com.example.CampusLink.dao.usuarioDAO;
-import com.example.CampusLink.dto.cadastrarProfessorDTO;
+import com.example.CampusLink.dto.Professor.cadastrarProfessorDTO;
 import com.example.CampusLink.exception.SQLErrorHandler;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class cadastrarProfessorController {
     @GetMapping("/cadastrarProfessor")
     public String CadastrarProfessor(org.springframework.ui.Model model) {
         model.addAttribute("professor", new cadastrarProfessorDTO());
-        return "cadastrarProfessor";
+        return "Usuarios/Professor/cadastrarProfessor";
     }
 
     @PostMapping("/cadastrarProfessor")
@@ -41,7 +41,7 @@ public class cadastrarProfessorController {
         if (result.hasErrors()) {
             logger.warn("Erro ao registrar o professor com email:" + professor.getEmail() + " Erro: " + result.getAllErrors());
             model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
-            return "cadastrarProfessor";
+            return "Usuarios/Professor/cadastrarProfessor";
         }
 
         List<String> erros = usuarioDAO.validarDadosDuplicados(
@@ -55,7 +55,7 @@ public class cadastrarProfessorController {
         if (!erros.isEmpty()) {
             SQLErrorHandler.VerificarErro("professor", erros, model);
             model.addAttribute("professor", professor);
-            return "cadastrarProfessor";
+            return "Usuarios/Professor/cadastrarProfessor";
         }
 
         try {
@@ -71,13 +71,13 @@ public class cadastrarProfessorController {
             );
 
             logger.info("Sucesso ao cadastrar novo professor com email: " + professor.getEmail());
-            return "loginPage";
+            return "Usuarios/Professor/loginProfessor";
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir professor no banco com email: {}", professor.getEmail(), e);
 
             model.addAttribute("professor", professor);
-            return "cadastrarProfessor";
+            return "Usuarios/Professor/cadastrarProfessor";
         }
     }
 }
