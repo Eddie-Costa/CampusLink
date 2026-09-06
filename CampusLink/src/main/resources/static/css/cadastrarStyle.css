@@ -8,13 +8,14 @@
 }
 
 body{
-    background-image: url('../images/bg.png');
-    background-size: cover;
     background-color: #EBEBEB;
     font-family: "Inter", sans-serif;
+    background-image: url('../images/bg.png');
+    background-size: cover;
 }
 
-/* TÍTULO */
+/* ===== Login (existente) ===== */
+
 .title{
     text-align: center;
     margin-top: 20px;
@@ -22,55 +23,43 @@ body{
     font-weight: 800;
 }
 
-/* FORMULÁRIO */
 .form-login{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
     margin: 20px auto;
     padding: 30px;
-
     width: 100%;
     max-width: 350px;
-
     background-color: white;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* LABELS */
 .label_info{
     margin-top: 15px;
     color: #1B4965;
     font-weight: 800;
-
     align-self: flex-start;
 }
 
-/* INPUTS */
 .textbox{
     height: 35px;
     width: 100%;
     margin-top: 5px;
     padding: 5px 10px;
-
     border-radius: 8px;
     border: 1px solid #ccc;
 }
 
-
-/* BOTÃO */
 .Sendbutton{
     margin-top: 25px;
     width: 100%;
     height: 40px;
-
     border: none;
     border-radius: 10px;
     background-color: #5FA8D3;
-
     color: white;
     font-weight: 800;
     cursor: pointer;
@@ -80,7 +69,6 @@ body{
     background-color: #1B4965;
 }
 
-/* LINKS ÚTEIS */
 .linksuteis{
     display: flex;
     flex-direction: column;
@@ -99,7 +87,6 @@ body{
     color: #5FA8D3;
 }
 
-/* MENSAGEM DE ERRO */
 p[name="mensagemDeErro"]{
     margin-top: 10px;
     color: red;
@@ -107,173 +94,114 @@ p[name="mensagemDeErro"]{
     text-align: center;
 }
 
-/* ÁREA TERMOS */
-#btnSubmit {
-    transition: all 0.2s ease;
-}
+/* ===== Escolha Aluno x Professor ===== */
 
-#btnSubmit:disabled {
-    background-color: #c0c0c0;
-    color: #888;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.termos-container{
-    width: 100%;
-    margin-top: 15px;
-
+.choice-wrapper{
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    padding: 60px 20px 40px;
 }
 
-.termos-container .label_info{
-    margin: 0;
-    width: auto;
-    display: inline;
+.choice-title{
+    text-align: center;
+    color: #111844;
     font-weight: 800;
-    color: #1B4965;
+    margin-bottom: 40px;
+    font-size: 2.2rem;
 }
 
-/* LABEL DOS TERMOS */
-.termos-label{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-}
-
-/* CHECKBOX */
-.checkbox{
-
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-
-    width: 15px;
-    height: 15px;
-    accent-color: #1B4965;
-    cursor: pointer;
-
-    margin: 0;
-}
-
-/* TEXTO */
-.termos-texto{
-    color: #1B4965;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* LINK TERMOS */
-.abrir-termos{
-    color: red;
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.2s;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.abrir-termos:hover{
-    color: #1B4965;
-}
-
-/* MODAL */
-.modal{
-    display: none;
-
-    position: fixed;
-    z-index: 1000;
-
-    left: 0;
-    top: 0;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: rgba(0,0,0,0.5);
-
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-/* CAIXA MODAL */
-.modal-conteudo{
-    background-color: white;
-
-    width: 90%;
-    max-width: 800px;   /* limite que você pediu */
-
-    max-height: 80vh;   /* não ultrapassa a altura da tela */
-    overflow-y: auto;   /* ativa barra de rolagem */
-
-    margin: 5% auto;
-    padding: 30px;
-
-    border-radius: 15px;
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-
-    position: relative;
-
-    animation: slideUp 0.2s ease-in-out;
-}
-
-/* TÍTULO */
-.modal-conteudo h2{
-    color: #1B4965;
-    margin-bottom: 20px;
-    font-weight: 800;
-}
-
-/* TEXTO */
-.modal-conteudo p{
-    color: #333;
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
-
-/* BOTÃO FECHAR */
-.fechar{
-    position: absolute;
-
-    right: 18px;
-    top: 12px;
-
-    font-size: 28px;
-    font-weight: bold;
-
-    color: #1B4965;
-
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.fechar:hover{
+.choice-title .highlight{
     color: #5FA8D3;
 }
 
-/* ANIMAÇÕES */
-@keyframes fadeIn{
-    from{
-        opacity: 0;
-    }
-
-    to{
-        opacity: 1;
-    }
+.choice-container{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    max-width: 1000px;
 }
 
-@keyframes slideUp{
-    from{
-        transform: translateY(20px);
-        opacity: 0;
-    }
+.choice-panel{
+    flex: 1 1 350px;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 
-    to{
-        transform: translateY(0);
-        opacity: 1;
-    }
+.panel-aluno{
+    background-color: #111844;
+    color: white;
+}
+
+.panel-professor{
+    background-color: white;
+    color: #111844;
+}
+
+.panel-name{
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.panel-subtitle{
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.panel-list{
+    list-style: none;
+    margin-bottom: 30px;
+    flex-grow: 1;
+}
+
+.panel-list li{
+    margin-top: 10px;
+    font-size: 0.95rem;
+}
+
+.choice-btn{
+    width: 100%;
+    max-width: 220px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+    margin-top: auto;
+}
+
+.choice-btn-light{
+    background-color: white;
+    color: #111844;
+}
+
+.choice-btn-light:hover{
+    background-color: #111844;
+    color: white;
+    border: 1px solid white;
+}
+
+.choice-btn-dark{
+    background-color: #111844;
+    color: white;
+}
+
+.choice-btn-dark:hover{
+    background-color: white;
+    color: #111844;
+    border: 1px solid #111844;
 }

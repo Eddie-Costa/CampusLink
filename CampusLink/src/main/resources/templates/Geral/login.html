@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Escolha Aluno x Professor</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/userChoiceStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/loginStyle.css}">
 </head>
 
 <body>
@@ -12,9 +12,39 @@
 
 <div th:replace="~{fragments/header :: nav}"></div>
 
-<div class="col-md-3 text-end">
-    <a href="/loginAluno" class="btn btn-outline-primary btn-sm me-2">Aluno</a>
-    <a href="/loginProfessor" class="btn btn-primary btn-sm">Professor</a>
+<div class="choice-wrapper">
+
+    <h1 class="choice-title">Quem bom que voltou!</h1>
+
+    <div class="choice-container">
+
+        <div class="choice-panel panel-aluno">
+            <h2 class="panel-name">Aluno</h2>
+            <p class="panel-subtitle">Com o CampusLink, você pode:</p>
+            <ul class="panel-list">
+                <li>📚 Acessar os conteúdos das disciplinas</li>
+                <li>🕐 Informar seus horários disponíveis para estudar</li>
+                <li>📋 Receber um plano de estudos personalizado</li>
+                <li>✅ Acompanhar seu progresso</li>
+                <li>🔄 Reorganizar seu plano quando houver mudanças</li>
+            </ul>
+            <a href="/loginAluno" class="btn choice-btn choice-btn-light">Aluno</a>
+        </div>
+
+        <div class="choice-panel panel-professor">
+            <h2 class="panel-name">Professor</h2>
+            <p class="panel-subtitle">Com o CampusLink, você pode:</p>
+            <ul class="panel-list">
+                <li>📚 Cadastrar e organizar conteúdos</li>
+                <li>📅 Criar eventos, provas e trabalhos</li>
+                <li>⭐ Definir a prioridade e duração dos conteúdos</li>
+                <li>📊 Acompanhar o andamento da turma</li>
+                <li>⚠️ Identificar conteúdos com maior atraso ou risco</li>
+            </ul>
+            <a href="/loginProfessor" class="btn choice-btn choice-btn-dark">Professor</a>
+        </div>
+
+    </div>
 </div>
 
 </body>

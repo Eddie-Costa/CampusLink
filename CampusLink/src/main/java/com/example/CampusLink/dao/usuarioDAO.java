@@ -9,8 +9,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Repository
 public class usuarioDAO {
@@ -19,27 +21,57 @@ public class usuarioDAO {
     private DataSource dataSource;
 
     public void InsertCadastroUsuarioIntoBD(String Tipo, String IDENTIFICADOR, String NOME, String EMAIL, String TELEFONE, String DATANASC, String SENHA) throws SQLException {
-        String sql = "";
+        String emailNormalizado = normalizarEmail(EMAIL);
+        String tabelaEspecifica;
+        String colunaIdentificador;
 
-        if(Tipo.equalsIgnoreCase("Aluno")){
-            sql = "INSERT INTO public.\"Alunos\" (\"rgm\", \"nome\", \"email\", \"telefone\", \"dataNasc\", \"senha\") VALUES (?, ?, ?, ?, ?, ?)";
+        if (Tipo.equalsIgnoreCase("Aluno")) {
+            tabelaEspecifica = "ALUNOS";
+            colunaIdentificador = "rgm";
         } else if (Tipo.equalsIgnoreCase("Professor")) {
-            sql = "INSERT INTO public.\"Professores\" (\"matricula\", \"nome\", \"email\", \"telefone\", \"dataNasc\", \"senha\") VALUES (?, ?, ?, ?, ?, ?)";
+            tabelaEspecifica = "PROFESSORES";
+            colunaIdentificador = "matricula";
+        } else {
+            throw new IllegalArgumentException("Tipo de usuário inválido: " + Tipo);
         }
 
+        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" " + "(\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, IDENTIFICADOR);
-            stmt.setString(2, NOME);
-            stmt.setString(3, EMAIL);
-            stmt.setString(4, TELEFONE);
-            stmt.setDate(5, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
-            stmt.setString(6, SENHA);
+        String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" " + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
 
-            int linhas = stmt.executeUpdate();
-            if (linhas == 0) {
-                throw new SQLException("Nenhuma linha foi inserida na tabela de alunos.");
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, NOME);
+            stmt.setString(2, emailNormalizado);
+            stmt.setString(3, TELEFONE);
+            stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
+            stmt.setString(5, SENHA);
+            stmt.setString(6, tabelaEspecifica);
+            stmt.setBoolean(7, true);
+
+                if (stmt.executeUpdate() == 0) {
+                    throw new SQLException("Nenhum usuário foi inserido.");
+                }
+
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (!generatedKeys.next()) {
+                        throw new SQLException("Não foi possível obter o id do usuário inserido.");
+                    }
+
+                    long idUsuario = generatedKeys.getLong(1);
+                    try (PreparedStatement stmt2 = conn.prepareStatement(sqlEspecifico)) {
+                        stmt2.setLong(1, idUsuario);
+                        stmt2.setString(2, IDENTIFICADOR);
+                        stmt2.executeUpdate();
+                    }
+                }
             }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
         }
     }
 
@@ -62,35 +94,27 @@ public class usuarioDAO {
     private boolean verificarExistente(String tipoUsuario, String tipoDado, String dado) {
         boolean existe = false;
         String sql = "";
-        String resultado = "";
 
-        //define o tipo de usuario
-        if(tipoUsuario.equalsIgnoreCase("Aluno")){
-            sql = "SELECT * FROM public.\"Alunos\"";
-        } else if (tipoUsuario.equalsIgnoreCase("Professor")) {
-            sql = "SELECT * FROM public.\"Professores\"";
-        }
-
-        //define o tipo de dado passado na query
         switch (tipoDado) {
             case "identificador":
-                if(tipoUsuario.equalsIgnoreCase("Aluno")){
-                    sql +=  " WHERE rgm = ? ";
-                } else if(tipoUsuario.equalsIgnoreCase("Professor")){
-                    sql +=  " WHERE matricula = ? ";
-                }
+                String tabela = tipoUsuario.equalsIgnoreCase("Aluno") ? "ALUNOS" : "PROFESSORES";
+                String coluna = tipoUsuario.equalsIgnoreCase("Aluno") ? "rgm" : "matricula";
+
+                sql = "SELECT 1 FROM public.\"USUARIOS\" u JOIN public.\"" + tabela + "\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE p.\"" + coluna + "\" = ?";
                 break;
             case "email":
-                sql +=  " WHERE email = ? ";
+                sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE LOWER(\"email\") = ?";
                 break;
             case "telefone":
-                sql +=  " WHERE telefone = ? ";
+                sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE \"telefone\" = ?";
                 break;
+            default:
+                throw new IllegalArgumentException("Tipo de dado inválido: " + tipoDado);
         }
 
         //executa a query
         try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, dado);
+            stmt.setString(1, tipoDado.equals("email") ? normalizarEmail(dado) : dado);
 
             ResultSet rs = stmt.executeQuery();
 
@@ -102,14 +126,11 @@ public class usuarioDAO {
         }
 
         //se existe retorno ja existe o dado
-        if (existe) {
-            return true;
-        } else  {
-            return false;
-        }
+        return existe;
     }
 
     public String QueryLoginUsuario(String tipoUsuario, String EMAIL) throws SQLException {
+        String emailNormalizado = normalizarEmail(EMAIL);
         String resultado = "";
         String sql = "";
 
@@ -118,14 +139,14 @@ public class usuarioDAO {
 
         //define o tipo de usuario
         if(tipoUsuario.equalsIgnoreCase("Aluno")){
-            sql = "SELECT \"senha\" FROM public.\"Alunos\" WHERE \"email\" = ?";
+            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         } else if (tipoUsuario.equalsIgnoreCase("Professor")) {
-            sql = "SELECT \"senha\" FROM public.\"Professores\" WHERE \"email\" = ?";
+            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         }
 
         // preparar
         PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, EMAIL);
+        stmt.setString(1, emailNormalizado);
 
         //Realizar Querys
         ResultSet rs = stmt.executeQuery();
@@ -219,10 +240,10 @@ public class usuarioDAO {
 //    }
     public loginAlunoDTO buscarPorEmailAluno(String email) throws SQLException {
 
-        String sql = "SELECT * FROM public.\"Alunos\" WHERE \"email\" = ?";
+        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
+        stmt.setString(1, normalizarEmail(email));
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
@@ -241,10 +262,10 @@ public class usuarioDAO {
 
     public loginProfessorDTO buscarPorEmailProfessor(String email) throws SQLException {
 
-        String sql = "SELECT * FROM public.\"Professores\" WHERE \"email\" = ?";
+        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
+        stmt.setString(1, normalizarEmail(email));
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
@@ -259,5 +280,9 @@ public class usuarioDAO {
         stmt.close();
         conn.close();
         return null;
+    }
+
+    private String normalizarEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -62,6 +62,9 @@
                             </ul> 
                         </div>
 
+                        <div class="col-md-3 text-end">
+                            <a th:if="${session.usuarioLogado != null}" th:href="@{/logout}" class="btn btn-outline-primary btn-sm me-2">Logout</a>
+                        </div>
                     </div>
                     
                     <!-- Links para usuarios não logados -->

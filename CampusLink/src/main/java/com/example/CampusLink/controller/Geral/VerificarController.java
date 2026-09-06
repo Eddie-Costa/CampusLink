@@ -1,6 +1,8 @@
 package com.example.CampusLink.controller.Geral;
 
 
+import com.example.CampusLink.dao.alunoDAO;
+import com.example.CampusLink.dao.professorDAO;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
@@ -33,8 +35,15 @@ public class VerificarController {
     @Autowired
     private usuarioDAO usuarioDAO;
 
+    @Autowired
+    private alunoDAO alunoDAO;
+
+    @Autowired
+    private professorDAO professorDAO;
+
     @GetMapping("/verificarAluno")
     public String paginaVerificacaoAluno(HttpSession session) {
+
         System.out.println("[LOGIN] GET /verificarAluno - abrindo verificacao 2FA");
 
         //Verificar se aluno passou pela pagina de login primeiro
@@ -49,6 +58,7 @@ public class VerificarController {
 
     @GetMapping("/verificarProfessor")
     public String paginaVerificacaoProfessor(HttpSession session) {
+
         System.out.println("[LOGIN] GET /verificarProfessor - abrindo verificacao 2FA");
 
         //Verificar se professor passou pela pagina de login primeiro
@@ -102,16 +112,12 @@ public class VerificarController {
                     logger.info("O professor com email:" +email+ " passou na validação de token para login");
                 }
 
-                // BUSCA USUÁRIO REAL
+                // Buscar usuario real e criar sessão
                 if(session.getAttribute("tipoUsuario").equals("aluno")){
-                    loginAlunoDTO aluno = usuarioDAO.buscarPorEmailAluno(email);
-
-                    // CRIA SESSÃO
+                    loginAlunoDTO aluno = alunoDAO.buscarPorEmailAluno(email);
                     session.setAttribute("usuarioLogado", aluno);
                 } else if(session.getAttribute("tipoUsuario").equals("professor")){
-                    loginProfessorDTO professor = usuarioDAO.buscarPorEmailProfessor(email);
-
-                    // CRIA SESSÃO
+                    loginProfessorDTO professor = professorDAO.buscarPorEmailProfessor(email);
                     session.setAttribute("usuarioLogado", professor);
                 }
 

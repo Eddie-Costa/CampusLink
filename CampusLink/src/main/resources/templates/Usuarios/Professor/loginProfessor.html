@@ -12,7 +12,7 @@
     <div th:replace="~{fragments/header :: nav}"></div>
 
     <main>
-        <h1 class="title">LOGIN Aluno</h1>
+        <h1 class="title">LOGIN PROFESSOR</h1>
         <form th:action="@{/loginProfessor}" th:object="${professor}" method="post" class="form-login">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
