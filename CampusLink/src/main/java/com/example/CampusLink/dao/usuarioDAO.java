@@ -35,7 +35,7 @@ public class usuarioDAO {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + Tipo);
         }
 
-        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" " + "(\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" (\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" " + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
 

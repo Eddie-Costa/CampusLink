@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${turma.nomeTurma}">Ambiente da turma</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/homeStyle.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: nav}"></div>
+
+    <main class="container mt-4">
+        <a th:href="@{/turmas}">Voltar para turmas</a>
+        <h1 th:text="${turma.nomeTurma}">Nome da turma</h1>
+        <p th:text="${turma.descricao}">Descrição da turma</p>
+    </main>
+</body>
+</html>
