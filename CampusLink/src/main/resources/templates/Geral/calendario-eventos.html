@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eventos | CampusLink</title>
+
+    <link
+            rel="stylesheet"
+            href="/css/calendario-eventos.css"
+            th:href="@{/css/calendario-eventos.css}"
+    >
+</head>
+
+<body>
+<div class="app-page">
+
+    <header class="header-slot">
+        <div th:replace="~{fragments/header :: nav}"></div>
+    </header>
+
+    <div class="page-title">
+        Eventos
+    </div>
+
+    <main class="page-content">
+
+        <div
+                class="popup-sucesso"
+                th:if="${mensagem}"
+                th:text="${mensagem}"
+                role="alert"
+        ></div>
+
+        <div class="calendar-controls">
+
+            <button
+                    type="button"
+                    id="mesAnterior"
+                    class="calendar-button"
+                    aria-label="Mês anterior"
+            >
+                ‹
+            </button>
+
+            <h2 id="mesExibido"></h2>
+
+            <button
+                    type="button"
+                    id="mesProximo"
+                    class="calendar-button"
+                    aria-label="Próximo mês"
+            >
+                ›
+            </button>
+
+            <label
+                    class="month-selector"
+                    for="seletorMes"
+            >
+                Escolher mês:
+
+                <input
+                        type="month"
+                        id="seletorMes"
+                >
+            </label>
+        </div>
+
+        <section
+                id="calendar"
+                class="calendar"
+                aria-label="Calendário de eventos"
+                role="grid"
+        ></section>
+
+        <div class="calendar-legend">
+
+                <span class="legenda-instrução">
+                    Selecione o símbolo
+                    <strong>+</strong>
+                    para cadastrar um evento.
+                </span>
+
+            <span class="legenda-item">
+                    <span class="legenda-cor legenda-vermelha"></span>
+                    Início do evento
+                </span>
+
+            <span class="legenda-item">
+                    <span class="legenda-cor legenda-amarela"></span>
+                    Continuidade do evento
+                </span>
+        </div>
+
+        <section
+                class="eventos-cadastrados"
+                th:if="${eventos != null and !#lists.isEmpty(eventos)}"
+        >
+            <h2>
+                Eventos cadastrados
+            </h2>
+
+            <div
+                    class="evento-item"
+                    th:each="evento : ${eventos}"
+                    th:attr="data-prioridade=${evento.prioridade}"
+            >
+                <div class="evento-cabecalho">
+
+                    <div class="evento-identificacao">
+                        <h3 th:text="${evento.nome}">
+                            Nome do evento
+                        </h3>
+                    </div>
+
+                    <div class="prioridade-indicador">
+
+                            <span
+                                    class="prioridade-icone prioridade-alta"
+                                    th:if="${evento.prioridade == 'ALTA'}"
+                                    aria-label="Alta prioridade"
+                                    title="Alta prioridade"
+                            >
+                                ↑
+                            </span>
+
+                        <span
+                                class="prioridade-icone prioridade-media"
+                                th:if="${evento.prioridade == null or evento.prioridade == 'MEDIA'}"
+                                aria-label="Média prioridade"
+                                title="Média prioridade"
+                        >
+                                −
+                            </span>
+
+                        <span
+                                class="prioridade-icone prioridade-baixa"
+                                th:if="${evento.prioridade == 'BAIXA'}"
+                                aria-label="Baixa prioridade"
+                                title="Baixa prioridade"
+                        >
+                                ↓
+                            </span>
+
+                        <span
+                                class="prioridade-texto"
+                                th:if="${evento.prioridade == 'ALTA'}"
+                        >
+                                Alta
+                            </span>
+
+                        <span
+                                class="prioridade-texto"
+                                th:if="${evento.prioridade == null or evento.prioridade == 'MEDIA'}"
+                        >
+                                Média
+                            </span>
+
+                        <span
+                                class="prioridade-texto"
+                                th:if="${evento.prioridade == 'BAIXA'}"
+                        >
+                                Baixa
+                            </span>
+                    </div>
+                </div>
+
+                <div class="evento-detalhes">
+
+                    <p>
+                        <strong>Início:</strong>
+
+                        <span
+                                th:text="${#temporals.format(evento.inicio, 'dd/MM/yyyy HH:mm')}"
+                        >
+                                01/01/2026 08:00
+                            </span>
+                    </p>
+
+                    <p>
+                        <strong>Fim:</strong>
+
+                        <span
+                                th:text="${#temporals.format(evento.fim, 'dd/MM/yyyy HH:mm')}"
+                        >
+                                01/01/2026 10:00
+                            </span>
+                    </p>
+
+                    <p
+                            th:if="${evento.conteudoId != null and !evento.conteudoId.isEmpty()}"
+                    >
+                        <strong>
+                            Conteúdo relacionado:
+                        </strong>
+
+                        <span th:text="${evento.conteudoId}"></span>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const meses = [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ];
+
+    const urlCadastro = /*[[@{/eventos/cadastrar}]]*/ '/eventos/cadastrar';
+
+    const eventosDados = [
+        /*[# th:each="evento : ${eventos}"]*/
+        {
+            dataInicio: /*[[${#temporals.format(evento.inicio, 'yyyy-MM-dd')}]]*/ '',
+            dataFim: /*[[${#temporals.format(evento.fim, 'yyyy-MM-dd')}]]*/ '',
+            nome: /*[[${evento.nome}]]*/ '',
+            prioridade: /*[[${evento.prioridade}]]*/ 'MEDIA'
+        },
+        /*[/]*/
+    ];
+
+    const calendario =
+        document.getElementById('calendar');
+
+    const mesExibido =
+        document.getElementById('mesExibido');
+
+    const seletorMes =
+        document.getElementById('seletorMes');
+
+    const mesAnterior =
+        document.getElementById('mesAnterior');
+
+    const mesProximo =
+        document.getElementById('mesProximo');
+
+    const hoje = new Date();
+
+    let mesAtual = hoje.getMonth();
+    let anoAtual = hoje.getFullYear();
+
+    function formatarData(data) {
+        const ano = data.getFullYear();
+
+        const mes = String(
+            data.getMonth() + 1
+        ).padStart(2, '0');
+
+        const dia = String(
+            data.getDate()
+        ).padStart(2, '0');
+
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    function atualizarCalendario() {
+        calendario.innerHTML = '';
+
+        mesExibido.textContent =
+            `${meses[mesAtual]} de ${anoAtual}`;
+
+        seletorMes.value =
+            `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+
+        const primeiroDiaSemana =
+            new Date(
+                anoAtual,
+                mesAtual,
+                1
+            ).getDay();
+
+        const ultimoDiaMes =
+            new Date(
+                anoAtual,
+                mesAtual + 1,
+                0
+            ).getDate();
+
+        const quantidadeCelulas =
+            Math.ceil(
+                (primeiroDiaSemana + ultimoDiaMes) / 7
+            ) * 7;
+
+        for (
+            let indice = 0;
+            indice < quantidadeCelulas;
+            indice++
+        ) {
+            const data = new Date(
+                anoAtual,
+                mesAtual,
+                indice - primeiroDiaSemana + 1
+            );
+
+            const dataFormatada =
+                formatarData(data);
+
+            const pertenceAoMesAtual =
+                data.getMonth() === mesAtual &&
+                data.getFullYear() === anoAtual;
+
+            const celula =
+                document.createElement('div');
+
+            celula.classList.add(
+                'day-cell'
+            );
+
+            celula.setAttribute(
+                'role',
+                'gridcell'
+            );
+
+            if (!pertenceAoMesAtual) {
+                celula.classList.add(
+                    'adjacent-month'
+                );
+            }
+
+            const numeroDia =
+                document.createElement('span');
+
+            numeroDia.classList.add(
+                'day-number'
+            );
+
+            numeroDia.textContent =
+                String(data.getDate()).padStart(2, '0');
+
+            const linkCadastro =
+                document.createElement('a');
+
+            linkCadastro.classList.add(
+                'day-add'
+            );
+
+            linkCadastro.href =
+                `${urlCadastro}?data=${dataFormatada}`;
+
+            linkCadastro.textContent = '+';
+
+            linkCadastro.setAttribute(
+                'aria-label',
+                `Cadastrar evento no dia ${data.getDate()}`
+            );
+
+            const eventosDoDia =
+                eventosDados.filter(function (evento) {
+                    return (
+                        evento.dataInicio <= dataFormatada &&
+                        dataFormatada <= evento.dataFim
+                    );
+                });
+
+            if (eventosDoDia.length > 0) {
+                celula.classList.add(
+                    'tem-evento'
+                );
+
+                const marcador =
+                    document.createElement('span');
+
+                marcador.classList.add(
+                    'evento-marcador'
+                );
+
+                const iniciouHoje =
+                    eventosDoDia.some(function (evento) {
+                        return (
+                            evento.dataInicio ===
+                            dataFormatada
+                        );
+                    });
+
+                const terminouHoje =
+                    eventosDoDia.some(function (evento) {
+                        return (
+                            evento.dataFim ===
+                            dataFormatada
+                        );
+                    });
+
+                if (iniciouHoje && terminouHoje) {
+                    marcador.classList.add(
+                        'evento-unico'
+                    );
+                } else if (iniciouHoje) {
+                    marcador.classList.add(
+                        'evento-inicio'
+                    );
+                } else if (terminouHoje) {
+                    marcador.classList.add(
+                        'evento-fim'
+                    );
+                } else {
+                    marcador.classList.add(
+                        'evento-meio'
+                    );
+                }
+
+                if (eventosDoDia.length > 1) {
+                    marcador.textContent =
+                        `${eventosDoDia.length} eventos`;
+                } else if (iniciouHoje) {
+                    marcador.textContent =
+                        eventosDoDia[0].nome;
+                } else {
+                    marcador.textContent = '';
+                }
+
+                marcador.title =
+                    eventosDoDia
+                        .map(function (evento) {
+                            return evento.nome;
+                        })
+                        .join(', ');
+
+                celula.appendChild(
+                    marcador
+                );
+            }
+
+            celula.appendChild(
+                numeroDia
+            );
+
+            celula.appendChild(
+                linkCadastro
+            );
+
+            calendario.appendChild(
+                celula
+            );
+        }
+    }
+
+    mesAnterior.addEventListener(
+        'click',
+        function () {
+            mesAtual--;
+
+            if (mesAtual < 0) {
+                mesAtual = 11;
+                anoAtual--;
+            }
+
+            atualizarCalendario();
+        }
+    );
+
+    mesProximo.addEventListener(
+        'click',
+        function () {
+            mesAtual++;
+
+            if (mesAtual > 11) {
+                mesAtual = 0;
+                anoAtual++;
+            }
+
+            atualizarCalendario();
+        }
+    );
+
+    seletorMes.addEventListener(
+        'change',
+        function () {
+            const [
+                anoSelecionado,
+                mesSelecionado
+            ] = this.value.split('-');
+
+            anoAtual =
+                Number(anoSelecionado);
+
+            mesAtual =
+                Number(mesSelecionado) - 1;
+
+            atualizarCalendario();
+        }
+    );
+
+    const popup =
+        document.querySelector('.popup-sucesso');
+
+    if (popup) {
+        setTimeout(function () {
+            popup.classList.add('ocultar');
+
+            setTimeout(function () {
+                popup.remove();
+            }, 400);
+        }, 3500);
+    }
+
+    atualizarCalendario();
+</script>
+</body>
+
+</html>
