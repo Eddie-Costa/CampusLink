@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Materiais Acadêmicos - CampusLink</title>
+
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+
+</head>
+
+<body>
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- HEADER -->
+
+<div th:replace="~{fragments/header :: nav}">
+</div>
+
+
+<div class="container mt-4">
+
+
+    <!-- TÍTULO -->
+
+    <div class="mb-4">
+
+        <h1>
+            Materiais Acadêmicos
+        </h1>
+
+        <p class="text-muted">
+
+            Consulte os documentos e materiais
+            disponibilizados no CampusLink.
+
+        </p>
+
+    </div>
+
+
+    <!-- MENSAGEM DE SUCESSO -->
+
+    <div
+            th:if="${sucesso}"
+            class="alert alert-success"
+            th:text="${sucesso}">
+    </div>
+
+
+    <!-- MENSAGEM DE ERRO -->
+
+    <div
+            th:if="${erro}"
+            class="alert alert-danger"
+            th:text="${erro}">
+    </div>
+
+
+    <!-- UPLOAD - SOMENTE PROFESSOR -->
+
+    <div
+            th:if="${session.tipoUsuario == 'professor'}"
+            class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">
+                Adicionar material
+            </h5>
+
+
+            <form
+                    th:action="@{/arquivos/upload}"
+                    method="post"
+                    enctype="multipart/form-data">
+
+
+                <!-- CSRF -->
+
+                <input
+                        type="hidden"
+                        th:if="${_csrf != null}"
+                        th:name="${_csrf.parameterName}"
+                        th:value="${_csrf.token}">
+
+
+                <!-- CONTEÚDO -->
+
+                <div class="mb-3">
+
+                    <label
+                            for="idConteudo"
+                            class="form-label">
+
+                        Conteúdo
+
+                    </label>
+
+                    <input
+                            id="idConteudo"
+                            name="idConteudo"
+                            type="number"
+                            class="form-control"
+                            value="1"
+                            readonly
+                            required>
+
+                    <div class="form-text">
+
+                        Material de teste
+                        (conteúdo ID 1).
+
+                    </div>
+
+                </div>
+
+
+                <!-- ARQUIVO -->
+
+                <div class="mb-3">
+
+                    <label
+                            for="arquivo"
+                            class="form-label">
+
+                        Selecione um arquivo
+
+                    </label>
+
+
+                    <input
+                            id="arquivo"
+                            name="arquivo"
+                            type="file"
+                            class="form-control"
+                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx"
+                            required>
+
+
+                    <div class="form-text">
+
+                        Formatos permitidos:
+                        PDF, PNG, JPG, DOC, DOCX,
+                        PPT e PPTX.
+
+                        Tamanho máximo: 6 MB.
+
+                    </div>
+
+                </div>
+
+
+                <!-- BOTÃO -->
+
+                <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                    Enviar material
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- LISTAGEM DE MATERIAIS -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            <strong>
+                Materiais disponíveis
+            </strong>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table
+                    class="table table-hover align-middle mb-0">
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Nome
+                    </th>
+
+                    <th>
+                        Tipo
+                    </th>
+
+                    <th>
+                        Tamanho
+                    </th>
+
+                    <th>
+                        Data
+                    </th>
+
+                    <th class="text-end">
+                        Ações
+                    </th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <!-- ARQUIVOS EXISTENTES -->
+
+                <tr
+                        th:each="arquivo : ${arquivos}">
+
+
+                    <!-- NOME -->
+
+                    <td>
+
+                        <strong
+                                th:text="${arquivo.nomeOriginal}">
+                        </strong>
+
+                    </td>
+
+
+                    <!-- TIPO -->
+
+                    <td
+                            th:text="${arquivo.mimeType}">
+                    </td>
+
+
+                    <!-- TAMANHO -->
+
+                    <td>
+
+                        <span
+                                th:text="${#numbers.formatDecimal(
+                                    arquivo.tamanhoBytes / 1024.0,
+                                    1,
+                                    1
+                                )}">
+                        </span>
+
+                        KB
+
+                    </td>
+
+
+                    <!-- DATA -->
+
+                    <td>
+
+                        <span
+                                th:if="${arquivo.createdAt != null}"
+                                th:text="${#temporals.format(
+                                    arquivo.createdAt,
+                                    'dd/MM/yyyy HH:mm'
+                                )}">
+                        </span>
+
+                    </td>
+
+
+                    <!-- AÇÕES -->
+
+                    <td class="text-end">
+
+
+                        <!-- DOWNLOAD -->
+
+                        <a
+                                th:href="@{/arquivos/{id}/download(
+                                    id=${arquivo.id}
+                                )}"
+                                class="btn btn-sm btn-outline-primary">
+
+                            Baixar
+
+                        </a>
+
+
+                        <!-- EXCLUSÃO SOMENTE PROFESSOR -->
+
+                        <form
+                                th:if="${session.tipoUsuario == 'professor'}"
+                                th:action="@{/arquivos/{id}/excluir(
+                                    id=${arquivo.id}
+                                )}"
+                                method="post"
+                                class="d-inline">
+
+
+                            <!-- CSRF -->
+
+                            <input
+                                    type="hidden"
+                                    th:if="${_csrf != null}"
+                                    th:name="${_csrf.parameterName}"
+                                    th:value="${_csrf.token}">
+
+
+                            <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Deseja realmente excluir este material?');">
+
+                                Excluir
+
+                            </button>
+
+                        </form>
+
+
+                    </td>
+
+                </tr>
+
+
+                <!-- CASO NÃO TENHA ARQUIVOS -->
+
+                <tr
+                        th:if="${#lists.isEmpty(arquivos)}">
+
+                    <td
+                            colspan="5"
+                            class="text-center text-muted py-4">
+
+                        Nenhum material acadêmico
+                        foi disponibilizado ainda.
+
+                    </td>
+
+                </tr>
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>
