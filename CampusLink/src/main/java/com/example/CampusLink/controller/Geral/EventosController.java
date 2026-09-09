@@ -27,41 +27,48 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventosController {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventosController.class);
+    // registra as informacoes do controller
+    private static final Logger logger =
+            LoggerFactory.getLogger(EventosController.class);
 
+    // ids usados durante os testes
     private static final Long ID_PROFESSOR_TESTE = 8L;
     private static final Long ID_TURMA_TESTE = 1L;
 
+    // dependencias usadas pelo controller
     private final EventoService eventoService;
     private final DisponibilidadeService disponibilidadeService;
     private final alunoDAO alunoDAO;
 
+    // mostra o calendario de eventos
     @GetMapping
-    public String exibirCalendario(
-            Model model,
-            HttpSession session
-    ) throws SQLException {
+    public String exibirCalendario(Model model, HttpSession session) throws SQLException {
+
+        if (!usuarioPassouPeloLoginE2FA(session)) {
+            logger.warn("Acesso recusado ao calendario: login ou 2FA nao concluido.");
+            return "redirect:/login";
+        }
 
         carregarDadosDaPagina(model, session);
-
         logger.info("Calendário de eventos exibido. tipoUsuario={}", obterTipoUsuario(session));
-
         return "Geral/calendario-eventos";
     }
 
+    // mostra a tela de cadastro de eventos
     @GetMapping("/cadastrar")
-    public String exibirFormularioCadastro(
-            Model model,
-            HttpSession session
-    ) throws SQLException {
+    public String exibirFormularioCadastro(Model model, HttpSession session) throws SQLException {
+
+        if (!usuarioPassouPeloLoginE2FA(session)) {
+            logger.warn("Acesso recusado ao cadastro de evento: login ou 2FA nao concluido.");
+            return "redirect:/login";
+        }
 
         carregarDadosDaPagina(model, session);
-
         logger.info("Formulário de cadastro de evento exibido. tipoUsuario={}", obterTipoUsuario(session));
-
         return "Geral/cadastrar-eventos";
     }
 
+    // cadastra um novo evento
     @PostMapping("/cadastrar")
     public String cadastrarEvento(
 
@@ -95,60 +102,58 @@ public class EventosController {
             RedirectAttributes redirectAttributes
     ) {
 
+        if (!usuarioPassouPeloLoginE2FA(session)) {
+            logger.warn("Cadastro de evento recusado: login ou 2FA nao concluido.");
+            return "redirect:/login";
+        }
+
+        // verifica se o usuario e professor
         if (!usuarioEhProfessor(session)) {
             logger.warn("Cadastro de evento recusado: usuário sem perfil de professor.");
             return "redirect:/eventos";
         }
 
+        // verifica se o nome foi informado
         if (nome == null || nome.isBlank()) {
             logger.warn("Cadastro de evento recusado: nome do evento vazio.");
-            redirectAttributes.addFlashAttribute(
-                    "erro",
-                    "Informe o nome do evento."
-            );
+            redirectAttributes.addFlashAttribute("erro", "Informe o nome do evento.");
             return "redirect:/eventos/cadastrar";
         }
 
+        // verifica se as datas estao corretas
         if (fim.isBefore(inicio)) {
             logger.warn("Cadastro de evento recusado: data final anterior ao início. inicio={} fim={}", inicio, fim);
-            redirectAttributes.addFlashAttribute(
-                    "erro",
-                    "A data final não pode ser anterior à data inicial."
-            );
+            redirectAttributes.addFlashAttribute("erro", "A data final não pode ser anterior à data inicial.");
             return "redirect:/eventos/cadastrar";
         }
 
+        // junta os ids dos conteudos selecionados
         String conteudoSelecionado =
                 conteudoIds == null || conteudoIds.isEmpty()
                         ? conteudoId
-                        : String.join(", ", conteudoIds);
+                        : String.join(
+                        ", ",
+                        conteudoIds
+                );
 
-        Evento evento = new Evento(
-                nome,
-                inicio,
-                fim,
-                conteudoSelecionado,
-                prioridade
-        );
+        // cria o objeto do evento
+        Evento evento = new Evento(nome, inicio, fim, conteudoSelecionado, prioridade);
 
         evento.setTipo(tipo);
         evento.setDescricao(descricao);
 
+        // define os ids usados no teste
         evento.setIdProfessor(ID_PROFESSOR_TESTE);
-
         evento.setIdTurma(ID_TURMA_TESTE);
 
+        // salva o evento no banco
         eventoService.adicionarEvento(evento);
-
         logger.info("Solicitação de cadastro de evento concluída.");
-
-        redirectAttributes.addFlashAttribute(
-                "mensagem",
-                "Evento cadastrado com sucesso!"
-        );
+        redirectAttributes.addFlashAttribute("mensagem", "Evento cadastrado com sucesso!");
         return "redirect:/eventos";
     }
 
+    // cadastra a disponibilidade do aluno
     @PostMapping("/cadastrar-disponibilidade")
     public String cadastrarDisponibilidade(
 
@@ -163,63 +168,54 @@ public class EventosController {
             RedirectAttributes redirectAttributes
     ) throws SQLException {
 
+        if (!usuarioPassouPeloLoginE2FA(session)) {
+            logger.warn("Cadastro de disponibilidade recusado: login ou 2FA nao concluido.");
+            return "redirect:/login";
+        }
+
+        // verifica se o usuario e aluno
         if (!usuarioEhAluno(session)) {
             logger.warn("Cadastro de disponibilidade recusado: usuário sem perfil de aluno.");
             return "redirect:/eventos";
         }
 
+        // busca o id do aluno logado
         Long idAluno = buscarIdAluno(session);
 
         if (idAluno == null) {
             logger.warn("Cadastro de disponibilidade recusado: aluno não identificado.");
-            redirectAttributes.addFlashAttribute(
-                    "erro",
-                    "Não foi possível identificar o aluno."
-            );
+            redirectAttributes.addFlashAttribute("erro", "Não foi possível identificar o aluno.");
             return "redirect:/eventos";
         }
 
-        if (horasDisponiveis == null
-                || horasDisponiveis < 0
-                || horasDisponiveis > 24) {
+        // verifica se a quantidade de horas e valida
+        if (horasDisponiveis == null || horasDisponiveis < 0 || horasDisponiveis > 24) {
             logger.warn("Disponibilidade recusada. alunoId={} data={} horas={}", idAluno, data, horasDisponiveis);
-            redirectAttributes.addFlashAttribute(
-                    "erro",
-                    "Informe uma quantidade entre 0 e 24 horas."
-            );
+            redirectAttributes.addFlashAttribute("erro", "Informe uma quantidade entre 0 e 24 horas.");
             return "redirect:/eventos/cadastrar";
         }
 
+        // salva a disponibilidade do aluno
         disponibilidadeService.salvarDisponibilidade(idAluno, data, horasDisponiveis);
         logger.info("Disponibilidade cadastrada. alunoId={} data={} horas={}", idAluno, data, horasDisponiveis);
-
-        redirectAttributes.addFlashAttribute(
-                "mensagem",
-                "Disponibilidade cadastrada com sucesso!"
-        );
+        redirectAttributes.addFlashAttribute("mensagem", "Disponibilidade cadastrada com sucesso!");
         return "redirect:/eventos";
     }
 
-    private void carregarDadosDaPagina(Model model, HttpSession session
-    ) throws SQLException {
-
+    // carrega os dados usados nas telas do calendario
+    private void carregarDadosDaPagina(Model model, HttpSession session) throws SQLException {
         String tipoUsuario = obterTipoUsuario(session);
         logger.debug("Carregando dados do calendário. tipoUsuario={}", tipoUsuario);
         model.addAttribute("eventos", eventoService.listarEventos());
         model.addAttribute("tipoUsuario", tipoUsuario);
-        model.addAttribute("disponibilidades", List.of()
-        );
+        model.addAttribute("disponibilidades", List.of());
 
+        // carrega disponibilidades somente para alunos
         if (usuarioEhAluno(session)) {
-
             Long idAluno = buscarIdAluno(session);
 
             if (idAluno != null) {
-
-                model.addAttribute("disponibilidades", disponibilidadeService
-                                .listarPorAluno(idAluno)
-                );
-
+                model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
                 logger.debug("Disponibilidades do aluno carregadas. alunoId={}", idAluno);
             }
         }
@@ -227,8 +223,8 @@ public class EventosController {
         logger.debug("Dados do calendário carregados. tipoUsuario={}", tipoUsuario);
     }
 
-    private Long buscarIdAluno(HttpSession session
-    ) throws SQLException {
+    // busca o id do aluno usando o email salvo na sessao
+    private Long buscarIdAluno(HttpSession session) throws SQLException {
 
         Object email = session.getAttribute("email2FA");
 
@@ -248,28 +244,29 @@ public class EventosController {
         return Long.valueOf(idAluno);
     }
 
-    private String obterTipoUsuario(
-            HttpSession session
-    ) {
+    // verifica se o login e o 2fa foram concluidos
+    private boolean usuarioPassouPeloLoginE2FA(HttpSession session) {
+        return session.getAttribute("usuarioLogado") != null
+                && session.getAttribute("email2FA") != null
+                && !obterTipoUsuario(session).isBlank();
+    }
+
+    // retorna o tipo do usuario salvo na sessao
+    private String obterTipoUsuario(HttpSession session) {
 
         Object tipoUsuario = session.getAttribute("tipoUsuario");
 
-        if (tipoUsuario == null) {
-            return "";
-        }
-
+        if (tipoUsuario == null) {return "";}
         return tipoUsuario.toString();
     }
 
-    private boolean usuarioEhAluno(
-            HttpSession session
-    ) {
+    // verifica se o usuario e aluno
+    private boolean usuarioEhAluno(HttpSession session) {
         return "aluno".equalsIgnoreCase(obterTipoUsuario(session));
     }
 
-    private boolean usuarioEhProfessor(
-            HttpSession session
-    ) {
+    // verifica se o usuario e professor
+    private boolean usuarioEhProfessor(HttpSession session) {
         return "professor".equalsIgnoreCase(obterTipoUsuario(session));
     }
 }

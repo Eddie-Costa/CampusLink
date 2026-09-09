@@ -20,13 +20,6 @@
         <div th:replace="~{fragments/header :: nav}"></div>
     </header>
 
-    <div class="page-title"
-         th:text="${session.tipoUsuario == 'aluno'
-                    ? 'Cadastrar Disponibilidade'
-                    : 'Cadastrar Evento'}">
-        Cadastrar Evento
-    </div>
-
     <main class="registration-area">
 
         <!-- Calendário desfocado ao fundo -->

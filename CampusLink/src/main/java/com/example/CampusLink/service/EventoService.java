@@ -10,17 +10,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// classe que cuida das regras dos eventos
 @Service
 @RequiredArgsConstructor
 public class EventoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventoService.class);
+    // registra as informacoes do service
+    private static final Logger logger =
+            LoggerFactory.getLogger(EventoService.class);
+
     private final EventoRepository eventoRepository;
 
+    // salva um novo evento
     public Evento adicionarEvento(Evento evento) {
 
-        try {Evento eventoSalvo = eventoRepository.save(evento);
-            logger.info("Evento salvo no banco. id={} professorId={} turmaId={}", eventoSalvo.getId(), eventoSalvo.getIdProfessor(), eventoSalvo.getIdTurma());
+        try {
+            Evento eventoSalvo = eventoRepository.save(evento);
+            logger.info("Evento salvo no banco. id={} professorId={} turmaId={}", eventoSalvo.getId(), eventoSalvo.getIdProfessor(), eventoSalvo.getIdTurma()
+            );
+
             return eventoSalvo;
 
         } catch (DataAccessException e) {
@@ -29,10 +37,13 @@ public class EventoService {
         }
     }
 
+    // busca todos os eventos cadastrados
     public List<Evento> listarEventos() {
 
-        try {List<Evento> eventos = eventoRepository.findAll();
-            logger.debug("Eventos consultados. quantidade={}", eventos.size());
+        try {
+            List<Evento> eventos = eventoRepository.findAll();
+            logger.debug("Eventos consultados. quantidade={}", eventos.size()
+            );
             return eventos;
 
         } catch (DataAccessException e) {

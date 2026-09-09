@@ -66,7 +66,6 @@ public class alunoDAO {
                     ON u."id" = a."id_usuario"
                 WHERE u."email" = ?
                 """;
-
         logger.debug("Consultando ID do aluno no banco.");
 
         try (
@@ -88,7 +87,6 @@ public class alunoDAO {
             throw e;
         }
         logger.warn("Nenhum ID de aluno foi encontrado.");
-
         return "";
     }
 }

@@ -1,12 +1,6 @@
 package com.example.CampusLink.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,18 +8,18 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+// Indica que esta classe representa uma tabela do banco de dados
 @Entity
-@Table(
-        name = "\"EVENTOS\"",
-        schema = "public"
-)
+@Table(name = "\"EVENTOS\"", schema = "public")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 public class Evento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Setter(AccessLevel.NONE)
     private Long id;
 
@@ -54,53 +48,50 @@ public class Evento {
     private String status;
 
     @Column(name = "prioridade")
+
     @Setter(AccessLevel.NONE)
     private String prioridade;
 
     @Transient
     private String conteudoId;
 
-    public Evento(
-            String nome,
-            LocalDateTime inicio,
-            LocalDateTime fim,
-            String conteudoId
-    ) {
+    // usado quando a prioridade nao e informada
+    public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId) {
         this(nome, inicio, fim, conteudoId, "MEDIA");
     }
 
-    public Evento(
-            String nome,
-            LocalDateTime inicio,
-            LocalDateTime fim,
-            String conteudoId,
-            String prioridade
+    // usado para criar um evento
+    public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId, String prioridade
     ) {
         this.nome = nome;
         this.inicio = inicio;
         this.fim = fim;
         this.conteudoId = conteudoId;
+
+        // prioridade tenha um valor permitido
         this.prioridade = normalizarPrioridade(prioridade);
+
+        // Todo evento começa com o status ativo.
         this.status = "ATIVO";
     }
 
+    // prioridade em um formato padrão
     private String normalizarPrioridade(String prioridade) {
-        if (prioridade == null || prioridade.isBlank()) {
-            return "MEDIA";
-        }
 
-        String prioridadeNormalizada =
-                prioridade.trim().toUpperCase();
+        if (prioridade == null || prioridade.isBlank()) {return "MEDIA";}
 
-        if (prioridadeNormalizada.equals("ALTA")
-                || prioridadeNormalizada.equals("MEDIA")
-                || prioridadeNormalizada.equals("BAIXA")) {
-            return prioridadeNormalizada;
-        }
+        String prioridadeNormalizada = prioridade.trim().toUpperCase();
 
-        return "MEDIA";
+        //  somente os tres niveis definidos pelo sistema
+        return switch (prioridadeNormalizada) {
+            case "ALTA", "MEDIA", "BAIXA" -> prioridadeNormalizada;
+
+            // Qualquer outro valor recebe MEDIA.
+            default -> "MEDIA";
+        };
     }
 
+    // altera a prioridade sempre aplicando a validaca
     public void setPrioridade(String prioridade) {
         this.prioridade = normalizarPrioridade(prioridade);
     }
