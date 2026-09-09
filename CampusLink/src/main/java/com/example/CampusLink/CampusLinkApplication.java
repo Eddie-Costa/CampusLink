@@ -15,6 +15,6 @@ public class CampusLinkApplication {
 
     @Bean
     CommandLineRunner testarEnv(@Value("${DB_URL:NAO_ENCONTRADO}") String dbUrl) {
-        return args -> System.out.println("DB_URL carregada: " + dbUrl);
+        return args -> {};
     }
 }

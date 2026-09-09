@@ -6,6 +6,8 @@ import com.example.CampusLink.dao.turmaDAO;
 import com.example.CampusLink.dto.TurmaDTO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +22,8 @@ import java.util.List;
 
 @Controller
 public class turmasController {
+
+    private static final Logger logger = LoggerFactory.getLogger(turmasController.class);
 
     @Autowired
     private professorDAO professorDAO;
@@ -59,6 +63,7 @@ public class turmasController {
             return "redirect:/login";
         }
 
+        model.addAttribute("idTurma", id);
         TurmaDTO turma = turmaDAO.buscarTurmaPorId(id);
         if (turma == null) {
             return "redirect:/turmas";
@@ -87,6 +92,31 @@ public class turmasController {
 
         //Insere professor_turma no banco de dados
         professorDAO.InsertProfessor_TurmaIntoBD(idProfessor, turmaDAO.buscarUltimaTurmaPorProfessor(idProfessor));
+
+        return "redirect:/turmas";
+    }
+
+    @PostMapping("/adicionarPessoas")
+    public String adicionarPessoas(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            logger.warn("[adicionarPessoas] usuário não autenticado; redirecionando para login.");
+            return "redirect:/login";
+        }
+
+        if (session.getAttribute("tipoUsuario") != null && session.getAttribute("tipoUsuario").equals("aluno")) {
+            logger.warn("[adicionarPessoas] aluno tentou adicionar pessoa à turma.");
+            return "Geral/home";
+        }
+
+        if (turmaDTO.getEmailPessoa() == null || turmaDTO.getEmailPessoa().isBlank()) {
+            logger.warn("[adicionarPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
+            model.addAttribute("idTurma", turmaDTO.getId());
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId())));
+            return "Geral/ambienteTurma";
+        }
+
+        turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
 
         return "redirect:/turmas";
     }

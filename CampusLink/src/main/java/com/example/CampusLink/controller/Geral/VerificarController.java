@@ -44,72 +44,52 @@ public class VerificarController {
     @GetMapping("/verificarAluno")
     public String paginaVerificacaoAluno(HttpSession session) {
 
-        System.out.println("[LOGIN] GET /verificarAluno - abrindo verificacao 2FA");
-
         //Verificar se aluno passou pela pagina de login primeiro
         if (session.getAttribute("email2FA") == null) {
-            System.out.println("[LOGIN] email 2FA ausente - redirecionando para /loginAluno");
+            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginAluno");
             return "redirect:/loginAluno";
         }
 
-        System.out.println("[LOGIN] email 2FA encontrado - exibindo pagina de verificacao");
         return "Geral/verificar";
     }
 
     @GetMapping("/verificarProfessor")
     public String paginaVerificacaoProfessor(HttpSession session) {
 
-        System.out.println("[LOGIN] GET /verificarProfessor - abrindo verificacao 2FA");
-
         //Verificar se professor passou pela pagina de login primeiro
         if (session.getAttribute("email2FA") == null) {
-            System.out.println("[LOGIN] email 2FA ausente - redirecionando para /loginProfessor");
+            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginProfessor");
             return "redirect:/loginProfessor";
         }
 
-        System.out.println("[LOGIN] email 2FA encontrado - exibindo pagina de verificacao");
         return "Geral/verificar";
     }
 
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam String codigo, HttpSession session, Model model) throws SQLException {
 
-        System.out.println("[LOGIN] POST /verificar - codigo 2FA recebido");
         if(session.getAttribute("redirect").equals("Login")){
-
-            //Exibe no console diferente por tipo de usuario
-            if(session.getAttribute("tipoUsuario").equals("aluno")){
-                System.out.println("[LOGIN] fluxo identificado como LoginAluno");
-            } else if(session.getAttribute("tipoUsuario").equals("professor")){
-                System.out.println("[LOGIN] fluxo identificado como professor");
-            }
 
             String email = (String) session.getAttribute("email2FA");
 
             //  Segurança
             if (email == null) {
                 if(session.getAttribute("tipoUsuario").equals("aluno")){
-                    System.out.println("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
-                    logger.warn("Email invalido com valor: {}", email);
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
                     return "redirect:/loginAluno";
                 } else if(session.getAttribute("tipoUsuario").equals("professor")){
-                    System.out.println("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
-                    logger.warn("Email invalido com valor: {}", email);
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
                     return "redirect:/loginProfessor";
                 }
             }
 
             if (twoFactorService.validarCodigo(email, codigo)) {
                 if(session.getAttribute("tipoUsuario").equals("aluno")){
-                    System.out.println("[LOGIN] codigo 2FA valido - buscando aluno");
                     MDC.put("aluno", email);
                     MDC.put("sessionId", session.getId());
-                    logger.info("O aluno com email:" +email+ " passou na validação de token para login");
                 } else if(session.getAttribute("tipoUsuario").equals("professor")){
-                    System.out.println("[LOGIN] codigo 2FA valido - buscando professor");
                     MDC.put("professor", email);
                     MDC.put("sessionId", session.getId());
-                    logger.info("O professor com email:" +email+ " passou na validação de token para login");
                 }
 
                 // Buscar usuario real e criar sessão
@@ -122,12 +102,10 @@ public class VerificarController {
                 }
 
                 session.setMaxInactiveInterval(900);
-                System.out.println("[LOGIN] sessao criada - login concluido");
-                logger.info("Sessão criada com sucesso | ID: {} | Email: {}", session.getId(), email);
 
                 return "redirect:/home";
             }
-            System.out.println("[LOGIN] codigo 2FA invalido no fluxo LoginAluno");
+            logger.warn("[LOGIN] codigo 2FA invalido no fluxo LoginAluno");
         }
 //        else if (session.getAttribute("redirect").equals("ResetPassword")){
 //
