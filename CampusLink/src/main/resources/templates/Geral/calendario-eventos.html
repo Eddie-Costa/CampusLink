@@ -124,103 +124,138 @@
                          and eventos != null
                          and !#lists.isEmpty(eventos)}">
 
-            <h2>
-                Eventos cadastrados
-            </h2>
+            <div class="eventos-cabecalho-lista">
 
-            <div class="evento-item"
-                 th:each="evento : ${eventos}"
-                 th:attr="data-prioridade=${evento.prioridade}">
+                <h2>
+                    Eventos cadastrados
+                </h2>
 
-                <div class="evento-cabecalho">
+                <div class="ordenacao-eventos">
 
-                    <div class="evento-identificacao">
+                    <label for="ordenarEventos">
+                        Ordenar por:
+                    </label>
 
-                        <h3 th:text="${evento.nome}">
-                            Nome do evento
-                        </h3>
+                    <select id="ordenarEventos"
+                            aria-label="Ordenar eventos">
 
-                    </div>
+                        <option value="original">
+                            Ordem original
+                        </option>
 
-                    <div class="prioridade-indicador">
+                        <option value="prioridade">
+                            Prioridade
+                        </option>
 
-                        <span class="prioridade-icone prioridade-alta"
-                              th:if="${evento.prioridade == 'ALTA'}"
-                              aria-label="Alta prioridade"
-                              title="Alta prioridade">
-                            ↑
-                        </span>
+                        <option value="inicio">
+                            Data de início
+                        </option>
 
-                        <span class="prioridade-icone prioridade-media"
-                              th:if="${evento.prioridade == null
-                                      or evento.prioridade == 'MEDIA'}"
-                              aria-label="Média prioridade"
-                              title="Média prioridade">
-                            −
-                        </span>
-
-                        <span class="prioridade-icone prioridade-baixa"
-                              th:if="${evento.prioridade == 'BAIXA'}"
-                              aria-label="Baixa prioridade"
-                              title="Baixa prioridade">
-                            ↓
-                        </span>
-
-                        <span class="prioridade-texto"
-                              th:if="${evento.prioridade == 'ALTA'}">
-                            Alta
-                        </span>
-
-                        <span class="prioridade-texto"
-                              th:if="${evento.prioridade == null
-                                      or evento.prioridade == 'MEDIA'}">
-                            Média
-                        </span>
-
-                        <span class="prioridade-texto"
-                              th:if="${evento.prioridade == 'BAIXA'}">
-                            Baixa
-                        </span>
-
-                    </div>
+                    </select>
 
                 </div>
 
-                <div class="evento-detalhes">
+            </div>
 
-                    <p>
-                        <strong>Início:</strong>
+            <div id="listaEventos"
+                 class="eventos-lista">
 
-                        <span th:text="${#temporals.format(
-                            evento.inicio,
-                            'dd/MM/yyyy HH:mm'
-                        )}">
-                            01/01/2026 08:00
-                        </span>
-                    </p>
+                <div class="evento-item"
+                     th:each="evento : ${eventos}"
+                     th:data-prioridade="${evento.prioridade}"
+                     th:data-inicio="${evento.inicio}">
 
-                    <p>
-                        <strong>Fim:</strong>
+                    <div class="evento-cabecalho">
 
-                        <span th:text="${#temporals.format(
-                            evento.fim,
-                            'dd/MM/yyyy HH:mm'
-                        )}">
-                            01/01/2026 10:00
-                        </span>
-                    </p>
+                        <div class="evento-identificacao">
 
-                    <p th:if="${evento.conteudoId != null
-                               and !evento.conteudoId.isEmpty()}">
+                            <h3 th:text="${evento.nome}">
+                                Nome do evento
+                            </h3>
 
-                        <strong>
-                            Conteúdo relacionado:
-                        </strong>
+                        </div>
 
-                        <span th:text="${evento.conteudoId}">
-                        </span>
+                        <div class="prioridade-indicador">
 
-                    </p>
+                            <span class="prioridade-icone prioridade-alta"
+                                  th:if="${evento.prioridade == 'ALTA'}"
+                                  aria-label="Alta prioridade"
+                                  title="Alta prioridade">
+                                ↑
+                            </span>
+
+                            <span class="prioridade-icone prioridade-media"
+                                  th:if="${evento.prioridade == null
+                                          or evento.prioridade == 'MEDIA'}"
+                                  aria-label="Média prioridade"
+                                  title="Média prioridade">
+                                −
+                            </span>
+
+                            <span class="prioridade-icone prioridade-baixa"
+                                  th:if="${evento.prioridade == 'BAIXA'}"
+                                  aria-label="Baixa prioridade"
+                                  title="Baixa prioridade">
+                                ↓
+                            </span>
+
+                            <span class="prioridade-texto"
+                                  th:if="${evento.prioridade == 'ALTA'}">
+                                Alta
+                            </span>
+
+                            <span class="prioridade-texto"
+                                  th:if="${evento.prioridade == null
+                                          or evento.prioridade == 'MEDIA'}">
+                                Média
+                            </span>
+
+                            <span class="prioridade-texto"
+                                  th:if="${evento.prioridade == 'BAIXA'}">
+                                Baixa
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="evento-detalhes">
+
+                        <p>
+                            <strong>Início:</strong>
+
+                            <span th:text="${#temporals.format(
+                                evento.inicio,
+                                'dd/MM/yyyy HH:mm'
+                            )}">
+                                01/01/2026 08:00
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong>Fim:</strong>
+
+                            <span th:text="${#temporals.format(
+                                evento.fim,
+                                'dd/MM/yyyy HH:mm'
+                            )}">
+                                01/01/2026 10:00
+                            </span>
+                        </p>
+
+                        <p th:if="${evento.conteudoId != null
+                                   and !evento.conteudoId.isEmpty()}">
+
+                            <strong>
+                                Conteúdo relacionado:
+                            </strong>
+
+                            <span th:text="${evento.conteudoId}">
+                            </span>
+
+                        </p>
+
+                    </div>
 
                 </div>
 
@@ -717,6 +752,109 @@
                 );
             },
             3500
+        );
+    }
+
+    const listaEventos =
+        document.getElementById('listaEventos');
+
+    const seletorOrdenacao =
+        document.getElementById('ordenarEventos');
+
+    if (listaEventos && seletorOrdenacao) {
+
+        const cartoes =
+            Array.from(
+                listaEventos.querySelectorAll('.evento-item')
+            );
+
+        const ordemOriginal =
+            new Map(
+                cartoes.map(
+                    (cartao, indice) => [cartao, indice]
+                )
+            );
+
+        const pesoPrioridade = {
+            ALTA: 1,
+            MEDIA: 2,
+            BAIXA: 3
+        };
+
+        function obterPrioridade(cartao) {
+
+            const prioridade =
+                (cartao.dataset.prioridade || 'MEDIA')
+                    .toUpperCase();
+
+            return pesoPrioridade[prioridade] || 2;
+        }
+
+        function obterDataInicio(cartao) {
+
+            const data =
+                Date.parse(cartao.dataset.inicio || '');
+
+            return Number.isNaN(data)
+                ? Number.MAX_SAFE_INTEGER
+                : data;
+        }
+
+        seletorOrdenacao.addEventListener(
+            'change',
+            function () {
+
+                const cartoesOrdenados =
+                    [...cartoes];
+
+                if (this.value === 'prioridade') {
+
+                    cartoesOrdenados.sort(
+                        function (cartaoA, cartaoB) {
+
+                            const diferenca =
+                                obterPrioridade(cartaoA)
+                                - obterPrioridade(cartaoB);
+
+                            return diferenca
+                                || ordemOriginal.get(cartaoA)
+                                - ordemOriginal.get(cartaoB);
+                        }
+                    );
+                }
+
+                if (this.value === 'inicio') {
+
+                    cartoesOrdenados.sort(
+                        function (cartaoA, cartaoB) {
+
+                            const diferenca =
+                                obterDataInicio(cartaoA)
+                                - obterDataInicio(cartaoB);
+
+                            return diferenca
+                                || ordemOriginal.get(cartaoA)
+                                - ordemOriginal.get(cartaoB);
+                        }
+                    );
+                }
+
+                if (this.value === 'original') {
+
+                    cartoesOrdenados.sort(
+                        function (cartaoA, cartaoB) {
+                            return ordemOriginal.get(cartaoA)
+                                - ordemOriginal.get(cartaoB);
+                        }
+                    );
+                }
+
+                cartoesOrdenados.forEach(
+                    function (cartao) {
+                        listaEventos.appendChild(cartao);
+                    }
+                );
+            }
         );
     }
 
