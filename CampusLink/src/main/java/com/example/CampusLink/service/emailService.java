@@ -23,8 +23,6 @@ public class emailService {
         mensagem.setText("Seu código de verificação é: " + codigo);
 
         mailSender.send(mensagem);
-
-        System.out.println("Email enviado com sucesso!");
     }
 
     @Async("emailTaskExecutor")
@@ -44,8 +42,6 @@ public class emailService {
         mensagem.setText(corpoEmail);
 
         mailSender.send(mensagem);
-
-        System.out.println("Email enviado com sucesso!");
     }
 
 }

@@ -1,0 +1,305 @@
+/* ===============================
+   CONFIGURAÇÕES GERAIS
+================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #ffffff;
+    background-image: url('../images/bg.png');
+    background-size: cover;
+}
+
+
+/* ===============================
+   ÁREA PRINCIPAL
+================================ */
+
+.turmas-page {
+    min-height: calc(100vh - 68px);
+    padding: 24px 20px;
+}
+
+
+/* ===============================
+   CONTAINER
+================================ */
+
+.turmas-container {
+    width: 100%;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+
+/* ===============================
+   LISTA DE TURMAS
+================================ */
+
+.lista-turmas {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+
+/* ===============================
+   CARD DA TURMA
+================================ */
+
+.turma-card {
+    width: 100%;
+    min-height: 118px;
+    display: flex;
+    align-items: center;
+    padding: 25px 42px;
+    border-radius: 22px;
+    background-color: #11194d;
+    color: white;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Hover */
+
+.turma-card:hover {
+    color: white;
+    background-color: #182363;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15, 25, 75, 0.25);
+}
+
+
+/* ===============================
+   ÍCONE
+================================ */
+
+.turma-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 36px;
+}
+
+
+/* Ícone de usuário */
+
+.turma-icon i {
+    font-size: 48px;
+    color: #ffffff;
+}
+
+
+/* ===============================
+   NOME DA TURMA
+================================ */
+
+.turma-nome {
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+}
+
+
+/* ===============================
+   BOTÃO CRIAR / BUSCAR TURMA
+================================ */
+
+.acao-turma {
+    width: 100%;
+    height: 50px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 25px;
+    background-color: #11194d;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.acao-turma:hover {
+    color: white;
+    background-color: #192566;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 25, 75, 0.25);
+}
+
+
+/* ===============================
+   SEM TURMAS
+================================ */
+
+.sem-turmas {
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.65);
+    color: #11194d;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+/* ===============================
+   MODAL
+================================ */
+
+.campus-modal {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+
+.campus-modal .modal-header {
+    background-color: #11194d;
+    color: white;
+    border: none;
+    padding: 20px 24px;
+}
+
+
+.campus-modal .modal-title {
+    font-weight: 700;
+}
+
+
+.campus-modal .modal-body {
+    padding: 25px;
+    color: #11194d;
+}
+
+
+.campus-modal .modal-footer {
+    padding: 15px 25px 25px;
+    border: none;
+}
+
+
+/* Input */
+.campus-modal .form-control {
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #cad1df;
+}
+
+
+.campus-modal .form-control:focus {
+    border-color: #11194d;
+    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.15);
+}
+
+
+/* Botão do modal */
+
+.btn-campus {
+    background-color: #11194d;
+    color: white;
+    border: none;
+}
+
+
+.btn-campus:hover {
+    background-color: #192566;
+    color: white;
+}
+
+
+/* Erros */
+
+.erro-campo {
+    margin-top: 6px;
+    color: #c62828;
+    font-size: 14px;
+}
+
+
+/* ===============================
+   RESPONSIVIDADE
+================================ */
+
+@media (max-width: 768px) {
+
+    .turmas-page {
+        padding: 20px 15px;
+    }
+
+
+    .lista-turmas {
+        gap: 18px;
+    }
+
+
+    .turma-card {
+        min-height: 95px;
+        padding: 20px 24px;
+        border-radius: 18px;
+    }
+
+
+    .turma-icon {
+        margin-right: 22px;
+    }
+
+
+    .turma-icon i {
+        font-size: 40px;
+    }
+
+
+    .turma-nome {
+        font-size: 21px;
+    }
+
+    .acao-turma {
+        height: 46px;
+        font-size: 16px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .turma-card {
+        padding: 18px;
+    }
+
+    .turma-icon {
+        margin-right: 16px;
+    }
+
+    .turma-icon i {
+        font-size: 36px;
+    }
+
+    .turma-nome {
+        font-size: 18px;
+    }
+
+}

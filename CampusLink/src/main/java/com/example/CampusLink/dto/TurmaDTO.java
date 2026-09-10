@@ -9,7 +9,13 @@ import lombok.Setter;
 @Setter
 public class TurmaDTO {
 
+    private Long id;
+
     @NotBlank(message = "O nome da turma é obrigatório")
     @Size(max = 100, message = "O nome da turma deve ter no máximo 100 caracteres")
     private String nomeTurma;
+
+    private String descricao;
+
+    private String emailPessoa;
 }

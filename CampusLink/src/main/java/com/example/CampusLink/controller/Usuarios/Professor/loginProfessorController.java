@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,9 @@ import java.sql.SQLException;
 @Controller
 public class loginProfessorController {
     private static final Logger logger = LoggerFactory.getLogger(loginProfessorController.class);
+
+    @Value("${campuslink.twofa.enabled:true}")
+    private boolean twoFactorEnabled;
 
     @Autowired
     private LoginAttemptService loginAttemptService;
@@ -38,7 +42,6 @@ public class loginProfessorController {
 
     @GetMapping("/loginProfessor")
     public String loginPage(Model model) {
-        System.out.println("[LOGIN] GET /loginProfessor - exibindo pagina de login");
         model.addAttribute("professor", new loginProfessorDTO());
         return "Usuarios/Professor/loginProfessor";
     }
@@ -47,19 +50,16 @@ public class loginProfessorController {
     public String fazerLogin(@Valid @ModelAttribute("professor") loginProfessorDTO loginProfessorDTO, BindingResult result, Model model, HttpSession session) throws SQLException {
 
         String email = loginProfessorDTO.getEmail();
-        System.out.println("[LOGIN] POST /loginProfessor - tentativa recebida para email: " + email);
 
         //Verifica bloqueio
         if (LoginAttemptService.estaBloqueado(email)) {
-            System.out.println("[LOGIN] conta bloqueada - interrompendo fluxo");
-            logger.warn("Tentativa de login em Conta bloqueada");
+            logger.warn("Conta bloqueada para professor {}", email);
             model.addAttribute("mensagemDeErro", "Conta bloqueada por muitas tentativas. Tente mais tarde.");
             return "Usuarios/Professor/loginProfessor";
         }
 
         if (result.hasErrors()) {
-            System.out.println("[LOGIN] dados de login invalidos - retornando para a pagina");
-            logger.warn("Erro ao fazer login");
+            logger.warn("Dados de login inválidos para professor {}", email);
             model.addAttribute("mensagemDeErro", "Erro ao fazer login, tente novamente!!!");
             return "Usuarios/Professor/loginProfessor";
         }
@@ -68,40 +68,38 @@ public class loginProfessorController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         //Requisição para o BD Buscar a senha criptografada e comparar com a senha digitada.
-        System.out.println("[LOGIN] consultando professor no banco de dados");
         String senhaHash = usuarioDAO.QueryLoginUsuario( "professor", loginProfessorDTO.getEmail());
 
         if(senhaHash != null && encoder.matches(loginProfessorDTO.getSenha(), senhaHash)) {
-            System.out.println("[LOGIN] credenciais validas - iniciando 2FA");
             //Sucesso de Login
             loginAttemptService.loginSucesso(email);
 
-            //2FA
-            logger.info("Envio de codigo 2FA para o email: {}", email);
+            if (twoFactorEnabled) {
+                String codigo = twoFactorService.gerarCodigo(email);
+                emailService.enviarCodigo(email, codigo);
 
-            //Gerar token 2FA
-            String codigo = twoFactorService.gerarCodigo(email);
+                session.setAttribute("email2FA", email);
+                session.setAttribute("redirect", "Login");
+                session.setAttribute("tipoUsuario", "professor");
 
-            //Enviar token 2FA para o email
-            emailService.enviarCodigo(email, codigo);
-            System.out.println("[LOGIN] codigo 2FA enviado - redirecionando para /verificarProfessor");
+                return "redirect:/verificarProfessor";
+            }
 
             session.setAttribute("email2FA", email);
             session.setAttribute("redirect", "Login");
             session.setAttribute("tipoUsuario", "professor");
+            session.setAttribute("usuarioLogado", usuarioDAO.buscarPorEmailProfessor(email));
+            session.setMaxInactiveInterval(900);
 
-            return "redirect:/verificarProfessor";
+            return "redirect:/home";
         }
 
         //Erro de Login
-    System.out.println("[LOGIN] credenciais invalidas - registrando tentativa");
-        logger.warn("Erro ao fazer login");
         loginAttemptService.loginFalhou(email);
-        logger.warn("Erro ao fazer login para o professor com email:" +email+ " ,numero de tentativas: {}", loginAttemptService.getTentativas(email));
+        logger.warn("Credenciais inválidas para professor {}. Tentativas: {}", email, loginAttemptService.getTentativas(email));
 
         if (loginAttemptService.getTentativas(email) >= 5) {
-            System.out.println("[LOGIN] limite de tentativas atingido - conta bloqueada");
-            logger.warn("Conta com email:" +email+ " bloqueada por 10 minutos");
+            logger.warn("Conta bloqueada por excesso de tentativas para professor {}", email);
             model.addAttribute("mensagemDeErro", "Conta bloqueada por 10 minutos.");
         } else {
             model.addAttribute("mensagemDeErro", "Email ou senha inválidos.");

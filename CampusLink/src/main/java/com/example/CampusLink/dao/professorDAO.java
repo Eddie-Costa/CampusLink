@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,5 +56,50 @@ public class professorDAO {
         stmt.close();
         conn.close();
         return id;
+    }
+
+    public void InsertTurmasIntoBD(String nomeTurma, String idProfessor) throws SQLException {
+
+        String sql = "INSERT INTO public.\"TURMAS\" (\"nome_turma\", \"id_professores\") VALUES (?, ARRAY[?::bigint])";
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, nomeTurma);
+                stmt.setLong(2, Long.parseLong(idProfessor));
+
+                if (stmt.executeUpdate() == 0) {
+                    throw new SQLException("Nenhuma turma foi inserida.");
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public void InsertProfessor_TurmaIntoBD(String idProfessor, String idTurma) throws SQLException {
+
+        String sql = "INSERT INTO public.\"PROFESSOR_TURMA\" (\"id_professor\", \"id_turma\") VALUES (?, ?)";
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, Long.parseLong(idProfessor));
+                stmt.setLong(2, Long.parseLong(idTurma));
+
+                if (stmt.executeUpdate() == 0) {
+                    throw new SQLException("Nenhum professor_turma foi inserido.");
+                }
+
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 }

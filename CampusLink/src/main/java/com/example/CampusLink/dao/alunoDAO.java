@@ -41,7 +41,7 @@ public class alunoDAO {
         return null;
     }
 
-    public String buscarPorIDProfessor(String email) throws SQLException {
+    public String buscarPorIDAluno(String email) throws SQLException {
 
         String  id = "";
 
