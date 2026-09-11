@@ -1,85 +1,100 @@
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
-import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Aluno.cadastrarAlunoDTO;
-import com.example.CampusLink.exception.SQLErrorHandler;
+import com.example.CampusLink.service.TwoFactorService;
+import com.example.CampusLink.service.emailService;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import java.sql.SQLException;
-import java.util.List;
+
+import java.util.Locale;
+import java.util.UUID;
 
 @Controller
 public class cadastrarAlunoController {
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(cadastrarAlunoController.class);
 
-    private final usuarioDAO usuarioDAO;
+    private final TwoFactorService twoFactorService;
+    private final emailService emailService;
 
-    private static final Logger logger = LoggerFactory.getLogger(cadastrarAlunoController.class);
-    
-    public cadastrarAlunoController(usuarioDAO usuarioDAO) {
-        this.usuarioDAO = usuarioDAO;
+    public cadastrarAlunoController(TwoFactorService twoFactorService, emailService emailService) {
+        this.twoFactorService = twoFactorService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/cadastrarAluno")
-    public String CadastrarAluno(org.springframework.ui.Model model) {
+    public String CadastrarAluno(Model model) {
         model.addAttribute("aluno", new cadastrarAlunoDTO());
         return "Usuarios/Aluno/cadastrarAluno";
     }
 
     @PostMapping("/cadastrarAluno")
-    public String registrar(@Valid @ModelAttribute("aluno") cadastrarAlunoDTO aluno, BindingResult result, org.springframework.ui.Model model) {
+    public String registrar(
+            @Valid @ModelAttribute("aluno")
+            cadastrarAlunoDTO aluno,
+            BindingResult result,
+            Model model,
+            HttpSession session
+    ) {
 
-        //Encriptador
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        synchronized (session) {
 
-        if (result.hasErrors()) {
-            logger.warn("Erro ao registrar o aluno com email:" + aluno.getEmail() + " Erro: " + result.getAllErrors());
-            model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
-            return "Usuarios/Aluno/cadastrarAluno";
-        }
+            // limpa uma tentativa antiga
+            String chaveAnterior = (String) session.getAttribute("chave2FACadastro");
 
-        List<String> erros = usuarioDAO.validarDadosDuplicados(
-                "Aluno",
-                aluno.getRgm(),
-                aluno.getEmail().toLowerCase(),
-                aluno.getTelefone()
-        );
+            if (chaveAnterior != null) {twoFactorService.limparCodigo(chaveAnterior);
+            }
 
-        //Verificar duplicidade antes de tentar inserir
-        if (!erros.isEmpty()) {
-            SQLErrorHandler.VerificarErro("aluno", erros, model);
-            model.addAttribute("aluno", aluno);
-            return "Usuarios/Aluno/cadastrarAluno";
-        }
+            session.removeAttribute("cadastroPendente");
+            session.removeAttribute("chave2FACadastro");
+            session.removeAttribute("expiracaoCadastro2FA");
+            session.removeAttribute("tentativasCadastro2FA");
+            if (result.hasErrors() || aluno.getSenha() == null || aluno.getSenha().isBlank()) {
+                aluno.setSenha(null);
+                model.addAttribute("mensagemDeErro", "dados invalidos verifique o formulario " + "e informe a senha novamente");
+                return "Usuarios/Aluno/cadastrarAluno";
+            }
 
-        try {
-            //Inserção de dados no BD
-            usuarioDAO.InsertCadastroUsuarioIntoBD(
-                    "Aluno",
-                    aluno.getRgm(),
-                    aluno.getNome().toLowerCase(),
-                    aluno.getEmail().toLowerCase(),
-                    aluno.getTelefone(),
-                    aluno.getDataNasc(),
-                    encoder.encode(aluno.getSenha())
-            );
+            String chaveCadastro = "cadastro:" + UUID.randomUUID();
 
-            logger.info("Sucesso ao cadastrar novo aluno com email: " + aluno.getEmail());
-            return "Usuarios/Aluno/loginAluno";
+            try {
+                String emailNormalizado = aluno.getEmail().trim().toLowerCase(Locale.ROOT);
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+                String senhaHash = encoder.encode(aluno.getSenha());
+                aluno.setEmail(emailNormalizado);
+                aluno.setSenha(senhaHash);
+                long expiracao = System.currentTimeMillis() + (5 * 60 * 1000);
+                String codigo = TwoFactorService.gerarCodigo(chaveCadastro);
+                emailService.enviarCodigo(emailNormalizado, codigo);
 
-        } catch (SQLException e) {
-            logger.error("Erro ao inserir aluno no banco com email: {}", aluno.getEmail(), e);
+                // salva os dados temporarios na sessao
+                session.setAttribute("cadastroPendente", aluno);
+                session.setAttribute("chave2FACadastro", chaveCadastro);
+                session.setAttribute("expiracaoCadastro2FA", expiracao);
+                session.setAttribute("tentativasCadastro2FA", 0);
+                return "redirect:/verificarCadastro";
 
-            model.addAttribute("aluno", aluno);
-            return "Usuarios/Aluno/cadastrarAluno";
+            } catch (RuntimeException e) {
+                twoFactorService.limparCodigo(chaveCadastro);
+                aluno.setSenha(null);
+                logger.error("erro ao iniciar a verificacao do cadastro de aluno", e);
+                model.addAttribute("mensagemDeErro", "nao foi possivel iniciar a verificacao " + "confira os dados e tente novamente");
+                return "Usuarios/Aluno/cadastrarAluno";
+            }
         }
     }
-    
 }
