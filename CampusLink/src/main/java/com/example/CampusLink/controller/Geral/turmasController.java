@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.example.CampusLink.dto.ConteudoDTO;
+import com.example.CampusLink.service.ConteudoService;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -33,6 +38,9 @@ public class turmasController {
 
     @Autowired
     private turmaDAO turmaDAO;
+
+    @Autowired
+    private ConteudoService conteudoService;
 
     @GetMapping("/turmas")
     public String Turmas(Model model, HttpSession session) throws SQLException {
@@ -70,7 +78,43 @@ public class turmasController {
         }
 
         model.addAttribute("turma", turma);
+        model.addAttribute("conteudo", new ConteudoDTO());
+        model.addAttribute("conteudos", conteudoService.listarPorTurma(Long.parseLong(id)));
         return "Geral/ambienteTurma";
+    }
+    @PostMapping("/turmas/{id}/conteudos")
+    public String criarConteudo(@PathVariable Long id,
+                                @Valid @ModelAttribute("conteudo") ConteudoDTO conteudoDTO,
+                                BindingResult result,
+                                @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
+                                HttpSession session,
+                                Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            logger.warn("[criarConteudo] aluno tentou cadastrar conteúdo na turma {}.", id);
+            return "redirect:/turmas/" + id;
+        }
+
+        if (result.hasErrors()) {
+            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("conteudos", conteudoService.listarPorTurma(id));
+            return "Geral/ambienteTurma";
+        }
+
+        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+
+        conteudoDTO.setIdTurma(id);
+        conteudoDTO.setIdProfessor(Long.parseLong(idProfessor));
+
+        conteudoService.criar(conteudoDTO, arquivo);
+
+        return "redirect:/turmas/" + id;
     }
 
     @PostMapping("/criarTurma")
@@ -113,6 +157,8 @@ public class turmasController {
             logger.warn("[adicionarPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
             model.addAttribute("idTurma", turmaDTO.getId());
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId())));
+            model.addAttribute("conteudo", new ConteudoDTO());
+            model.addAttribute("conteudos", conteudoService.listarPorTurma(turmaDTO.getId()));
             return "Geral/ambienteTurma";
         }
 
