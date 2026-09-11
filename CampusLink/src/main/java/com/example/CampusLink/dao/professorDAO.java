@@ -58,16 +58,17 @@ public class professorDAO {
         return id;
     }
 
-    public void InsertTurmasIntoBD(String nomeTurma, String idProfessor) throws SQLException {
+    public void InsertTurmasIntoBD(String nomeTurma, String descricao, String idProfessor) throws SQLException {
 
-        String sql = "INSERT INTO public.\"TURMAS\" (\"nome_turma\", \"id_professores\") VALUES (?, ARRAY[?::bigint])";
+        String sql = "INSERT INTO public.\"TURMAS\" (\"nome_turma\", \"descricao\", \"id_professores\") VALUES (?, ?, ARRAY[?::bigint])";
 
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, nomeTurma);
-                stmt.setLong(2, Long.parseLong(idProfessor));
+                stmt.setString(2, descricao);
+                stmt.setLong(3, Long.parseLong(idProfessor));
 
                 if (stmt.executeUpdate() == 0) {
                     throw new SQLException("Nenhuma turma foi inserida.");
@@ -95,6 +96,26 @@ public class professorDAO {
                     throw new SQLException("Nenhum professor_turma foi inserido.");
                 }
 
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public void removeProfessor_TurmaIntoBD(String idProfessor, String idTurma) throws SQLException {
+
+        String sql = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE \"id_professor\" = ? AND \"id_turma\" = ?";
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, Long.parseLong(idProfessor));
+                stmt.setLong(2, Long.parseLong(idTurma));
+
+                stmt.executeUpdate();
             }
 
             conn.commit();

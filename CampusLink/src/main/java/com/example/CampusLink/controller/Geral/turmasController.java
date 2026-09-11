@@ -88,9 +88,9 @@ public class turmasController {
         String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
 
         //Insere turma no banco de dados
-        professorDAO.InsertTurmasIntoBD(turmaDTO.getNomeTurma(), idProfessor);
+        professorDAO.InsertTurmasIntoBD(turmaDTO.getNomeTurma(), turmaDTO.getDescricao(), idProfessor);
 
-        //Insere professor_turma no banco de dados
+        //Insere x_turma no banco de dados
         professorDAO.InsertProfessor_TurmaIntoBD(idProfessor, turmaDAO.buscarUltimaTurmaPorProfessor(idProfessor));
 
         return "redirect:/turmas";
@@ -117,6 +117,31 @@ public class turmasController {
         }
 
         turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
+
+        return "redirect:/turmas";
+    }
+
+    @PostMapping("/removerPessoas")
+    public String removerPessoas(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            logger.warn("[removerPessoas] usuário não autenticado; redirecionando para login.");
+            return "redirect:/login";
+        }
+
+        if (session.getAttribute("tipoUsuario") != null && session.getAttribute("tipoUsuario").equals("aluno")) {
+            logger.warn("[removerPessoas] aluno tentou remover pessoas da turma.");
+            return "Geral/home";
+        }
+
+        if (turmaDTO.getEmailPessoa() == null || turmaDTO.getEmailPessoa().isBlank()) {
+            logger.warn("[removerPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
+            model.addAttribute("idTurma", turmaDTO.getId());
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId())));
+            return "Geral/ambienteTurma";
+        }
+
+        turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
 
         return "redirect:/turmas";
     }

@@ -121,6 +121,9 @@ public class turmaDAO {
         String sqlProfessor = "SELECT p.id FROM public.\"PROFESSORES\" p WHERE p.id_usuario = ?";
         String sqlUpdateAluno = "UPDATE public.\"TURMAS\" SET \"id_alunos\" = array_append(COALESCE(\"id_alunos\", ARRAY[]::bigint[]), ?) WHERE id = ?";
         String sqlUpdateProfessor = "UPDATE public.\"TURMAS\" SET \"id_professores\" = array_append(COALESCE(\"id_professores\", ARRAY[]::bigint[]), ?) WHERE id = ?";
+        String sqlInsertAlunoTurma = "INSERT INTO public.\"ALUNO_TURMA\" (\"id_aluno\", \"id_turma\", \"situacao_aluno\") VALUES (?, ?, ?)";
+        String sqlInsertProfessorTurma = "INSERT INTO public.\"PROFESSOR_TURMA\" (\"id_professor\", \"id_turma\") VALUES (?, ?)";
+        String sqlBuscarCorrespondencia = "SELECT 1 FROM public.\"TURMAS\" t WHERE t.id = ? AND (? = ANY(COALESCE(t.id_alunos, ARRAY[]::bigint[])) OR ? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])))";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmtUsuario = conn.prepareStatement(sqlUsuario)) {
@@ -138,13 +141,110 @@ public class turmaDAO {
 
                 String sqlBuscaEntidade = "";
                 String sqlUpdate = "";
+                String sqlInsertRelacao = "";
 
                 if (perfil.equalsIgnoreCase("alunos")) {
                     sqlBuscaEntidade = sqlAluno;
                     sqlUpdate = sqlUpdateAluno;
+                    sqlInsertRelacao = sqlInsertAlunoTurma;
                 } else if (perfil.equalsIgnoreCase("professores")) {
                     sqlBuscaEntidade = sqlProfessor;
                     sqlUpdate = sqlUpdateProfessor;
+                    sqlInsertRelacao = sqlInsertProfessorTurma;
+                } else {
+                    logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
+                    return;
+                }
+
+                long entidadeId = -1;
+
+                try (PreparedStatement stmtEntidade = conn.prepareStatement(sqlBuscaEntidade)) {
+                    stmtEntidade.setLong(1, usuarioId);
+
+                    try (ResultSet rsEntidade = stmtEntidade.executeQuery()) {
+                        if (rsEntidade.next()) {
+                            entidadeId = rsEntidade.getLong("id");
+                        } else {
+                            logger.warn("[turmaDAO.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            return;
+                        }
+                    }
+                }
+
+                try (PreparedStatement stmtCorrespondente = conn.prepareStatement(sqlBuscarCorrespondencia)) {
+                    stmtCorrespondente.setLong(1, Long.parseLong(idTurma));
+                    stmtCorrespondente.setLong(2, entidadeId);
+                    stmtCorrespondente.setLong(3, entidadeId);
+
+                    try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
+                        if (rsCorrespondente.next()) {
+                            logger.warn("[turmaDAO.inserirPessoaTurma] Este usuário já está cadastrado na turma={}", usuarioId);
+                            return;
+                        }
+                    }
+                }
+
+                try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate)) {
+                    stmtUpdate.setLong(1, entidadeId);
+                    stmtUpdate.setLong(2, Long.parseLong(idTurma));
+
+                    int linhasAfetadas = stmtUpdate.executeUpdate();
+
+                    if (linhasAfetadas <= 0) {
+                        logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        return;
+                    }
+                }
+
+                try (PreparedStatement stmtInsertRelacao = conn.prepareStatement(sqlInsertRelacao)) {
+                    stmtInsertRelacao.setLong(1, entidadeId);
+                    stmtInsertRelacao.setLong(2, Long.parseLong(idTurma));
+
+                    if (sqlInsertRelacao.equals(sqlInsertAlunoTurma)) {
+                        stmtInsertRelacao.setString(3, "verde");
+                    }
+
+                    stmtInsertRelacao.executeUpdate();
+                }
+            }
+        }
+    }
+
+    public void revomerPessoaTurma(String email, String idTurma) throws SQLException {
+        String sqlUsuario = "SELECT u.id, u.perfil FROM public.\"USUARIOS\" u WHERE u.email = ?";
+        String sqlAluno = "SELECT a.id FROM public.\"ALUNOS\" a WHERE a.id_usuario = ?";
+        String sqlProfessor = "SELECT p.id FROM public.\"PROFESSORES\" p WHERE p.id_usuario = ?";
+        String sqlUpdateAluno = "UPDATE public.\"TURMAS\" SET \"id_alunos\" = array_remove(COALESCE(\"id_alunos\", ARRAY[]::bigint[]), ?) WHERE id = ?";
+        String sqlUpdateProfessor = "UPDATE public.\"TURMAS\" SET \"id_professores\" = array_remove(COALESCE(\"id_professores\", ARRAY[]::bigint[]), ?) WHERE id = ?";
+        String sqlDeleteAlunoTurma = "DELETE FROM public.\"ALUNO_TURMA\" WHERE \"id_aluno\" = ? AND \"id_turma\" = ?";
+        String sqlDeleteProfessorTurma = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE \"id_professor\" = ? AND \"id_turma\" = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmtUsuario = conn.prepareStatement(sqlUsuario)) {
+
+            stmtUsuario.setString(1, email);
+
+            try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
+                if (!rsUsuario.next()) {
+                    logger.warn("[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.");
+                    return;
+                }
+
+                long usuarioId = rsUsuario.getLong("id");
+                String perfil = rsUsuario.getString("perfil");
+
+                String sqlBuscaEntidade = "";
+                String sqlUpdate = "";
+                String sqlDeleteRelacao = "";
+
+                if (perfil.equalsIgnoreCase("alunos")) {
+                    sqlBuscaEntidade = sqlAluno;
+                    sqlUpdate = sqlUpdateAluno;
+                    sqlDeleteRelacao = sqlDeleteAlunoTurma;
+                } else if (perfil.equalsIgnoreCase("professores")) {
+                    sqlBuscaEntidade = sqlProfessor;
+                    sqlUpdate = sqlUpdateProfessor;
+                    sqlDeleteRelacao = sqlDeleteProfessorTurma;
                 } else {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
                     return;
@@ -178,6 +278,12 @@ public class turmaDAO {
                     if (linhasAfetadas <= 0) {
                         logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
                     }
+                }
+
+                try (PreparedStatement stmtDeleteRelacao = conn.prepareStatement(sqlDeleteRelacao)) {
+                    stmtDeleteRelacao.setLong(1, entidadeId);
+                    stmtDeleteRelacao.setLong(2, Long.parseLong(idTurma));
+                    stmtDeleteRelacao.executeUpdate();
                 }
             }
         }

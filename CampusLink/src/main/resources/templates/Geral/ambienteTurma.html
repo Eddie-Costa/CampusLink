@@ -47,6 +47,39 @@
                     </div>
                 </div>
             </div>
+
+            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#removerPessoasModal">Remover Pessoas</button>
+
+            <div class="modal fade" id="removerPessoasModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content campus-modal">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title">Remover Pessoas</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <form th:action="@{/removerPessoas}" th:object="${turma}" method="post">
+                            <div class="modal-body">
+
+                                <input type="hidden" th:field="*{id}" />
+
+                                <label for="emailPessoa" class="form-label">Email da pessoa:</label>
+
+                                <input id="emailPessoa" type="text" class="form-control" th:field="*{emailPessoa}" placeholder="Ex: 11231405551@aluno.umc.br" required>
+
+                                <div class="erro-campo" th:if="${#fields.hasErrors('emailPessoa')}" th:errors="*{emailPessoa}"></div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-campus">Remover pessoa</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 </body>
