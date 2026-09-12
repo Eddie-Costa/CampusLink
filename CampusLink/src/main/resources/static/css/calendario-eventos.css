@@ -27,11 +27,12 @@ body {
     min-width: 0;
     margin: 0;
     overflow-x: hidden;
-    background: linear-gradient(
-            180deg,
-            #e8edf5 0%,
-            var(--fundo-pagina) 100%
-    );
+    background-color: var(--fundo-pagina);
+    background-image: url("/images/bg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
     color: var(--azul-texto);
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -43,11 +44,7 @@ body {
     margin: 0;
     overflow: hidden;
     border: 2px solid var(--azul-borda);
-    background: linear-gradient(
-            180deg,
-            #e8edf5 0%,
-            var(--fundo-pagina) 100%
-    );
+    background: transparent;
 }
 
 .page-title {
@@ -61,49 +58,6 @@ body {
     font-size: 16px;
     font-weight: 700;
     text-align: center;
-}
-
-.header-slot {
-    min-height: 68px;
-    border-bottom: 2px solid var(--azul-escuro);
-    background: var(--fundo-claro);
-}
-
-.header-slot > div,
-.header-slot > nav,
-.header-slot > header,
-.header-slot :where(nav, .navbar, .site-nav) {
-    min-height: 66px;
-}
-
-.header-slot :where(nav, .navbar, .site-nav) {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 8px 22px;
-    background: transparent !important;
-}
-
-.header-slot :where(ul, .navbar-nav) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    margin: 0 auto;
-    padding: 0;
-    list-style: none;
-}
-
-.header-slot :where(a, .nav-link) {
-    color: var(--azul-texto);
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.header-slot img {
-    width: auto;
-    max-height: 52px;
 }
 
 .page-content {
@@ -611,19 +565,6 @@ body {
 }
 
 @media (max-width: 700px) {
-
-    .header-slot :where(nav, .navbar, .site-nav) {
-        padding: 8px 12px;
-    }
-
-    .header-slot :where(ul, .navbar-nav) {
-        gap: 12px;
-    }
-
-    .header-slot :where(a, .nav-link) {
-        font-size: 11px;
-    }
-
     .page-content {
         padding: 18px 8px 28px;
     }
