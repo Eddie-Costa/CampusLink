@@ -32,10 +32,6 @@
             </a>
         </div>
 
-        <div th:if="${session.tipoUsuario == 'aluno'}">
-            <a href="/buscarTurma" class="acao-turma">Buscar Turmas</a>
-        </div>
-
         <div th:if="${session.tipoUsuario == 'professor'}">
             <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#criarTurmaModal">Criar Turma</button>
 
@@ -52,10 +48,11 @@
                             <div class="modal-body">
 
                                 <label for="nomeTurma" class="form-label">Nome da turma</label>
-
                                 <input id="nomeTurma" type="text" class="form-control" th:field="*{nomeTurma}" placeholder="Ex: Engenharia de Software" required>
-
                                 <div class="erro-campo" th:if="${#fields.hasErrors('nomeTurma')}" th:errors="*{nomeTurma}"></div>
+
+                                <label for="descricaoTurma" class="form-label mt-3">Descrição da turma</label>
+                                <textarea id="descricaoTurma" class="form-control" th:field="*{descricao}" rows="3" placeholder="Descreva a turma, objetivos, conteúdo ou observações..."></textarea>
                             </div>
 
                             <div class="modal-footer">
