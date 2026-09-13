@@ -2,10 +2,8 @@ package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.conteudoDAO;
 import com.example.CampusLink.dto.ConteudoDTO;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -22,28 +20,18 @@ public class ConteudoService {
         this.conteudoDAO = conteudoDAO;
         this.arquivoService = arquivoService;
     }
-
-    /**
-     * Cria o conteúdo e, se um arquivo tiver sido selecionado no modal
-     * "Adicionar Conteúdo", faz o upload em seguida vinculando pelo
-     * id do conteúdo recém-criado (o upload é sempre opcional).
-     */
     public ConteudoDTO criar(ConteudoDTO conteudo, MultipartFile arquivo) {
 
         if (conteudo.getPrioridade() == null || conteudo.getPrioridade().isBlank()) {
             conteudo.setPrioridade("media");
         }
-
         conteudo.setTipo(definirTipo(conteudo, arquivo));
-
         try {
             conteudoDAO.inserir(conteudo);
         } catch (SQLException e) {
             throw new RuntimeException("Não foi possível cadastrar o conteúdo.", e);
         }
-
         if (arquivo != null && !arquivo.isEmpty()) {
-
             try {
                 arquivoService.salvar(arquivo, conteudo.getId());
             } catch (RuntimeException e) {
@@ -67,6 +55,26 @@ public class ConteudoService {
         } catch (SQLException e) {
             throw new RuntimeException("Não foi possível listar os conteúdos da turma.", e);
         }
+    }
+    public void excluir(Long id) {
+
+        try {
+            conteudoDAO.excluir(id);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível excluir o conteúdo.", e);
+        }
+    }
+    public ConteudoDTO atualizar(ConteudoDTO conteudo) {
+
+        conteudo.setTipo(definirTipo(conteudo, null));
+
+        try {
+            conteudoDAO.atualizar(conteudo);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível atualizar o conteúdo.", e);
+        }
+
+        return conteudo;
     }
 
     private String definirTipo(ConteudoDTO conteudo, MultipartFile arquivo) {

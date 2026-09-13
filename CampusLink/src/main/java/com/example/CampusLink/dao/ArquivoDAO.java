@@ -121,6 +121,33 @@ public class ArquivoDAO {
 
         return null;
     }
+    public ArquivoDTO buscarMaisRecentePorConteudo(Long idConteudo) throws SQLException {
+
+        String sql = """
+            SELECT *
+            FROM public."ARQUIVOS"
+            WHERE "id_conteudo" = ?
+            ORDER BY "created_at" DESC
+            LIMIT 1
+            """;
+
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            stmt.setLong(1, idConteudo);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return montarArquivo(rs);
+                }
+            }
+        }
+
+        return null;
+    }
 
     public void excluir(Long id) throws SQLException {
 

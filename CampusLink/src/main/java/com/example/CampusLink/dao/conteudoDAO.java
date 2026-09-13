@@ -3,7 +3,6 @@ package com.example.CampusLink.dao;
 import com.example.CampusLink.dto.ConteudoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.ZoneOffset;
@@ -82,44 +81,36 @@ public class conteudoDAO {
         ) {
 
             stmt.setLong(1, idTurma);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     conteudos.add(montarConteudo(rs, idTurma));
                 }
             }
         }
-
         return conteudos;
     }
 
     private ConteudoDTO montarConteudo(ResultSet rs, Long idTurma) throws SQLException {
-
         ConteudoDTO conteudo = new ConteudoDTO();
-
         conteudo.setId(rs.getLong("id"));
         conteudo.setIdTurma(idTurma);
         conteudo.setIdProfessor(rs.getLong("id_professor"));
-
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             conteudo.setCreatedAt(
                     createdAt.toInstant().atOffset(ZoneOffset.UTC)
             );
         }
-
         conteudo.setTitulo(rs.getString("titulo"));
         conteudo.setDescricao(rs.getString("descricao"));
         conteudo.setTipo(rs.getString("tipo"));
         conteudo.setUrl(rs.getString("url"));
         conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
         conteudo.setPrioridade(rs.getString("prioridade"));
-
         return conteudo;
     }
 
     public void excluir(Long id) throws SQLException {
-
         String sql = """
                     
                 DELETE FROM public."CONTEUDOS"
@@ -132,6 +123,28 @@ public class conteudoDAO {
         ) {
 
             stmt.setLong(1, id);
+            stmt.executeUpdate();
+        }
+    }
+    public void atualizar(ConteudoDTO conteudo) throws SQLException {
+        String sql = """
+            UPDATE public."CONTEUDOS"
+            SET
+                "titulo" = ?,
+                "url" = ?,
+                "duracao_estimada" = ?,
+                "tipo" = ?
+            WHERE "id" = ?
+            """;
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setString(1, conteudo.getTitulo());
+            stmt.setString(2, conteudo.getUrl());
+            stmt.setString(3, conteudo.getDuracaoEstimada());
+            stmt.setString(4, conteudo.getTipo());
+            stmt.setLong(5, conteudo.getId());
             stmt.executeUpdate();
         }
     }

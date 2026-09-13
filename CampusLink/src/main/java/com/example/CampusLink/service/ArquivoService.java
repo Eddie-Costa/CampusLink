@@ -2,11 +2,9 @@ package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.ArquivoDAO;
 import com.example.CampusLink.dto.ArquivoDTO;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
@@ -134,6 +132,20 @@ public class ArquivoService {
 
             throw new RuntimeException(
                     "Erro ao buscar o arquivo.",
+                    e
+            );
+        }
+    }
+    public ArquivoDTO buscarMaisRecentePorConteudo(Long idConteudo) {
+
+        try {
+
+            return arquivoDAO.buscarMaisRecentePorConteudo(idConteudo);
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Erro ao buscar o arquivo do conteúdo.",
                     e
             );
         }

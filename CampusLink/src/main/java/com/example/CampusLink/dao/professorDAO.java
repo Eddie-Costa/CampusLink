@@ -60,7 +60,8 @@ public class professorDAO {
 
     public void InsertTurmasIntoBD(String nomeTurma, String descricao, String idProfessor) throws SQLException {
 
-        String sql = "INSERT INTO public.\"TURMAS\" (\"nome_turma\", \"descricao\", \"id_professores\") VALUES (?, ?, ARRAY[?::bigint])";
+        String sql = "INSERT INTO public.\"TURMAS\" (\"nome_turma\", \"descricao\", \"id_professores\", \"id_proprietario\") " +
+                "VALUES (?, ?, ARRAY[?::bigint], ?)";
 
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
@@ -69,6 +70,7 @@ public class professorDAO {
                 stmt.setString(1, nomeTurma);
                 stmt.setString(2, descricao);
                 stmt.setLong(3, Long.parseLong(idProfessor));
+                stmt.setLong(4, Long.parseLong(idProfessor)); // id_proprietario
 
                 if (stmt.executeUpdate() == 0) {
                     throw new SQLException("Nenhuma turma foi inserida.");
