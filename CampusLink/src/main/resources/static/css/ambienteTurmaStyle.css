@@ -37,7 +37,7 @@ body {
     width: calc(100% - 48px);
     max-width: 1625px;
     min-height: 456px;
-    margin: 103px auto 60px;
+    margin: 125px auto 60px;
     padding: 100px 42px 46px;
     border-radius: 25px;
     background-color: var(--azul-campus);
@@ -212,7 +212,19 @@ main.container > p {
 }
 
 .conteudo-acoes {
-    margin-top: 22px;
+    position: absolute;
+    left: 35px;
+    bottom: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+}
+
+.conteudo-acoes .acao-turma {
+    min-width: 175px;
+    min-height: 34px;
+    margin: 0;
 }
 
 /* Somente a aparência interna dos modais é personalizada. */
@@ -348,22 +360,30 @@ main.container > p {
         font-size: 17px;
     }
 }
-    .conteudo-excluir-form {
-        display: inline-flex;
-        margin: 0;
-    }
+.conteudo-excluir-form {
+    display: inline-flex;
+    margin: 0;
+}
 
-    .conteudo-excluir {
-        border: none;
-        background: transparent;
-        color: #ffb4b4;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: underline;
-        cursor: pointer;
-        padding: 0;
-    }
+.conteudo-excluir {
+    border: 0;
+    border-radius: 18px;
+    background-color: var(--branco);
+    color: var(--azul-campus);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    padding: 7px 15px;
+    transition: 0.2s ease;
+}
 
-    .conteudo-excluir:hover {
-        color: #ff8080;
+.conteudo-excluir:hover {
+    background-color: #e3e6ed;
+    color: var(--azul-campus);
+    transform: translateY(-2px);
+}
+
+.conteudo-excluir:active {
+    transform: translateY(0);
 }
