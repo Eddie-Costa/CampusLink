@@ -15,6 +15,16 @@
 
 <div th:replace="~{fragments/header :: nav}"></div>
 
+<div th:if="${mensagemSucesso != null}" class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 1055; min-width: 280px; max-width: 420px;">
+    <span th:text="${mensagemSucesso}">Mensagem de sucesso</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+</div>
+
+<div th:if="${mensagemErro != null}" class="alert alert-warning alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 1055; min-width: 280px; max-width: 420px;">
+    <span th:text="${mensagemErro}">Mensagem de erro</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+</div>
+
 <main class="turmas-page">
     <div class="turmas-container">
 

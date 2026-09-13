@@ -67,7 +67,7 @@ main.container > a:first-child:hover {
 
 main.container > h1 {
     position: absolute;
-    top: -30px;
+    top: -35px;
     left: 50%;
     z-index: 3;
     min-width: 300px;
@@ -89,7 +89,7 @@ main.container > h1 {
 
 main.container > p {
     max-width: 58%;
-    margin: 0 auto 30px;
+    margin: 5px auto 30px;
     padding: 0;
     color: var(--branco);
     font-size: 15px;

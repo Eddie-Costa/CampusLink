@@ -179,7 +179,6 @@ public class turmaDAO {
         String sqlDeleteTurma = "DELETE FROM public.\"TURMAS\" WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
 
             try (PreparedStatement stmtVerificar = conn.prepareStatement(sqlVerificarProprietario)) {
                 stmtVerificar.setLong(1, Long.parseLong(idTurma));
@@ -209,14 +208,10 @@ public class turmaDAO {
                     throw new SQLException("Nenhuma turma foi removida.");
                 }
             }
-
-            conn.commit();
-        } catch (SQLException e) {
-            throw e;
         }
     }
 
-    public void inserirPessoaTurma(String email, String idTurma) throws SQLException {
+    public boolean inserirPessoaTurma(String email, String idTurma) throws SQLException {
         String sqlUsuario = "SELECT u.id, u.perfil FROM public.\"USUARIOS\" u WHERE u.email = ?";
         String sqlAluno = "SELECT a.id FROM public.\"ALUNOS\" a WHERE a.id_usuario = ?";
         String sqlProfessor = "SELECT p.id FROM public.\"PROFESSORES\" p WHERE p.id_usuario = ?";
@@ -234,7 +229,7 @@ public class turmaDAO {
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
                 if (!rsUsuario.next()) {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.");
-                    return;
+                    return false;
                 }
 
                 long usuarioId = rsUsuario.getLong("id");
@@ -254,7 +249,7 @@ public class turmaDAO {
                     sqlInsertRelacao = sqlInsertProfessorTurma;
                 } else {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
-                    return;
+                    return false;
                 }
 
                 long entidadeId = -1;
@@ -267,7 +262,7 @@ public class turmaDAO {
                             entidadeId = rsEntidade.getLong("id");
                         } else {
                             logger.warn("[turmaDAO.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -280,7 +275,7 @@ public class turmaDAO {
                     try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
                         if (rsCorrespondente.next()) {
                             logger.warn("[turmaDAO.inserirPessoaTurma] Este usuário já está cadastrado na turma={}", usuarioId);
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -293,7 +288,7 @@ public class turmaDAO {
 
                     if (linhasAfetadas <= 0) {
                         logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
-                        return;
+                        return false;
                     }
                 }
 
@@ -307,11 +302,13 @@ public class turmaDAO {
 
                     stmtInsertRelacao.executeUpdate();
                 }
+
+                return true;
             }
         }
     }
 
-    public void revomerPessoaTurma(String email, String idTurma) throws SQLException {
+    public boolean revomerPessoaTurma(String email, String idTurma) throws SQLException {
         String sqlUsuario = "SELECT u.id, u.perfil FROM public.\"USUARIOS\" u WHERE u.email = ?";
         String sqlAluno = "SELECT a.id FROM public.\"ALUNOS\" a WHERE a.id_usuario = ?";
         String sqlProfessor = "SELECT p.id FROM public.\"PROFESSORES\" p WHERE p.id_usuario = ?";
@@ -319,6 +316,7 @@ public class turmaDAO {
         String sqlUpdateProfessor = "UPDATE public.\"TURMAS\" SET \"id_professores\" = array_remove(COALESCE(\"id_professores\", ARRAY[]::bigint[]), ?) WHERE id = ?";
         String sqlDeleteAlunoTurma = "DELETE FROM public.\"ALUNO_TURMA\" WHERE \"id_aluno\" = ? AND \"id_turma\" = ?";
         String sqlDeleteProfessorTurma = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE \"id_professor\" = ? AND \"id_turma\" = ?";
+        String sqlBuscarCorrespondencia = "SELECT 1 FROM public.\"TURMAS\" t WHERE t.id = ? AND (? = ANY(COALESCE(t.id_alunos, ARRAY[]::bigint[])) OR ? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])))";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmtUsuario = conn.prepareStatement(sqlUsuario)) {
@@ -328,7 +326,7 @@ public class turmaDAO {
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
                 if (!rsUsuario.next()) {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.");
-                    return;
+                    return false;
                 }
 
                 long usuarioId = rsUsuario.getLong("id");
@@ -348,7 +346,7 @@ public class turmaDAO {
                     sqlDeleteRelacao = sqlDeleteProfessorTurma;
                 } else {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
-                    return;
+                    return false;
                 }
 
                 long entidadeId = -1;
@@ -367,7 +365,39 @@ public class turmaDAO {
 
                 if (entidadeId == -1) {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Encerrando porque entidadeId não foi encontrado.");
-                    return;
+                    return false;
+                }
+
+                try (PreparedStatement stmtCorrespondente = conn.prepareStatement(sqlBuscarCorrespondencia)) {
+                    stmtCorrespondente.setLong(1, Long.parseLong(idTurma));
+                    stmtCorrespondente.setLong(2, entidadeId);
+                    stmtCorrespondente.setLong(3, entidadeId);
+
+                    try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
+                        if (!rsCorrespondente.next()) {
+                            logger.warn("[turmaDAO.revomerPessoaTurma] Usuário {} não está cadastrado na turma {}.", entidadeId, idTurma);
+                            return false;
+                        }
+                    }
+                }
+
+                if (perfil.equalsIgnoreCase("professores")) {
+                    String sqlBuscarProprietario = "SELECT t.id_proprietario FROM public.\"TURMAS\" t WHERE t.id = ?";
+
+                    try (PreparedStatement stmtProprietario = conn.prepareStatement(sqlBuscarProprietario)) {
+                        stmtProprietario.setLong(1, Long.parseLong(idTurma));
+
+                        try (ResultSet rsProprietario = stmtProprietario.executeQuery()) {
+                            if (rsProprietario.next()) {
+                                long idProprietario = rsProprietario.getLong("id_proprietario");
+
+                                if (entidadeId == idProprietario) {
+                                    logger.warn("[turmaDAO.revomerPessoaTurma] Bloqueada a remoção do professor administrador da turma {}.", idTurma);
+                                    return false;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate)) {
@@ -378,14 +408,23 @@ public class turmaDAO {
 
                     if (linhasAfetadas <= 0) {
                         logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        return false;
                     }
                 }
 
                 try (PreparedStatement stmtDeleteRelacao = conn.prepareStatement(sqlDeleteRelacao)) {
                     stmtDeleteRelacao.setLong(1, entidadeId);
                     stmtDeleteRelacao.setLong(2, Long.parseLong(idTurma));
-                    stmtDeleteRelacao.executeUpdate();
+
+                    int linhasRelacaoAfetadas = stmtDeleteRelacao.executeUpdate();
+
+                    if (linhasRelacaoAfetadas <= 0) {
+                        logger.warn("[turmaDAO.revomerPessoaTurma] Nenhuma relação foi removida para entidade {} na turma {}.", entidadeId, idTurma);
+                        return false;
+                    }
                 }
+
+                return true;
             }
         }
     }

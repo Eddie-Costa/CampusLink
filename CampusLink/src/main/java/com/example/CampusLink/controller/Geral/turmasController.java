@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -41,7 +42,6 @@ public class turmasController {
         }
 
         model.addAttribute("turma", new TurmaDTO());
-
         List<TurmaDTO> turmas = List.of();
 
         //recuperar turmas que o usuario esta
@@ -84,7 +84,7 @@ public class turmasController {
     }
 
     @PostMapping("/criarTurma")
-    public String criarTurma(@Valid @ModelAttribute("turma") TurmaDTO turmaDTO, BindingResult result, HttpSession session, Model model) throws SQLException {
+    public String criarTurma(@Valid @ModelAttribute("turma") TurmaDTO turmaDTO, BindingResult result, HttpSession session, Model model, RedirectAttributes redirectAttributes) throws SQLException {
 
         if (result.hasErrors()) {
             model.addAttribute("abrirModalCriarTurma", true);
@@ -103,6 +103,7 @@ public class turmasController {
         //Insere x_turma no banco de dados
         professorDAO.InsertProfessor_TurmaIntoBD(idProfessor, turmaDAO.buscarUltimaTurmaPorProfessor(idProfessor));
 
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Turma cadastrada com sucesso.");
         return "redirect:/turmas";
     }
 
@@ -126,7 +127,13 @@ public class turmasController {
             return "Geral/ambienteTurma";
         }
 
-        turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
+        boolean pessoaAdicionada = turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
+
+        if (pessoaAdicionada) {
+            model.addAttribute("mensagemSucesso", "Pessoa adicionada com sucesso.");
+        } else {
+            model.addAttribute("mensagemErro", "Não foi possível adicionar a pessoa informada.");
+        }
 
         TurmaDTO turmaAtual = turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId()));
         model.addAttribute("turma", turmaAtual);
@@ -136,7 +143,7 @@ public class turmasController {
     }
 
     @PostMapping("/excluirTurma")
-    public String excluirTurma(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model) throws SQLException {
+    public String excluirTurma(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model, RedirectAttributes redirectAttributes) throws SQLException {
 
         if (session.getAttribute("usuarioLogado") == null) {
             logger.warn("[excluirTurma] usuário não autenticado; redirecionando para login.");
@@ -151,6 +158,7 @@ public class turmasController {
         String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
         turmaDAO.excluirTurma(String.valueOf(turmaDTO.getId()), idProfessor);
 
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Turma excluída com sucesso.");
         return "redirect:/turmas";
     }
 
@@ -174,7 +182,13 @@ public class turmasController {
             return "Geral/ambienteTurma";
         }
 
-        turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
+        boolean removido = turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
+
+        if (!removido) {
+            model.addAttribute("mensagemErro", "Não foi possível remover a pessoa informada. Verifique se ela está cadastrada na turma ou se é o professor administrador.");
+        } else {
+            model.addAttribute("mensagemSucesso", "Pessoa removida com sucesso.");
+        }
 
         TurmaDTO turmaAtual = turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId()));
         model.addAttribute("turma", turmaAtual);
