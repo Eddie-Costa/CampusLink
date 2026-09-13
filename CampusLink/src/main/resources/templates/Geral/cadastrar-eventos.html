@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastrar | CampusLink</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+          href="/css/cadastrar-eventos.css"
+          th:href="@{/css/cadastrar-eventos.css}">
+</head>
+
+<body>
+
+<div class="app-page">
+
+    <header class="header-slot">
+        <div th:replace="~{fragments/header :: nav}"></div>
+    </header>
+
+    <main class="registration-area">
+
+        <!-- Calendário desfocado ao fundo -->
+        <section id="calendarioFundo"
+                 class="calendar"
+                 aria-hidden="true">
+        </section>
+
+        <!-- Cartões dos eventos visíveis para professores -->
+        <section class="eventos-fundo"
+                 aria-hidden="true"
+                 th:if="${session.tipoUsuario == 'professor'
+                         and eventos != null
+                         and !#lists.isEmpty(eventos)}">
+
+            <h2>Eventos cadastrados</h2>
+
+            <article class="evento-item evento-item-fundo"
+                     th:each="evento : ${eventos}"
+                     th:attr="data-prioridade=${evento.prioridade}">
+
+                <div class="evento-cabecalho">
+
+                    <div class="evento-identificacao">
+                        <h3 th:text="${evento.nome}">
+                            Nome do evento
+                        </h3>
+                    </div>
+
+                    <div class="prioridade-indicador">
+
+                        <span class="prioridade-icone prioridade-alta"
+                              th:if="${evento.prioridade == 'ALTA'}">
+                            ↑
+                        </span>
+
+                        <span class="prioridade-icone prioridade-media"
+                              th:if="${evento.prioridade == null
+                                      or evento.prioridade == 'MEDIA'}">
+                            −
+                        </span>
+
+                        <span class="prioridade-icone prioridade-baixa"
+                              th:if="${evento.prioridade == 'BAIXA'}">
+                            ↓
+                        </span>
+
+                        <span class="prioridade-texto"
+                              th:if="${evento.prioridade == 'ALTA'}">
+                            Alta
+                        </span>
+
+                        <span class="prioridade-texto"
+                              th:if="${evento.prioridade == null
+                                      or evento.prioridade == 'MEDIA'}">
+                            Média
+                        </span>
+
+                        <span class="prioridade-texto"
+                              th:if="${evento.prioridade == 'BAIXA'}">
+                            Baixa
+                        </span>
+
+                    </div>
+                </div>
+
+                <div class="evento-detalhes">
+
+                    <p>
+                        <strong>Início:</strong>
+
+                        <span th:text="${#temporals.format(
+                            evento.inicio,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                            01/01/2026 08:00
+                        </span>
+                    </p>
+
+                    <p>
+                        <strong>Fim:</strong>
+
+                        <span th:text="${#temporals.format(
+                            evento.fim,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                            01/01/2026 10:00
+                        </span>
+                    </p>
+
+                </div>
+
+            </article>
+        </section>
+
+        <div class="cadastro-conteudo">
+
+            <section class="event-modal"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="titulo-cadastro">
+
+                <h1 id="titulo-cadastro"
+                    th:text="${session.tipoUsuario == 'aluno'
+                              ? 'Cadastrar Disponibilidade'
+                              : 'Cadastrar Evento'}">
+                    Cadastrar Evento
+                </h1>
+
+                <!-- Formulário utilizado pelo professor -->
+                <form class="event-form"
+                      th:if="${session.tipoUsuario == 'professor'}"
+                      action="/eventos/cadastrar"
+                      th:action="@{/eventos/cadastrar}"
+                      method="post">
+
+                    <label for="nomeEvento">
+                        Nome do evento
+                    </label>
+
+                    <input type="text"
+                           id="nomeEvento"
+                           name="nome"
+                           placeholder="Digite o nome do evento"
+                           required>
+
+                    <label for="tipoEvento">
+                        Tipo do evento
+                    </label>
+
+                    <select id="tipoEvento"
+                            name="tipo"
+                            required>
+
+                        <option value="">
+                            Selecione o tipo
+                        </option>
+
+                        <option value="PROVA">
+                            Prova
+                        </option>
+
+                        <option value="TRABALHO">
+                            Trabalho
+                        </option>
+
+                        <option value="APRESENTACAO">
+                            Apresentação
+                        </option>
+
+                        <option value="OUTRO">
+                            Outro prazo acadêmico
+                        </option>
+
+                    </select>
+
+                    <label for="descricaoEvento">
+                        Descrição
+                    </label>
+
+                    <textarea id="descricaoEvento"
+                              name="descricao"
+                              rows="3"
+                              placeholder="Descreva o evento (opcional)">
+                    </textarea>
+
+                    <label for="inicioEvento">
+                        Início
+                    </label>
+
+                    <input type="datetime-local"
+                           id="inicioEvento"
+                           name="inicio"
+                           required>
+
+                    <label for="fimEvento">
+                        Fim
+                    </label>
+
+                    <input type="datetime-local"
+                           id="fimEvento"
+                           name="fim"
+                           required>
+
+                    <label for="prioridadeEvento">
+                        Prioridade
+                    </label>
+
+                    <select id="prioridadeEvento"
+                            name="prioridade"
+                            required>
+
+                        <option value="">
+                            Selecione a prioridade
+                        </option>
+
+                        <option value="ALTA">
+                            Alta
+                        </option>
+
+                        <option value="MEDIA">
+                            Média
+                        </option>
+
+                        <option value="BAIXA">
+                            Baixa
+                        </option>
+
+                    </select>
+
+                    <label for="duracaoEvento">
+                        Duração estimada (minutos)
+                    </label>
+
+                    <input type="number"
+                           id="duracaoEvento"
+                           name="duracaoEstimadaMinutos"
+                           min="1"
+                           placeholder="Ex.: 120"
+                           required>
+
+                    <label for="conteudosRelacionados">
+                        Conteúdos relacionados
+                    </label>
+
+                    <select id="conteudosRelacionados"
+                            name="conteudoIds"
+                            multiple
+                            size="3">
+
+                        <option th:each="conteudo : ${conteudos}"
+                                th:value="${conteudo.id}"
+                                th:text="${conteudo.titulo
+                                          + ' - '
+                                          + conteudo.disciplina}">
+                            Conteúdo acadêmico
+                        </option>
+
+                    </select>
+
+                    <small class="select-help">
+                        Use Ctrl para selecionar mais de um conteúdo.
+                    </small>
+
+                    <button class="register-button"
+                            type="submit">
+                        Cadastrar
+                    </button>
+
+                </form>
+
+                <!-- Formulário utilizado pelo aluno -->
+                <form class="event-form disponibilidade-form"
+                      th:if="${session.tipoUsuario == 'aluno'}"
+                      action="/eventos/cadastrar-disponibilidade"
+                      th:action="@{/eventos/cadastrar-disponibilidade}"
+                      method="post">
+
+                    <label for="dataDisponibilidade">
+                        Data
+                    </label>
+
+                    <input type="date"
+                           id="dataDisponibilidade"
+                           name="data"
+                           required>
+
+                    <label for="horasDisponiveis">
+                        Quantidade de horas disponíveis
+                    </label>
+
+                    <input type="number"
+                           id="horasDisponiveis"
+                           name="horasDisponiveis"
+                           min="0"
+                           max="24"
+                           step="1"
+                           placeholder="Ex.: 4"
+                           required>
+
+                    <small class="select-help">
+                        Informe uma quantidade entre 0 e 24 horas.
+                    </small>
+
+                    <button class="register-button"
+                            type="submit">
+                        Cadastrar
+                    </button>
+
+                </form>
+
+                <a class="back-link"
+                   href="/eventos"
+                   th:href="@{/eventos}"
+                   th:text="${session.tipoUsuario == 'aluno'
+                             ? 'Voltar para o calendário'
+                             : 'Voltar para eventos'}">
+                    Voltar para eventos
+                </a>
+
+                <p class="form-error"
+                   th:if="${erro}"
+                   th:text="${erro}">
+                </p>
+
+            </section>
+
+            <!-- Agenda exibida para professores -->
+            <div class="divisor-cadastro"
+                 aria-hidden="true"
+                 th:if="${session.tipoUsuario == 'professor'}">
+            </div>
+
+            <section class="eventos-do-dia"
+                     th:if="${session.tipoUsuario == 'professor'}"
+                     aria-labelledby="titulo-eventos-dia">
+
+                <div class="eventos-dia-cabecalho">
+
+                    <div>
+                        <p class="eventos-dia-legenda">
+                            Agenda
+                        </p>
+
+                        <h2 id="titulo-eventos-dia">
+                            Eventos do dia
+                        </h2>
+                    </div>
+
+                    <time id="dataEventosDia"></time>
+
+                </div>
+
+                <div id="gradeHorarios"
+                     class="grade-horarios"
+                     aria-live="polite">
+                </div>
+
+            </section>
+
+            <!-- Dados dos eventos utilizados pelo JavaScript -->
+            <div id="eventosDados"
+                 hidden>
+
+                <div class="evento-dado"
+                     th:each="evento : ${eventos}"
+                     th:data-nome="${evento.nome}"
+                     th:data-inicio="${#temporals.format(
+                         evento.inicio,
+                         'yyyy-MM-dd HH:mm'
+                     )}"
+                     th:data-fim="${#temporals.format(
+                         evento.fim,
+                         'yyyy-MM-dd HH:mm'
+                     )}"
+                     th:data-prioridade="${evento.prioridade}">
+                </div>
+
+            </div>
+
+            <!-- Dados das disponibilidades utilizadas pelo JavaScript -->
+            <div id="disponibilidadesDados"
+                 hidden>
+
+                <div class="disponibilidade-dado"
+                     th:each="disponibilidade : ${disponibilidades}"
+                     th:data-data="${#temporals.format(
+                         disponibilidade.data,
+                         'yyyy-MM-dd'
+                     )}"
+                     th:data-horas="${disponibilidade.horasDisponiveis}">
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script th:inline="javascript">
+
+    const parametrosUrl =
+        new URLSearchParams(window.location.search);
+
+    const queryDate =
+        parametrosUrl.get('data');
+
+    const tipoUsuario =
+        /*[[${session.tipoUsuario}]]*/ '';
+
+    const usuarioEhAluno =
+        tipoUsuario === 'aluno';
+
+    const calendarioFundo =
+        document.getElementById('calendarioFundo');
+
+    const startInput =
+        document.getElementById('inicioEvento');
+
+    const dataDisponibilidade =
+        document.getElementById('dataDisponibilidade');
+
+    const dataEventosDia =
+        document.getElementById('dataEventosDia');
+
+    const gradeHorarios =
+        document.getElementById('gradeHorarios');
+
+    const eventosDados = [
+
+        /*[# th:each="evento : ${eventos}"]*/
+
+        {
+            nome:
+            /*[[${evento.nome}]]*/ '',
+
+            inicio:
+                converterDataHora(
+                    /*[[${#temporals.format(
+                        evento.inicio,
+                        'yyyy-MM-dd HH:mm'
+                    )}]]*/ ''
+                ),
+
+            fim:
+                converterDataHora(
+                    /*[[${#temporals.format(
+                        evento.fim,
+                        'yyyy-MM-dd HH:mm'
+                    )}]]*/ ''
+                ),
+
+            prioridade:
+            /*[[${evento.prioridade}]]*/ 'MEDIA'
+        },
+
+        /*[/]*/
+
+    ];
+
+    const disponibilidadesDados = [
+
+        /*[# th:each="disponibilidade : ${disponibilidades}"]*/
+
+        {
+            data:
+            /*[[${#temporals.format(
+                disponibilidade.data,
+                'yyyy-MM-dd'
+            )}]]*/ '',
+
+            horas:
+            /*[[${disponibilidade.horasDisponiveis}]]*/ 0
+        },
+
+        /*[/]*/
+
+    ];
+
+    function converterDataHora(valor) {
+
+        if (!valor) {
+            return null;
+        }
+
+        return new Date(
+            valor.replace(' ', 'T')
+        );
+    }
+
+    function dataValida(data) {
+
+        return /^\d{4}-\d{2}-\d{2}$/.test(
+            data || ''
+        );
+    }
+
+    function obterDataHoje() {
+
+        const data = new Date();
+
+        const ano =
+            data.getFullYear();
+
+        const mes =
+            String(data.getMonth() + 1)
+                .padStart(2, '0');
+
+        const dia =
+            String(data.getDate())
+                .padStart(2, '0');
+
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    function formatarData(data) {
+
+        const ano =
+            data.getFullYear();
+
+        const mes =
+            String(data.getMonth() + 1)
+                .padStart(2, '0');
+
+        const dia =
+            String(data.getDate())
+                .padStart(2, '0');
+
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    function criarMarcadorDeEvento(
+        celula,
+        eventosDoDia,
+        dataFormatada
+    ) {
+        const marcador =
+            document.createElement('span');
+
+        marcador.classList.add(
+            'evento-marcador'
+        );
+
+        const iniciouHoje =
+            eventosDoDia.some(function (evento) {
+                return formatarData(evento.inicio)
+                    === dataFormatada;
+            });
+
+        const terminouHoje =
+            eventosDoDia.some(function (evento) {
+                return formatarData(evento.fim)
+                    === dataFormatada;
+            });
+
+        if (iniciouHoje && terminouHoje) {
+            marcador.classList.add('evento-unico');
+        } else if (iniciouHoje) {
+            marcador.classList.add('evento-inicio');
+        } else if (terminouHoje) {
+            marcador.classList.add('evento-fim');
+        } else {
+            marcador.classList.add('evento-meio');
+        }
+
+        const eventosQueComecamHoje =
+            eventosDoDia.filter(function (evento) {
+                return formatarData(evento.inicio)
+                    === dataFormatada;
+            });
+
+        if (eventosQueComecamHoje.length > 1) {
+            marcador.textContent =
+                `${eventosQueComecamHoje.length} eventos`;
+        } else if (eventosQueComecamHoje.length === 1) {
+            marcador.textContent =
+                eventosQueComecamHoje[0].nome;
+        } else {
+            marcador.textContent = '';
+        }
+
+        marcador.title =
+            eventosDoDia
+                .map(function (evento) {
+                    return evento.nome;
+                })
+                .join(', ');
+
+        celula.appendChild(marcador);
+    }
+
+    function criarMarcadorDeDisponibilidade(
+        celula,
+        disponibilidade
+    ) {
+        const marcador =
+            document.createElement('span');
+
+        marcador.classList.add(
+            'disponibilidade-marcador'
+        );
+
+        marcador.textContent =
+            `Disponibilidade ${disponibilidade.horas}h`;
+
+        marcador.title =
+            `${disponibilidade.horas} horas disponíveis`;
+
+        celula.classList.add(
+            'tem-disponibilidade'
+        );
+
+        celula.appendChild(marcador);
+    }
+
+    function atualizarCalendarioDeFundo() {
+
+        if (!calendarioFundo) {
+            return;
+        }
+
+        calendarioFundo.innerHTML = '';
+
+        const dataReferencia =
+            dataValida(queryDate)
+                ? new Date(`${queryDate}T12:00:00`)
+                : new Date();
+
+        const mes =
+            dataReferencia.getMonth();
+
+        const ano =
+            dataReferencia.getFullYear();
+
+        const primeiroDiaSemana =
+            new Date(ano, mes, 1).getDay();
+
+        const ultimoDiaMes =
+            new Date(ano, mes + 1, 0).getDate();
+
+        const quantidadeCelulas =
+            Math.ceil(
+                (primeiroDiaSemana + ultimoDiaMes) / 7
+            ) * 7;
+
+        for (
+            let indice = 0;
+            indice < quantidadeCelulas;
+            indice++
+        ) {
+            const data =
+                new Date(
+                    ano,
+                    mes,
+                    indice - primeiroDiaSemana + 1
+                );
+
+            const dataFormatada =
+                formatarData(data);
+
+            const pertenceAoMesAtual =
+                data.getMonth() === mes
+                && data.getFullYear() === ano;
+
+            const celula =
+                document.createElement('div');
+
+            celula.classList.add(
+                'day-cell'
+            );
+
+            celula.dataset.date =
+                dataFormatada;
+
+            if (!pertenceAoMesAtual) {
+                celula.classList.add(
+                    'adjacent-month'
+                );
+            }
+
+            const numeroDia =
+                document.createElement('span');
+
+            numeroDia.classList.add(
+                'day-number'
+            );
+
+            numeroDia.textContent =
+                String(data.getDate())
+                    .padStart(2, '0');
+
+            const simboloMais =
+                document.createElement('span');
+
+            simboloMais.classList.add(
+                'day-add'
+            );
+
+            simboloMais.textContent =
+                '+';
+
+            const eventosDoDia =
+                eventosDados.filter(function (evento) {
+
+                    if (!evento.inicio || !evento.fim) {
+                        return false;
+                    }
+
+                    const inicio =
+                        formatarData(evento.inicio);
+
+                    const fim =
+                        formatarData(evento.fim);
+
+                    return inicio <= dataFormatada
+                        && dataFormatada <= fim;
+                });
+
+            const disponibilidadeDoDia =
+                disponibilidadesDados.find(function (
+                    disponibilidade
+                ) {
+                    return disponibilidade.data
+                        === dataFormatada;
+                });
+
+            if (!usuarioEhAluno
+                && eventosDoDia.length > 0) {
+
+                celula.classList.add(
+                    'tem-evento'
+                );
+
+                criarMarcadorDeEvento(
+                    celula,
+                    eventosDoDia,
+                    dataFormatada
+                );
+            }
+
+            if (usuarioEhAluno
+                && disponibilidadeDoDia) {
+
+                criarMarcadorDeDisponibilidade(
+                    celula,
+                    disponibilidadeDoDia
+                );
+            }
+
+            celula.appendChild(
+                numeroDia
+            );
+
+            celula.appendChild(
+                simboloMais
+            );
+
+            calendarioFundo.appendChild(
+                celula
+            );
+        }
+    }
+
+    function formatarDataExibicao(data) {
+
+        const dataFormatada =
+            new Date(`${data}T12:00:00`);
+
+        return dataFormatada.toLocaleDateString(
+            'pt-BR',
+            {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }
+        );
+    }
+
+    function obterEventosDaHora(data, hora) {
+
+        const inicioHora =
+            new Date(
+                `${data}T${String(hora).padStart(2, '0')}:00:00`
+            );
+
+        const fimHora =
+            new Date(
+                inicioHora.getTime()
+                + 60 * 60 * 1000
+            );
+
+        return eventosDados.filter(function (evento) {
+
+            return evento.inicio
+                && evento.fim
+                && evento.inicio < fimHora
+                && evento.fim > inicioHora;
+        });
+    }
+
+    function atualizarAgendaDoDia() {
+
+        if (!gradeHorarios || !dataEventosDia) {
+            return;
+        }
+
+        const dataSelecionada =
+            dataValida(queryDate)
+                ? queryDate
+                : obterDataHoje();
+
+        dataEventosDia.textContent =
+            formatarDataExibicao(
+                dataSelecionada
+            );
+
+        gradeHorarios.innerHTML = '';
+
+        for (let hora = 0; hora < 24; hora++) {
+
+            const eventosDaHora =
+                obterEventosDaHora(
+                    dataSelecionada,
+                    hora
+                );
+
+            const linha =
+                document.createElement('div');
+
+            linha.classList.add(
+                'horario-linha'
+            );
+
+            const horario =
+                document.createElement('time');
+
+            horario.classList.add(
+                'horario-hora'
+            );
+
+            horario.textContent =
+                `${String(hora).padStart(2, '0')}:00`;
+
+            const faixa =
+                document.createElement('div');
+
+            faixa.classList.add(
+                'horario-faixa'
+            );
+
+            if (eventosDaHora.length === 0) {
+
+                faixa.classList.add(
+                    'horario-livre'
+                );
+
+                const linhaLivre =
+                    document.createElement('span');
+
+                linhaLivre.classList.add(
+                    'linha-livre'
+                );
+
+                faixa.appendChild(
+                    linhaLivre
+                );
+
+            } else {
+
+                faixa.classList.add(
+                    'horario-ocupado'
+                );
+
+                const nomes =
+                    eventosDaHora
+                        .map(function (evento) {
+                            return evento.nome;
+                        })
+                        .join(', ');
+
+                const eventoTexto =
+                    document.createElement('span');
+
+                eventoTexto.classList.add(
+                    'nome-evento-horario'
+                );
+
+                eventoTexto.textContent =
+                    eventosDaHora.length === 1
+                        ? nomes
+                        : `${eventosDaHora.length} eventos: ${nomes}`;
+
+                faixa.appendChild(
+                    eventoTexto
+                );
+            }
+
+            linha.appendChild(horario);
+            linha.appendChild(faixa);
+            gradeHorarios.appendChild(linha);
+        }
+    }
+
+    const dataInicial =
+        dataValida(queryDate)
+            ? queryDate
+            : obterDataHoje();
+
+    if (startInput && queryDate) {
+        startInput.value =
+            queryDate + 'T08:00';
+    }
+
+    if (dataDisponibilidade) {
+        dataDisponibilidade.value =
+            dataInicial;
+    }
+
+    atualizarCalendarioDeFundo();
+    atualizarAgendaDoDia();
+
+</script>
+
+</body>
+
+</html>

@@ -1,35 +1,632 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>Verificação 2FA</title>
-        <link rel="stylesheet" th:href="@{/css/verificarStyle.css}">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org">
 
-    </head>
+<head>
 
-    <body>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <div th:replace="~{fragments/header :: nav}"></div>
+    <title>Verificação 2FA - CampusLink</title>
 
-        <main>
+    <link rel="stylesheet"
+          th:href="@{/css/verificarStyle.css}">
 
-            <h2 class="title">Verificação duas etapas</h2>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 
-            <form th:action="@{/verificar}" method="post" class="form-verificacao">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <style>
 
-                <label class="label_info">Código de verificação</label>
+        .texto-explicativo {
+            max-width: 310px;
+            margin: 0 auto 18px;
+            color: #596584;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
 
-                <input type="text" name="codigo" placeholder="Digite o código envia ao seu Email" required class="textbox">
+        .mensagemSucesso {
+            margin: 14px 0 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background-color: #e8f8ee;
+            color: #18733b;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
 
-                <button type="submit" class="Sendbutton">Verificar</button>
+        .mensagemErro {
+            margin: 14px 0 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background-color: #fdebec;
+            color: #b4232d;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
 
-            </form>
+        .painel-tempos {
+            width: 100%;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #e1e6ef;
+        }
 
-            <p th:if="${erro}" th:text="${erro}" class="mensagemErro"></p>
+        .bloco-tempo {
+            width: 100%;
+            margin-bottom: 18px;
+            text-align: center;
+        }
 
-        </main>
+        .titulo-tempo {
+            display: block;
+            margin-bottom: 5px;
+            color: #596584;
+            font-size: 12px;
+            font-weight: 700;
+        }
 
-    </body>
+        .contador {
+            display: inline-block;
+            min-width: 65px;
+            color: #1b4965;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .contador.validade {
+            color: #d97706;
+        }
+
+        .contador.expirado {
+            color: #b4232d;
+            font-size: 18px;
+            letter-spacing: 0;
+        }
+
+        .barra {
+            width: 100%;
+            height: 7px;
+            margin-top: 8px;
+            overflow: hidden;
+            border-radius: 10px;
+            background-color: #e7ebf2;
+        }
+
+        .barra-progresso {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            transition: width 1s linear;
+        }
+
+        .barra-validade {
+            background: linear-gradient(
+                    90deg,
+                    #f59e0b,
+                    #d97706
+            );
+        }
+
+        .barra-reenvio {
+            background: linear-gradient(
+                    90deg,
+                    #5fa8d3,
+                    #1b4965
+            );
+        }
+
+        #btnReenviar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 40px;
+            border: 0;
+            border-radius: 9px;
+            background-color: #b8c3d1;
+            color: #ffffff;
+            font-weight: 800;
+            cursor: not-allowed;
+            transition: background-color 0.25s ease,
+            transform 0.25s ease,
+            box-shadow 0.25s ease;
+        }
+
+        #btnReenviar:disabled {
+            opacity: 0.8;
+        }
+
+        #btnReenviar.liberado {
+            background-color: #5fa8d3;
+            cursor: pointer;
+            animation: pulsarBotao 1.8s ease-in-out infinite;
+        }
+
+        #btnReenviar.liberado:hover {
+            background-color: #1b4965;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(27, 73, 101, 0.25);
+        }
+
+        #btnReenviar.enviando {
+            cursor: wait;
+            animation: carregando 1s ease-in-out infinite;
+        }
+
+        #btnVerificar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .icone-reenvio {
+            display: inline-block;
+            font-size: 18px;
+        }
+
+        #btnReenviar.liberado .icone-reenvio {
+            animation: girarIcone 1.4s linear infinite;
+        }
+
+        @keyframes pulsarBotao {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(95, 168, 211, 0.35);
+            }
+
+            50% {
+                box-shadow: 0 0 0 7px rgba(95, 168, 211, 0);
+            }
+        }
+
+        @keyframes girarIcone {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes carregando {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .form-verificacao {
+                max-width: calc(100% - 30px);
+                padding: 24px;
+            }
+
+            .contador {
+                font-size: 22px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main>
+
+    <h2 class="title"
+        th:text="${verificacaoCadastro == true}
+                ? 'Confirme seu cadastro'
+                : 'Verificação em duas etapas'">
+        Verificação em duas etapas
+    </h2>
+
+    <form th:action="${verificacaoCadastro == true}
+                    ? @{/verificarCadastro}
+                    : @{/verificar}"
+          method="post"
+          class="form-verificacao"
+          id="formVerificacao">
+
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <p class="texto-explicativo"
+           th:text="${verificacaoCadastro == true}
+                    ? 'Digite o código enviado ao seu e-mail para concluir o cadastro.'
+                    : 'Digite o código enviado ao seu e-mail para concluir o login.'">
+            Digite o código enviado ao seu e-mail.
+        </p>
+
+        <label for="codigo"
+               class="label_info">
+            Código de verificação
+        </label>
+
+        <input type="text"
+               id="codigo"
+               name="codigo"
+               placeholder="Digite o código de 6 números"
+               inputmode="numeric"
+               autocomplete="one-time-code"
+               pattern="[0-9]{6}"
+               minlength="6"
+               maxlength="6"
+               title="Digite o código de 6 números enviado ao seu e-mail."
+               required
+               class="textbox">
+
+        <button type="submit"
+                id="btnVerificar"
+                class="Sendbutton"
+                th:text="${verificacaoCadastro == true}
+                        ? 'Confirmar cadastro'
+                        : 'Verificar código'">
+            Verificar código
+        </button>
+
+        <p th:if="${mensagem}"
+           th:text="${mensagem}"
+           class="mensagemSucesso"
+           role="status">
+        </p>
+
+        <p th:if="${erro}"
+           th:text="${erro}"
+           class="mensagemErro"
+           role="alert">
+        </p>
+
+        <div class="painel-tempos">
+
+            <!-- Validade do código: 5 minutos -->
+            <div class="bloco-tempo">
+
+                    <span id="textoValidade"
+                          class="titulo-tempo">
+                        O código expira em:
+                    </span>
+
+                <span id="contadorValidade"
+                      class="contador validade"
+                      aria-live="polite">
+                        05:00
+                    </span>
+
+                <div class="barra"
+                     aria-hidden="true">
+
+                    <div id="barraValidade"
+                         class="barra-progresso barra-validade">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Reenvio do código: 2 minutos -->
+            <div class="bloco-tempo">
+
+                    <span id="textoReenvio"
+                          class="titulo-tempo">
+                        Você poderá solicitar outro código em:
+                    </span>
+
+                <span id="contadorReenvio"
+                      class="contador"
+                      aria-live="polite">
+                        02:00
+                    </span>
+
+                <div class="barra"
+                     aria-hidden="true">
+
+                    <div id="barraReenvio"
+                         class="barra-progresso barra-reenvio">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--
+                O botão usa /reenviarCodigo.
+                O botão principal continua usando
+                /verificar ou /verificarCadastro.
+            -->
+            <button type="submit"
+                    id="btnReenviar"
+                    class="Sendbutton"
+                    th:formaction="@{/reenviarCodigo}"
+                    formnovalidate
+                    disabled>
+
+                    <span class="icone-reenvio"
+                          aria-hidden="true">
+                        ↻
+                    </span>
+
+                <span id="textoBotaoReenviar">
+                        Solicitar novo código
+                    </span>
+
+            </button>
+
+        </div>
+
+    </form>
+
+</main>
+
+<script th:inline="javascript">
+
+    const segundosValidadeIniciais =
+        /*[[${segundosParaExpirarCodigo != null
+                ? segundosParaExpirarCodigo
+                : 0}]]*/ 0;
+
+    const segundosReenvioIniciais =
+        /*[[${segundosParaReenvio != null
+                ? segundosParaReenvio
+                : 0}]]*/ 0;
+
+    const DURACAO_CODIGO =
+        5 * 60;
+
+    const DURACAO_REENVIO =
+        2 * 60;
+
+    let segundosValidade =
+        Number(segundosValidadeIniciais);
+
+    let segundosReenvio =
+        Number(segundosReenvioIniciais);
+
+    if (!Number.isFinite(segundosValidade)
+        || segundosValidade < 0) {
+
+        segundosValidade = 0;
+    }
+
+    if (!Number.isFinite(segundosReenvio)
+        || segundosReenvio < 0) {
+
+        segundosReenvio = 0;
+    }
+
+    segundosValidade =
+        Math.min(
+            segundosValidade,
+            DURACAO_CODIGO
+        );
+
+    segundosReenvio =
+        Math.min(
+            segundosReenvio,
+            DURACAO_REENVIO
+        );
+
+    const contadorValidade =
+        document.getElementById(
+            "contadorValidade"
+        );
+
+    const contadorReenvio =
+        document.getElementById(
+            "contadorReenvio"
+        );
+
+    const textoValidade =
+        document.getElementById(
+            "textoValidade"
+        );
+
+    const textoReenvio =
+        document.getElementById(
+            "textoReenvio"
+        );
+
+    const barraValidade =
+        document.getElementById(
+            "barraValidade"
+        );
+
+    const barraReenvio =
+        document.getElementById(
+            "barraReenvio"
+        );
+
+    const btnVerificar =
+        document.getElementById(
+            "btnVerificar"
+        );
+
+    const btnReenviar =
+        document.getElementById(
+            "btnReenviar"
+        );
+
+    const textoBotaoReenviar =
+        document.getElementById(
+            "textoBotaoReenviar"
+        );
+
+    const formVerificacao =
+        document.getElementById(
+            "formVerificacao"
+        );
+
+    function formatarTempo(
+        segundos
+    ) {
+
+        const minutos =
+            Math.floor(segundos / 60);
+
+        const segundosFormatados =
+            segundos % 60;
+
+        return String(minutos).padStart(2, "0")
+            + ":"
+            + String(
+                segundosFormatados
+            ).padStart(2, "0");
+    }
+
+    function atualizarValidade() {
+
+        if (segundosValidade > 0) {
+
+            contadorValidade.textContent =
+                formatarTempo(
+                    segundosValidade
+                );
+
+            textoValidade.textContent =
+                "O código expira em:";
+
+            contadorValidade.classList.remove(
+                "expirado"
+            );
+
+            btnVerificar.disabled = false;
+
+        } else {
+
+            contadorValidade.textContent =
+                "Expirado";
+
+            textoValidade.textContent =
+                "O código não é mais válido.";
+
+            contadorValidade.classList.add(
+                "expirado"
+            );
+
+            btnVerificar.disabled = true;
+        }
+
+        const porcentagem =
+            (
+                segundosValidade
+                / DURACAO_CODIGO
+            ) * 100;
+
+        barraValidade.style.width =
+            Math.max(0, porcentagem) + "%";
+    }
+
+    function atualizarReenvio() {
+
+        contadorReenvio.textContent =
+            formatarTempo(
+                segundosReenvio
+            );
+
+        const porcentagem =
+            (
+                segundosReenvio
+                / DURACAO_REENVIO
+            ) * 100;
+
+        barraReenvio.style.width =
+            Math.max(0, porcentagem) + "%";
+
+        if (segundosReenvio > 0) {
+
+            textoReenvio.textContent =
+                "Você poderá solicitar outro código em:";
+
+            btnReenviar.disabled = true;
+
+            btnReenviar.classList.remove(
+                "liberado"
+            );
+
+            return;
+        }
+
+        textoReenvio.textContent =
+            "Você já pode solicitar outro código:";
+
+        btnReenviar.disabled = false;
+
+        btnReenviar.classList.add(
+            "liberado"
+        );
+    }
+
+    atualizarValidade();
+    atualizarReenvio();
+
+    const timer =
+        setInterval(function () {
+
+            if (segundosValidade > 0) {
+                segundosValidade--;
+                atualizarValidade();
+            }
+
+            if (segundosReenvio > 0) {
+                segundosReenvio--;
+                atualizarReenvio();
+            }
+
+            if (segundosValidade <= 0
+                && segundosReenvio <= 0) {
+
+                clearInterval(timer);
+            }
+
+        }, 1000);
+
+    formVerificacao.addEventListener(
+        "submit",
+        function (evento) {
+
+            const botaoClicado =
+                evento.submitter;
+
+            if (botaoClicado === btnReenviar) {
+
+                btnReenviar.disabled = true;
+
+                btnReenviar.classList.remove(
+                    "liberado"
+                );
+
+                btnReenviar.classList.add(
+                    "enviando"
+                );
+
+                textoReenvio.textContent =
+                    "Enviando um novo código...";
+
+                textoBotaoReenviar.textContent =
+                    "Enviando...";
+
+            } else if (botaoClicado === btnVerificar) {
+
+                btnVerificar.disabled = true;
+            }
+        }
+    );
+
+</script>
+
+</body>
 </html>

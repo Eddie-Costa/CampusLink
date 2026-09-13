@@ -1,7 +1,8 @@
 package com.example.CampusLink.dao;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
-import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -10,34 +11,49 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Repository
 public class alunoDAO {
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(alunoDAO.class);
+
     @Autowired
     private DataSource dataSource;
 
-    public loginAlunoDTO buscarPorEmailAluno(String email) throws SQLException {
+    public loginAlunoDTO buscarPorEmailAluno(String email)
+            throws SQLException {
 
-        String sql = "SELECT * FROM public.\"USUARIOS\" WHERE \"email\" = ?";
-        Connection conn = dataSource.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
-        ResultSet rs = stmt.executeQuery();
+        String sql = """
+                SELECT "email", "senha"
+                FROM public."USUARIOS"
+                WHERE "email" = ?
+                """;
 
-        if (rs.next()) {
-            loginAlunoDTO usuario = new loginAlunoDTO();
-            usuario.setEmail(rs.getString("EMAIL"));
-            usuario.setSenha(rs.getString("SENHA"));
+        logger.debug("Consultando credenciais do aluno no banco.");
 
-            return usuario;
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setString(1, email);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+                    loginAlunoDTO usuario = new loginAlunoDTO();
+                    usuario.setEmail(rs.getString("email"));
+                    usuario.setSenha(rs.getString("senha"));
+                    logger.debug("Credenciais do aluno encontradas.");
+                    return usuario;
+                }
+            }
+
+        } catch (SQLException e) {
+            logger.error("Erro ao buscar credenciais do aluno no banco.", e);
+            throw e;
         }
-
-        rs.close();
-        stmt.close();
-        conn.close();
+        logger.debug("Nenhum aluno encontrado na consulta de credenciais.");
         return null;
     }
 
