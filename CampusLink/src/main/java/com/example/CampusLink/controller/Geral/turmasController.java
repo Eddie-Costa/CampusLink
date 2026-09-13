@@ -69,7 +69,17 @@ public class turmasController {
             return "redirect:/turmas";
         }
 
+        boolean isTurmaAdmin = false;
+        if (session.getAttribute("tipoUsuario") != null && "professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())) {
+            String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+            isTurmaAdmin = turma.getIdProprietario() != null && turma.getIdProprietario().toString().equals(idProfessor);
+        }
+
+        List<TurmaDTO> participantesTurma = turmaDAO.buscarParticipantesDaTurma(id);
+
         model.addAttribute("turma", turma);
+        model.addAttribute("participantesTurma", participantesTurma);
+        model.addAttribute("isTurmaAdmin", isTurmaAdmin);
         return "Geral/ambienteTurma";
     }
 
@@ -118,6 +128,29 @@ public class turmasController {
 
         turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
 
+        TurmaDTO turmaAtual = turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId()));
+        model.addAttribute("turma", turmaAtual);
+        model.addAttribute("participantesTurma", turmaDAO.buscarParticipantesDaTurma(String.valueOf(turmaDTO.getId())));
+        model.addAttribute("abrirModalParticipantes", true);
+        return "Geral/ambienteTurma";
+    }
+
+    @PostMapping("/excluirTurma")
+    public String excluirTurma(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            logger.warn("[excluirTurma] usuário não autenticado; redirecionando para login.");
+            return "redirect:/login";
+        }
+
+        if (session.getAttribute("tipoUsuario") == null || !"professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())) {
+            logger.warn("[excluirTurma] usuário tentou excluir turma sem permissão.");
+            return "Geral/home";
+        }
+
+        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        turmaDAO.excluirTurma(String.valueOf(turmaDTO.getId()), idProfessor);
+
         return "redirect:/turmas";
     }
 
@@ -143,7 +176,11 @@ public class turmasController {
 
         turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
 
-        return "redirect:/turmas";
+        TurmaDTO turmaAtual = turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId()));
+        model.addAttribute("turma", turmaAtual);
+        model.addAttribute("participantesTurma", turmaDAO.buscarParticipantesDaTurma(String.valueOf(turmaDTO.getId())));
+        model.addAttribute("abrirModalParticipantes", true);
+        return "Geral/ambienteTurma";
     }
 
 

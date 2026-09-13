@@ -15,15 +15,60 @@
         <p th:text="${turma.descricao}">Descrição da turma</p>
 
         <div th:if="${session.tipoUsuario == 'professor'}">
-            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#adicionarPessoasModal">Adicionar Pessoas</button>
+            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#participantesTurma">Participantes da Turma</button>
 
-            <div class="modal fade" id="adicionarPessoasModal" tabindex="-1">
+            <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}" method="post" class="d-inline-block ms-2" onsubmit="return confirm('Tem certeza que deseja excluir esta turma? Isso removerá também todos os alunos e professores vinculados a ela.');">
+                <input type="hidden" th:field="*{id}" />
+                <button type="submit" class="btn btn-danger">Excluir Turma</button>
+            </form>
+
+            <div class="modal fade" id="participantesTurma" tabindex="-1" aria-labelledby="participantesTurmaLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content campus-modal">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="participantesTurmaLabel">Participantes da turma</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div th:if="${#lists.isEmpty(participantesTurma)}" class="text-center text-muted py-3">
+                                Nenhum participante cadastrado nesta turma.
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(participantesTurma)}">
+                                <table class="table table-striped table-hover align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">E-mail</th>
+                                        <th scope="col">Tipo de usuário</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="participante : ${participantesTurma}">
+                                        <td th:text="${participante.emailPessoa}">email@exemplo.com</td>
+                                        <td th:text="${participante.tipoUsuario}">Professor</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#adicionarPessoasModal">Adicionar Pessoas</button>
+                            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#removerPessoasModal">Remover Pessoas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="adicionarPessoasModal" tabindex="-1" aria-labelledby="adicionarPessoasModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content campus-modal">
 
                         <div class="modal-header">
-                            <h5 class="modal-title">Adicionar Pessoas</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title" id="adicionarPessoasModalLabel">Adicionar Pessoas</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
                         <form th:action="@{/adicionarPessoas}" th:object="${turma}" method="post">
@@ -31,9 +76,8 @@
 
                                 <input type="hidden" th:field="*{id}" />
 
-                                <label for="emailPessoa" class="form-label">Email da pessoa:</label>
-
-                                <input id="emailPessoa" type="text" class="form-control" th:field="*{emailPessoa}" placeholder="Ex: 11231405551@aluno.umc.br" required>
+                                <label for="emailPessoaAdicionar" class="form-label">Email da pessoa:</label>
+                                <input id="emailPessoaAdicionar" type="text" class="form-control" th:field="*{emailPessoa}" placeholder="Ex: 11231405551@aluno.umc.br" required>
 
                                 <div class="erro-campo" th:if="${#fields.hasErrors('emailPessoa')}" th:errors="*{emailPessoa}"></div>
                             </div>
@@ -48,15 +92,13 @@
                 </div>
             </div>
 
-            <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#removerPessoasModal">Remover Pessoas</button>
-
-            <div class="modal fade" id="removerPessoasModal" tabindex="-1">
+            <div class="modal fade" id="removerPessoasModal" tabindex="-1" aria-labelledby="removerPessoasModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content campus-modal">
 
                         <div class="modal-header">
-                            <h5 class="modal-title">Remover Pessoas</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title" id="removerPessoasModalLabel">Remover Pessoas</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
                         <form th:action="@{/removerPessoas}" th:object="${turma}" method="post">
@@ -64,9 +106,8 @@
 
                                 <input type="hidden" th:field="*{id}" />
 
-                                <label for="emailPessoa" class="form-label">Email da pessoa:</label>
-
-                                <input id="emailPessoa" type="text" class="form-control" th:field="*{emailPessoa}" placeholder="Ex: 11231405551@aluno.umc.br" required>
+                                <label for="emailPessoaRemover" class="form-label">Email da pessoa:</label>
+                                <input id="emailPessoaRemover" type="text" class="form-control" th:field="*{emailPessoa}" placeholder="Ex: 11231405551@aluno.umc.br" required>
 
                                 <div class="erro-campo" th:if="${#fields.hasErrors('emailPessoa')}" th:errors="*{emailPessoa}"></div>
                             </div>
@@ -82,5 +123,15 @@
             </div>
         </div>
     </main>
+
+    <script th:if="${abrirModalParticipantes}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalElement = document.getElementById('participantesTurma');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        });
+    </script>
 </body>
 </html>

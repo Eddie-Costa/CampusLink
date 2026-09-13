@@ -25,11 +25,12 @@ public class turmaDAO {
     public String buscarPorIDTurma(String idProfessor) throws SQLException {
 
         String id = "";
-        String sql = "SELECT t.id FROM public.\"TURMAS\" t WHERE ? = ANY(t.id_professores)";
+        String sql = "SELECT t.id FROM public.\"TURMAS\" t WHERE (? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])) OR t.id_proprietario = ?) LIMIT 1";
 
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setLong(1, Long.parseLong(idProfessor));
+        stmt.setLong(2, Long.parseLong(idProfessor));
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
@@ -43,12 +44,13 @@ public class turmaDAO {
     }
 
     public String buscarUltimaTurmaPorProfessor(String idProfessor) throws SQLException {
-        String sql = "SELECT t.id FROM public.\"TURMAS\" t WHERE ? = ANY(t.id_professores) ORDER BY t.id DESC LIMIT 1";
+        String sql = "SELECT t.id FROM public.\"TURMAS\" t WHERE (? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])) OR t.id_proprietario = ?) ORDER BY t.id DESC LIMIT 1";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, Long.parseLong(idProfessor));
+            stmt.setLong(2, Long.parseLong(idProfessor));
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -66,35 +68,55 @@ public class turmaDAO {
 
         if (tipo.equalsIgnoreCase("aluno")) {
             sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE ? = ANY(t.id_alunos)";
+            List<TurmaDTO> turmas = new ArrayList<>();
+
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setLong(1, Long.parseLong(id));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        TurmaDTO turma = new TurmaDTO();
+                        turma.setId(rs.getLong("id"));
+                        turma.setNomeTurma(rs.getString("nome_turma"));
+                        turma.setDescricao(rs.getString("descricao"));
+                        turmas.add(turma);
+                    }
+                }
+            }
+
+            return turmas;
         } else if (tipo.equalsIgnoreCase("professor")) {
-            sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE ? = ANY(t.id_professores)";
+            sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE (? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])) OR t.id_proprietario = ?)";
+
+            List<TurmaDTO> turmas = new ArrayList<>();
+
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setLong(1, Long.parseLong(id));
+                stmt.setLong(2, Long.parseLong(id));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        TurmaDTO turma = new TurmaDTO();
+                        turma.setId(rs.getLong("id"));
+                        turma.setNomeTurma(rs.getString("nome_turma"));
+                        turma.setDescricao(rs.getString("descricao"));
+                        turmas.add(turma);
+                    }
+                }
+            }
+
+            return turmas;
         } else {
             return List.of();
         }
-
-        List<TurmaDTO> turmas = new ArrayList<>();
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, Long.parseLong(id));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    TurmaDTO turma = new TurmaDTO();
-                    turma.setId(rs.getLong("id"));
-                    turma.setNomeTurma(rs.getString("nome_turma"));
-                    turma.setDescricao(rs.getString("descricao"));
-                    turmas.add(turma);
-                }
-            }
-        }
-
-        return turmas;
     }
 
     public TurmaDTO buscarTurmaPorId(String id) throws SQLException {
-        String sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE t.id = ?";
+        String sql = "SELECT t.id, t.nome_turma, t.descricao, t.id_proprietario FROM public.\"TURMAS\" t WHERE t.id = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -107,12 +129,91 @@ public class turmaDAO {
                     turma.setId(rs.getLong("id"));
                     turma.setNomeTurma(rs.getString("nome_turma"));
                     turma.setDescricao(rs.getString("descricao"));
+                    turma.setIdProprietario(rs.getLong("id_proprietario"));
                     return turma;
                 }
             }
         }
 
         return null;
+    }
+
+    public List<TurmaDTO> buscarParticipantesDaTurma(String idTurma) throws SQLException {
+        String sql = "(SELECT u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
+                "JOIN public.\"ALUNOS\" a ON a.id = at.id_aluno " +
+                "JOIN public.\"USUARIOS\" u ON u.id = a.id_usuario " +
+                "WHERE at.id_turma = ?) " +
+                "UNION ALL " +
+                "(SELECT u.email AS email, CASE WHEN t.id_proprietario = pt.id_professor THEN 'Professor Admin' ELSE 'Professor' END AS tipo_usuario FROM public.\"PROFESSOR_TURMA\" pt " +
+                "JOIN public.\"PROFESSORES\" p ON p.id = pt.id_professor " +
+                "JOIN public.\"USUARIOS\" u ON u.id = p.id_usuario " +
+                "JOIN public.\"TURMAS\" t ON t.id = pt.id_turma " +
+                "WHERE pt.id_turma = ?) " +
+                "ORDER BY tipo_usuario, email";
+
+        List<TurmaDTO> participantes = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, Long.parseLong(idTurma));
+            stmt.setLong(2, Long.parseLong(idTurma));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TurmaDTO participante = new TurmaDTO();
+                    participante.setEmailPessoa(rs.getString("email"));
+                    participante.setTipoUsuario(rs.getString("tipo_usuario"));
+                    participantes.add(participante);
+                }
+            }
+        }
+
+        return participantes;
+    }
+
+    public void excluirTurma(String idTurma, String idProfessor) throws SQLException {
+        String sqlVerificarProprietario = "SELECT 1 FROM public.\"TURMAS\" WHERE id = ? AND id_proprietario = ?";
+        String sqlDeleteAlunoTurma = "DELETE FROM public.\"ALUNO_TURMA\" WHERE id_turma = ?";
+        String sqlDeleteProfessorTurma = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE id_turma = ?";
+        String sqlDeleteTurma = "DELETE FROM public.\"TURMAS\" WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmtVerificar = conn.prepareStatement(sqlVerificarProprietario)) {
+                stmtVerificar.setLong(1, Long.parseLong(idTurma));
+                stmtVerificar.setLong(2, Long.parseLong(idProfessor));
+
+                try (ResultSet rs = stmtVerificar.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new SQLException("Você não é o proprietário desta turma.");
+                    }
+                }
+            }
+
+            try (PreparedStatement stmtAlunoTurma = conn.prepareStatement(sqlDeleteAlunoTurma)) {
+                stmtAlunoTurma.setLong(1, Long.parseLong(idTurma));
+                stmtAlunoTurma.executeUpdate();
+            }
+
+            try (PreparedStatement stmtProfessorTurma = conn.prepareStatement(sqlDeleteProfessorTurma)) {
+                stmtProfessorTurma.setLong(1, Long.parseLong(idTurma));
+                stmtProfessorTurma.executeUpdate();
+            }
+
+            try (PreparedStatement stmtTurma = conn.prepareStatement(sqlDeleteTurma)) {
+                stmtTurma.setLong(1, Long.parseLong(idTurma));
+
+                if (stmtTurma.executeUpdate() == 0) {
+                    throw new SQLException("Nenhuma turma foi removida.");
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 
     public void inserirPessoaTurma(String email, String idTurma) throws SQLException {

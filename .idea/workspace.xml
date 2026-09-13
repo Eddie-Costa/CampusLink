@@ -139,7 +139,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
-          <line>90</line>
+          <line>100</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">

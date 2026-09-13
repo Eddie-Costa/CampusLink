@@ -11,6 +11,8 @@ public class TurmaDTO {
 
     private Long id;
 
+    private Long idProprietario;
+
     @NotBlank(message = "O nome da turma é obrigatório")
     @Size(max = 100, message = "O nome da turma deve ter no máximo 100 caracteres")
     private String nomeTurma;
@@ -18,4 +20,6 @@ public class TurmaDTO {
     private String descricao;
 
     private String emailPessoa;
+
+    private String tipoUsuario;
 }
