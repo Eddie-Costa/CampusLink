@@ -48,7 +48,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "entrega1409",
+    "git-widget-placeholder": "Merging entrega1409",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "project.structure.last.edited": "Project",
@@ -139,7 +139,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
-          <line>100</line>
+          <line>158</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">

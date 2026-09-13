@@ -16,10 +16,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import com.example.CampusLink.dto.ConteudoDTO;
+import com.example.CampusLink.service.ConteudoService;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.CampusLink.service.ArquivoService;
 import java.sql.SQLException;
 import java.util.List;
+import com.example.CampusLink.dto.ArquivoDTO;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class turmasController {
@@ -34,6 +42,12 @@ public class turmasController {
 
     @Autowired
     private turmaDAO turmaDAO;
+
+    @Autowired
+    private ConteudoService conteudoService;
+
+    @Autowired
+    private ArquivoService arquivoService;
 
     @GetMapping("/turmas")
     public String Turmas(Model model, HttpSession session) throws SQLException {
@@ -80,7 +94,51 @@ public class turmasController {
         model.addAttribute("turma", turma);
         model.addAttribute("participantesTurma", participantesTurma);
         model.addAttribute("isTurmaAdmin", isTurmaAdmin);
+        model.addAttribute("conteudo", new ConteudoDTO());
+        List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(Long.parseLong(id));
+        model.addAttribute("conteudos", conteudos);
+
+        Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+        for (ConteudoDTO conteudo : conteudos) {
+            ArquivoDTO arquivo = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+            if (arquivo != null) {
+                arquivosPorConteudo.put(conteudo.getId(), arquivo);
+            }
+        }
+        model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
         return "Geral/ambienteTurma";
+    }
+    @PostMapping("/turmas/{id}/conteudos")
+    public String criarConteudo(@PathVariable Long id,
+                                @Valid @ModelAttribute("conteudo") ConteudoDTO conteudoDTO,
+                                BindingResult result,
+                                @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
+                                HttpSession session,
+                                Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            logger.warn("[criarConteudo] aluno tentou cadastrar conteúdo na turma {}.", id);
+            return "redirect:/turmas/" + id;
+        }
+        if (result.hasErrors()) {
+            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("conteudos", conteudoService.listarPorTurma(id));
+            return "Geral/ambienteTurma";
+        }
+
+        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+
+        conteudoDTO.setIdTurma(id);
+        conteudoDTO.setIdProfessor(Long.parseLong(idProfessor));
+
+        conteudoService.criar(conteudoDTO, arquivo);
+
+        return "redirect:/turmas/" + id;
     }
 
     @PostMapping("/criarTurma")
@@ -107,6 +165,59 @@ public class turmasController {
         return "redirect:/turmas";
     }
 
+    @PostMapping("/turmas/{id}/conteudos/{idConteudo}/excluir")
+    public String excluirConteudo(@PathVariable Long id,
+                                  @PathVariable Long idConteudo,
+                                  HttpSession session) {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            logger.warn("[excluirConteudo] aluno tentou excluir conteúdo {} da turma {}.", idConteudo, id);
+            return "redirect:/turmas/" + id;
+        }
+
+        conteudoService.excluir(idConteudo);
+
+        return "redirect:/turmas/" + id;
+    }
+    @PostMapping("/turmas/{id}/conteudos/{idConteudo}/editar")
+    public String editarConteudo(@PathVariable Long id,
+                                 @PathVariable Long idConteudo,
+                                 @Valid @ModelAttribute("conteudo") ConteudoDTO conteudoDTO,
+                                 BindingResult result,
+                                 @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
+                                 HttpSession session,
+                                 Model model) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            logger.warn("[editarConteudo] aluno tentou editar conteúdo {} da turma {}.", idConteudo, id);
+            return "redirect:/turmas/" + id;
+        }
+
+        if (result.hasErrors()) {
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("conteudos", conteudoService.listarPorTurma(id));
+            return "Geral/ambienteTurma";
+        }
+
+        conteudoDTO.setId(idConteudo);
+        conteudoService.atualizar(conteudoDTO);
+
+        if (arquivo != null && !arquivo.isEmpty()) {
+            arquivoService.salvar(arquivo, idConteudo);
+        }
+
+        return "redirect:/turmas/" + id;
+    }
+
     @PostMapping("/adicionarPessoas")
     public String adicionarPessoas(@ModelAttribute("turma") TurmaDTO turmaDTO, HttpSession session, Model model) throws SQLException {
 
@@ -124,6 +235,8 @@ public class turmasController {
             logger.warn("[adicionarPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
             model.addAttribute("idTurma", turmaDTO.getId());
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(turmaDTO.getId())));
+            model.addAttribute("conteudo", new ConteudoDTO());
+            model.addAttribute("conteudos", conteudoService.listarPorTurma(turmaDTO.getId()));
             return "Geral/ambienteTurma";
         }
 

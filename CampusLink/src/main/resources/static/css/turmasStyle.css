@@ -163,7 +163,85 @@ body {
     font-size: 18px;
     font-weight: 600;
 }
+/* ===============================
+   VOLTAR / TÍTULO DA TURMA
+================================ */
 
+.voltar-turmas {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: #ffffff;
+    text-decoration: none;
+    opacity: 0.85;
+}
+
+.voltar-turmas:hover {
+    color: #ffffff;
+    opacity: 1;
+    text-decoration: underline;
+}
+
+
+/* ===============================
+   LISTA DE CONTEÚDOS (turma)
+================================ */
+
+.lista-conteudos {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+.conteudo-card {
+    width: 100%;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-radius: 18px;
+    background-color: #11194d;
+    color: #ffffff;
+    transition:
+            transform 0.2s ease,
+            background-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+
+.conteudo-card:hover {
+    background-color: #182363;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 25, 75, 0.25);
+}
+
+
+.conteudo-nome {
+    font-size: 19px;
+    font-weight: 700;
+}
+
+
+.conteudo-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: #cfd4ee;
+}
+
+
+.conteudo-link {
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+
+.conteudo-link:hover {
+    color: #ffffff;
+}
 
 /* ===============================
    MODAL

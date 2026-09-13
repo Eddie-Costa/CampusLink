@@ -68,7 +68,7 @@ public class professorDAO {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, nomeTurma);
                 stmt.setString(2, descricao);
-                stmt.setLong(3, Long.parseLong(idProfessor));
+                stmt.setLong(3, Long.parseLong(idProfessor)); // id_proprietario
 
                 if (stmt.executeUpdate() == 0) {
                     throw new SQLException("Nenhuma turma foi inserida.");
