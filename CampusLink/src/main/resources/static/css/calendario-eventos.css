@@ -155,6 +155,135 @@ body {
     color: var(--azul-texto);
 }
 
+/* Área que mantém o calendário e o resumo lado a lado */
+.calendar-area {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 18px;
+    width: min(96%, 1180px);
+    margin: 0 auto;
+}
+
+.calendar-area .calendar {
+    flex: 1 1 920px;
+    width: auto;
+    margin: 0;
+}
+
+/* Resumo das prioridades exibido ao lado do calendário */
+.prioridades-resumo {
+    flex: 0 0 240px;
+    padding: 18px;
+    border: 2px solid rgba(45, 156, 229, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 5px 12px rgba(17, 24, 63, 0.10);
+}
+
+.prioridades-resumo h2 {
+    margin: 0 0 14px;
+    color: var(--azul-texto);
+    font-size: 17px;
+    text-align: center;
+}
+
+.prioridade-resumo-item,
+.prioridade-resumo-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 9px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--azul-texto);
+    font-size: 12px;
+}
+
+.prioridade-resumo-item strong,
+.prioridade-resumo-total strong {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 7px;
+    border-radius: 50%;
+    font-size: 13px;
+}
+
+.prioridade-resumo-alta {
+    border-left: 5px solid var(--vermelho-evento);
+}
+
+.prioridade-resumo-alta strong {
+    background: var(--vermelho-evento);
+    color: #ffffff;
+}
+
+.prioridade-resumo-media {
+    border-left: 5px solid var(--amarelo-evento);
+}
+
+.prioridade-resumo-media strong {
+    background: var(--amarelo-evento);
+    color: var(--azul-escuro);
+}
+
+.prioridade-resumo-baixa {
+    border-left: 5px solid var(--azul-prioridade);
+}
+
+.prioridade-resumo-baixa strong {
+    background: var(--azul-prioridade);
+    color: #ffffff;
+}
+
+.prioridade-resumo-total {
+    margin-top: 14px;
+    border-top: 1px solid rgba(17, 24, 63, 0.14);
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.prioridade-resumo-total strong {
+    background: #ffffff;
+    color: var(--azul-escuro);
+}
+
+/* Legenda posicionada abaixo do resumo de prioridades */
+.resumo-legenda {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(17, 24, 63, 0.14);
+    color: var(--azul-texto);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.resumo-legenda .legenda-instrução,
+.resumo-legenda .legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    text-align: left;
+}
+
+.resumo-legenda .legenda-instrução {
+    flex-wrap: wrap;
+}
+
+.resumo-legenda .legenda-cor {
+    flex: 0 0 auto;
+}
+
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -379,6 +508,102 @@ body {
     font-size: 20px;
 }
 
+/* Ações do cabeçalho dos cards */
+.eventos-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Botão para ocultar e mostrar os cards comuns */
+.botao-alternar-cards {
+    padding: 8px 14px;
+    border: 1px solid var(--azul-escuro);
+    border-radius: 7px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.botao-alternar-cards:hover {
+    background: #27316e;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(17, 24, 63, 0.18);
+}
+
+.botao-alternar-cards:focus-visible {
+    outline: 2px solid var(--azul-borda);
+    outline-offset: 2px;
+}
+
+/* Área do último evento cadastrado */
+.ultimo-evento-destaque {
+    margin-bottom: 18px;
+    padding: 14px;
+    border: 2px solid rgba(45, 156, 229, 0.45);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 4px 12px rgba(17, 24, 63, 0.10);
+}
+
+.ultimo-evento-destaque[hidden] {
+    display: none;
+}
+
+.ultimo-evento-titulo {
+    margin-bottom: 10px;
+    color: var(--azul-texto);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.ultimo-evento-container {
+    width: 100%;
+}
+
+.ultimo-evento-container .evento-item {
+    margin-bottom: 0;
+}
+
+/* O selo "Novo" agora é um elemento real ao lado do nome do evento. */
+.evento-item-fixo::before {
+    content: none;
+}
+
+/*
+ * Quando o usuário oculta os cards,
+ * somente a lista comum desaparece.
+ * O último evento continua visível acima.
+ */
+.eventos-lista.cards-ocultos {
+    display: none;
+}
+
+.sem-eventos-mes {
+    margin: 18px 0 0;
+    padding: 16px;
+    border: 1px dashed rgba(17, 24, 63, 0.28);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.58);
+    color: var(--azul-texto);
+    font-size: 13px;
+    text-align: center;
+}
+
+.sem-eventos-mes[hidden] {
+    display: none;
+}
+
 .ordenacao-eventos {
     display: flex;
     align-items: center;
@@ -477,7 +702,27 @@ body {
 }
 
 .evento-identificacao {
+    display: flex;
+    align-items: center;
+    gap: 9px;
     min-width: 0;
+    flex-wrap: wrap;
+}
+
+.evento-badge-novo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(17, 24, 63, 0.18);
 }
 
 .evento-item h3 {
@@ -492,6 +737,56 @@ body {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.evento-acoes-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.form-excluir-evento {
+    margin: 0;
+    padding: 0;
+}
+
+.botao-excluir-evento {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(196, 44, 44, 0.34);
+    border-radius: 8px;
+    background: rgba(229, 57, 53, 0.09);
+    color: #c92f2b;
+    cursor: pointer;
+    transition:
+            background 0.2s ease,
+            color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.botao-excluir-evento svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.botao-excluir-evento:hover {
+    background: #e53935;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(229, 57, 53, 0.25);
+}
+
+.botao-excluir-evento:focus-visible {
+    outline: 2px solid #e53935;
+    outline-offset: 2px;
 }
 
 .prioridade-indicador {
@@ -564,9 +859,85 @@ body {
     color: var(--azul-texto);
 }
 
+/* Informações de conteúdo exibidas dentro dos cards */
+.evento-conteudos {
+    margin-top: 8px;
+    color: #303b5f;
+    font-size: 13px;
+}
+
+.evento-conteudos > strong {
+    color: var(--azul-texto);
+}
+
+.conteudos-associados {
+    margin-top: 6px;
+}
+
+.conteudo-status {
+    display: inline-block;
+    margin-bottom: 5px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(32, 185, 107, 0.14);
+    color: #12814a;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.conteudos-associados ul {
+    margin: 4px 0 0 18px;
+    padding: 0;
+}
+
+.conteudos-associados li {
+    margin: 3px 0;
+}
+
+/* Em telas menores, o resumo desce para baixo do calendário */
+@media (max-width: 1050px) {
+    .calendar-area {
+        flex-direction: column;
+        width: min(92%, 920px);
+    }
+
+    .calendar-area .calendar {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .prioridades-resumo {
+        width: 100%;
+        flex: none;
+    }
+}
+
 @media (max-width: 700px) {
     .page-content {
         padding: 18px 8px 28px;
+    }
+
+    .calendar-area {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .prioridades-resumo {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .prioridades-resumo h2 {
+        font-size: 16px;
+    }
+
+    .prioridade-resumo-item,
+    .prioridade-resumo-total {
+        font-size: 11px;
+    }
+
+    .resumo-legenda {
+        font-size: 11px;
     }
 
     .calendar-controls {
