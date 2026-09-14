@@ -7,19 +7,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-// Indica que esta classe representa uma tabela do banco de dados
 @Entity
 @Table(name = "\"EVENTOS\"", schema = "public")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-
 public class Evento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Setter(AccessLevel.NONE)
     private Long id;
 
@@ -48,51 +47,67 @@ public class Evento {
     private String status;
 
     @Column(name = "prioridade")
-
     @Setter(AccessLevel.NONE)
     private String prioridade;
 
+    // usado só no codigo e nao vai para a tabela
     @Transient
     private String conteudoId;
 
-    // usado quando a prioridade nao e informada
+    @Transient
+    private String nomeTurma;
+
+    @Transient
+    private List<String> nomesConteudos = new ArrayList<>();
+
+
+    // cria o evento com prioridade media
     public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId) {
+
         this(nome, inicio, fim, conteudoId, "MEDIA");
     }
 
-    // usado para criar um evento
-    public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId, String prioridade
-    ) {
+
+    // cria o evento com a prioridade escolhida
+    public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId, String prioridade) {
+
         this.nome = nome;
         this.inicio = inicio;
         this.fim = fim;
         this.conteudoId = conteudoId;
-
-        // prioridade tenha um valor permitido
         this.prioridade = normalizarPrioridade(prioridade);
-
-        // Todo evento começa com o status ativo.
         this.status = "ATIVO";
     }
 
-    // prioridade em um formato padrão
+
+    // deixa a prioridade no formato usado pelo sistema
+
     private String normalizarPrioridade(String prioridade) {
 
-        if (prioridade == null || prioridade.isBlank()) {return "MEDIA";}
+        if (prioridade == null || prioridade.isBlank()) {
+
+            return "MEDIA";
+        }
 
         String prioridadeNormalizada = prioridade.trim().toUpperCase();
 
-        //  somente os tres niveis definidos pelo sistema
         return switch (prioridadeNormalizada) {
-            case "ALTA", "MEDIA", "BAIXA" -> prioridadeNormalizada;
 
-            // Qualquer outro valor recebe MEDIA.
+            case "ALTA", "MEDIA", "BAIXA" -> prioridadeNormalizada;
             default -> "MEDIA";
         };
     }
 
-    // altera a prioridade sempre aplicando a validaca
-    public void setPrioridade(String prioridade) {
+
+    public void setPrioridade(String prioridade
+    ) {
+
         this.prioridade = normalizarPrioridade(prioridade);
     }
+
+
+    // verifica se o evento tem algum conteudo
+    public boolean possuiConteudoAssociado() {
+
+        return nomesConteudos != null && !nomesConteudos.isEmpty();}
 }

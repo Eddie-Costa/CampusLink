@@ -244,6 +244,30 @@
                            placeholder="Ex.: 120"
                            required>
 
+                    <label for="turmaEvento">
+                        Turma
+                    </label>
+
+                    <select id="turmaEvento"
+                            name="turmaId"
+                            required>
+
+                        <option value="">
+                            Selecione a turma
+                        </option>
+
+                        <option th:each="turma : ${turmasProfessor}"
+                                th:value="${turma.id}"
+                                th:text="${turma.nomeTurma}">
+                            Nome da turma
+                        </option>
+
+                    </select>
+
+                    <small class="select-help">
+                        Selecione primeiro a turma em que o evento será cadastrado.
+                    </small>
+
                     <label for="conteudosRelacionados">
                         Conteúdos relacionados
                     </label>
@@ -251,20 +275,17 @@
                     <select id="conteudosRelacionados"
                             name="conteudoIds"
                             multiple
-                            size="3">
+                            size="3"
+                            disabled>
 
-                        <option th:each="conteudo : ${conteudos}"
-                                th:value="${conteudo.id}"
-                                th:text="${conteudo.titulo
-                                          + ' - '
-                                          + conteudo.disciplina}">
-                            Conteúdo acadêmico
+                        <option value="" disabled>
+                            Selecione uma turma primeiro
                         </option>
 
                     </select>
 
                     <small class="select-help">
-                        Use Ctrl para selecionar mais de um conteúdo.
+                        Depois de escolher a turma, serão exibidos somente os conteúdos dessa turma. Use Ctrl para selecionar mais de um conteúdo.
                     </small>
 
                     <button class="register-button"
@@ -433,6 +454,12 @@
     const gradeHorarios =
         document.getElementById('gradeHorarios');
 
+    const turmaEvento =
+        document.getElementById('turmaEvento');
+
+    const conteudosRelacionados =
+        document.getElementById('conteudosRelacionados');
+
     const eventosDados = [
 
         /*[# th:each="evento : ${eventos}"]*/
@@ -483,6 +510,121 @@
         /*[/]*/
 
     ];
+
+    function mostrarMensagemConteudos(mensagem) {
+
+        if (!conteudosRelacionados) {
+            return;
+        }
+
+        conteudosRelacionados.innerHTML = '';
+
+        const option =
+            document.createElement('option');
+
+        option.value = '';
+        option.textContent = mensagem;
+        option.disabled = true;
+
+        conteudosRelacionados.appendChild(option);
+    }
+
+    async function carregarConteudosDaTurma(turmaId) {
+
+        if (!conteudosRelacionados) {
+            return;
+        }
+
+        if (!turmaId) {
+
+            conteudosRelacionados.disabled = true;
+
+            mostrarMensagemConteudos(
+                'Selecione uma turma primeiro'
+            );
+
+            return;
+        }
+
+        conteudosRelacionados.disabled = true;
+
+        mostrarMensagemConteudos(
+            'Carregando conteúdos...'
+        );
+
+        try {
+
+            const resposta = await fetch(
+                `/eventos/conteudos?turmaId=${encodeURIComponent(turmaId)}`
+            );
+
+            if (!resposta.ok) {
+                throw new Error(
+                    `Erro HTTP ${resposta.status}`
+                );
+            }
+
+            const conteudos =
+                await resposta.json();
+
+            conteudosRelacionados.innerHTML = '';
+
+            if (
+                !Array.isArray(conteudos)
+                || conteudos.length === 0
+            ) {
+
+                mostrarMensagemConteudos(
+                    'Nenhum conteúdo cadastrado nesta turma'
+                );
+
+                conteudosRelacionados.disabled = true;
+
+                return;
+            }
+
+            conteudos.forEach(function (conteudo) {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = conteudo.id;
+                option.textContent = conteudo.titulo;
+
+                conteudosRelacionados.appendChild(
+                    option
+                );
+            });
+
+            conteudosRelacionados.disabled = false;
+
+        } catch (erro) {
+
+            console.error(
+                'Erro ao carregar conteúdos da turma:',
+                erro
+            );
+
+            mostrarMensagemConteudos(
+                'Não foi possível carregar os conteúdos'
+            );
+
+            conteudosRelacionados.disabled = true;
+        }
+    }
+
+    if (turmaEvento) {
+
+        turmaEvento.addEventListener(
+            'change',
+            function () {
+
+                carregarConteudosDaTurma(
+                    turmaEvento.value
+                );
+            }
+        );
+    }
 
     function converterDataHora(valor) {
 
@@ -922,6 +1064,12 @@
     if (dataDisponibilidade) {
         dataDisponibilidade.value =
             dataInicial;
+    }
+
+    if (turmaEvento && turmaEvento.value) {
+        carregarConteudosDaTurma(
+            turmaEvento.value
+        );
     }
 
     atualizarCalendarioDeFundo();
