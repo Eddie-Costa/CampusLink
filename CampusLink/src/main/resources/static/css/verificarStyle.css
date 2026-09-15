@@ -1,0 +1,104 @@
+/* Fonte Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-image: url('../images/bg.png');
+    background-size: cover;
+}
+
+/* Título */
+h2{
+    text-align: center;
+    margin-top: 60px;
+    color: #1B4965;
+    font-weight: 800;
+}
+
+/* Label */
+.label_info{
+    margin-top: 5px;
+    margin-bottom: 10px;
+
+    align-self: center;
+
+    color: #1B4965;
+    font-weight: 800;
+}
+
+/* Formulário */
+.form-verificacao{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    padding: 30px;
+
+    width: 100%;
+    max-width: 350px;
+
+    background-color: white;
+
+    border-radius: 15px;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Campo de código */
+input[name="codigo"]{
+    width: 100%;
+    height: 40px;
+
+    padding: 5px 10px;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    font-size: 15px;
+}
+
+/* Botão */
+button[type="submit"]{
+    margin-top: 20px;
+
+    width: 100%;
+    height: 40px;
+
+    border: none;
+    border-radius: 10px;
+
+    background-color: #5FA8D3;
+
+    color: white;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+button[type="submit"]:hover{
+    background-color: #1B4965;
+}
+
+/* Mensagem de erro */
+p{
+    margin-top: 15px;
+
+    text-align: center;
+
+    color: red;
+    font-size: 14px;
+    font-weight: 600;
+}

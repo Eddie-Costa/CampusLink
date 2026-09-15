@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eventos | CampusLink</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+          href="/css/calendario-eventos.css"
+          th:href="@{/css/calendario-eventos.css}">
+</head>
+
+<body>
+
+<div class="app-page">
+
+    <header class="header-slot">
+        <div th:replace="~{fragments/header :: nav}"></div>
+    </header>
+
+    <div class="page-title">
+        Eventos
+    </div>
+
+    <main class="page-content"
+          data-tipo-usuario=""
+          data-url-cadastro="/eventos/cadastrar"
+          th:data-tipo-usuario="${session.tipoUsuario}"
+          th:data-url-cadastro="@{/eventos/cadastrar}">
+
+        <div class="popup-sucesso"
+             th:if="${mensagem}"
+             th:text="${mensagem}"
+             role="alert">
+        </div>
+
+        <div class="calendar-controls">
+
+            <button type="button"
+                    id="mesAnterior"
+                    class="calendar-button"
+                    aria-label="Mês anterior">
+                ‹
+            </button>
+
+            <h2 id="mesExibido"></h2>
+
+            <button type="button"
+                    id="mesProximo"
+                    class="calendar-button"
+                    aria-label="Próximo mês">
+                ›
+            </button>
+
+            <label class="month-selector"
+                   for="seletorMes">
+                Escolher mês:
+
+                <input type="month"
+                       id="seletorMes">
+            </label>
+
+        </div>
+
+        <div class="calendar-area">
+
+            <section id="calendar"
+                     class="calendar"
+                     aria-label="Calendário"
+                     role="grid">
+            </section>
+
+            <!-- Resumo dos eventos por prioridade -->
+            <aside class="prioridades-resumo"
+                   th:if="${session.tipoUsuario == 'professor'}"
+                   aria-label="Resumo de eventos por prioridade">
+
+                <h2>Resumo dos eventos</h2>
+
+                <div class="prioridade-resumo-item prioridade-resumo-alta">
+                    <span>Alta prioridade</span>
+                    <strong id="quantidadePrioridadeAlta">0</strong>
+                </div>
+
+                <div class="prioridade-resumo-item prioridade-resumo-media">
+                    <span>Média prioridade</span>
+                    <strong id="quantidadePrioridadeMedia">0</strong>
+                </div>
+
+                <div class="prioridade-resumo-item prioridade-resumo-baixa">
+                    <span>Baixa prioridade</span>
+                    <strong id="quantidadePrioridadeBaixa">0</strong>
+                </div>
+
+                <div class="prioridade-resumo-total">
+                    <span>Total de eventos</span>
+                    <strong id="quantidadeEventosTotal">0</strong>
+                </div>
+
+                <!-- Legenda do professor agora fica abaixo do resumo -->
+                <div class="resumo-legenda">
+
+                    <span class="legenda-instrução">
+                        Selecione o símbolo
+                        <strong>+</strong>
+                        para cadastrar um evento.
+                    </span>
+
+                    <span class="legenda-item">
+                        <span class="legenda-cor legenda-vermelha"></span>
+                        Início do evento
+                    </span>
+
+                    <span class="legenda-item">
+                        <span class="legenda-cor legenda-amarela"></span>
+                        Continuidade do evento
+                    </span>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+        <!-- Legenda específica do aluno -->
+        <div class="calendar-legend"
+             th:if="${session.tipoUsuario == 'aluno'}">
+
+            <span class="legenda-instrução">
+                Selecione o símbolo
+                <strong>+</strong>
+                para cadastrar sua disponibilidade.
+            </span>
+
+            <span class="legenda-item">
+                <span class="legenda-cor legenda-verde"></span>
+                Disponibilidade
+            </span>
+
+        </div>
+
+        <section class="disponibilidade-resumo"
+                 th:if="${session.tipoUsuario == 'aluno'}">
+
+            <h2>Minha disponibilidade</h2>
+
+            <p>
+                Cadastre no calendário quantas horas você poderá estudar
+                em cada dia.
+            </p>
+
+        </section>
+
+        <!-- Cartões exibidos somente para professores -->
+        <section class="eventos-cadastrados"
+                 th:if="${session.tipoUsuario == 'professor'
+                         and eventos != null
+                         and !#lists.isEmpty(eventos)}">
+
+            <div class="eventos-cabecalho-lista">
+
+                <h2>
+                    Eventos cadastrados
+                </h2>
+
+                <div class="eventos-acoes">
+
+                    <button type="button"
+                            id="alternarCards"
+                            class="botao-alternar-cards"
+                            aria-expanded="true"
+                            aria-controls="listaEventos">
+                        Ocultar cards
+                    </button>
+
+                    <div class="ordenacao-eventos">
+
+                        <label for="ordenarEventos">
+                            Ordenar por:
+                        </label>
+
+                        <select id="ordenarEventos"
+                                aria-label="Ordenar eventos">
+
+                            <option value="original">
+                                Ordem original
+                            </option>
+
+                            <option value="prioridade">
+                                Prioridade
+                            </option>
+
+                            <option value="inicio">
+                                Data de início
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--
+                O último evento cadastrado é movido para esta área pelo JavaScript.
+                Ele permanece sempre visível, mesmo quando os outros cards são ocultados,
+                e não participa da ordenação.
+            -->
+            <div id="ultimoEventoDestaque"
+                 class="ultimo-evento-destaque"
+                 hidden>
+
+                <div class="ultimo-evento-titulo">
+                    Último evento cadastrado
+                </div>
+
+                <div id="ultimoEventoContainer"
+                     class="ultimo-evento-container">
+                </div>
+
+            </div>
+
+            <div id="listaEventos"
+                 class="eventos-lista">
+
+                <div class="evento-item"
+                     th:each="evento : ${eventos}"
+                     th:data-id="${evento.id}"
+                     th:data-prioridade="${evento.prioridade}"
+                     th:data-inicio="${evento.inicio}">
+
+                    <div class="evento-cabecalho">
+
+                        <div class="evento-identificacao">
+
+                            <h3 th:text="${evento.nome}">
+                                Nome do evento
+                            </h3>
+
+                        </div>
+
+                        <div class="evento-acoes-card">
+
+                            <div class="prioridade-indicador">
+
+                                <span class="prioridade-icone prioridade-alta"
+                                      th:if="${evento.prioridade == 'ALTA'}"
+                                      aria-label="Alta prioridade"
+                                      title="Alta prioridade">
+                                    ↑
+                                </span>
+
+                                <span class="prioridade-icone prioridade-media"
+                                      th:if="${evento.prioridade == null
+                                              or evento.prioridade == 'MEDIA'}"
+                                      aria-label="Média prioridade"
+                                      title="Média prioridade">
+                                    −
+                                </span>
+
+                                <span class="prioridade-icone prioridade-baixa"
+                                      th:if="${evento.prioridade == 'BAIXA'}"
+                                      aria-label="Baixa prioridade"
+                                      title="Baixa prioridade">
+                                    ↓
+                                </span>
+
+                                <span class="prioridade-texto"
+                                      th:if="${evento.prioridade == 'ALTA'}">
+                                    Alta
+                                </span>
+
+                                <span class="prioridade-texto"
+                                      th:if="${evento.prioridade == null
+                                              or evento.prioridade == 'MEDIA'}">
+                                    Média
+                                </span>
+
+                                <span class="prioridade-texto"
+                                      th:if="${evento.prioridade == 'BAIXA'}">
+                                    Baixa
+                                </span>
+
+                            </div>
+
+                            <form class="form-excluir-evento"
+                                  th:action="@{/eventos/excluir}"
+                                  method="post"
+                                  onsubmit="return confirm('Deseja realmente excluir este evento?');">
+
+                                <input type="hidden"
+                                       name="eventoId"
+                                       th:value="${evento.id}">
+
+                                <button type="submit"
+                                        class="botao-excluir-evento"
+                                        aria-label="Excluir evento"
+                                        title="Excluir evento">
+
+                                    <svg viewBox="0 0 24 24"
+                                         aria-hidden="true"
+                                         focusable="false">
+                                        <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/>
+                                    </svg>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    <div class="evento-detalhes">
+
+                        <p>
+                            <strong>Início:</strong>
+
+                            <span th:text="${#temporals.format(
+                                evento.inicio,
+                                'dd/MM/yyyy HH:mm'
+                            )}">
+                                01/01/2026 08:00
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong>Fim:</strong>
+
+                            <span th:text="${#temporals.format(
+                                evento.fim,
+                                'dd/MM/yyyy HH:mm'
+                            )}">
+                                01/01/2026 10:00
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong>Turma:</strong>
+
+                            <span th:if="${evento.nomeTurma != null and !evento.nomeTurma.isBlank()}"
+                                  th:text="${evento.nomeTurma}">
+                                Nome da turma
+                            </span>
+
+                            <span th:if="${evento.nomeTurma == null or evento.nomeTurma.isBlank()}">
+                                Turma não identificada
+                            </span>
+                        </p>
+
+                        <div class="evento-conteudos">
+
+                            <strong>Conteúdo associado:</strong>
+
+                            <span th:if="${!evento.possuiConteudoAssociado()}">
+                                Não
+                            </span>
+
+                            <div th:if="${evento.possuiConteudoAssociado()}"
+                                 class="conteudos-associados">
+
+                                <span class="conteudo-status">
+                                    Sim
+                                </span>
+
+                                <ul>
+                                    <li th:each="nomeConteudo : ${evento.nomesConteudos}"
+                                        th:text="${nomeConteudo}">
+                                        Nome do conteúdo
+                                    </li>
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <p id="semEventosNoMes"
+               class="sem-eventos-mes"
+               hidden>
+                Nenhum evento começa neste mês.
+            </p>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script th:inline="javascript">
+
+    const meses = [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ];
+
+    const pagina =
+        document.querySelector('.page-content');
+
+    const tipoUsuario =
+        pagina.dataset.tipoUsuario || '';
+
+    const usuarioEhAluno =
+        tipoUsuario.toLowerCase() === 'aluno';
+
+    const usuarioEhProfessor =
+        tipoUsuario.toLowerCase() === 'professor';
+
+    const urlCadastro =
+        pagina.dataset.urlCadastro
+        || '/eventos/cadastrar';
+
+    const eventosDados = [
+
+        /*[# th:each="evento : ${eventos}"]*/
+
+        {
+            dataInicio:
+            /*[[${#temporals.format(
+                evento.inicio,
+                'yyyy-MM-dd'
+            )}]]*/ '',
+
+            dataFim:
+            /*[[${#temporals.format(
+                evento.fim,
+                'yyyy-MM-dd'
+            )}]]*/ '',
+
+            nome:
+            /*[[${evento.nome}]]*/ '',
+
+            prioridade:
+            /*[[${evento.prioridade}]]*/ 'MEDIA'
+        },
+
+        /*[/]*/
+
+    ];
+
+    const quantidadePrioridadeAlta =
+        document.getElementById('quantidadePrioridadeAlta');
+
+    const quantidadePrioridadeMedia =
+        document.getElementById('quantidadePrioridadeMedia');
+
+    const quantidadePrioridadeBaixa =
+        document.getElementById('quantidadePrioridadeBaixa');
+
+    const quantidadeEventosTotal =
+        document.getElementById('quantidadeEventosTotal');
+
+    function eventoComecaNoMesExibido(evento) {
+
+        if (!evento || !evento.dataInicio) {
+            return false;
+        }
+
+        const mesEsperado =
+            `${anoAtual}-${String(
+                mesAtual + 1
+            ).padStart(2, '0')}`;
+
+        return evento.dataInicio.startsWith(
+            mesEsperado
+        );
+    }
+
+    function atualizarResumoPrioridades() {
+
+        if (!usuarioEhProfessor) {
+            return;
+        }
+
+        const eventosDoMes =
+            eventosDados.filter(
+                eventoComecaNoMesExibido
+            );
+
+        let quantidadeAlta = 0;
+        let quantidadeMedia = 0;
+        let quantidadeBaixa = 0;
+
+        eventosDoMes.forEach(
+            function (evento) {
+
+                const prioridade =
+                    (evento.prioridade || 'MEDIA')
+                        .toUpperCase();
+
+                if (prioridade === 'ALTA') {
+                    quantidadeAlta++;
+                } else if (prioridade === 'BAIXA') {
+                    quantidadeBaixa++;
+                } else {
+                    quantidadeMedia++;
+                }
+            }
+        );
+
+        if (quantidadePrioridadeAlta) {
+            quantidadePrioridadeAlta.textContent =
+                quantidadeAlta;
+        }
+
+        if (quantidadePrioridadeMedia) {
+            quantidadePrioridadeMedia.textContent =
+                quantidadeMedia;
+        }
+
+        if (quantidadePrioridadeBaixa) {
+            quantidadePrioridadeBaixa.textContent =
+                quantidadeBaixa;
+        }
+
+        if (quantidadeEventosTotal) {
+            quantidadeEventosTotal.textContent =
+                eventosDoMes.length;
+        }
+    }
+
+
+    const disponibilidadesDados = [
+
+        /*[# th:each="disponibilidade : ${disponibilidades}"]*/
+
+        {
+            data:
+            /*[[${#temporals.format(
+                disponibilidade.data,
+                'yyyy-MM-dd'
+            )}]]*/ '',
+
+            horas:
+            /*[[${disponibilidade.horasDisponiveis}]]*/ 0
+        },
+
+        /*[/]*/
+
+    ];
+
+    const calendario =
+        document.getElementById('calendar');
+
+    const mesExibido =
+        document.getElementById('mesExibido');
+
+    const seletorMes =
+        document.getElementById('seletorMes');
+
+    const mesAnterior =
+        document.getElementById('mesAnterior');
+
+    const mesProximo =
+        document.getElementById('mesProximo');
+
+    const hoje =
+        new Date();
+
+    let mesAtual =
+        hoje.getMonth();
+
+    let anoAtual =
+        hoje.getFullYear();
+
+    function formatarData(data) {
+
+        const ano =
+            data.getFullYear();
+
+        const mes =
+            String(data.getMonth() + 1)
+                .padStart(2, '0');
+
+        const dia =
+            String(data.getDate())
+                .padStart(2, '0');
+
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    function buscarDisponibilidade(data) {
+
+        return disponibilidadesDados.find(
+            function (disponibilidade) {
+                return disponibilidade.data === data;
+            }
+        );
+    }
+
+    function buscarEventosDoDia(data) {
+
+        return eventosDados.filter(
+            function (evento) {
+                return evento.dataInicio <= data
+                    && data <= evento.dataFim;
+            }
+        );
+    }
+
+    function criarMarcadorDisponibilidade(
+        disponibilidade
+    ) {
+        const marcador =
+            document.createElement('span');
+
+        marcador.classList.add(
+            'disponibilidade-marcador'
+        );
+
+        marcador.textContent =
+            `Disponibilidade ${disponibilidade.horas}h`;
+
+        marcador.title =
+            `${disponibilidade.horas} horas disponíveis`;
+
+        return marcador;
+    }
+
+    function criarMarcadorEvento(
+        eventos,
+        data
+    ) {
+        if (!usuarioEhProfessor
+            || eventos.length === 0) {
+            return null;
+        }
+
+        const marcador =
+            document.createElement('span');
+
+        marcador.classList.add(
+            'evento-marcador'
+        );
+
+        const iniciouHoje =
+            eventos.some(
+                function (evento) {
+                    return evento.dataInicio === data;
+                }
+            );
+
+        const terminouHoje =
+            eventos.some(
+                function (evento) {
+                    return evento.dataFim === data;
+                }
+            );
+
+        if (iniciouHoje && terminouHoje) {
+
+            marcador.classList.add(
+                'evento-unico'
+            );
+
+        } else if (iniciouHoje) {
+
+            marcador.classList.add(
+                'evento-inicio'
+            );
+
+        } else if (terminouHoje) {
+
+            marcador.classList.add(
+                'evento-fim'
+            );
+
+        } else {
+
+            marcador.classList.add(
+                'evento-meio'
+            );
+        }
+
+        if (eventos.length > 1) {
+
+            marcador.textContent =
+                `${eventos.length} eventos`;
+
+        } else if (iniciouHoje) {
+
+            marcador.textContent =
+                eventos[0].nome;
+
+        } else {
+
+            marcador.textContent =
+                '';
+        }
+
+        marcador.title =
+            eventos
+                .map(
+                    function (evento) {
+                        return evento.nome;
+                    }
+                )
+                .join(', ');
+
+        return marcador;
+    }
+
+    function atualizarCalendario() {
+
+        calendario.innerHTML = '';
+
+        mesExibido.textContent =
+            `${meses[mesAtual]} de ${anoAtual}`;
+
+        seletorMes.value =
+            `${anoAtual}-${String(
+                mesAtual + 1
+            ).padStart(2, '0')}`;
+
+        const primeiroDiaSemana =
+            new Date(
+                anoAtual,
+                mesAtual,
+                1
+            ).getDay();
+
+        const ultimoDiaMes =
+            new Date(
+                anoAtual,
+                mesAtual + 1,
+                0
+            ).getDate();
+
+        const quantidadeCelulas =
+            Math.ceil(
+                (
+                    primeiroDiaSemana
+                    + ultimoDiaMes
+                ) / 7
+            ) * 7;
+
+        for (
+            let indice = 0;
+            indice < quantidadeCelulas;
+            indice++
+        ) {
+            const data =
+                new Date(
+                    anoAtual,
+                    mesAtual,
+                    indice
+                    - primeiroDiaSemana
+                    + 1
+                );
+
+            const dataFormatada =
+                formatarData(data);
+
+            const pertenceAoMesAtual =
+                data.getMonth() === mesAtual
+                && data.getFullYear() === anoAtual;
+
+            const celula =
+                document.createElement('div');
+
+            celula.classList.add(
+                'day-cell'
+            );
+
+            celula.setAttribute(
+                'role',
+                'gridcell'
+            );
+
+            if (!pertenceAoMesAtual) {
+                celula.classList.add(
+                    'adjacent-month'
+                );
+            }
+
+            const numeroDia =
+                document.createElement('span');
+
+            numeroDia.classList.add(
+                'day-number'
+            );
+
+            numeroDia.textContent =
+                String(
+                    data.getDate()
+                ).padStart(2, '0');
+
+            const linkCadastro =
+                document.createElement('a');
+
+            linkCadastro.classList.add(
+                'day-add'
+            );
+
+            linkCadastro.href =
+                `${urlCadastro}?data=${dataFormatada}`;
+
+            linkCadastro.textContent =
+                '+';
+
+            const acao =
+                usuarioEhAluno
+                    ? 'Cadastrar disponibilidade'
+                    : 'Cadastrar evento';
+
+            linkCadastro.setAttribute(
+                'aria-label',
+                `${acao} no dia ${data.getDate()}`
+            );
+
+            const eventosDoDia =
+                buscarEventosDoDia(
+                    dataFormatada
+                );
+
+            if (usuarioEhProfessor
+                && eventosDoDia.length > 0) {
+
+                const marcadorEvento =
+                    criarMarcadorEvento(
+                        eventosDoDia,
+                        dataFormatada
+                    );
+
+                if (marcadorEvento) {
+
+                    celula.classList.add(
+                        'tem-evento'
+                    );
+
+                    celula.appendChild(
+                        marcadorEvento
+                    );
+                }
+            }
+
+            if (usuarioEhAluno) {
+
+                const disponibilidadeEncontrada =
+                    buscarDisponibilidade(
+                        dataFormatada
+                    );
+
+                const disponibilidade =
+                    disponibilidadeEncontrada || {
+                        data: dataFormatada,
+                        horas: 0
+                    };
+
+                const marcadorDisponibilidade =
+                    criarMarcadorDisponibilidade(
+                        disponibilidade
+                    );
+
+                celula.classList.add(
+                    'tem-disponibilidade'
+                );
+
+                celula.appendChild(
+                    marcadorDisponibilidade
+                );
+            }
+
+            celula.appendChild(
+                numeroDia
+            );
+
+            celula.appendChild(
+                linkCadastro
+            );
+
+            calendario.appendChild(
+                celula
+            );
+        }
+
+        /*
+         * Sempre que o mês do calendário muda,
+         * atualiza também:
+         *
+         * - cards exibidos;
+         * - último evento fixo;
+         * - resumo por prioridade.
+         */
+        atualizarVisaoEventosDoMes();
+    }
+
+    mesAnterior.addEventListener(
+        'click',
+        function () {
+
+            mesAtual--;
+
+            if (mesAtual < 0) {
+                mesAtual = 11;
+                anoAtual--;
+            }
+
+            atualizarCalendario();
+        }
+    );
+
+    mesProximo.addEventListener(
+        'click',
+        function () {
+
+            mesAtual++;
+
+            if (mesAtual > 11) {
+                mesAtual = 0;
+                anoAtual++;
+            }
+
+            atualizarCalendario();
+        }
+    );
+
+    seletorMes.addEventListener(
+        'change',
+        function () {
+
+            const partes =
+                this.value.split('-');
+
+            anoAtual =
+                Number(partes[0]);
+
+            mesAtual =
+                Number(partes[1]) - 1;
+
+            atualizarCalendario();
+        }
+    );
+
+    const popup =
+        document.querySelector(
+            '.popup-sucesso'
+        );
+
+    if (popup) {
+
+        setTimeout(
+            function () {
+
+                popup.classList.add(
+                    'ocultar'
+                );
+
+                setTimeout(
+                    function () {
+                        popup.remove();
+                    },
+                    400
+                );
+            },
+            3500
+        );
+    }
+
+    const listaEventos =
+        document.getElementById('listaEventos');
+
+    const seletorOrdenacao =
+        document.getElementById('ordenarEventos');
+
+    const botaoAlternarCards =
+        document.getElementById('alternarCards');
+
+    const ultimoEventoDestaque =
+        document.getElementById('ultimoEventoDestaque');
+
+    const ultimoEventoContainer =
+        document.getElementById('ultimoEventoContainer');
+
+    const semEventosNoMes =
+        document.getElementById('semEventosNoMes');
+
+    /*
+     * Guarda todos os cards originais.
+     *
+     * Assim podemos trocar de mês sem perder
+     * os eventos que ficaram temporariamente ocultos.
+     */
+    const todosOsCartoesEventos =
+        listaEventos
+            ? Array.from(
+                listaEventos.querySelectorAll(
+                    '.evento-item'
+                )
+            )
+            : [];
+
+    const ordemOriginalEventos =
+        new Map(
+            todosOsCartoesEventos.map(
+                (cartao, indice) => [
+                    cartao,
+                    indice
+                ]
+            )
+        );
+
+    const pesoPrioridade = {
+        ALTA: 1,
+        MEDIA: 2,
+        BAIXA: 3
+    };
+
+    function cartaoComecaNoMesExibido(
+        cartao
+    ) {
+
+        if (!cartao) {
+            return false;
+        }
+
+        const inicio =
+            cartao.dataset.inicio || '';
+
+        const mesEsperado =
+            `${anoAtual}-${String(
+                mesAtual + 1
+            ).padStart(2, '0')}`;
+
+        return inicio.startsWith(
+            mesEsperado
+        );
+    }
+
+    function obterPrioridade(
+        cartao
+    ) {
+
+        const prioridade =
+            (cartao.dataset.prioridade || 'MEDIA')
+                .toUpperCase();
+
+        return pesoPrioridade[
+            prioridade
+            ] || 2;
+    }
+
+    function obterDataInicio(
+        cartao
+    ) {
+
+        const data =
+            Date.parse(
+                cartao.dataset.inicio || ''
+            );
+
+        return Number.isNaN(data)
+            ? Number.MAX_SAFE_INTEGER
+            : data;
+    }
+
+    function removerBadgeNovo(
+        cartao
+    ) {
+
+        if (!cartao) {
+            return;
+        }
+
+        cartao.classList.remove(
+            'evento-item-fixo'
+        );
+
+        const badge =
+            cartao.querySelector(
+                '.evento-badge-novo'
+            );
+
+        if (badge) {
+            badge.remove();
+        }
+    }
+
+    function adicionarBadgeNovo(
+        cartao
+    ) {
+
+        if (!cartao) {
+            return;
+        }
+
+        cartao.classList.add(
+            'evento-item-fixo'
+        );
+
+        const identificacao =
+            cartao.querySelector(
+                '.evento-identificacao'
+            );
+
+        if (
+            identificacao
+            && !identificacao.querySelector(
+                '.evento-badge-novo'
+            )
+        ) {
+
+            const badgeNovo =
+                document.createElement(
+                    'span'
+                );
+
+            badgeNovo.classList.add(
+                'evento-badge-novo'
+            );
+
+            badgeNovo.textContent =
+                'Novo';
+
+            identificacao.appendChild(
+                badgeNovo
+            );
+        }
+    }
+
+    function ordenarCartoes(
+        cartoes
+    ) {
+
+        const cartoesOrdenados =
+            [...cartoes];
+
+        const tipoOrdenacao =
+            seletorOrdenacao
+                ? seletorOrdenacao.value
+                : 'original';
+
+        if (tipoOrdenacao === 'prioridade') {
+
+            cartoesOrdenados.sort(
+                function (
+                    cartaoA,
+                    cartaoB
+                ) {
+
+                    const diferenca =
+                        obterPrioridade(
+                            cartaoA
+                        )
+                        - obterPrioridade(
+                            cartaoB
+                        );
+
+                    return diferenca
+                        || ordemOriginalEventos.get(
+                            cartaoA
+                        )
+                        - ordemOriginalEventos.get(
+                            cartaoB
+                        );
+                }
+            );
+        }
+
+        if (tipoOrdenacao === 'inicio') {
+
+            cartoesOrdenados.sort(
+                function (
+                    cartaoA,
+                    cartaoB
+                ) {
+
+                    const diferenca =
+                        obterDataInicio(
+                            cartaoA
+                        )
+                        - obterDataInicio(
+                            cartaoB
+                        );
+
+                    return diferenca
+                        || ordemOriginalEventos.get(
+                            cartaoA
+                        )
+                        - ordemOriginalEventos.get(
+                            cartaoB
+                        );
+                }
+            );
+        }
+
+        if (tipoOrdenacao === 'original') {
+
+            cartoesOrdenados.sort(
+                function (
+                    cartaoA,
+                    cartaoB
+                ) {
+
+                    return ordemOriginalEventos.get(
+                            cartaoA
+                        )
+                        - ordemOriginalEventos.get(
+                            cartaoB
+                        );
+                }
+            );
+        }
+
+        return cartoesOrdenados;
+    }
+
+    /*
+     * Atualiza toda a área de eventos conforme
+     * o mês atualmente exibido no calendário.
+     *
+     * Regra:
+     * um card pertence ao mês somente quando
+     * a DATA DE INÍCIO do evento está naquele mês.
+     */
+    function atualizarVisaoEventosDoMes() {
+
+        atualizarResumoPrioridades();
+
+        if (
+            !usuarioEhProfessor
+            || !listaEventos
+        ) {
+            return;
+        }
+
+        /*
+         * Primeiro devolve todos os cards
+         * para a lista comum.
+         */
+        todosOsCartoesEventos.forEach(
+            function (cartao) {
+
+                removerBadgeNovo(
+                    cartao
+                );
+
+                cartao.hidden = true;
+
+                listaEventos.appendChild(
+                    cartao
+                );
+            }
+        );
+
+        const cartoesDoMes =
+            todosOsCartoesEventos.filter(
+                cartaoComecaNoMesExibido
+            );
+
+        if (semEventosNoMes) {
+            semEventosNoMes.hidden =
+                cartoesDoMes.length > 0;
+        }
+
+        if (cartoesDoMes.length === 0) {
+
+            if (ultimoEventoDestaque) {
+                ultimoEventoDestaque.hidden =
+                    true;
+            }
+
+            return;
+        }
+
+        /*
+         * O último evento fixo agora é o evento
+         * com maior ID DENTRO DO MÊS exibido.
+         */
+        const ultimoCartaoDoMes =
+            cartoesDoMes.reduce(
+                function (
+                    maisNovo,
+                    cartaoAtual
+                ) {
+
+                    const idMaisNovo =
+                        Number(
+                            maisNovo.dataset.id || 0
+                        );
+
+                    const idAtual =
+                        Number(
+                            cartaoAtual.dataset.id || 0
+                        );
+
+                    return idAtual > idMaisNovo
+                        ? cartaoAtual
+                        : maisNovo;
+                }
+            );
+
+        adicionarBadgeNovo(
+            ultimoCartaoDoMes
+        );
+
+        ultimoCartaoDoMes.hidden =
+            false;
+
+        if (
+            ultimoEventoContainer
+            && ultimoEventoDestaque
+        ) {
+
+            ultimoEventoContainer.appendChild(
+                ultimoCartaoDoMes
+            );
+
+            ultimoEventoDestaque.hidden =
+                false;
+        }
+
+        /*
+         * Os demais cards daquele mês
+         * continuam respondendo ao Ordenar por.
+         */
+        const cartoesComunsDoMes =
+            cartoesDoMes.filter(
+                cartao =>
+                    cartao !== ultimoCartaoDoMes
+            );
+
+        const cartoesOrdenados =
+            ordenarCartoes(
+                cartoesComunsDoMes
+            );
+
+        cartoesOrdenados.forEach(
+            function (cartao) {
+
+                cartao.hidden =
+                    false;
+
+                listaEventos.appendChild(
+                    cartao
+                );
+            }
+        );
+    }
+
+    /*
+     * Oculta/mostra somente os cards comuns.
+     * O card fixo do mês continua visível.
+     */
+    if (
+        listaEventos
+        && botaoAlternarCards
+    ) {
+
+        botaoAlternarCards.addEventListener(
+            'click',
+            function () {
+
+                const estaOculto =
+                    listaEventos.classList.toggle(
+                        'cards-ocultos'
+                    );
+
+                this.textContent =
+                    estaOculto
+                        ? 'Mostrar cards'
+                        : 'Ocultar cards';
+
+                this.setAttribute(
+                    'aria-expanded',
+                    String(!estaOculto)
+                );
+            }
+        );
+    }
+
+    /*
+     * Ordenação afeta somente os cards
+     * do mês atualmente exibido.
+     */
+    if (seletorOrdenacao) {
+
+        seletorOrdenacao.addEventListener(
+            'change',
+            function () {
+
+                atualizarVisaoEventosDoMes();
+            }
+        );
+    }
+
+    atualizarCalendario();
+
+</script>
+
+</body>
+
+</html>

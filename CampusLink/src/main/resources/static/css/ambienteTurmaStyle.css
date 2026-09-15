@@ -1,0 +1,389 @@
+:root {
+    --azul-campus: #11183f;
+    --azul-hover: #1d2b62;
+    --branco: #ffffff;
+    --cinza-fundo: #b7c5d9;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--cinza-fundo);
+    background-image: url("/images/bg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--azul-campus);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* A navegação do fragmento header é formatada pelo Bootstrap. */
+
+/* Painel principal */
+.turmas-page {
+    position: relative;
+    width: calc(100% - 48px);
+    max-width: 1625px;
+    min-height: 456px;
+    margin: 125px auto 60px;
+    padding: 100px 42px 46px;
+    border-radius: 25px;
+    background-color: var(--azul-campus);
+    box-shadow: 0 12px 25px rgba(17, 24, 63, 0.28);
+}
+
+.voltar-turmas {
+    position: absolute;
+    top: -46px;
+    right: 18px;
+    color: var(--azul-campus);
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.voltar-turmas:hover {
+    color: var(--azul-hover);
+    text-decoration: underline;
+}
+
+.turmas-page > h1 {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    max-width: calc(100% - 48px);
+    margin: 0;
+    padding: 10px 35px;
+    transform: translateX(-50%);
+    border-radius: 27px 27px 0 0;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-size: 29px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+/* Descrição da turma */
+
+main.container > p {
+    max-width: 58%;
+    margin: 5px auto 30px;
+    padding: 0;
+    color: var(--branco);
+    font-size: 18px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Botões de pessoas no canto superior direito do painel */
+.pessoas-acoes {
+    position: absolute;
+    top: 30px;
+    right: 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+
+    /*
+       Não utilizar z-index aqui.
+       Isso permite que o modal fique acima do backdrop do Bootstrap.
+    */
+    z-index: auto;
+}
+
+.btn.btn-danger {
+    width: 140px;
+    min-height: 15px;
+    margin: 0;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 18px;
+    background-color: #d93025;
+    color: var(--branco);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn.btn-danger:hover {
+    background-color: #b42318;
+    color: var(--branco);
+    transform: translateY(-2px);
+}
+
+.btn.btn-danger:active {
+    transform: translateY(0);
+}
+
+/* Botões Adicionar e Remover Pessoas */
+
+.acao-turma {
+    min-width: 175px;
+    min-height: 34px;
+    padding: 7px 15px;
+    border: 0;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: 0.2s ease;
+    background-color: var(--branco);
+    color: var(--azul-campus);
+}
+
+.acao-turma:hover {
+    background-color: #e3e6ed;
+    transform: translateY(-2px);
+}
+
+.acao-turma:active {
+    transform: translateY(0);
+}
+
+/* Conteúdos da turma ficam dentro do painel */
+.lista-conteudos {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 48px;
+}
+
+.conteudo-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    min-height: 57px;
+    padding: 12px 27px;
+    border-radius: 17px;
+    background-color: var(--branco);
+    color: var(--azul-campus);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.conteudo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.conteudo-nome {
+    font-size: 20px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.conteudo-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 15px;
+}
+
+.conteudo-link {
+    color: #005bd3;
+    font-weight: 700;
+}
+
+.sem-conteudos {
+    color: var(--branco);
+    font-size: 16px;
+    text-align: center;
+}
+
+.conteudo-acoes {
+    position: absolute;
+    left: 35px;
+    bottom: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+}
+
+.conteudo-acoes .acao-turma {
+    min-width: 175px;
+    min-height: 34px;
+    margin: 0;
+}
+
+/* Somente a aparência interna dos modais é personalizada. */
+.campus-modal {
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px;
+    background-color: #f5f7fb;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.campus-modal .modal-header {
+    padding: 18px 22px;
+    border-bottom: 0;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+}
+
+.campus-modal .modal-title {
+    font-weight: 700;
+}
+
+.campus-modal .btn-close {
+    opacity: 1;
+    filter: brightness(0) invert(1);
+}
+
+.campus-modal .modal-body {
+    padding: 24px;
+    color: var(--azul-campus);
+}
+
+.campus-modal .modal-footer {
+    padding: 16px 24px 22px;
+    border-top: 0;
+    background-color: #f5f7fb;
+}
+
+.campus-modal .form-label {
+    margin-bottom: 8px;
+    color: var(--azul-campus);
+    font-weight: 700;
+}
+
+.campus-modal .form-control {
+    min-height: 44px;
+    border: 1px solid #c7cedb;
+    border-radius: 10px;
+    color: var(--azul-campus);
+}
+
+.campus-modal .form-control:focus {
+    border-color: var(--azul-campus);
+    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.15);
+}
+
+.btn-campus {
+    border: 0;
+    border-radius: 20px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-weight: 700;
+}
+
+.btn-campus:hover {
+    background-color: var(--azul-hover);
+    color: var(--branco);
+}
+
+.erro-campo {
+    margin-top: 7px;
+    color: #c62828;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+@media (max-width: 800px) {
+    .turmas-page {
+        width: calc(100% - 24px);
+        margin-top: 105px;
+        padding: 95px 22px 30px;
+    }
+
+    .turmas-page > h1 {
+        font-size: 22px;
+    }
+
+    .turma-descricao {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .pessoas-acoes {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 20px 0;
+    }
+
+    .lista-conteudos {
+        margin-top: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .turmas-page {
+        padding-top: 105px;
+    }
+
+    .voltar-turmas {
+        top: -43px;
+        right: 8px;
+        font-size: 13px;
+    }
+
+    .turmas-page > h1 {
+        top: -35px;
+        padding: 10px 14px;
+        font-size: 18px;
+    }
+
+    .acao-turma {
+        min-width: 150px;
+        font-size: 12px;
+    }
+
+    .conteudo-card {
+        padding: 12px 18px;
+    }
+
+    .conteudo-nome {
+        font-size: 17px;
+    }
+}
+.conteudo-excluir-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.conteudo-excluir {
+    border: 0;
+    border-radius: 18px;
+    background-color: var(--branco);
+    color: var(--azul-campus);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    padding: 7px 15px;
+    transition: 0.2s ease;
+}
+
+.conteudo-excluir:hover {
+    background-color: #e3e6ed;
+    color: var(--azul-campus);
+    transform: translateY(-2px);
+}
+
+.conteudo-excluir:active {
+    transform: translateY(0);
+}
