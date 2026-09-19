@@ -1,5 +1,6 @@
 package com.example.CampusLink.controller.Geral;
 
+import com.example.CampusLink.dao.conteudoDAO;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.service.ArquivoService;
 
@@ -19,22 +20,26 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 
 @Controller
 @RequestMapping("/arquivos")
 public class ArquivoController {
 
     private final ArquivoService arquivoService;
+    private final conteudoDAO conteudoDAO;
 
     public ArquivoController(
-            ArquivoService arquivoService) {
+            ArquivoService arquivoService,
+            conteudoDAO conteudoDAO) {
 
         this.arquivoService = arquivoService;
+        this.conteudoDAO = conteudoDAO;
     }
 
 
     /*
-     * PÁGINA DE MATERIAIS
+     * pagina de materiais
      */
     @GetMapping
     public String pagina(
@@ -55,7 +60,7 @@ public class ArquivoController {
 
 
     /*
-     * UPLOAD
+     * upload
      */
     @PostMapping("/upload")
     public String upload(
@@ -108,7 +113,7 @@ public class ArquivoController {
 
 
     /*
-     * DOWNLOAD
+     * download
      */
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> download(
@@ -124,6 +129,35 @@ public class ArquivoController {
 
         ArquivoDTO arquivo =
                 arquivoService.buscarPorId(id);
+
+        if (arquivo.getIdConteudo() != null) {
+
+            try {
+
+                String statusConteudo =
+                        conteudoDAO.buscarStatus(
+                                arquivo.getIdConteudo()
+                        );
+
+                Object tipoUsuario =
+                        session.getAttribute("tipoUsuario");
+
+                if ("aluno".equals(tipoUsuario)
+                        && statusConteudo != null
+                        && !"ativo".equalsIgnoreCase(statusConteudo)) {
+
+                    return ResponseEntity
+                            .status(403)
+                            .build();
+                }
+
+            } catch (SQLException e) {
+
+                return ResponseEntity
+                        .status(500)
+                        .build();
+            }
+        }
 
         byte[] dados =
                 arquivoService.download(id);
@@ -155,7 +189,7 @@ public class ArquivoController {
 
 
     /*
-     * EXCLUSÃO
+     * exclusao
      */
     @PostMapping("/{id}/excluir")
     public String excluir(

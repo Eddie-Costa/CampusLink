@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meus Conteúdos</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/meusConteudos.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<div th:if="${mensagemSucesso != null}"
+     class="alert alert-success alert-dismissible fade show mensagem-pagina"
+     role="alert">
+
+    <span th:text="${mensagemSucesso}">Mensagem de sucesso</span>
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Fechar">
+    </button>
+</div>
+
+<div th:if="${mensagemErro != null}"
+     class="alert alert-danger alert-dismissible fade show mensagem-pagina"
+     role="alert">
+
+    <span th:text="${mensagemErro}">Mensagem de erro</span>
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Fechar">
+    </button>
+</div>
+
+<main class="meus-conteudos-page">
+
+    <div class="meus-conteudos-container">
+
+        <div class="titulo-pagina">
+            <h1>Meus Conteúdos</h1>
+            <p>Veja todos os conteúdos que você cadastrou nas suas turmas</p>
+        </div>
+
+        <section class="resumo-conteudos">
+
+            <div class="resumo-card">
+                <span class="resumo-numero"
+                      th:text="${totalConteudos}">
+                    0
+                </span>
+
+                <span class="resumo-texto">
+                    Total de conteúdos
+                </span>
+            </div>
+
+            <div class="resumo-card">
+                <span class="resumo-numero"
+                      th:text="${totalAtivos}">
+                    0
+                </span>
+
+                <span class="resumo-texto">
+                    Ativos
+                </span>
+            </div>
+
+            <div class="resumo-card">
+                <span class="resumo-numero"
+                      th:text="${totalSuspensos}">
+                    0
+                </span>
+
+                <span class="resumo-texto">
+                    Suspensos
+                </span>
+            </div>
+
+            <div class="resumo-card">
+                <span class="resumo-numero"
+                      th:text="${totalRemovidos}">
+                    0
+                </span>
+
+                <span class="resumo-texto">
+                    Removidos
+                </span>
+            </div>
+
+        </section>
+
+        <section class="filtros-conteudos">
+
+            <div class="campo-busca">
+
+                <label for="campoBusca"
+                       class="form-label">
+                    Buscar conteúdo
+                </label>
+
+                <input type="text"
+                       id="campoBusca"
+                       class="form-control"
+                       placeholder="Digite o nome do conteúdo ou da turma">
+
+            </div>
+
+            <div class="campo-status">
+
+                <label for="filtroStatus"
+                       class="form-label">
+                    Status
+                </label>
+
+                <select id="filtroStatus"
+                        class="form-select">
+
+                    <option value="todos">
+                        Todos
+                    </option>
+
+                    <option value="ativo">
+                        Ativos
+                    </option>
+
+                    <option value="suspenso_denuncia">
+                        Suspensos
+                    </option>
+
+                    <option value="removido">
+                        Removidos
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+        <section class="lista-conteudos">
+
+            <div class="sem-conteudos"
+                 th:if="${#lists.isEmpty(conteudos)}">
+
+                Você ainda não cadastrou nenhum conteúdo
+
+            </div>
+
+            <div id="semResultadoBusca"
+                 class="sem-conteudos d-none">
+
+                Nenhum conteúdo encontrado
+
+            </div>
+
+            <article class="conteudo-card"
+                     th:each="conteudo : ${conteudos}"
+                     th:attr="data-titulo=${conteudo.titulo},
+                              data-turma=${conteudo.nomeTurma},
+                              data-status=${conteudo.status}">
+
+                <div class="conteudo-cabecalho">
+
+                    <div class="conteudo-titulo">
+
+                        <h2 th:text="${conteudo.titulo}">
+                            Nome do conteúdo
+                        </h2>
+
+                    </div>
+
+                    <div class="conteudo-acoes">
+
+                        <span class="status-conteudo status-ativo"
+                              th:if="${conteudo.status == 'ativo'}">
+                            Ativo
+                        </span>
+
+                        <span class="status-conteudo status-suspenso"
+                              th:if="${conteudo.status == 'suspenso_denuncia'}">
+                            Suspenso por denúncia
+                        </span>
+
+                        <span class="status-conteudo status-removido"
+                              th:if="${conteudo.status == 'removido'}">
+                            Removido
+                        </span>
+
+                        <form th:if="${conteudo.status == 'suspenso_denuncia' and not conteudo.revisaoSolicitada}"
+                              th:action="@{/meus-conteudos/{idConteudo}/solicitar-revisao(idConteudo=${conteudo.id})}"
+                              method="post">
+
+                            <input type="hidden"
+                                   th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <button type="submit"
+                                    class="botao-analise">
+                                Solicitar análise
+                            </button>
+
+                        </form>
+
+                        <span class="analise-solicitada"
+                              th:if="${conteudo.status == 'suspenso_denuncia' and conteudo.revisaoSolicitada}">
+                            Análise solicitada
+                        </span>
+
+                        <form th:if="${conteudo.status != 'removido'}"
+                              th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}"
+                              method="post"
+                              onsubmit="return confirm('Tem certeza que deseja remover este conteúdo?');">
+
+                            <input type="hidden"
+                                   th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <button type="submit"
+                                    class="botao-remover"
+                                    title="Remover conteúdo"
+                                    aria-label="Remover conteúdo">
+                                🗑
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+                <p class="conteudo-descricao"
+                   th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
+                   th:text="${conteudo.descricao}">
+                    Descrição do conteúdo
+                </p>
+
+                <div class="conteudo-informacoes">
+
+                    <div class="informacao">
+
+                        <span class="informacao-titulo">
+                            Turma
+                        </span>
+
+                        <span class="informacao-valor"
+                              th:text="${conteudo.nomeTurma != null ? conteudo.nomeTurma : 'Turma não encontrada'}">
+                            Turma
+                        </span>
+
+                    </div>
+
+                    <div class="informacao">
+
+                        <span class="informacao-titulo">
+                            Tipo
+                        </span>
+
+                        <span class="informacao-valor"
+                              th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">
+                            Tipo
+                        </span>
+
+                    </div>
+
+                    <div class="informacao">
+
+                        <span class="informacao-titulo">
+                            Duração
+                        </span>
+
+                        <span class="informacao-valor"
+                              th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : 'Não informada'}">
+                            Duração
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="conteudo-denuncias"
+                     th:if="${conteudo.alunosDenunciaram != null and !conteudo.alunosDenunciaram.isEmpty()}">
+
+                    <span class="denuncias-titulo">
+                        Denunciado por
+                    </span>
+
+                    <div class="lista-denunciantes">
+
+                        <span class="denunciante"
+                              th:each="aluno : ${conteudo.alunosDenunciaram}"
+                              th:text="${aluno}">
+                            Nome do aluno
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const campoBusca = document.getElementById('campoBusca');
+        const filtroStatus = document.getElementById('filtroStatus');
+        const conteudos = document.querySelectorAll('.conteudo-card');
+        const semResultado = document.getElementById('semResultadoBusca');
+
+        function filtrarConteudos() {
+
+            const busca = campoBusca.value.toLowerCase().trim();
+            const statusSelecionado = filtroStatus.value;
+
+            let quantidadeVisivel = 0;
+
+            conteudos.forEach(function (conteudo) {
+
+                const titulo =
+                    (conteudo.dataset.titulo || '').toLowerCase();
+
+                const turma =
+                    (conteudo.dataset.turma || '').toLowerCase();
+
+                const status =
+                    (conteudo.dataset.status || '').toLowerCase();
+
+                const combinaBusca =
+                    titulo.includes(busca) ||
+                    turma.includes(busca) ||
+                    status.includes(busca);
+
+                const combinaStatus =
+                    statusSelecionado === 'todos' ||
+                    status === statusSelecionado;
+
+                if (combinaBusca && combinaStatus) {
+
+                    conteudo.classList.remove('d-none');
+                    quantidadeVisivel++;
+
+                } else {
+
+                    conteudo.classList.add('d-none');
+                }
+            });
+
+            if (quantidadeVisivel === 0 &&
+                conteudos.length > 0) {
+
+                semResultado.classList.remove('d-none');
+
+            } else {
+
+                semResultado.classList.add('d-none');
+            }
+        }
+
+        campoBusca.addEventListener(
+            'input',
+            filtrarConteudos
+        );
+
+        filtroStatus.addEventListener(
+            'change',
+            filtrarConteudos
+        );
+    });
+</script>
+
+</body>
+</html>
