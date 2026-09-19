@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sobre Nós - CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/sobreNosStyle.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="sobre-page">
+
+    <section class="sobre-principal">
+
+        <div class="sobre-texto">
+
+            <span class="pagina-destaque">
+                Sobre o projeto
+            </span>
+
+            <h1>
+                Conectando professores alunos e conteúdos
+            </h1>
+
+            <p>
+                O CampusLink foi criado como uma plataforma acadêmica para
+                facilitar a organização e a comunicação dentro do ambiente
+                de ensino.
+            </p>
+
+        </div>
+
+        <div class="sobre-painel">
+
+            <span class="painel-titulo">
+                Nosso objetivo
+            </span>
+
+            <p>
+                Reunir em um único ambiente as principais informações que
+                professores e alunos precisam durante a rotina acadêmica.
+            </p>
+
+        </div>
+
+    </section>
+
+    <section class="sobre-bloco">
+
+        <h2>Por que o CampusLink foi criado</h2>
+
+        <p>
+            Durante a rotina acadêmica os alunos precisam acompanhar conteúdos
+            atividades eventos e diferentes informações. O CampusLink busca
+            reunir essas informações em um único sistema e facilitar o acesso
+            ao que é importante para cada turma.
+        </p>
+
+    </section>
+
+    <section class="valores-grid">
+
+        <article class="valor-card">
+            <span>01</span>
+            <h2>Organização</h2>
+            <p>
+                Facilitar o acesso aos conteúdos e informações acadêmicas.
+            </p>
+        </article>
+
+        <article class="valor-card">
+            <span>02</span>
+            <h2>Integração</h2>
+            <p>
+                Aproximar professores alunos turmas conteúdos e eventos.
+            </p>
+        </article>
+
+        <article class="valor-card">
+            <span>03</span>
+            <h2>Segurança</h2>
+            <p>
+                Utilizar controles de acesso e ferramentas para proteger
+                os usuários e os conteúdos da plataforma.
+            </p>
+        </article>
+
+    </section>
+
+    <section class="sobre-final">
+
+        <div>
+            <h2>Conheça as ferramentas da plataforma</h2>
+            <p>
+                Veja tudo o que já está disponível no CampusLink.
+            </p>
+        </div>
+
+        <a th:href="@{/funcionalidades}"
+           class="botao-funcionalidades">
+            Ver funcionalidades
+        </a>
+
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

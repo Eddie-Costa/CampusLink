@@ -15,8 +15,8 @@
       <list>
         <option value="Dockerfile" />
         <option value="Class" />
-        <option value="HTML File" />
         <option value="CSS File" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>

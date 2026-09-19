@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Funcionalidades - CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/funcionalidadesStyle.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="funcionalidades-page">
+
+    <section class="funcionalidades-topo">
+
+        <span class="pagina-destaque">
+            Funcionalidades
+        </span>
+
+        <h1>
+            Ferramentas para organizar professores e alunos
+        </h1>
+
+        <p>
+            Conheça as principais funcionalidades disponíveis no CampusLink.
+        </p>
+
+    </section>
+
+    <section class="funcionalidades-grid">
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">01</span>
+            <h2>Turmas</h2>
+            <p>
+                Professores podem administrar suas turmas e os alunos conseguem
+                acessar os ambientes em que estão cadastrados.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">02</span>
+            <h2>Conteúdos</h2>
+            <p>
+                Professores podem cadastrar links arquivos e materiais para os
+                alunos acessarem diretamente pela turma.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">03</span>
+            <h2>Eventos</h2>
+            <p>
+                Provas atividades e outros eventos podem ser cadastrados e
+                associados às turmas e conteúdos.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">04</span>
+            <h2>Plano de estudos</h2>
+            <p>
+                A disponibilidade informada pelo aluno ajuda na organização
+                das atividades e conteúdos dentro do prazo.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">05</span>
+            <h2>Denúncia de conteúdos</h2>
+            <p>
+                Alunos podem denunciar conteúdos suspeitos e o sistema pode
+                suspender o acesso para análise.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">06</span>
+            <h2>Controle do professor</h2>
+            <p>
+                O professor consegue acompanhar conteúdos cadastrados status
+                denúncias e solicitações de análise.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">07</span>
+            <h2>Segurança</h2>
+            <p>
+                O sistema possui autenticação verificação em duas etapas e
+                controle de acesso de acordo com o tipo de usuário.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">08</span>
+            <h2>Organização acadêmica</h2>
+            <p>
+                Conteúdos turmas eventos e informações ficam reunidos em uma
+                única plataforma.
+            </p>
+        </article>
+
+    </section>
+
+    <section class="funcionalidades-final">
+
+        <h2>Comece a utilizar o CampusLink</h2>
+
+        <p>
+            Entre na sua conta ou faça seu cadastro para acessar a plataforma.
+        </p>
+
+        <div class="acoes-final"
+             th:if="${session.usuarioLogado == null}">
+
+            <a th:href="@{/login}"
+               class="botao-principal">
+                Fazer Login
+            </a>
+
+            <a th:href="@{/cadastrar}"
+               class="botao-secundario">
+                Cadastrar
+            </a>
+
+        </div>
+
+        <div class="acoes-final"
+             th:if="${session.usuarioLogado != null}">
+
+            <a th:href="@{/turmas}"
+               class="botao-principal">
+                Ir para turmas
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
