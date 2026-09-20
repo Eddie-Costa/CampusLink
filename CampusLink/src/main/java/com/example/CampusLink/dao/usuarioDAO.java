@@ -208,7 +208,42 @@ public class usuarioDAO {
         return null;
     }
 
+    public String buscarPorTipoUsuario(String email) throws SQLException {
+
+        String sql = "SELECT u.\"perfil\" FROM public.\"USUARIOS\" u WHERE LOWER(u.\"email\") = ?";
+        Connection conn = dataSource.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, normalizarEmail(email));
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getString("perfil");
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+        return null;
+    }
+
     private String normalizarEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    public void UpdateSenhaUsuario(String SENHA, String EMAIL) throws SQLException {
+        Connection conn = dataSource.getConnection();
+
+        String sql = "UPDATE public.\"USUARIOS\" SET \"senha\" = ? WHERE \"email\" = ?";
+
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, SENHA);
+        stmt.setString(2, EMAIL);
+
+        System.out.println(stmt);
+        int linhas = stmt.executeUpdate();
+        System.out.println("Linhas afetadas: " + linhas);
+
+        stmt.close();
+        conn.close();
     }
 }

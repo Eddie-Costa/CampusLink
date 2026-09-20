@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <title>Cadastrar Professores</title>
@@ -7,62 +7,21 @@
     <link rel="stylesheet" th:href="@{/css/cadastrarStyle.css}">
 </head>
 
-<div id="modalTermos" class="modal">
-
-    <div class="modal-conteudo">
-
-        <span class="fechar" onclick="fecharModal()">
-            &times;
-        </span>
-
-        <h2>Termos de Uso</h2>
-
-        <p>Versão: 1.0.0 Data: 16/05/2026</p>
-
-        <p>
-            Ao realizar o cadastro na plataforma, o usuário declara estar ciente e concordar com a coleta e tratamento de seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD – Lei nº 13.709/2018).
-            Os dados coletados incluem:
-            Nome
-            Sobrenome
-            E-mail
-            Senha
-            As informações serão utilizadas exclusivamente para fins de identificação do usuário, autenticação de acesso, recuperação de conta, comunicação com a plataforma e utilização dos serviços oferecidos.
-            A senha do usuário será armazenada de forma criptografada utilizando a tecnologia BCrypt, integrada ao framework Spring Boot, garantindo maior segurança e proteção das informações.
-            O usuário poderá, a qualquer momento, solicitar consulta, exportação, atualização ou exclusão de seus dados pessoais, bem como revogar o consentimento concedido, conforme previsto pela LGPD.
-            Ao selecionar a opção de aceite durante o cadastro, o usuário confirma que leu e concorda com os termos apresentados para tratamento de seus dados pessoais.
-        </p>
-
-        <p>
-            A finalidade deste Termo de Consentimento é garantir transparência no tratamento dos dados pessoais coletados pela plataforma, assegurando que o titular esteja plenamente ciente sobre quais informações serão armazenadas, bem como os objetivos de sua utilização. Por meio deste consentimento, o usuário autoriza de forma livre, informada e inequívoca o tratamento de seus dados pessoais para fins de identificação, autenticação, segurança, comunicação e utilização dos serviços disponibilizados pela plataforma, em conformidade com os princípios e diretrizes estabelecidos pela Lei Geral de Proteção de Dados Pessoais.
-        </p>
-
-    </div>
-
-</div>
-
-<script>
-
-    function abrirModal(){
-        document.getElementById("modalTermos").style.display = "block";
-    }
-
-    function fecharModal(){
-        document.getElementById("modalTermos").style.display = "none";
-    }
-
-    window.onclick = function(event){
-
-        const modal = document.getElementById("modalTermos");
-
-        if(event.target == modal){
-            modal.style.display = "none";
-        }
-    }
-
-</script>
-
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div id="modalTermos" class="modal fade" tabindex="-1"
+         aria-labelledby="tituloTermos" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="tituloTermos" class="modal-title fs-5">Termos de Uso</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div id="textoTermos" class="modal-body termos-documento" th:attr="data-url=@{/documentos/termos-v1.0.txt}"  aria-live="polite">Carregando termos...</div>
+            </div>
+        </div>
+    </div>
 
     <div th:replace="~{fragments/header :: nav}"></div>
 
@@ -90,9 +49,12 @@
 
                 <label for="termos" class="label_info">Eu aceito os</label>
 
-                <span class="abrir-termos" onclick="abrirModal()">Termos de Uso</span>
+                <button type="button" class="abrir-termos btn btn-link p-0"
+                        data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso</button>
 
-                <input name="termos" type="checkbox" required class="checkbox" id="termos">
+                <input name="termos" type="checkbox" required disabled class="checkbox" id="termos"
+                       aria-describedby="orientacaoTermos">
+                <small id="orientacaoTermos">Abra os termos para habilitar o aceite.</small>
 
             </div>
 
@@ -109,11 +71,58 @@
             </div>
         </form>
     </main>
-</body>
+<script th:src="@{/js/termos.js}"></script>
 <script>
     const campos = document.querySelectorAll("#matricula, #nome, #email, #telefone, #datanasc, #senha");
     const checkbox = document.getElementById("termos");
     const botao = document.getElementById("btnSubmit");
+    const textoTermos = document.getElementById("textoTermos");
+    let termosCarregados = false;
+    let carregandoTermos = false;
+
+    async function carregarTermos() {
+        if (termosCarregados || carregandoTermos) {
+            return;
+        }
+
+        carregandoTermos = true;
+        checkbox.disabled = true;
+        checkbox.checked = false;
+        validarCampos();
+        textoTermos.textContent = "Carregando termos...";
+
+        const controlador = new AbortController();
+        const limite = setTimeout(() => controlador.abort(), 15000);
+
+        try {
+            const resposta = await fetch(textoTermos.dataset.url, {
+                signal: controlador.signal
+            });
+
+            if (!resposta.ok || resposta.redirected ||
+                !resposta.headers.get("Content-Type")?.toLowerCase().startsWith("text/plain")) {
+                throw new Error("Não foi possível obter o documento de termos.");
+            }
+
+            const texto = await resposta.text();
+            if (!texto.trim()) {
+                throw new Error("O documento de termos está vazio.");
+            }
+
+            renderizarTermos(textoTermos, texto);
+            termosCarregados = true;
+            checkbox.disabled = false;
+            document.getElementById("orientacaoTermos").textContent =
+                "Após ler os termos, marque a opção de aceite para continuar.";
+        } catch {
+            textoTermos.textContent =
+                "Não foi possível carregar os termos. Feche e abra esta janela para tentar novamente.";
+        } finally {
+            clearTimeout(limite);
+            carregandoTermos = false;
+            validarCampos();
+        }
+    }
 
     function validarCampos() {
         let todosPreenchidos = true;
@@ -124,7 +133,7 @@
             }
         });
 
-        const termosAceitos = checkbox.checked;
+        const termosAceitos = termosCarregados && !checkbox.disabled && checkbox.checked;
 
         botao.disabled = !(todosPreenchidos && termosAceitos);
     }
@@ -134,5 +143,8 @@
     });
 
     checkbox.addEventListener("change", validarCampos);
+    document.getElementById("modalTermos").addEventListener("show.bs.modal", carregarTermos);
+    validarCampos();
 </script>
+</body>
 </html>

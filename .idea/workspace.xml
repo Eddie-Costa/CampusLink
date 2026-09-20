@@ -22,7 +22,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="entrega1409" />
+        <entry key="$PROJECT_DIR$" value="release/v2.0.0" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -48,9 +48,9 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;release/v2.0.0&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;local/eddie-esqueceuSenha&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/src/main/resources/static/css&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
@@ -60,11 +60,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\CampusLink\src\main\resources\static\css" />
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates\Geral" />
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\static\css" />
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\java\com\example\CampusLink\service" />
+      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates\Geral" />
+      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink" />
+      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\CampusLink\src\main\resources\static\css" />
+      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
@@ -77,9 +77,9 @@
       <recent name="com.example.CampusLink.controller.Aluno" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.example.CampusLink.dto" />
       <recent name="com.example.CampusLink.dao" />
       <recent name="com.example.CampusLink.controller.Usuarios.Professor" />
-      <recent name="com.example.CampusLink.dto" />
       <recent name="com.example.CampusLink.controller" />
     </key>
   </component>
@@ -139,8 +139,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
-          <line>158</line>
+          <line>144</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
+          <line>168</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/ResetPaswordController.java</url>
+          <line>46</line>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
@@ -150,6 +160,15 @@
             <option name="WATCH_EXIT" value="false" />
           </properties>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/ResetPaswordController.java</url>
+          <line>44</line>
+          <properties class="com.example.CampusLink.controller.Geral.ResetPaswordController" method="ResetVerification">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

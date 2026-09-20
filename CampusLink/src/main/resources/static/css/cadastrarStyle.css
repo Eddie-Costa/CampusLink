@@ -205,3 +205,110 @@ p[name="mensagemDeErro"]{
     color: #111844;
     border: 1px solid #111844;
 }
+
+/* Documento de termos compartilhado pelos cadastros. */
+.termos-documento {
+    padding: clamp(1rem, 4vw, 2rem);
+    color: #27314f;
+    font-size: 1rem;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.termos-documento .termos-titulo {
+    margin: 0 0 1rem;
+    color: #111844;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.termos-documento .termos-metadados {
+    margin-bottom: .25rem;
+    color: #596579;
+    font-size: .9rem;
+}
+
+.termos-documento .termos-secao {
+    margin: 2rem 0 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #dce3eb;
+    color: #1b4965;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.termos-documento p,
+.termos-documento ul,
+.termos-documento table {
+    margin: 0 0 1.1rem;
+}
+
+.termos-documento ul {
+    padding-left: 1.5rem;
+}
+
+.termos-documento li + li {
+    margin-top: .5rem;
+}
+
+.termos-documento table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: .95rem;
+    line-height: 1.6;
+}
+
+.termos-documento th,
+.termos-documento td {
+    padding: .85rem;
+    border: 1px solid #dce3eb;
+    text-align: left;
+    vertical-align: top;
+}
+
+.termos-documento th {
+    background: #edf3f7;
+    color: #1b4965;
+}
+
+.termos-documento tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+@media (max-width: 575.98px) {
+    .termos-documento table,
+    .termos-documento tbody,
+    .termos-documento tr,
+    .termos-documento td {
+        display: block;
+        width: 100%;
+    }
+
+    .termos-documento thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .termos-documento tbody tr {
+        margin-bottom: 1rem;
+    }
+
+    .termos-documento td + td {
+        border-top: 0;
+    }
+
+    .termos-documento td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .25rem;
+        color: #1b4965;
+        font-weight: 700;
+    }
+}
