@@ -17,8 +17,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.slf4j.helpers.MessageFormatter;
 import java.sql.SQLException;
 import java.util.List;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Controller
 public class cadastrarAlunoController {
@@ -53,7 +56,19 @@ public class cadastrarAlunoController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         if (result.hasErrors()) {
-            logger.warn("Erro ao registrar o aluno com email:" + aluno.getEmail() + " Erro: " + result.getAllErrors());
+            logger.warn("Dados inválidos no cadastro do aluno. erros={}", result.getFieldErrors().stream()
+                    .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
+                    .toList());
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "VerificacaoRegistrar", null,
+                            MessageFormatter.arrayFormat("Dados inválidos no cadastro do aluno. erros={}", new Object[]{result.getFieldErrors().stream()
+                    .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
+                    .toList()}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
             return "Usuarios/Aluno/cadastrarAluno";
         }
@@ -111,6 +126,15 @@ public class cadastrarAlunoController {
 
         //Verificar duplicidade antes de tentar inserir
         if (!erros.isEmpty()) {
+            logger.warn("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", erros);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "registrar", null,
+                            MessageFormatter.arrayFormat("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", new Object[]{erros}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             SQLErrorHandler.VerificarErro("aluno", erros, model);
             model.addAttribute("aluno", aluno);
             return "Usuarios/Aluno/cadastrarAluno";
@@ -128,11 +152,29 @@ public class cadastrarAlunoController {
                     aluno.getSenha()
             );
 
-            logger.info("Sucesso ao cadastrar novo aluno com email: " + aluno.getEmail());
+            logger.info("Sucesso ao cadastrar novo aluno com email: {}", aluno.getEmail());
+            if (logger.isInfoEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "INFO", cadastrarAlunoController.class.getName(), "registrar", null,
+                            MessageFormatter.arrayFormat("Sucesso ao cadastrar novo aluno com email: {}", new Object[]{aluno.getEmail()}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return "Usuarios/Aluno/loginAluno";
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir aluno no banco com email: {}", aluno.getEmail(), e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", cadastrarAlunoController.class.getName(), "registrar", null,
+                            MessageFormatter.arrayFormat("Erro ao inserir aluno no banco com email: {}", new Object[]{aluno.getEmail()}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute("aluno", aluno);
             return "Usuarios/Aluno/cadastrarAluno";

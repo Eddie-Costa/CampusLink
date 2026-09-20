@@ -9,6 +9,7 @@ import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DisponibilidadeService;
 import com.example.CampusLink.service.EventoService;
+import com.example.CampusLink.dao.usuarioDAO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -37,6 +40,9 @@ import java.util.List;
 @RequestMapping("/eventos")
 @RequiredArgsConstructor
 public class EventosController {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(EventosController.class);
     private final EventoService eventoService;
@@ -53,11 +59,27 @@ public class EventosController {
         if (!usuarioPassouPeloLoginE2FA(session)) {
 
             logger.warn("Acesso recusado ao calendario");
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "exibirCalendario", null,
+                            "Acesso recusado ao calendario", null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return "redirect:/login";
         }
 
         carregarDadosDaPagina(model, session);
-        logger.info("Calendario exibido para {}", obterTipoUsuario(session));
+        logger.debug("Calendario exibido para {}", obterTipoUsuario(session));
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", EventosController.class.getName(), "exibirCalendario", null,
+                        MessageFormatter.arrayFormat("Calendario exibido para {}", new Object[]{obterTipoUsuario(session)}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         return "Geral/calendario-eventos";
     }
 
@@ -92,6 +114,14 @@ public class EventosController {
         )) {
 
             logger.warn("Professor {} tentou acessar a turma {}", idProfessor, turmaId);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "listarConteudosDaTurma", null,
+                            MessageFormatter.arrayFormat("Professor {} tentou acessar a turma {}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return List.of();
         }
 
@@ -149,6 +179,15 @@ public class EventosController {
 
         if (!professorTemAcessoATurma(idProfessor, turmaId)) {
 
+            logger.warn("Cadastro de evento recusado: professor sem acesso à turma. professorId={} turmaId={}", idProfessor, turmaId);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
+                            MessageFormatter.arrayFormat("Cadastro de evento recusado: professor sem acesso à turma. professorId={} turmaId={}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("erro", "Voce nao possui acesso a turma selecionada");
             return "redirect:/eventos/cadastrar";
         }
@@ -165,6 +204,15 @@ public class EventosController {
 
             if (conteudoInvalido) {
 
+                logger.warn("Cadastro de evento recusado: conteúdo não pertence à turma. professorId={} turmaId={} conteudoIds={}", idProfessor, turmaId, conteudoIds);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
+                                MessageFormatter.arrayFormat("Cadastro de evento recusado: conteúdo não pertence à turma. professorId={} turmaId={} conteudoIds={}", new Object[]{idProfessor, turmaId, conteudoIds}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("erro", "Um dos conteudos nao pertence a turma");
                 return "redirect:/eventos/cadastrar";
             }
@@ -177,6 +225,14 @@ public class EventosController {
         evento.setIdTurma(turmaId);
         eventoService.adicionarEvento(evento, conteudoIds);
         logger.info("Evento cadastrado idProfessor={} idTurma={}", idProfessor, turmaId);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "cadastrarEvento", null,
+                        MessageFormatter.arrayFormat("Evento cadastrado idProfessor={} idTurma={}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         redirectAttributes.addFlashAttribute("mensagem", "Evento cadastrado com sucesso!");
         return "redirect:/eventos";
     }
@@ -219,12 +275,29 @@ public class EventosController {
 
         if (eventoEncontrado.getIdProfessor() == null || !eventoEncontrado.getIdProfessor().equals(idProfessor)) {
 
+            logger.warn("Exclusão de evento recusada: professor não é responsável pelo evento. professorId={} eventoId={}", idProfessor, eventoId);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "excluirEvento", null,
+                            MessageFormatter.arrayFormat("Exclusão de evento recusada: professor não é responsável pelo evento. professorId={} eventoId={}", new Object[]{idProfessor, eventoId}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("erro", "Voce nao possui permissao para excluir este evento");
             return "redirect:/eventos";
         }
 
         eventoService.excluirEvento(eventoId);
         logger.info("Evento {} excluido pelo professor {}", eventoId, idProfessor);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "excluirEvento", null,
+                        MessageFormatter.arrayFormat("Evento {} excluido pelo professor {}", new Object[]{eventoId, idProfessor}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         redirectAttributes.addFlashAttribute("mensagem", "Evento excluido com sucesso!");
         return "redirect:/eventos";
     }

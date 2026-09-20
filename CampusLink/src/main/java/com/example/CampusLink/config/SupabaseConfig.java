@@ -16,6 +16,12 @@ public class SupabaseConfig {
         return RestClient.builder()
                 .baseUrl(supabaseUrl)
                 .defaultHeader("apikey", secretKey)
+                .defaultHeaders(headers -> {
+                    // As chaves legadas sao JWTs; as sb_secret_* usam apenas apikey.
+                    if (secretKey.startsWith("eyJ")) {
+                        headers.setBearerAuth(secretKey);
+                    }
+                })
                 .build();
     }
 }

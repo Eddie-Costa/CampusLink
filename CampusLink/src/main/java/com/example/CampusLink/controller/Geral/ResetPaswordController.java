@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 import java.sql.SQLException;
 
 @Controller
@@ -58,6 +59,14 @@ public class ResetPaswordController {
         emailService.enviarCodigo(email, codigo);
 
         logger.info("Solicitação de reset de senha para o email: {}", email);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "ResetVerification", null,
+                        MessageFormatter.arrayFormat("Solicitação de reset de senha para o email: {}", new Object[]{email}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         return "redirect:/verificar";
     }
@@ -90,6 +99,14 @@ public class ResetPaswordController {
         usuarioDAO.UpdateSenhaUsuario(encoder.encode(senha), email);
 
         logger.info("A senha foi resetada para o email: {}", email);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "Reset", null,
+                        MessageFormatter.arrayFormat("A senha foi resetada para o email: {}", new Object[]{email}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         return "redirect:/login";
     }

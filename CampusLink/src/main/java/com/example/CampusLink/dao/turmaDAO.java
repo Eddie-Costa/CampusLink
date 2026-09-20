@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.slf4j.helpers.MessageFormatter;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -16,6 +17,9 @@ import java.util.List;
 
 @Repository
 public class turmaDAO {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(turmaDAO.class);
 
@@ -229,6 +233,14 @@ public class turmaDAO {
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
                 if (!rsUsuario.next()) {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.");
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                    "[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.", null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return false;
                 }
 
@@ -249,6 +261,14 @@ public class turmaDAO {
                     sqlInsertRelacao = sqlInsertProfessorTurma;
                 } else {
                     logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                    MessageFormatter.arrayFormat("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", new Object[]{perfil}).getMessage(), null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return false;
                 }
 
@@ -262,6 +282,14 @@ public class turmaDAO {
                             entidadeId = rsEntidade.getLong("id");
                         } else {
                             logger.warn("[turmaDAO.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            if (logger.isWarnEnabled()) {
+                                try {
+                                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                            MessageFormatter.arrayFormat("[turmaDAO.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", new Object[]{usuarioId}).getMessage(), null, null);
+                                } catch (Exception erroLogBD) {
+                                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                                }
+                            }
                             return false;
                         }
                     }
@@ -274,7 +302,15 @@ public class turmaDAO {
 
                     try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
                         if (rsCorrespondente.next()) {
-                            logger.warn("[turmaDAO.inserirPessoaTurma] Este usuário já está cadastrado na turma={}", usuarioId);
+                            logger.warn("[turmaDAO.inserirPessoaTurma] Usuário já cadastrado na turma. usuarioId={} turmaId={}", usuarioId, idTurma);
+                            if (logger.isWarnEnabled()) {
+                                try {
+                                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                            MessageFormatter.arrayFormat("[turmaDAO.inserirPessoaTurma] Usuário já cadastrado na turma. usuarioId={} turmaId={}", new Object[]{usuarioId, idTurma}).getMessage(), null, null);
+                                } catch (Exception erroLogBD) {
+                                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                                }
+                            }
                             return false;
                         }
                     }
@@ -288,6 +324,14 @@ public class turmaDAO {
 
                     if (linhasAfetadas <= 0) {
                         logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        if (logger.isWarnEnabled()) {
+                            try {
+                                usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                        MessageFormatter.arrayFormat("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", new Object[]{idTurma}).getMessage(), null, null);
+                            } catch (Exception erroLogBD) {
+                                logger.error("Erro ao gravar log no banco.", erroLogBD);
+                            }
+                        }
                         return false;
                     }
                 }
@@ -303,6 +347,15 @@ public class turmaDAO {
                     stmtInsertRelacao.executeUpdate();
                 }
 
+                logger.info("Participante adicionado à turma. turmaId={} usuarioId={} perfil={}", idTurma, usuarioId, perfil);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", turmaDAO.class.getName(), "inserirPessoaTurma", null,
+                                MessageFormatter.arrayFormat("Participante adicionado à turma. turmaId={} usuarioId={} perfil={}", new Object[]{idTurma, usuarioId, perfil}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 return true;
             }
         }
@@ -325,7 +378,15 @@ public class turmaDAO {
 
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
                 if (!rsUsuario.next()) {
-                    logger.warn("[turmaDAO.inserirPessoaTurma] Usuário não encontrado para o email informado.");
+                    logger.warn("[turmaDAO.revomerPessoaTurma] Usuário não encontrado para o email informado.");
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                    "[turmaDAO.revomerPessoaTurma] Usuário não encontrado para o email informado.", null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return false;
                 }
 
@@ -345,7 +406,15 @@ public class turmaDAO {
                     sqlUpdate = sqlUpdateProfessor;
                     sqlDeleteRelacao = sqlDeleteProfessorTurma;
                 } else {
-                    logger.warn("[turmaDAO.inserirPessoaTurma] Perfil não suportado: {}", perfil);
+                    logger.warn("[turmaDAO.revomerPessoaTurma] Perfil não suportado: {}", perfil);
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                    MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] Perfil não suportado: {}", new Object[]{perfil}).getMessage(), null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return false;
                 }
 
@@ -358,13 +427,29 @@ public class turmaDAO {
                         if (rsEntidade.next()) {
                             entidadeId = rsEntidade.getLong("id");
                         } else {
-                            logger.warn("[turmaDAO.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            logger.warn("[turmaDAO.revomerPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            if (logger.isWarnEnabled()) {
+                                try {
+                                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                            MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", new Object[]{usuarioId}).getMessage(), null, null);
+                                } catch (Exception erroLogBD) {
+                                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                                }
+                            }
                         }
                     }
                 }
 
                 if (entidadeId == -1) {
-                    logger.warn("[turmaDAO.inserirPessoaTurma] Encerrando porque entidadeId não foi encontrado.");
+                    logger.warn("[turmaDAO.revomerPessoaTurma] Encerrando porque entidadeId não foi encontrado.");
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                    "[turmaDAO.revomerPessoaTurma] Encerrando porque entidadeId não foi encontrado.", null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return false;
                 }
 
@@ -376,6 +461,14 @@ public class turmaDAO {
                     try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
                         if (!rsCorrespondente.next()) {
                             logger.warn("[turmaDAO.revomerPessoaTurma] Usuário {} não está cadastrado na turma {}.", entidadeId, idTurma);
+                            if (logger.isWarnEnabled()) {
+                                try {
+                                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                            MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] Usuário {} não está cadastrado na turma {}.", new Object[]{entidadeId, idTurma}).getMessage(), null, null);
+                                } catch (Exception erroLogBD) {
+                                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                                }
+                            }
                             return false;
                         }
                     }
@@ -393,6 +486,14 @@ public class turmaDAO {
 
                                 if (entidadeId == idProprietario) {
                                     logger.warn("[turmaDAO.revomerPessoaTurma] Bloqueada a remoção do professor administrador da turma {}.", idTurma);
+                                    if (logger.isWarnEnabled()) {
+                                        try {
+                                            usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                                    MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] Bloqueada a remoção do professor administrador da turma {}.", new Object[]{idTurma}).getMessage(), null, null);
+                                        } catch (Exception erroLogBD) {
+                                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                                        }
+                                    }
                                     return false;
                                 }
                             }
@@ -407,7 +508,15 @@ public class turmaDAO {
                     int linhasAfetadas = stmtUpdate.executeUpdate();
 
                     if (linhasAfetadas <= 0) {
-                        logger.warn("[turmaDAO.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        logger.warn("[turmaDAO.revomerPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        if (logger.isWarnEnabled()) {
+                            try {
+                                usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                        MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] nenhuma linha foi afetada na turma {}.", new Object[]{idTurma}).getMessage(), null, null);
+                            } catch (Exception erroLogBD) {
+                                logger.error("Erro ao gravar log no banco.", erroLogBD);
+                            }
+                        }
                         return false;
                     }
                 }
@@ -420,10 +529,27 @@ public class turmaDAO {
 
                     if (linhasRelacaoAfetadas <= 0) {
                         logger.warn("[turmaDAO.revomerPessoaTurma] Nenhuma relação foi removida para entidade {} na turma {}.", entidadeId, idTurma);
+                        if (logger.isWarnEnabled()) {
+                            try {
+                                usuarioDAO.InserirLogsNoBD(null, "WARN", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                        MessageFormatter.arrayFormat("[turmaDAO.revomerPessoaTurma] Nenhuma relação foi removida para entidade {} na turma {}.", new Object[]{entidadeId, idTurma}).getMessage(), null, null);
+                            } catch (Exception erroLogBD) {
+                                logger.error("Erro ao gravar log no banco.", erroLogBD);
+                            }
+                        }
                         return false;
                     }
                 }
 
+                logger.info("Participante removido da turma. turmaId={} usuarioId={} perfil={}", idTurma, usuarioId, perfil);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", turmaDAO.class.getName(), "revomerPessoaTurma", null,
+                                MessageFormatter.arrayFormat("Participante removido da turma. turmaId={} usuarioId={} perfil={}", new Object[]{idTurma, usuarioId, perfil}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 return true;
             }
         }

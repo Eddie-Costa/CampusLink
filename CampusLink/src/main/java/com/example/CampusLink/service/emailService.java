@@ -1,24 +1,48 @@
 package com.example.CampusLink.service;
 
+import com.example.CampusLink.dao.usuarioDAO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Service
 public class emailService {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
+
+    private static final Logger logger = LoggerFactory.getLogger(emailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
 
     @Async("emailTaskExecutor")
     public void enviarCodigo(String para, String codigo) {
+
+        String operacaoId = UUID.randomUUID().toString();
+        logger.debug("Iniciando envio de email de 2FA. operacaoId={}", operacaoId);
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Iniciando envio de email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         try {
             MimeMessage mensagem =
@@ -221,16 +245,42 @@ public class emailService {
 
             mailSender.send(mensagem);
 
-            System.out.println(
-                    "Email HTML de 2FA enviado com sucesso!"
-            );
+            logger.info("Email HTML de 2FA enviado com sucesso! operacaoId={}", operacaoId);
+            if (logger.isInfoEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Email HTML de 2FA enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
         } catch (MessagingException e) {
 
-            System.err.println(
-                    "Erro ao montar o email HTML de 2FA: "
-                            + e.getMessage()
-            );
+            logger.error("Erro ao montar o email HTML de 2FA. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao montar o email HTML de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+        } catch (MailException e) {
+            logger.error("Erro ao enviar email de 2FA. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao enviar email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+            throw e;
         }
     }
 
@@ -242,6 +292,17 @@ public class emailService {
             String Email,
             String DT_Reg
     ) {
+
+        String operacaoId = UUID.randomUUID().toString();
+        logger.debug("Iniciando envio de email de exportação de dados. operacaoId={}", operacaoId);
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Iniciando envio de email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         SimpleMailMessage mensagem =
                 new SimpleMailMessage();
@@ -260,10 +321,31 @@ public class emailService {
 
         mensagem.setText(corpoEmail);
 
-        mailSender.send(mensagem);
+        try {
+            mailSender.send(mensagem);
+        } catch (MailException e) {
+            logger.error("Erro ao enviar email de exportação de dados. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao enviar email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+            throw e;
+        }
 
-        System.out.println(
-                "Email enviado com sucesso!"
-        );
+        logger.info("Email de exportação de dados enviado com sucesso! operacaoId={}", operacaoId);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Email de exportação de dados enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
     }
 }

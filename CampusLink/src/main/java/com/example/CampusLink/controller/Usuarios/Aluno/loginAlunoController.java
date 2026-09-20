@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.sql.SQLException;
 
@@ -53,12 +54,28 @@ public class loginAlunoController {
         //Verifica bloqueio
         if (LoginAttemptService.estaBloqueado(email)) {
             logger.warn("Conta bloqueada para aluno {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAlunoController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada para aluno {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Conta bloqueada por muitas tentativas. Tente mais tarde.");
             return "Usuarios/Aluno/loginAluno";
         }
 
         if (result.hasErrors()) {
             logger.warn("Dados de login inválidos para aluno {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAlunoController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Dados de login inválidos para aluno {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Erro ao fazer login, tente novamente!!!");
             return "Usuarios/Aluno/loginAluno";
         }
@@ -90,15 +107,42 @@ public class loginAlunoController {
             session.setAttribute("usuarioLogado", usuarioDAO.buscarPorEmailAluno(email));
             session.setMaxInactiveInterval(900);
 
+            if (session.getAttribute("usuarioLogado") != null) {
+                logger.info("Login concluído. perfil=aluno email={} doisFatores=false", email);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", loginAlunoController.class.getName(), "fazerLogin", null,
+                                MessageFormatter.arrayFormat("Login concluído. perfil=aluno email={} doisFatores=false", new Object[]{email}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            }
             return "redirect:/home";
         }
 
         //Erro de Login
         loginAttemptService.loginFalhou(email);
         logger.warn("Credenciais inválidas para aluno {}. Tentativas: {}", email, loginAttemptService.getTentativas(email));
+        if (logger.isWarnEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "WARN", loginAlunoController.class.getName(), "fazerLogin", null,
+                        MessageFormatter.arrayFormat("Credenciais inválidas para aluno {}. Tentativas: {}", new Object[]{email, loginAttemptService.getTentativas(email)}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         if (loginAttemptService.getTentativas(email) >= 5) {
             logger.warn("Conta bloqueada por excesso de tentativas para aluno {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAlunoController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para aluno {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Conta bloqueada por 10 minutos.");
         } else {
             model.addAttribute("mensagemDeErro", "Email ou senha inválidos.");

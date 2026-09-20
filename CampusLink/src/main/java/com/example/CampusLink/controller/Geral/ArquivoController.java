@@ -2,8 +2,11 @@ package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.service.ArquivoService;
+import com.example.CampusLink.dao.usuarioDAO;
 
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -17,12 +20,19 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequestMapping("/arquivos")
 public class ArquivoController {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
+
+    private static final Logger logger = LoggerFactory.getLogger(ArquivoController.class);
 
     private final ArquivoService arquivoService;
 
@@ -42,6 +52,15 @@ public class ArquivoController {
             HttpSession session) {
 
         if (session.getAttribute("usuarioLogado") == null) {
+            logger.warn("Acesso aos arquivos recusado: usuário não autenticado.");
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "pagina", null,
+                            "Acesso aos arquivos recusado: usuário não autenticado.", null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return "redirect:/login";
         }
 
@@ -80,6 +99,15 @@ public class ArquivoController {
                     "Apenas professores podem enviar materiais."
             );
 
+            logger.warn("Upload recusado: usuário não é professor. conteudoId={}", idConteudo);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "upload", null,
+                            MessageFormatter.arrayFormat("Upload recusado: usuário não é professor. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return "redirect:/arquivos";
         }
 
@@ -117,6 +145,15 @@ public class ArquivoController {
 
         if (session.getAttribute("usuarioLogado") == null) {
 
+            logger.warn("Download recusado: usuário não autenticado. arquivoId={}", id);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "download", null,
+                            MessageFormatter.arrayFormat("Download recusado: usuário não autenticado. arquivoId={}", new Object[]{id}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return ResponseEntity
                     .status(401)
                     .build();
@@ -171,6 +208,15 @@ public class ArquivoController {
                     "Apenas professores podem excluir materiais."
             );
 
+            logger.warn("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", id);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "excluir", null,
+                            MessageFormatter.arrayFormat("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", new Object[]{id}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             return "redirect:/arquivos";
         }
 

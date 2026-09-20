@@ -2,20 +2,29 @@ package com.example.CampusLink.dao;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.slf4j.helpers.MessageFormatter;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 @Repository
 public class usuarioDAO {
+
+    private static final Logger logger = LoggerFactory.getLogger(usuarioDAO.class);
 
     @Autowired
     private DataSource dataSource;
@@ -72,6 +81,130 @@ public class usuarioDAO {
             conn.commit();
         } catch (SQLException e) {
             throw e;
+        }
+    }
+
+    public void InserirLogsNoBD(UUID sessaoLogId, String nivel, String classe, String operacao,
+                               UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
+        // Chamadas sem ID explícito usam a sessão de logs da requisição atual.
+        if (sessaoLogId == null && MDC.get("sessaoLogId") != null) {
+            sessaoLogId = UUID.fromString(MDC.get("sessaoLogId"));
+        }
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                boolean encerrada = sessaoLogId != null && bloquearSessaoLog(conn, sessaoLogId);
+                inserirEventoLog(conn, sessaoLogId, nivel, classe, operacao, operacaoId, mensagem, detalhes, excecao);
+                // Inclui tarefas assincronas que terminaram depois da invalidacao.
+                if (encerrada) {
+                    atualizarHistoricoSessao(conn, sessaoLogId);
+                }
+                conn.commit();
+            } catch (SQLException | RuntimeException e) {
+                desfazerTransacaoLog(conn, e);
+                throw e;
+            }
+        }
+    }
+
+    public void finalizarSessaoLog(UUID sessaoLogId, Instant inicio, Instant fim, String email) throws SQLException {
+        String sql = """
+                UPDATE public."LOGS_SESSOES"
+                SET usuario_id = COALESCE(usuario_id,
+                        (SELECT id FROM public."USUARIOS" WHERE LOWER(email) = ?)),
+                    inicio = ?, fim = ?, status = 'ENCERRADA'
+                WHERE sessao_log_id = ?
+                """;
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                if (!bloquearSessaoLog(conn, sessaoLogId)) {
+                    inserirEventoLog(conn, sessaoLogId, "INFO", "SessaoLogListener", "sessionDestroyed", null,
+                            "Sessao invalidada. Historico consolidado.", null, null);
+                    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                        stmt.setString(1, email == null ? null : normalizarEmail(email));
+                        stmt.setTimestamp(2, Timestamp.from(inicio));
+                        stmt.setTimestamp(3, Timestamp.from(fim));
+                        stmt.setObject(4, sessaoLogId);
+                        stmt.executeUpdate();
+                    }
+                }
+                atualizarHistoricoSessao(conn, sessaoLogId);
+                conn.commit();
+            } catch (SQLException | RuntimeException e) {
+                desfazerTransacaoLog(conn, e);
+                throw e;
+            }
+        }
+    }
+
+    private boolean bloquearSessaoLog(Connection conn, UUID sessaoLogId) throws SQLException {
+        String sql = "INSERT INTO public.\"LOGS_SESSOES\" (sessao_log_id) VALUES (?) "
+                + "ON CONFLICT (sessao_log_id) DO NOTHING";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, sessaoLogId);
+            stmt.executeUpdate();
+        }
+        // Serializa eventos e encerramento da mesma sessao, inclusive entre threads.
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT fim FROM public.\"LOGS_SESSOES\" WHERE sessao_log_id = ? FOR UPDATE")) {
+            stmt.setObject(1, sessaoLogId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next()) {
+                    throw new SQLException("Sessao de log nao encontrada.");
+                }
+                return rs.getTimestamp("fim") != null;
+            }
+        }
+    }
+
+    private void inserirEventoLog(Connection conn, UUID sessaoLogId, String nivel, String classe, String operacao,
+                                  UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
+        String sql = "INSERT INTO public.\"LOGS_EVENTOS\" (sessao_log_id, nivel, classe, operacao, operacao_id, mensagem, detalhes, excecao) "
+                + "VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, sessaoLogId);
+            stmt.setString(2, nivel);
+            stmt.setString(3, classe);
+            stmt.setString(4, operacao);
+            stmt.setObject(5, operacaoId);
+            stmt.setString(6, mensagem);
+            stmt.setString(7, detalhes);
+            stmt.setString(8, excecao);
+            if (stmt.executeUpdate() == 0) {
+                throw new SQLException("Nenhum log foi inserido.");
+            }
+        }
+    }
+
+    private void atualizarHistoricoSessao(Connection conn, UUID sessaoLogId) throws SQLException {
+        String sql = """
+                UPDATE public."LOGS_SESSOES" s
+                SET log_completo = COALESCE((
+                    SELECT string_agg(concat_ws(' ',
+                        e.data_hora::text, '[' || e.nivel || ']', e.classe,
+                        'eventoId=' || e.id, 'operacao=' || e.operacao,
+                        'operacaoId=' || e.operacao_id, e.mensagem,
+                        CASE WHEN e.detalhes IS NOT NULL THEN E'\\nDetalhes: ' || e.detalhes::text END,
+                        CASE WHEN e.excecao IS NOT NULL THEN E'\\nExcecao: ' || e.excecao END
+                    ), E'\\n' ORDER BY e.data_hora, e.id)
+                    FROM public."LOGS_EVENTOS" e WHERE e.sessao_log_id = s.sessao_log_id
+                ), ''), historico_gerado_em = clock_timestamp()
+                WHERE s.sessao_log_id = ?
+                """;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, sessaoLogId);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void desfazerTransacaoLog(Connection conn, Exception causa) {
+        try {
+            conn.rollback();
+        } catch (SQLException erroRollback) {
+            causa.addSuppressed(erroRollback);
         }
     }
 
@@ -239,9 +372,25 @@ public class usuarioDAO {
         stmt.setString(1, SENHA);
         stmt.setString(2, EMAIL);
 
-        System.out.println(stmt);
+        logger.debug("Atualizando senha do usuário no banco.");
+        if (logger.isDebugEnabled()) {
+            try {
+                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null,
+                        "Atualizando senha do usuário no banco.", null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         int linhas = stmt.executeUpdate();
-        System.out.println("Linhas afetadas: " + linhas);
+        logger.debug("Linhas afetadas: {}", linhas);
+        if (logger.isDebugEnabled()) {
+            try {
+                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null,
+                        MessageFormatter.arrayFormat("Linhas afetadas: {}", new Object[]{linhas}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         stmt.close();
         conn.close();
