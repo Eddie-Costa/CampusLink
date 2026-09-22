@@ -14,64 +14,41 @@ public class ConteudoService {
     private final conteudoDAO conteudoDAO;
     private final ArquivoService arquivoService;
 
-    public ConteudoService(
-            conteudoDAO conteudoDAO,
-            ArquivoService arquivoService
-    ) {
+    public ConteudoService(conteudoDAO conteudoDAO, ArquivoService arquivoService) {
 
         this.conteudoDAO = conteudoDAO;
         this.arquivoService = arquivoService;
     }
 
-    public ConteudoDTO criar(
-            ConteudoDTO conteudo,
-            MultipartFile arquivo
-    ) {
+    public ConteudoDTO criar(ConteudoDTO conteudo, MultipartFile arquivo) {
 
-        if (conteudo.getPrioridade() == null ||
-                conteudo.getPrioridade().isBlank()) {
+        if (conteudo.getPrioridade() == null || conteudo.getPrioridade().isBlank()) {
 
             conteudo.setPrioridade("media");
         }
 
-        conteudo.setTipo(
-                definirTipo(
-                        conteudo,
-                        arquivo
-                )
-        );
+        conteudo.setTipo(definirTipo(conteudo, arquivo));
 
         try {
 
-            conteudoDAO.inserir(
-                    conteudo
-            );
+            conteudoDAO.inserir(conteudo);
 
         } catch (SQLException e) {
 
-            throw new RuntimeException(
-                    "Não foi possível cadastrar o conteúdo.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível cadastrar o conteúdo.", e);
         }
 
-        if (arquivo != null &&
-                !arquivo.isEmpty()) {
+        if (arquivo != null && !arquivo.isEmpty()) {
 
             try {
 
-                arquivoService.salvar(
-                        arquivo,
-                        conteudo.getId()
-                );
+                arquivoService.salvar(arquivo, conteudo.getId());
 
             } catch (RuntimeException e) {
 
                 try {
 
-                    conteudoDAO.excluir(
-                            conteudo.getId()
-                    );
+                    conteudoDAO.excluir(conteudo.getId());
 
                 } catch (SQLException ignored) {
                 }
@@ -83,147 +60,92 @@ public class ConteudoService {
         return conteudo;
     }
 
-    public List<ConteudoDTO> listarPorTurma(
-            Long idTurma
-    ) {
+    public List<ConteudoDTO> listarPorTurma(Long idTurma) {
 
         try {
-
-            return conteudoDAO.listarPorTurma(
-                    idTurma
-            );
+            return conteudoDAO.listarPorTurma(idTurma);
 
         } catch (SQLException e) {
-
-            throw new RuntimeException(
-                    "Não foi possível listar os conteúdos da turma.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível listar os conteúdos da turma.", e);
         }
     }
 
-    public List<ConteudoDTO> listarPorProfessor(
-            Long idProfessor
-    ) {
+    public List<ConteudoDTO> listarPorProfessor(Long idProfessor) {
 
         try {
 
-            return conteudoDAO.listarPorProfessor(
-                    idProfessor
-            );
+            return conteudoDAO.listarPorProfessor(idProfessor);
 
         } catch (SQLException e) {
 
-            throw new RuntimeException(
-                    "Não foi possível listar os conteúdos do professor.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível listar os conteúdos do professor.", e);
         }
     }
 
-    public boolean removerConteudoProfessor(
-            Long idConteudo,
-            Long idProfessor
-    ) {
+    public List<ConteudoDTO> listarParaAnaliseAdmin() {
 
         try {
-
-            return conteudoDAO.removerConteudoProfessor(
-                    idConteudo,
-                    idProfessor
-            );
-
+            return conteudoDAO.listarParaAnaliseAdmin();
         } catch (SQLException e) {
-
-            throw new RuntimeException(
-                    "Não foi possível remover o conteúdo.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível listar os conteúdos enviados para análise.", e);
         }
     }
 
-    public boolean solicitarRevisao(
-            Long idConteudo,
-            Long idProfessor
-    ) {
+    public boolean removerConteudoProfessor(Long idConteudo, Long idProfessor) {
 
         try {
 
-            return conteudoDAO.solicitarRevisao(
-                    idConteudo,
-                    idProfessor
-            );
+            return conteudoDAO.removerConteudoProfessor(idConteudo, idProfessor);
 
         } catch (SQLException e) {
-
-            throw new RuntimeException(
-                    "Não foi possível solicitar a análise.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível remover o conteúdo.", e);
         }
     }
 
-    public void excluir(
-            Long id
-    ) {
+    public boolean solicitarRevisao(Long idConteudo, Long idProfessor) {
 
         try {
-
-            conteudoDAO.excluir(
-                    id
-            );
+            return conteudoDAO.solicitarRevisao(idConteudo, idProfessor);
 
         } catch (SQLException e) {
-
-            throw new RuntimeException(
-                    "Não foi possível excluir o conteúdo.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível solicitar a análise.", e);
         }
     }
 
-    public ConteudoDTO atualizar(
-            ConteudoDTO conteudo
-    ) {
-
-        conteudo.setTipo(
-                definirTipo(
-                        conteudo,
-                        null
-                )
-        );
+    public void excluir(Long id) {
 
         try {
 
-            conteudoDAO.atualizar(
-                    conteudo
-            );
+            conteudoDAO.excluir(id);
 
         } catch (SQLException e) {
 
-            throw new RuntimeException(
-                    "Não foi possível atualizar o conteúdo.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível excluir o conteúdo.", e);
+        }
+    }
+
+    public ConteudoDTO atualizar(ConteudoDTO conteudo) {
+
+        conteudo.setTipo(definirTipo( conteudo,  null));
+
+        try {
+            conteudoDAO.atualizar(conteudo);
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException("Não foi possível atualizar o conteúdo.", e);
         }
 
         return conteudo;
     }
 
-    private String definirTipo(
-            ConteudoDTO conteudo,
-            MultipartFile arquivo
-    ) {
+    private String definirTipo(ConteudoDTO conteudo, MultipartFile arquivo) {
 
-        if (arquivo != null &&
-                !arquivo.isEmpty()) {
-
+        if (arquivo != null && !arquivo.isEmpty()) {
             return "arquivo";
         }
 
-        if (conteudo.getUrl() != null &&
-                !conteudo.getUrl().isBlank()) {
-
+        if (conteudo.getUrl() != null && !conteudo.getUrl().isBlank()) {
             return "link";
         }
 

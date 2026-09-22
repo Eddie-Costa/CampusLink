@@ -39,6 +39,8 @@ public class ConteudoDTO {
 
     private String nomeTurma;
 
+    private String nomeProfessor;
+
     private boolean revisaoSolicitada;
 
     private OffsetDateTime revisaoSolicitadaEm;

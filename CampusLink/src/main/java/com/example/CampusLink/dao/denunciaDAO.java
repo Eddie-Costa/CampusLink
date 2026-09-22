@@ -24,21 +24,12 @@ public class denunciaDAO {
 
         String sql = """
                 INSERT INTO public."DENUNCIAS"
-                (
-                    "id_conteudo",
-                    "id_aluno",
-                    "id_professor",
-                    "motivo"
-                )
+                ( "id_conteudo", "id_aluno", "id_professor", "motivo")
                 VALUES (?, ?, ?, ?)
                 RETURNING "id", "status", "created_at"
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, denuncia.getIdConteudo());
             stmt.setLong(2, denuncia.getIdAluno());
             stmt.setLong(3, denuncia.getIdProfessor());
@@ -50,24 +41,17 @@ public class denunciaDAO {
 
                     denuncia.setId(rs.getLong("id"));
                     denuncia.setStatus(rs.getString("status"));
-
-                    Timestamp createdAt =
-                            rs.getTimestamp("created_at");
+                    Timestamp createdAt = rs.getTimestamp("created_at");
 
                     if (createdAt != null) {
-                        denuncia.setCreatedAt(
-                                createdAt.toInstant().atOffset(ZoneOffset.UTC)
-                        );
+                        denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                     }
                 }
             }
         }
     }
 
-    public boolean alunoJaDenunciou(
-            Long idConteudo,
-            Long idAluno
-    ) throws SQLException {
+    public boolean alunoJaDenunciou(Long idConteudo, Long idAluno) throws SQLException {
 
         String sql = """
                 SELECT COUNT(*) AS quantidade
@@ -76,10 +60,7 @@ public class denunciaDAO {
                 AND "id_aluno" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
             stmt.setLong(2, idAluno);
@@ -95,9 +76,7 @@ public class denunciaDAO {
         return false;
     }
 
-    public int contarDenunciasPendentes(
-            Long idConteudo
-    ) throws SQLException {
+    public int contarDenunciasPendentes(Long idConteudo) throws SQLException {
 
         String sql = """
                 SELECT COUNT(DISTINCT "id_aluno") AS quantidade
@@ -106,10 +85,7 @@ public class denunciaDAO {
                 AND "status" = 'pendente'
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
 
@@ -134,10 +110,7 @@ public class denunciaDAO {
                 WHERE "id_turma" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idTurma);
 
@@ -152,9 +125,7 @@ public class denunciaDAO {
         return 0;
     }
 
-    public List<String> listarNomesAlunosPorConteudo(
-            Long idConteudo
-    ) throws SQLException {
+    public List<String> listarNomesAlunosPorConteudo(Long idConteudo) throws SQLException {
 
         List<String> alunos = new ArrayList<>();
 
@@ -169,19 +140,14 @@ public class denunciaDAO {
                 ORDER BY u."nome"
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
                 while (rs.next()) {
-                    alunos.add(
-                            rs.getString("nome")
-                    );
+                    alunos.add(rs.getString("nome"));
                 }
             }
         }
@@ -189,24 +155,22 @@ public class denunciaDAO {
         return alunos;
     }
 
-    public List<DenunciaDTO> listarPorConteudo(
-            Long idConteudo
-    ) throws SQLException {
+    public List<DenunciaDTO> listarPorConteudo(Long idConteudo) throws SQLException {
 
-        List<DenunciaDTO> denuncias =
-                new ArrayList<>();
+        List<DenunciaDTO> denuncias = new ArrayList<>();
 
         String sql = """
-                SELECT *
-                FROM public."DENUNCIAS"
-                WHERE "id_conteudo" = ?
-                ORDER BY "created_at" DESC
+                SELECT d.*, u."nome" AS nome_aluno
+                FROM public."DENUNCIAS" d
+                LEFT JOIN public."ALUNOS" a
+                    ON a."id" = d."id_aluno"
+                LEFT JOIN public."USUARIOS" u
+                    ON u."id" = a."id_usuario"
+                WHERE d."id_conteudo" = ?
+                ORDER BY d."created_at" DESC
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
 
@@ -214,40 +178,18 @@ public class denunciaDAO {
 
                 while (rs.next()) {
 
-                    DenunciaDTO denuncia =
-                            new DenunciaDTO();
-
-                    denuncia.setId(
-                            rs.getLong("id")
-                    );
-
-                    denuncia.setIdConteudo(
-                            rs.getLong("id_conteudo")
-                    );
-
-                    denuncia.setIdAluno(
-                            rs.getLong("id_aluno")
-                    );
-
-                    denuncia.setIdProfessor(
-                            rs.getLong("id_professor")
-                    );
-
-                    denuncia.setMotivo(
-                            rs.getString("motivo")
-                    );
-
-                    denuncia.setStatus(
-                            rs.getString("status")
-                    );
-
-                    Timestamp createdAt =
-                            rs.getTimestamp("created_at");
+                    DenunciaDTO denuncia = new DenunciaDTO();
+                    denuncia.setId(rs.getLong("id"));
+                    denuncia.setIdConteudo(rs.getLong("id_conteudo"));
+                    denuncia.setIdAluno(rs.getLong("id_aluno"));
+                    denuncia.setIdProfessor(rs.getLong("id_professor"));
+                    denuncia.setMotivo(rs.getString("motivo"));
+                    denuncia.setStatus(rs.getString("status"));
+                    denuncia.setNomeAluno(rs.getString("nome_aluno"));
+                    Timestamp createdAt = rs.getTimestamp("created_at");
 
                     if (createdAt != null) {
-                        denuncia.setCreatedAt(
-                                createdAt.toInstant().atOffset(ZoneOffset.UTC)
-                        );
+                        denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                     }
 
                     denuncias.add(denuncia);
@@ -258,10 +200,7 @@ public class denunciaDAO {
         return denuncias;
     }
 
-    public void atualizarStatusPorConteudo(
-            Long idConteudo,
-            String status
-    ) throws SQLException {
+    public void atualizarStatusPorConteudo(Long idConteudo, String status) throws SQLException {
 
         String sql = """
                 UPDATE public."DENUNCIAS"
@@ -270,14 +209,9 @@ public class denunciaDAO {
                 AND "status" = 'pendente'
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
             stmt.setLong(2, idConteudo);
-
             stmt.executeUpdate();
         }
     }

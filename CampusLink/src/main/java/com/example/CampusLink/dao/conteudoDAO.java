@@ -24,31 +24,17 @@ public class conteudoDAO {
 
         String sql = """
                 INSERT INTO public."CONTEUDOS"
-                (
-                    "id_turma",
-                    "id_professor",
-                    "titulo",
-                    "descricao",
-                    "tipo",
-                    "url",
-                    "duracao_estimada",
-                    "prioridade"
-                )
+                ( "id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade")
                 VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?)
                 RETURNING "id", "created_at", "status"
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, conteudo.getIdTurma());
             stmt.setLong(2, conteudo.getIdProfessor());
             stmt.setString(3, conteudo.getTitulo());
-
             String descricao = conteudo.getDescricao();
-
             stmt.setString(4, descricao == null ? "" : descricao);
             stmt.setString(5, conteudo.getTipo());
             stmt.setString(6, conteudo.getUrl());
@@ -61,14 +47,10 @@ public class conteudoDAO {
 
                     conteudo.setId(rs.getLong("id"));
                     conteudo.setStatus(rs.getString("status"));
-
-                    Timestamp createdAt =
-                            rs.getTimestamp("created_at");
+                    Timestamp createdAt = rs.getTimestamp("created_at");
 
                     if (createdAt != null) {
-                        conteudo.setCreatedAt(
-                                createdAt.toInstant().atOffset(ZoneOffset.UTC)
-                        );
+                        conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                     }
                 }
             }
@@ -86,19 +68,14 @@ public class conteudoDAO {
                 ORDER BY "created_at" DESC
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idTurma);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
                 while (rs.next()) {
-                    conteudos.add(
-                            montarConteudo(rs, idTurma)
-                    );
+                    conteudos.add(montarConteudo(rs, idTurma));
                 }
             }
         }
@@ -122,10 +99,7 @@ public class conteudoDAO {
                 ORDER BY c."created_at" DESC
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idProfessor);
 
@@ -133,80 +107,35 @@ public class conteudoDAO {
 
                 while (rs.next()) {
 
-                    ConteudoDTO conteudo =
-                            new ConteudoDTO();
-
-                    conteudo.setId(
-                            rs.getLong("id")
-                    );
-
-                    Long idTurma =
-                            rs.getLong("turma_id");
+                    ConteudoDTO conteudo = new ConteudoDTO();
+                    conteudo.setId(rs.getLong("id"));
+                    Long idTurma = rs.getLong("turma_id");
 
                     if (rs.wasNull()) {
                         idTurma = null;
                     }
 
                     conteudo.setIdTurma(idTurma);
-
-                    conteudo.setIdProfessor(
-                            rs.getLong("id_professor")
-                    );
-
-                    Timestamp createdAt =
-                            rs.getTimestamp("created_at");
+                    conteudo.setIdProfessor(rs.getLong("id_professor"));
+                    Timestamp createdAt = rs.getTimestamp("created_at");
 
                     if (createdAt != null) {
-                        conteudo.setCreatedAt(
-                                createdAt.toInstant().atOffset(ZoneOffset.UTC)
-                        );
+                        conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                     }
 
-                    conteudo.setTitulo(
-                            rs.getString("titulo")
-                    );
-
-                    conteudo.setDescricao(
-                            rs.getString("descricao")
-                    );
-
-                    conteudo.setTipo(
-                            rs.getString("tipo")
-                    );
-
-                    conteudo.setUrl(
-                            rs.getString("url")
-                    );
-
-                    conteudo.setDuracaoEstimada(
-                            rs.getString("duracao_estimada")
-                    );
-
-                    conteudo.setPrioridade(
-                            rs.getString("prioridade")
-                    );
-
-                    conteudo.setStatus(
-                            rs.getString("status")
-                    );
-
-                    conteudo.setNomeTurma(
-                            rs.getString("nome_turma")
-                    );
-
-                    conteudo.setRevisaoSolicitada(
-                            rs.getBoolean("revisao_solicitada")
-                    );
-
-                    Timestamp revisaoSolicitadaEm =
-                            rs.getTimestamp("revisao_solicitada_em");
+                    conteudo.setTitulo(rs.getString("titulo"));
+                    conteudo.setDescricao(rs.getString("descricao"));
+                    conteudo.setTipo(rs.getString("tipo"));
+                    conteudo.setUrl(rs.getString("url"));
+                    conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+                    conteudo.setPrioridade(rs.getString("prioridade"));
+                    conteudo.setStatus(rs.getString("status"));
+                    conteudo.setNomeTurma(rs.getString("nome_turma"));
+                    conteudo.setRevisaoSolicitada(rs.getBoolean("revisao_solicitada"));
+                    Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
 
                     if (revisaoSolicitadaEm != null) {
-                        conteudo.setRevisaoSolicitadaEm(
-                                revisaoSolicitadaEm
-                                        .toInstant()
-                                        .atOffset(ZoneOffset.UTC)
-                        );
+                        conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
                     }
 
                     conteudos.add(conteudo);
@@ -217,74 +146,63 @@ public class conteudoDAO {
         return conteudos;
     }
 
-    private ConteudoDTO montarConteudo(
-            ResultSet rs,
-            Long idTurma
-    ) throws SQLException {
+    public List<ConteudoDTO> listarParaAnaliseAdmin() throws SQLException {
 
-        ConteudoDTO conteudo =
-                new ConteudoDTO();
+        List<ConteudoDTO> conteudos = new ArrayList<>();
 
-        conteudo.setId(
-                rs.getLong("id")
-        );
+        String sql = """
+                SELECT c.*, u."nome" AS nome_professor
+                FROM public."CONTEUDOS" c
+                INNER JOIN public."PROFESSORES" p
+                    ON p."id" = c."id_professor"
+                INNER JOIN public."USUARIOS" u
+                    ON u."id" = p."id_usuario"
+                WHERE c."status" = 'suspenso_denuncia'
+                AND c."revisao_solicitada" = true
+                ORDER BY c."revisao_solicitada_em" ASC, c."id" ASC
+                """;
 
-        conteudo.setIdTurma(idTurma);
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()
+        ) {
 
-        conteudo.setIdProfessor(
-                rs.getLong("id_professor")
-        );
+            while (rs.next()) {
 
-        Timestamp createdAt =
-                rs.getTimestamp("created_at");
-
-        if (createdAt != null) {
-            conteudo.setCreatedAt(
-                    createdAt.toInstant().atOffset(ZoneOffset.UTC)
-            );
+                ConteudoDTO conteudo = montarConteudo(rs, null);
+                conteudo.setNomeProfessor(rs.getString("nome_professor"));
+                conteudos.add(conteudo);
+            }
         }
 
-        conteudo.setTitulo(
-                rs.getString("titulo")
-        );
+        return conteudos;
+    }
 
-        conteudo.setDescricao(
-                rs.getString("descricao")
-        );
+    private ConteudoDTO montarConteudo(ResultSet rs, Long idTurma) throws SQLException {
 
-        conteudo.setTipo(
-                rs.getString("tipo")
-        );
+        ConteudoDTO conteudo = new ConteudoDTO();
+        conteudo.setId(rs.getLong("id"));
+        conteudo.setIdTurma(idTurma);
+        conteudo.setIdProfessor(rs.getLong("id_professor"));
+        Timestamp createdAt = rs.getTimestamp("created_at");
 
-        conteudo.setUrl(
-                rs.getString("url")
-        );
+        if (createdAt != null) {
+            conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+        }
 
-        conteudo.setDuracaoEstimada(
-                rs.getString("duracao_estimada")
-        );
-
-        conteudo.setPrioridade(
-                rs.getString("prioridade")
-        );
-
-        conteudo.setStatus(
-                rs.getString("status")
-        );
-
-        conteudo.setRevisaoSolicitada(
-                rs.getBoolean("revisao_solicitada")
-        );
-
-        Timestamp revisaoSolicitadaEm =
-                rs.getTimestamp("revisao_solicitada_em");
+        conteudo.setTitulo(rs.getString("titulo"));
+        conteudo.setDescricao(rs.getString("descricao"));
+        conteudo.setTipo(rs.getString("tipo"));
+        conteudo.setUrl(rs.getString("url"));
+        conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+        conteudo.setPrioridade(rs.getString("prioridade"));
+        conteudo.setStatus(rs.getString("status"));
+        conteudo.setRevisaoSolicitada(rs.getBoolean("revisao_solicitada"));
+        Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
 
         if (revisaoSolicitadaEm != null) {
-            conteudo.setRevisaoSolicitadaEm(
-                    revisaoSolicitadaEm
-                            .toInstant()
-                            .atOffset(ZoneOffset.UTC)
-            );
+            conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
         }
 
         return conteudo;
@@ -298,10 +216,7 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
 
@@ -324,10 +239,7 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
 
@@ -342,10 +254,7 @@ public class conteudoDAO {
         return null;
     }
 
-    public boolean conteudoPertenceTurma(
-            Long idConteudo,
-            Long idTurma
-    ) throws SQLException {
+    public boolean conteudoPertenceTurma(Long idConteudo, Long idTurma) throws SQLException {
 
         String sql = """
                 SELECT COUNT(*) AS quantidade
@@ -354,10 +263,7 @@ public class conteudoDAO {
                 AND ? = ANY("id_turma")
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, idConteudo);
             stmt.setLong(2, idTurma);
@@ -384,68 +290,42 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
             stmt.setLong(2, idConteudo);
-
             stmt.executeUpdate();
         }
     }
 
-    public boolean removerConteudoProfessor(
-            Long idConteudo,
-            Long idProfessor
-    ) throws SQLException {
+    public boolean removerConteudoProfessor(Long idConteudo, Long idProfessor) throws SQLException {
 
         String sql = """
                 UPDATE public."CONTEUDOS"
-                SET
-                    "status" = 'removido',
-                    "revisao_solicitada" = false,
-                    "revisao_solicitada_em" = NULL
+                SET  "status" = 'removido', "revisao_solicitada" = false, "revisao_solicitada_em" = NULL
                 WHERE "id" = ?
                 AND "id_professor" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, idConteudo);
             stmt.setLong(2, idProfessor);
-
             return stmt.executeUpdate() > 0;
         }
     }
 
-    public boolean solicitarRevisao(
-            Long idConteudo,
-            Long idProfessor
-    ) throws SQLException {
+    public boolean solicitarRevisao(Long idConteudo, Long idProfessor) throws SQLException {
 
         String sql = """
                 UPDATE public."CONTEUDOS"
-                SET
-                    "revisao_solicitada" = true,
-                    "revisao_solicitada_em" = now()
+                SET "revisao_solicitada" = true, "revisao_solicitada_em" = now()
                 WHERE "id" = ?
                 AND "id_professor" = ?
                 AND "status" = 'suspenso_denuncia'
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, idConteudo);
             stmt.setLong(2, idProfessor);
-
             return stmt.executeUpdate() > 0;
         }
     }
@@ -457,61 +337,26 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
-
             stmt.executeUpdate();
         }
     }
 
-    public void atualizar(
-            ConteudoDTO conteudo
-    ) throws SQLException {
+    public void atualizar(ConteudoDTO conteudo) throws SQLException {
 
         String sql = """
                 UPDATE public."CONTEUDOS"
-                SET
-                    "titulo" = ?,
-                    "url" = ?,
-                    "duracao_estimada" = ?,
-                    "tipo" = ?
+                SET "titulo" = ?, "url" = ?, "duracao_estimada" = ?, "tipo" = ?
                 WHERE "id" = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
-            stmt.setString(
-                    1,
-                    conteudo.getTitulo()
-            );
-
-            stmt.setString(
-                    2,
-                    conteudo.getUrl()
-            );
-
-            stmt.setString(
-                    3,
-                    conteudo.getDuracaoEstimada()
-            );
-
-            stmt.setString(
-                    4,
-                    conteudo.getTipo()
-            );
-
-            stmt.setLong(
-                    5,
-                    conteudo.getId()
-            );
-
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, conteudo.getTitulo());
+            stmt.setString(2, conteudo.getUrl());
+            stmt.setString(3, conteudo.getDuracaoEstimada());
+            stmt.setString(4, conteudo.getTipo());
+            stmt.setLong(5, conteudo.getId());
             stmt.executeUpdate();
         }
     }

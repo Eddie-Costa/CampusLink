@@ -201,6 +201,7 @@
 
         <section class="lista-conteudos" aria-label="Conteúdos da turma">
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
+                 th:classappend="${conteudo.status == 'suspenso_denuncia'} ? 'conteudo-suspenso' : ''"
                  th:if="${session.tipoUsuario == 'professor' or conteudo.status != 'removido'}"
                  th:attr="data-id=${conteudo.id}, data-titulo=${conteudo.titulo}, data-url=${conteudo.url}, data-duracao=${conteudo.duracaoEstimada}">
                 <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo</span>

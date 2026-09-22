@@ -22,32 +22,19 @@ public class DenunciaService {
         this.conteudoDAO = conteudoDAO;
     }
 
-    public String registrarDenuncia(
-            Long idConteudo,
-            Long idAluno,
-            Long idTurma,
-            String motivo
-    ) {
+    public String registrarDenuncia(Long idConteudo, Long idAluno, Long idTurma, String motivo) {
 
-        if (idConteudo == null ||
-                idAluno == null ||
-                idTurma == null) {
-
+        if (idConteudo == null || idAluno == null || idTurma == null) {
             return "erro";
         }
 
-        if (motivo == null ||
-                motivo.isBlank()) {
-
+        if (motivo == null || motivo.isBlank()) {
             return "motivo_vazio";
         }
 
         try {
 
-            String statusConteudo =
-                    conteudoDAO.buscarStatus(
-                            idConteudo
-                    );
+            String statusConteudo = conteudoDAO.buscarStatus(idConteudo);
 
             if (statusConteudo == null) {
                 return "conteudo_nao_encontrado";
@@ -57,56 +44,29 @@ public class DenunciaService {
                 return "conteudo_indisponivel";
             }
 
-            boolean jaDenunciou =
-                    denunciaDAO.alunoJaDenunciou(
-                            idConteudo,
-                            idAluno
-                    );
+            boolean jaDenunciou = denunciaDAO.alunoJaDenunciou(idConteudo, idAluno);
 
             if (jaDenunciou) {
                 return "duplicada";
             }
 
-            Long idProfessor =
-                    conteudoDAO.buscarIdProfessor(
-                            idConteudo
-                    );
+            Long idProfessor = conteudoDAO.buscarIdProfessor(idConteudo);
 
             if (idProfessor == null) {
                 return "professor_nao_encontrado";
             }
 
-            int totalAlunos =
-                    denunciaDAO.contarAlunosDaTurma(
-                            idTurma
-                    );
+            int totalAlunos = denunciaDAO.contarAlunosDaTurma(idTurma);
 
-            if (totalAlunos <= 0) {
-                return "turma_sem_alunos";
+            if (totalAlunos <= 0) {return "turma_sem_alunos";
             }
 
-            DenunciaDTO denuncia =
-                    new DenunciaDTO();
-
-            denuncia.setIdConteudo(
-                    idConteudo
-            );
-
-            denuncia.setIdAluno(
-                    idAluno
-            );
-
-            denuncia.setIdProfessor(
-                    idProfessor
-            );
-
-            denuncia.setMotivo(
-                    motivo.trim()
-            );
-
-            denunciaDAO.inserir(
-                    denuncia
-            );
+            DenunciaDTO denuncia = new DenunciaDTO();
+            denuncia.setIdConteudo(idConteudo);
+            denuncia.setIdAluno(idAluno);
+            denuncia.setIdProfessor(idProfessor);
+            denuncia.setMotivo(motivo.trim());
+            denunciaDAO.inserir(denuncia);
 
             int quantidadeDenuncias =
                     denunciaDAO.contarDenunciasPendentes(
@@ -124,10 +84,7 @@ public class DenunciaService {
 
             if (quantidadeDenuncias >= limiteDenuncias) {
 
-                conteudoDAO.atualizarStatus(
-                        idConteudo,
-                        "suspenso_denuncia"
-                );
+                conteudoDAO.atualizarStatus(idConteudo, "suspenso_denuncia");
 
                 return "suspenso";
             }
@@ -136,48 +93,37 @@ public class DenunciaService {
 
         } catch (SQLException e) {
 
-            throw new RuntimeException(
-                    "Não foi possível registrar a denúncia",
-                    e
-            );
+            throw new RuntimeException("Não foi possível registrar a denúncia", e);
         }
     }
 
-    public int contarDenuncias(
-            Long idConteudo
-    ) {
+    public int contarDenuncias(Long idConteudo) {
 
         try {
-
-            return denunciaDAO.contarDenunciasPendentes(
-                    idConteudo
-            );
+            return denunciaDAO.contarDenunciasPendentes(idConteudo);
 
         } catch (SQLException e) {
 
-            throw new RuntimeException(
-                    "Não foi possível contar as denúncias",
-                    e
-            );
+            throw new RuntimeException("Não foi possível contar as denúncias", e);
         }
     }
 
-    public List<String> listarNomesAlunos(
-            Long idConteudo
-    ) {
+    public List<String> listarNomesAlunos(Long idConteudo) {
 
         try {
-
-            return denunciaDAO.listarNomesAlunosPorConteudo(
-                    idConteudo
-            );
+            return denunciaDAO.listarNomesAlunosPorConteudo(idConteudo);
 
         } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível listar os alunos", e);
+        }
+    }
 
-            throw new RuntimeException(
-                    "Não foi possível listar os alunos",
-                    e
-            );
+    public List<DenunciaDTO> listarPorConteudo(Long idConteudo) {
+
+        try {
+            return denunciaDAO.listarPorConteudo(idConteudo);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível listar as denúncias do conteúdo", e);
         }
     }
 }
