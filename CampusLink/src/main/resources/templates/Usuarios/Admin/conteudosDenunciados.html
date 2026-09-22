@@ -20,10 +20,12 @@
                 <h1>Conteúdos denunciados</h1>
                 <p>Veja os conteúdos que os professores enviaram para análise</p>
             </div>
+
             <a th:href="@{/home}" class="btn btn-outline-primary">Voltar ao início</a>
         </header>
 
         <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>
+
         <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
 
         <div class="admin-resumo">
@@ -31,71 +33,174 @@
             <span>solicitações aguardando análise</span>
         </div>
 
-        <p th:if="${#lists.isEmpty(conteudos)}" class="admin-vazio">Nenhum conteúdo está aguardando análise.</p>
+        <p th:if="${#lists.isEmpty(conteudos)}" class="admin-vazio">
+            Nenhum conteúdo está aguardando análise.
+        </p>
 
         <section th:if="${!#lists.isEmpty(conteudos)}" class="admin-lista" aria-label="Conteúdos aguardando análise">
+
             <article th:each="conteudo : ${conteudos}" class="admin-card">
 
                 <div class="admin-card-topo">
                     <h2 th:text="${conteudo.titulo}">Título do conteúdo</h2>
-                    <span class="admin-status">Suspenso por denúncia</span>
+
+                    <span class="admin-status">
+                        Suspenso por denúncia
+                    </span>
                 </div>
 
-                <p class="admin-descricao" th:text="${conteudo.descricao != null and !conteudo.descricao.isBlank() ? conteudo.descricao : 'Sem descrição cadastrada'}">Descrição</p>
+                <p class="admin-descricao"
+                   th:text="${conteudo.descricao != null and !conteudo.descricao.isBlank() ? conteudo.descricao : 'Sem descrição cadastrada'}">
+                    Descrição
+                </p>
 
                 <div class="admin-informacoes">
+
                     <div>
                         <span>Professor responsável</span>
-                        <strong th:text="${conteudo.nomeProfessor != null ? conteudo.nomeProfessor : 'Não identificado'}">Professor</strong>
+
+                        <strong th:text="${conteudo.nomeProfessor != null ? conteudo.nomeProfessor : 'Não identificado'}">
+                            Professor
+                        </strong>
                     </div>
+
                     <div>
                         <span>Tipo de conteúdo</span>
-                        <strong th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">Tipo</strong>
+
+                        <strong th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">
+                            Tipo
+                        </strong>
                     </div>
+
                     <div>
                         <span>Análise solicitada em</span>
-                        <strong th:text="${conteudo.revisaoSolicitadaEm != null ? #temporals.format(conteudo.revisaoSolicitadaEm, 'dd/MM/yyyy HH:mm') : 'Não informada'}">Data</strong>
+
+                        <strong th:text="${conteudo.revisaoSolicitadaEm != null ? #temporals.format(conteudo.revisaoSolicitadaEm, 'dd/MM/yyyy HH:mm') : 'Não informada'}">
+                            Data
+                        </strong>
                     </div>
+
                 </div>
 
                 <div th:if="${conteudo.url != null and !conteudo.url.isBlank()}" class="admin-endereco">
                     <span>Endereço do conteúdo</span>
-                    <p th:text="${conteudo.url}">Endereço</p>
+
+                    <p th:text="${conteudo.url}">
+                        Endereço
+                    </p>
                 </div>
 
                 <div th:if="${arquivosPorConteudo[conteudo.id] != null}" class="admin-arquivo">
+
                     <div>
                         <span>Arquivo anexado</span>
-                        <strong th:text="${arquivosPorConteudo[conteudo.id].nomeOriginal}">Nome do arquivo</strong>
+
+                        <strong th:text="${arquivosPorConteudo[conteudo.id].nomeOriginal}">
+                            Nome do arquivo
+                        </strong>
                     </div>
-                    <a th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo[conteudo.id].id})}" class="btn btn-outline-primary btn-sm">Baixar arquivo</a>
+
+                    <a th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo[conteudo.id].id})}"
+                       class="btn btn-outline-primary btn-sm">
+                        Baixar arquivo
+                    </a>
+
                 </div>
 
                 <details class="admin-denuncias">
+
                     <summary>Ver detalhes das denúncias</summary>
 
-                    <p th:if="${#lists.isEmpty(denunciasPorConteudo[conteudo.id])}" class="admin-sem-denuncias">Nenhuma denúncia encontrada.</p>
+                    <p th:if="${#lists.isEmpty(denunciasPorConteudo[conteudo.id])}" class="admin-sem-denuncias">
+                        Nenhuma denúncia encontrada.
+                    </p>
 
                     <div th:each="denuncia : ${denunciasPorConteudo[conteudo.id]}" class="admin-denuncia">
+
                         <div class="admin-denuncia-topo">
-                            <strong th:text="${denuncia.nomeAluno != null ? denuncia.nomeAluno : 'Aluno não encontrado'}">Aluno</strong>
-                            <span th:text="${denuncia.status}">Pendente</span>
+
+                            <strong th:text="${denuncia.nomeAluno != null ? denuncia.nomeAluno : 'Aluno não encontrado'}">
+                                Aluno
+                            </strong>
+
+                            <span th:text="${denuncia.status}">
+                                Pendente
+                            </span>
+
                         </div>
-                        <p th:text="${denuncia.motivo}">Motivo da denúncia</p>
-                        <time th:if="${denuncia.createdAt != null}" th:datetime="${denuncia.createdAt}" th:text="${#temporals.format(denuncia.createdAt, 'dd/MM/yyyy HH:mm')}">Data da denúncia</time>
-                        <span th:unless="${denuncia.createdAt != null}">Data não informada</span>
+
+                        <p th:text="${denuncia.motivo}">
+                            Motivo da denúncia
+                        </p>
+
+                        <time th:if="${denuncia.createdAt != null}"
+                              th:datetime="${denuncia.createdAt}"
+                              th:text="${#temporals.format(denuncia.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            Data da denúncia
+                        </time>
+
+                        <span th:unless="${denuncia.createdAt != null}">
+                            Data não informada
+                        </span>
+
                     </div>
+
                 </details>
 
-                <form th:action="@{/admin/conteudos-denunciados/{idConteudo}/liberar(idConteudo=${conteudo.id})}" method="post" class="admin-acoes">
-                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button type="submit" class="btn btn-primary">Liberar conteúdo</button>
-                </form>
+                <div class="admin-acoes">
+
+                    <form th:action="@{/admin/conteudos-denunciados/{idConteudo}/liberar(idConteudo=${conteudo.id})}"
+                          method="post"
+                          class="admin-liberar-form">
+
+                        <input type="hidden"
+                               th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <button type="submit" class="btn btn-primary">
+                            Liberar conteúdo
+                        </button>
+
+                    </form>
+
+                    <form th:action="@{/admin/conteudos-denunciados/{idConteudo}/reprovar(idConteudo=${conteudo.id})}"
+                          method="post"
+                          class="admin-reprovar-form">
+
+                        <input type="hidden"
+                               th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <label for="comentarioAdmin" class="form-label">
+                            Motivo da reprovação
+                        </label>
+
+                        <textarea id="comentarioAdmin"
+                                  name="comentarioAdmin"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="1000"
+                                  placeholder="Explique para o professor por que o conteúdo foi reprovado"
+                                  required></textarea>
+
+                        <button type="submit" class="btn btn-danger">
+                            Reprovar conteúdo
+                        </button>
+
+                    </form>
+
+                </div>
 
             </article>
+
         </section>
 
-        <p class="admin-horario">Os horários das denúncias e solicitações estão em UTC.</p>
+        <p class="admin-horario">
+            Os horários das denúncias e solicitações estão em UTC.
+        </p>
+
     </div>
 </main>
 

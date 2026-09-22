@@ -17,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class AdminConteudosController {
                 );
 
                 ArquivoDTO arquivo = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+
                 if (arquivo != null) {
                     arquivosPorConteudo.put(conteudo.getId(), arquivo);
                 }
@@ -83,6 +85,7 @@ public class AdminConteudosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao carregar conteúdos para análise", e);
+
             model.addAttribute("mensagemErro", "Não foi possível carregar os conteúdos para análise.");
             model.addAttribute("conteudos", new ArrayList<ConteudoDTO>());
             model.addAttribute("denunciasPorConteudo", new HashMap<Long, List<DenunciaDTO>>());
@@ -111,14 +114,79 @@ public class AdminConteudosController {
             boolean liberado = revisaoConteudoService.liberarConteudo(idConteudo);
 
             if (liberado) {
-                redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo liberado novamente.");
+                redirectAttributes.addFlashAttribute(
+                        "mensagemSucesso",
+                        "Conteúdo liberado novamente."
+                );
             } else {
-                redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não está aguardando análise.");
+                redirectAttributes.addFlashAttribute(
+                        "mensagemErro",
+                        "Este conteúdo não está aguardando análise."
+                );
             }
 
         } catch (RuntimeException e) {
             logger.error("erro ao liberar o conteúdo {}", idConteudo, e);
-            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível liberar o conteúdo.");
+
+            redirectAttributes.addFlashAttribute(
+                    "mensagemErro",
+                    "Não foi possível liberar o conteúdo."
+            );
+        }
+
+        return "redirect:/admin/conteudos-denunciados";
+    }
+
+    @PostMapping("/admin/conteudos-denunciados/{idConteudo}/reprovar")
+    public String reprovarConteudo(
+            @PathVariable Long idConteudo,
+            @RequestParam String comentarioAdmin,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        if (!ehAdministrador(session)) {
+            return "redirect:/home";
+        }
+
+        if (comentarioAdmin == null || comentarioAdmin.isBlank()) {
+            redirectAttributes.addFlashAttribute(
+                    "mensagemErro",
+                    "Informe o motivo da reprovação."
+            );
+
+            return "redirect:/admin/conteudos-denunciados";
+        }
+
+        try {
+            boolean reprovado = revisaoConteudoService.reprovarConteudo(
+                    idConteudo,
+                    comentarioAdmin
+            );
+
+            if (reprovado) {
+                redirectAttributes.addFlashAttribute(
+                        "mensagemSucesso",
+                        "Conteúdo reprovado e removido."
+                );
+            } else {
+                redirectAttributes.addFlashAttribute(
+                        "mensagemErro",
+                        "Este conteúdo não está aguardando análise."
+                );
+            }
+
+        } catch (RuntimeException e) {
+            logger.error("erro ao reprovar o conteúdo {}", idConteudo, e);
+
+            redirectAttributes.addFlashAttribute(
+                    "mensagemErro",
+                    "Não foi possível reprovar o conteúdo."
+            );
         }
 
         return "redirect:/admin/conteudos-denunciados";

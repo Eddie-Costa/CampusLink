@@ -167,6 +167,34 @@ body {
     font-size: 14px;
 }
 
+/* comentario do administrador */
+
+.comentario-admin {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid #f1aeb5;
+    border-left: 4px solid #dc3545;
+    border-radius: 10px;
+    background-color: #f8d7da;
+}
+
+.comentario-admin-titulo {
+    display: block;
+    margin-bottom: 7px;
+    color: #842029;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.comentario-admin p {
+    margin: 0;
+    color: #58151c;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 .status-conteudo {
     display: inline-flex;
     align-items: center;

@@ -22,4 +22,17 @@ public class RevisaoConteudoService {
             throw new RuntimeException("Não foi possível liberar o conteúdo.", e);
         }
     }
+
+    public boolean reprovarConteudo(Long idConteudo, String comentarioAdmin) {
+
+        if (comentarioAdmin == null || comentarioAdmin.isBlank()) {
+            return false;
+        }
+
+        try {
+            return revisaoConteudoDAO.reprovarConteudo(idConteudo, comentarioAdmin);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível reprovar o conteúdo.", e);
+        }
+    }
 }

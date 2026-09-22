@@ -37,6 +37,8 @@ public class ConteudoDTO {
 
     private String status;
 
+    private String comentarioAdmin;
+
     private String nomeTurma;
 
     private String nomeProfessor;

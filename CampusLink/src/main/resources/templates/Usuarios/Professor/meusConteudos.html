@@ -243,6 +243,19 @@
                     Descrição do conteúdo
                 </p>
 
+                <div class="comentario-admin"
+                     th:if="${conteudo.status == 'removido' and conteudo.comentarioAdmin != null and !conteudo.comentarioAdmin.isBlank()}">
+
+                    <span class="comentario-admin-titulo">
+                        Motivo da reprovação pelo administrador
+                    </span>
+
+                    <p th:text="${conteudo.comentarioAdmin}">
+                        Motivo informado pelo administrador
+                    </p>
+
+                </div>
+
                 <div class="conteudo-informacoes">
 
                     <div class="informacao">
