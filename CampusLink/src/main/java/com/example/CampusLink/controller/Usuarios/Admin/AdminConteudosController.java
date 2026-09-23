@@ -114,24 +114,15 @@ public class AdminConteudosController {
             boolean liberado = revisaoConteudoService.liberarConteudo(idConteudo);
 
             if (liberado) {
-                redirectAttributes.addFlashAttribute(
-                        "mensagemSucesso",
-                        "Conteúdo liberado novamente."
-                );
+                redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo liberado novamente.");
             } else {
-                redirectAttributes.addFlashAttribute(
-                        "mensagemErro",
-                        "Este conteúdo não está aguardando análise."
-                );
+                redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não está aguardando análise.");
             }
 
         } catch (RuntimeException e) {
             logger.error("erro ao liberar o conteúdo {}", idConteudo, e);
 
-            redirectAttributes.addFlashAttribute(
-                    "mensagemErro",
-                    "Não foi possível liberar o conteúdo."
-            );
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível liberar o conteúdo.");
         }
 
         return "redirect:/admin/conteudos-denunciados";
@@ -154,39 +145,23 @@ public class AdminConteudosController {
         }
 
         if (comentarioAdmin == null || comentarioAdmin.isBlank()) {
-            redirectAttributes.addFlashAttribute(
-                    "mensagemErro",
-                    "Informe o motivo da reprovação."
-            );
+            redirectAttributes.addFlashAttribute("mensagemErro", "Informe o motivo da reprovação.");
 
             return "redirect:/admin/conteudos-denunciados";
         }
 
         try {
-            boolean reprovado = revisaoConteudoService.reprovarConteudo(
-                    idConteudo,
-                    comentarioAdmin
-            );
+            boolean reprovado = revisaoConteudoService.reprovarConteudo(idConteudo, comentarioAdmin);
 
             if (reprovado) {
-                redirectAttributes.addFlashAttribute(
-                        "mensagemSucesso",
-                        "Conteúdo reprovado e removido."
-                );
+                redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo reprovado e removido.");
             } else {
-                redirectAttributes.addFlashAttribute(
-                        "mensagemErro",
-                        "Este conteúdo não está aguardando análise."
-                );
+                redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não está aguardando análise.");
             }
 
         } catch (RuntimeException e) {
             logger.error("erro ao reprovar o conteúdo {}", idConteudo, e);
-
-            redirectAttributes.addFlashAttribute(
-                    "mensagemErro",
-                    "Não foi possível reprovar o conteúdo."
-            );
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível reprovar o conteúdo.");
         }
 
         return "redirect:/admin/conteudos-denunciados";
