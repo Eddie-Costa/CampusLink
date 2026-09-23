@@ -1,0 +1,219 @@
+:root {
+    --azul-campus: #11183f;
+    --branco: #ffffff;
+    --cinza-fundo: #b7c5d9;
+    --cinza-texto: #5f6878;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--cinza-fundo);
+    background-image: url("/images/bg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--azul-campus);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.sobre-page {
+    width: calc(100% - 40px);
+    max-width: 1300px;
+    margin: 50px auto 70px;
+}
+
+.sobre-principal {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 50px;
+    min-height: 300px;
+}
+
+.sobre-texto {
+    max-width: 700px;
+}
+
+.pagina-destaque {
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sobre-texto h1 {
+    margin: 0 0 18px;
+    font-size: 43px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.sobre-texto p {
+    margin: 0;
+    color: var(--cinza-texto);
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+.sobre-painel {
+    padding: 34px;
+    border-radius: 22px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    box-shadow: 0 15px 30px rgba(17, 24, 63, 0.22);
+}
+
+.painel-titulo {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sobre-painel p {
+    margin: 0;
+    color: #d5daea;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.sobre-bloco {
+    margin-top: 30px;
+    padding: 32px;
+    border-radius: 20px;
+    background-color: var(--branco);
+    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+}
+
+.sobre-bloco h2 {
+    margin: 0 0 12px;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.sobre-bloco p {
+    max-width: 950px;
+    margin: 0;
+    color: var(--cinza-texto);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.valores-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.valor-card {
+    min-height: 190px;
+    padding: 28px;
+    border-radius: 18px;
+    background-color: var(--branco);
+    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+}
+
+.valor-card > span {
+    color: #8792aa;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.valor-card h2 {
+    margin: 18px 0 10px;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.valor-card p {
+    margin: 0;
+    color: var(--cinza-texto);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.sobre-final {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    margin-top: 20px;
+    padding: 30px;
+    border-radius: 20px;
+    background-color: var(--branco);
+    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+}
+
+.sobre-final h2 {
+    margin: 0 0 7px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sobre-final p {
+    margin: 0;
+    color: var(--cinza-texto);
+}
+
+.botao-funcionalidades {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 9px 20px;
+    border-radius: 21px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: 0.2s ease;
+}
+
+.botao-funcionalidades:hover {
+    color: var(--branco);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 850px) {
+    .sobre-principal {
+        grid-template-columns: 1fr;
+    }
+
+    .valores-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sobre-final {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 550px) {
+    .sobre-page {
+        width: calc(100% - 28px);
+        margin-top: 30px;
+    }
+
+    .sobre-texto h1 {
+        font-size: 33px;
+    }
+}

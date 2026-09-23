@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,4 +34,18 @@ public class ConteudoDTO {
     private String duracaoEstimada;
 
     private String prioridade;
+
+    private String status;
+
+    private String comentarioAdmin;
+
+    private String nomeTurma;
+
+    private String nomeProfessor;
+
+    private boolean revisaoSolicitada;
+
+    private OffsetDateTime revisaoSolicitadaEm;
+
+    private List<String> alunosDenunciaram = new ArrayList<>();
 }

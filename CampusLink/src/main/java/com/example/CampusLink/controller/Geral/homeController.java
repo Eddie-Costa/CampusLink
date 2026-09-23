@@ -14,7 +14,16 @@ public class homeController {
 
     @GetMapping("/home")
     public ModelAndView home() {
-        ModelAndView mv = new ModelAndView("Geral/home");
-        return mv;
+        return new ModelAndView("Geral/home");
+    }
+
+    @GetMapping("/funcionalidades")
+    public ModelAndView funcionalidades() {
+        return new ModelAndView("Geral/funcionalidades");
+    }
+
+    @GetMapping("/sobre-nos")
+    public ModelAndView sobreNos() {
+        return new ModelAndView("Geral/sobreNos");
     }
 }

@@ -25,21 +25,25 @@ public class ConteudoService {
     private final conteudoDAO conteudoDAO;
     private final ArquivoService arquivoService;
 
-    public ConteudoService(
-            com.example.CampusLink.dao.conteudoDAO conteudoDAO,
-            ArquivoService arquivoService) {
+    public ConteudoService(conteudoDAO conteudoDAO, ArquivoService arquivoService) {
 
         this.conteudoDAO = conteudoDAO;
         this.arquivoService = arquivoService;
     }
+
     public ConteudoDTO criar(ConteudoDTO conteudo, MultipartFile arquivo) {
 
         if (conteudo.getPrioridade() == null || conteudo.getPrioridade().isBlank()) {
+
             conteudo.setPrioridade("media");
         }
+
         conteudo.setTipo(definirTipo(conteudo, arquivo));
+
         try {
+
             conteudoDAO.inserir(conteudo);
+
         } catch (SQLException e) {
             logger.error("Erro ao cadastrar conteúdo. turmaId={} professorId={}", conteudo.getIdTurma(), conteudo.getIdProfessor(), e);
             if (logger.isErrorEnabled()) {
@@ -54,13 +58,17 @@ public class ConteudoService {
             }
             throw new RuntimeException("Não foi possível cadastrar o conteúdo.", e);
         }
+
         if (arquivo != null && !arquivo.isEmpty()) {
+
             try {
+
                 arquivoService.salvar(arquivo, conteudo.getId());
+
             } catch (RuntimeException e) {
-                // Conteúdo já foi criado, mas o arquivo falhou.
-                // Não vamos deixar um conteúdo "quebrado" sem o arquivo.
+
                 try {
+
                     conteudoDAO.excluir(conteudo.getId());
                     logger.info("Conteúdo removido após falha no arquivo. conteudoId={} turmaId={}", conteudo.getId(), conteudo.getIdTurma());
                     if (logger.isInfoEnabled()) {
@@ -84,6 +92,7 @@ public class ConteudoService {
                         }
                     }
                 }
+
                 throw e;
             }
         }
@@ -104,6 +113,7 @@ public class ConteudoService {
 
         try {
             return conteudoDAO.listarPorTurma(idTurma);
+
         } catch (SQLException e) {
             logger.error("Erro ao listar conteúdos. turmaId={}", idTurma, e);
             if (logger.isErrorEnabled()) {
@@ -119,9 +129,53 @@ public class ConteudoService {
             throw new RuntimeException("Não foi possível listar os conteúdos da turma.", e);
         }
     }
+
+    public List<ConteudoDTO> listarPorProfessor(Long idProfessor) {
+
+        try {
+
+            return conteudoDAO.listarPorProfessor(idProfessor);
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException("Não foi possível listar os conteúdos do professor.", e);
+        }
+    }
+
+    public List<ConteudoDTO> listarParaAnaliseAdmin() {
+
+        try {
+            return conteudoDAO.listarParaAnaliseAdmin();
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível listar os conteúdos enviados para análise.", e);
+        }
+    }
+
+    public boolean removerConteudoProfessor(Long idConteudo, Long idProfessor) {
+
+        try {
+
+            return conteudoDAO.removerConteudoProfessor(idConteudo, idProfessor);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível remover o conteúdo.", e);
+        }
+    }
+
+    public boolean solicitarRevisao(Long idConteudo, Long idProfessor) {
+
+        try {
+            return conteudoDAO.solicitarRevisao(idConteudo, idProfessor);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível solicitar a análise.", e);
+        }
+    }
+
     public void excluir(Long id) {
 
         try {
+
             conteudoDAO.excluir(id);
             logger.info("Conteúdo excluído. conteudoId={}", id);
             if (logger.isInfoEnabled()) {
@@ -147,9 +201,10 @@ public class ConteudoService {
             throw new RuntimeException("Não foi possível excluir o conteúdo.", e);
         }
     }
+
     public ConteudoDTO atualizar(ConteudoDTO conteudo) {
 
-        conteudo.setTipo(definirTipo(conteudo, null));
+        conteudo.setTipo(definirTipo( conteudo,  null));
 
         try {
             conteudoDAO.atualizar(conteudo);
