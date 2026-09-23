@@ -162,8 +162,7 @@ public class usuarioDAO {
 
     private void inserirEventoLog(Connection conn, UUID sessaoLogId, String nivel, String classe, String operacao,
                                   UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
-        String sql = "INSERT INTO public.\"LOGS_EVENTOS\" (sessao_log_id, nivel, classe, operacao, operacao_id, mensagem, detalhes, excecao) "
-                + "VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)";
+        String sql = "INSERT INTO public.\"LOGS_EVENTOS\" (sessao_log_id, nivel, classe, operacao, operacao_id, mensagem, detalhes, excecao) VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, sessaoLogId);
             stmt.setString(2, nivel);
@@ -181,19 +180,10 @@ public class usuarioDAO {
 
     private void atualizarHistoricoSessao(Connection conn, UUID sessaoLogId) throws SQLException {
         String sql = """
-                UPDATE public."LOGS_SESSOES" s
-                SET log_completo = COALESCE((
-                    SELECT string_agg(concat_ws(' ',
-                        e.data_hora::text, '[' || e.nivel || ']', e.classe,
-                        'eventoId=' || e.id, 'operacao=' || e.operacao,
-                        'operacaoId=' || e.operacao_id, e.mensagem,
-                        CASE WHEN e.detalhes IS NOT NULL THEN E'\\nDetalhes: ' || e.detalhes::text END,
-                        CASE WHEN e.excecao IS NOT NULL THEN E'\\nExcecao: ' || e.excecao END
-                    ), E'\\n' ORDER BY e.data_hora, e.id)
-                    FROM public."LOGS_EVENTOS" e WHERE e.sessao_log_id = s.sessao_log_id
-                ), ''), historico_gerado_em = clock_timestamp()
-                WHERE s.sessao_log_id = ?
-                """;
+            UPDATE public."LOGS_SESSOES" s SET log_completo = COALESCE(( SELECT string_agg(concat_ws(' ', e.data_hora::text, '[' || e.nivel || ']', e.classe,
+            'eventoId=' || e.id, 'operacao=' || e.operacao, 'operacaoId=' || e.operacao_id, e.mensagem, E'\\nDetalhes: ' || e.detalhes::text, E'\\nExcecao: ' || e.excecao), E'\\n' ORDER BY e.data_hora, e.id)
+            FROM public."LOGS_EVENTOS" e WHERE e.sessao_log_id = s.sessao_log_id), ''), historico_gerado_em = clock_timestamp() WHERE s.sessao_log_id = ?
+            """;
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, sessaoLogId);
             stmt.executeUpdate();
@@ -375,8 +365,7 @@ public class usuarioDAO {
         logger.debug("Atualizando senha do usuário no banco.");
         if (logger.isDebugEnabled()) {
             try {
-                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null,
-                        "Atualizando senha do usuário no banco.", null, null);
+                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null, "Atualizando senha do usuário no banco.", null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
@@ -385,8 +374,7 @@ public class usuarioDAO {
         logger.debug("Linhas afetadas: {}", linhas);
         if (logger.isDebugEnabled()) {
             try {
-                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null,
-                        MessageFormatter.arrayFormat("Linhas afetadas: {}", new Object[]{linhas}).getMessage(), null, null);
+                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null, MessageFormatter.arrayFormat("Linhas afetadas: {}", new Object[]{linhas}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
