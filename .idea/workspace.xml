@@ -14,6 +14,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Dockerfile" />
+        <option value="JavaScript File" />
         <option value="Class" />
         <option value="HTML File" />
         <option value="CSS File" />
@@ -51,12 +52,14 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "local/Santhiago__Implementar__denúncia",
+    "git-widget-placeholder": "local/eddie-esqueceuSenhaMerge",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.jshint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.jshint": "",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Project",
@@ -75,6 +78,7 @@
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js" />
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -145,33 +149,14 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>45</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
           <line>156</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>291</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/ResetPaswordController.java</url>
           <line>47</line>
           <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>30</line>
-          <properties class="com.example.CampusLink.dao.usuarioDAO">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/ResetPaswordController.java</url>

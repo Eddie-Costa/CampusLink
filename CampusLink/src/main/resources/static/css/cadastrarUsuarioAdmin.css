@@ -1,0 +1,225 @@
+:root {
+    --azul-campus: #11183f;
+    --azul-hover: #1d2b62;
+    --branco: #ffffff;
+    --cinza-fundo: #b7c5d9;
+    --cinza-texto: #667085;
+    --cinza-borda: #d9e1ed;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--cinza-fundo);
+    background-image: url("/images/bg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--azul-campus);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.cadastro-admin-page {
+    padding: 40px 20px 64px;
+}
+
+.cadastro-admin-container {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.cadastro-admin-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 26px;
+}
+
+.cadastro-admin-topo h1 {
+    margin: 0 0 6px;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.cadastro-admin-topo p {
+    margin: 0;
+    color: var(--cinza-texto);
+}
+
+.cadastro-admin-etiqueta {
+    margin-bottom: 5px !important;
+    color: var(--azul-hover) !important;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cadastro-admin-voltar {
+    flex-shrink: 0;
+    padding: 9px 18px;
+    border: 1px solid var(--azul-campus);
+    border-radius: 22px;
+    color: var(--azul-campus);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.cadastro-admin-voltar:hover {
+    background-color: var(--azul-campus);
+    color: var(--branco);
+}
+
+.cadastro-admin-mensagem {
+    margin-bottom: 20px;
+}
+
+.cadastro-admin-card {
+    overflow: hidden;
+    background-color: var(--branco);
+    border: 1px solid var(--cinza-borda);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+}
+
+.cadastro-admin-card-topo {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--cinza-borda);
+}
+
+.cadastro-admin-card-topo h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.cadastro-admin-form {
+    padding: 24px;
+}
+
+.cadastro-admin-campo {
+    margin-bottom: 18px;
+}
+
+.cadastro-admin-campo label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--azul-campus);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cadastro-admin-campo input,
+.cadastro-admin-campo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cfd7e3;
+    border-radius: 9px;
+    outline: none;
+    background-color: var(--branco);
+    color: var(--azul-campus);
+    font-size: 14px;
+}
+
+.cadastro-admin-campo input:focus,
+.cadastro-admin-campo select:focus {
+    border-color: var(--azul-campus);
+    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
+}
+
+.cadastro-admin-ajuda {
+    margin-top: 6px;
+    color: var(--cinza-texto);
+    font-size: 12px;
+}
+
+.cadastro-admin-erro {
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 13px;
+}
+
+.cadastro-admin-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 26px;
+}
+
+.cadastro-admin-cancelar,
+.cadastro-admin-salvar {
+    padding: 9px 18px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.cadastro-admin-cancelar {
+    border: 1px solid #98a2b3;
+    background-color: var(--branco);
+    color: #475467;
+}
+
+.cadastro-admin-cancelar:hover {
+    background-color: #f2f4f7;
+    color: #344054;
+}
+
+.cadastro-admin-salvar {
+    border: 1px solid var(--azul-campus);
+    background-color: var(--azul-campus);
+    color: var(--branco);
+}
+
+.cadastro-admin-salvar:hover {
+    background-color: var(--azul-hover);
+}
+
+@media (max-width: 700px) {
+    .cadastro-admin-page {
+        padding: 28px 14px 45px;
+    }
+
+    .cadastro-admin-topo {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cadastro-admin-topo h1 {
+        font-size: 27px;
+    }
+
+    .cadastro-admin-voltar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .cadastro-admin-form {
+        padding: 18px;
+    }
+
+    .cadastro-admin-acoes {
+        flex-direction: column;
+    }
+
+    .cadastro-admin-cancelar,
+    .cadastro-admin-salvar {
+        width: 100%;
+        text-align: center;
+    }
+}

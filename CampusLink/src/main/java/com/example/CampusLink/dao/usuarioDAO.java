@@ -1,5 +1,6 @@
 package com.example.CampusLink.dao;
 
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.slf4j.helpers.MessageFormatter;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,21 +46,23 @@ public class usuarioDAO {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + Tipo);
         }
 
-        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" (\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" (\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" " + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
+        String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" "
+                + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
 
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
             try (PreparedStatement stmt = conn.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, NOME);
-            stmt.setString(2, emailNormalizado);
-            stmt.setString(3, TELEFONE);
-            stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
-            stmt.setString(5, SENHA);
-            stmt.setString(6, tabelaEspecifica);
-            stmt.setBoolean(7, true);
+                stmt.setString(1, NOME);
+                stmt.setString(2, emailNormalizado);
+                stmt.setString(3, TELEFONE);
+                stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
+                stmt.setString(5, SENHA);
+                stmt.setString(6, tabelaEspecifica);
+                stmt.setBoolean(7, true);
 
                 if (stmt.executeUpdate() == 0) {
                     throw new SQLException("Nenhum usuário foi inserido.");
@@ -70,6 +74,7 @@ public class usuarioDAO {
                     }
 
                     long idUsuario = generatedKeys.getLong(1);
+
                     try (PreparedStatement stmt2 = conn.prepareStatement(sqlEspecifico)) {
                         stmt2.setLong(1, idUsuario);
                         stmt2.setString(2, IDENTIFICADOR);
@@ -85,22 +90,26 @@ public class usuarioDAO {
     }
 
     public void InserirLogsNoBD(UUID sessaoLogId, String nivel, String classe, String operacao,
-                               UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
-        // Chamadas sem ID explícito usam a sessão de logs da requisição atual.
+                                UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
+
         if (sessaoLogId == null && MDC.get("sessaoLogId") != null) {
             sessaoLogId = UUID.fromString(MDC.get("sessaoLogId"));
         }
 
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
+
             try {
                 boolean encerrada = sessaoLogId != null && bloquearSessaoLog(conn, sessaoLogId);
+
                 inserirEventoLog(conn, sessaoLogId, nivel, classe, operacao, operacaoId, mensagem, detalhes, excecao);
-                // Inclui tarefas assincronas que terminaram depois da invalidacao.
+
                 if (encerrada) {
                     atualizarHistoricoSessao(conn, sessaoLogId);
                 }
+
                 conn.commit();
+
             } catch (SQLException | RuntimeException e) {
                 desfazerTransacaoLog(conn, e);
                 throw e;
@@ -119,10 +128,21 @@ public class usuarioDAO {
 
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
+
             try {
                 if (!bloquearSessaoLog(conn, sessaoLogId)) {
-                    inserirEventoLog(conn, sessaoLogId, "INFO", "SessaoLogListener", "sessionDestroyed", null,
-                            "Sessao invalidada. Historico consolidado.", null, null);
+                    inserirEventoLog(
+                            conn,
+                            sessaoLogId,
+                            "INFO",
+                            "SessaoLogListener",
+                            "sessionDestroyed",
+                            null,
+                            "Sessao invalidada. Historico consolidado.",
+                            null,
+                            null
+                    );
+
                     try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                         stmt.setString(1, email == null ? null : normalizarEmail(email));
                         stmt.setTimestamp(2, Timestamp.from(inicio));
@@ -131,8 +151,10 @@ public class usuarioDAO {
                         stmt.executeUpdate();
                     }
                 }
+
                 atualizarHistoricoSessao(conn, sessaoLogId);
                 conn.commit();
+
             } catch (SQLException | RuntimeException e) {
                 desfazerTransacaoLog(conn, e);
                 throw e;
@@ -143,18 +165,22 @@ public class usuarioDAO {
     private boolean bloquearSessaoLog(Connection conn, UUID sessaoLogId) throws SQLException {
         String sql = "INSERT INTO public.\"LOGS_SESSOES\" (sessao_log_id) VALUES (?) "
                 + "ON CONFLICT (sessao_log_id) DO NOTHING";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, sessaoLogId);
             stmt.executeUpdate();
         }
-        // Serializa eventos e encerramento da mesma sessao, inclusive entre threads.
+
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT fim FROM public.\"LOGS_SESSOES\" WHERE sessao_log_id = ? FOR UPDATE")) {
+
             stmt.setObject(1, sessaoLogId);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     throw new SQLException("Sessao de log nao encontrada.");
                 }
+
                 return rs.getTimestamp("fim") != null;
             }
         }
@@ -162,7 +188,9 @@ public class usuarioDAO {
 
     private void inserirEventoLog(Connection conn, UUID sessaoLogId, String nivel, String classe, String operacao,
                                   UUID operacaoId, String mensagem, String detalhes, String excecao) throws SQLException {
+
         String sql = "INSERT INTO public.\"LOGS_EVENTOS\" (sessao_log_id, nivel, classe, operacao, operacao_id, mensagem, detalhes, excecao) VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, sessaoLogId);
             stmt.setString(2, nivel);
@@ -172,6 +200,7 @@ public class usuarioDAO {
             stmt.setString(6, mensagem);
             stmt.setString(7, detalhes);
             stmt.setString(8, excecao);
+
             if (stmt.executeUpdate() == 0) {
                 throw new SQLException("Nenhum log foi inserido.");
             }
@@ -184,6 +213,7 @@ public class usuarioDAO {
             'eventoId=' || e.id, 'operacao=' || e.operacao, 'operacaoId=' || e.operacao_id, e.mensagem, E'\\nDetalhes: ' || e.detalhes::text, E'\\nExcecao: ' || e.excecao), E'\\n' ORDER BY e.data_hora, e.id)
             FROM public."LOGS_EVENTOS" e WHERE e.sessao_log_id = s.sessao_log_id), ''), historico_gerado_em = clock_timestamp() WHERE s.sessao_log_id = ?
             """;
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, sessaoLogId);
             stmt.executeUpdate();
@@ -198,15 +228,17 @@ public class usuarioDAO {
         }
     }
 
-    public List<String> validarDadosDuplicados(String tipoUsuario,String identificador, String email, String telefone) {
+    public List<String> validarDadosDuplicados(String tipoUsuario, String identificador, String email, String telefone) {
         List<String> erros = new ArrayList<>();
 
         if (verificarExistente(tipoUsuario, "identificador", identificador)) {
             erros.add("Identificador já cadastrado");
         }
+
         if (verificarExistente(tipoUsuario, "email", email)) {
             erros.add("Email já cadastrado");
         }
+
         if (verificarExistente(tipoUsuario, "telefone", telefone)) {
             erros.add("Telefone já cadastrado");
         }
@@ -223,20 +255,25 @@ public class usuarioDAO {
                 String tabela = tipoUsuario.equalsIgnoreCase("Aluno") ? "ALUNOS" : "PROFESSORES";
                 String coluna = tipoUsuario.equalsIgnoreCase("Aluno") ? "rgm" : "matricula";
 
-                sql = "SELECT 1 FROM public.\"USUARIOS\" u JOIN public.\"" + tabela + "\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE p.\"" + coluna + "\" = ?";
+                sql = "SELECT 1 FROM public.\"USUARIOS\" u JOIN public.\"" + tabela + "\" p ON p.\"id_usuario\" = u.\"id\" "
+                        + "WHERE p.\"" + coluna + "\" = ?";
                 break;
+
             case "email":
                 sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE LOWER(\"email\") = ?";
                 break;
+
             case "telefone":
                 sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE \"telefone\" = ?";
                 break;
+
             default:
                 throw new IllegalArgumentException("Tipo de dado inválido: " + tipoDado);
         }
 
-        //executa a query
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setString(1, tipoDado.equals("email") ? normalizarEmail(dado) : dado);
 
             ResultSet rs = stmt.executeQuery();
@@ -244,11 +281,11 @@ public class usuarioDAO {
             if (rs.next()) {
                 existe = true;
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        //se existe retorno ja existe o dado
         return existe;
     }
 
@@ -257,28 +294,32 @@ public class usuarioDAO {
         String resultado = "";
         String sql = "";
 
-        // conexão
         Connection conn = dataSource.getConnection();
 
-        //define o tipo de usuario
-        if(tipoUsuario.equalsIgnoreCase("Aluno")){
-            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
+        if (tipoUsuario.equalsIgnoreCase("Aluno")) {
+            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u "
+                    + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" "
+                    + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
+
         } else if (tipoUsuario.equalsIgnoreCase("Professor")) {
-            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
+            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u "
+                    + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" "
+                    + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
+
+        } else if (tipoUsuario.equalsIgnoreCase("Administrador") || tipoUsuario.equalsIgnoreCase("Admin")) {
+            sql = "SELECT u.\"senha\" FROM public.\"USUARIOS\" u "
+                    + "JOIN public.\"ADMINISTRADOR\" a ON a.\"id_usuario\" = u.\"id\" "
+                    + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
         }
 
-        // preparar
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setString(1, emailNormalizado);
 
-        //Realizar Querys
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
             resultado = rs.getString("SENHA");
         }
-
-        // fechar
 
         rs.close();
         stmt.close();
@@ -288,17 +329,26 @@ public class usuarioDAO {
     }
 
     public loginAlunoDTO buscarPorEmailAluno(String email) throws SQLException {
+        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u "
+                + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" "
+                + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
 
-        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"ALUNOS\" a ON a.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
+
         stmt.setString(1, normalizarEmail(email));
+
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
             loginAlunoDTO usuario = new loginAlunoDTO();
+
             usuario.setEmail(rs.getString("EMAIL"));
             usuario.setSenha(rs.getString("SENHA"));
+
+            rs.close();
+            stmt.close();
+            conn.close();
 
             return usuario;
         }
@@ -306,21 +356,31 @@ public class usuarioDAO {
         rs.close();
         stmt.close();
         conn.close();
+
         return null;
     }
 
     public loginProfessorDTO buscarPorEmailProfessor(String email) throws SQLException {
+        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u "
+                + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" "
+                + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
 
-        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u " + "JOIN public.\"PROFESSORES\" p ON p.\"id_usuario\" = u.\"id\" " + "WHERE LOWER(u.\"email\") = ?";
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
+
         stmt.setString(1, normalizarEmail(email));
+
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
             loginProfessorDTO usuario = new loginProfessorDTO();
+
             usuario.setEmail(rs.getString("EMAIL"));
             usuario.setSenha(rs.getString("SENHA"));
+
+            rs.close();
+            stmt.close();
+            conn.close();
 
             return usuario;
         }
@@ -328,24 +388,66 @@ public class usuarioDAO {
         rs.close();
         stmt.close();
         conn.close();
+
         return null;
     }
 
-    public String buscarPorTipoUsuario(String email) throws SQLException {
+    public loginAdminDTO buscarPorEmailAdmin(String email) throws SQLException {
+        String sql = "SELECT u.\"email\", u.\"senha\" FROM public.\"USUARIOS\" u "
+                + "JOIN public.\"ADMINISTRADOR\" a ON a.\"id_usuario\" = u.\"id\" "
+                + "WHERE LOWER(u.\"email\") = ? AND u.\"status\" = true";
 
-        String sql = "SELECT u.\"perfil\" FROM public.\"USUARIOS\" u WHERE LOWER(u.\"email\") = ?";
         Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
+
         stmt.setString(1, normalizarEmail(email));
+
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            return rs.getString("perfil");
+            loginAdminDTO usuario = new loginAdminDTO();
+
+            usuario.setEmail(rs.getString("EMAIL"));
+            usuario.setSenha(rs.getString("SENHA"));
+
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            return usuario;
         }
 
         rs.close();
         stmt.close();
         conn.close();
+
+        return null;
+    }
+
+    public String buscarPorTipoUsuario(String email) throws SQLException {
+        String sql = "SELECT u.\"perfil\" FROM public.\"USUARIOS\" u WHERE LOWER(u.\"email\") = ?";
+
+        Connection conn = dataSource.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+
+        stmt.setString(1, normalizarEmail(email));
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            String perfil = rs.getString("perfil");
+
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            return perfil;
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
         return null;
     }
 
@@ -359,22 +461,50 @@ public class usuarioDAO {
         String sql = "UPDATE public.\"USUARIOS\" SET \"senha\" = ? WHERE \"email\" = ?";
 
         PreparedStatement stmt = conn.prepareStatement(sql);
+
         stmt.setString(1, SENHA);
         stmt.setString(2, EMAIL);
 
         logger.debug("Atualizando senha do usuário no banco.");
+
         if (logger.isDebugEnabled()) {
             try {
-                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null, "Atualizando senha do usuário no banco.", null, null);
+                InserirLogsNoBD(
+                        null,
+                        "DEBUG",
+                        usuarioDAO.class.getName(),
+                        "UpdateSenhaUsuario",
+                        null,
+                        "Atualizando senha do usuário no banco.",
+                        null,
+                        null
+                );
+
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
         }
+
         int linhas = stmt.executeUpdate();
+
         logger.debug("Linhas afetadas: {}", linhas);
+
         if (logger.isDebugEnabled()) {
             try {
-                InserirLogsNoBD(null, "DEBUG", usuarioDAO.class.getName(), "UpdateSenhaUsuario", null, MessageFormatter.arrayFormat("Linhas afetadas: {}", new Object[]{linhas}).getMessage(), null, null);
+                InserirLogsNoBD(
+                        null,
+                        "DEBUG",
+                        usuarioDAO.class.getName(),
+                        "UpdateSenhaUsuario",
+                        null,
+                        MessageFormatter.arrayFormat(
+                                "Linhas afetadas: {}",
+                                new Object[]{linhas}
+                        ).getMessage(),
+                        null,
+                        null
+                );
+
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }

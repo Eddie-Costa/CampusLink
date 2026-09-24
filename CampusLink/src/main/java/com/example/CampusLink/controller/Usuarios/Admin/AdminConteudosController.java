@@ -1,9 +1,9 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.DenunciaDTO;
-import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.service.ArquivoService;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DenunciaService;
@@ -11,7 +11,6 @@ import com.example.CampusLink.service.RevisaoConteudoService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,13 +29,12 @@ public class AdminConteudosController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminConteudosController.class);
 
+    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+
     private final ConteudoService conteudoService;
     private final DenunciaService denunciaService;
     private final RevisaoConteudoService revisaoConteudoService;
     private final ArquivoService arquivoService;
-
-    @Value("${CAMPUSLINK_ADMIN_EMAIL:}")
-    private String emailAdmin;
 
     public AdminConteudosController(
             ConteudoService conteudoService,
@@ -54,7 +52,7 @@ public class AdminConteudosController {
     public String listarConteudos(HttpSession session, Model model) {
 
         if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/login";
+            return "redirect:" + URL_LOGIN_ADMIN;
         }
 
         if (!ehAdministrador(session)) {
@@ -103,7 +101,7 @@ public class AdminConteudosController {
     ) {
 
         if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/login";
+            return "redirect:" + URL_LOGIN_ADMIN;
         }
 
         if (!ehAdministrador(session)) {
@@ -137,7 +135,7 @@ public class AdminConteudosController {
     ) {
 
         if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/login";
+            return "redirect:" + URL_LOGIN_ADMIN;
         }
 
         if (!ehAdministrador(session)) {
@@ -161,6 +159,7 @@ public class AdminConteudosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao reprovar o conteúdo {}", idConteudo, e);
+
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível reprovar o conteúdo.");
         }
 
@@ -169,25 +168,28 @@ public class AdminConteudosController {
 
     private boolean ehAdministrador(HttpSession session) {
 
-        if (emailAdmin == null || emailAdmin.isBlank() ||
-                !"professor".equals(session.getAttribute("tipoUsuario"))) {
-            return false;
-        }
-
-        Object usuario = session.getAttribute("usuarioLogado");
+        Object tipoUsuario = session.getAttribute("tipoUsuario");
+        Object usuarioLogado = session.getAttribute("usuarioLogado");
         Object emailSessao = session.getAttribute("email2FA");
 
-        if (!(usuario instanceof loginProfessorDTO) || !(emailSessao instanceof String)) {
+        if (!"admin".equals(tipoUsuario)) {
             return false;
         }
 
-        String emailProfessor = ((loginProfessorDTO) usuario).getEmail();
-
-        if (emailProfessor == null || emailProfessor.isBlank()) {
+        if (!(usuarioLogado instanceof loginAdminDTO)) {
             return false;
         }
 
-        return emailProfessor.trim().equalsIgnoreCase(emailAdmin.trim()) &&
-                emailProfessor.trim().equalsIgnoreCase(((String) emailSessao).trim());
+        if (!(emailSessao instanceof String)) {
+            return false;
+        }
+
+        loginAdminDTO admin = (loginAdminDTO) usuarioLogado;
+
+        if (admin.getEmail() == null || admin.getEmail().isBlank()) {
+            return false;
+        }
+
+        return admin.getEmail().trim().equalsIgnoreCase(((String) emailSessao).trim());
     }
 }
