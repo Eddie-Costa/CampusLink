@@ -75,24 +75,25 @@ public class cadastrarAlunoController {
 
         session.removeAttribute("verificado");
 
+        session.setAttribute("email2FA", aluno.getEmail().toLowerCase());
+        session.setAttribute("redirect", "Cadastro");
+        session.setAttribute("tipoUsuario", "aluno");
+        session.setAttribute("Rgm", aluno.getRgm());
+        session.setAttribute("Nome", aluno.getNome().toLowerCase());
+        session.setAttribute("Email", aluno.getEmail().toLowerCase());
+        session.setAttribute("Telefone", aluno.getTelefone());
+        session.setAttribute("DataNasc", aluno.getDataNasc());
+        session.setAttribute("Senha", encoder.encode(aluno.getSenha()));
+
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(aluno.getEmail().toLowerCase());
             emailService.enviarCodigo(aluno.getEmail().toLowerCase(), codigo);
 
-            session.setAttribute("email2FA", aluno.getEmail().toLowerCase());
-            session.setAttribute("redirect", "Cadastro");
-            session.setAttribute("tipoUsuario", "aluno");
-            session.setAttribute("Rgm", aluno.getRgm());
-            session.setAttribute("Nome", aluno.getNome().toLowerCase());
-            session.setAttribute("Email", aluno.getEmail().toLowerCase());
-            session.setAttribute("Telefone", aluno.getTelefone());
-            session.setAttribute("DataNasc", aluno.getDataNasc());
-            session.setAttribute("Senha", encoder.encode(aluno.getSenha()));
-
             return "redirect:/verificarAluno";
+        } else {
+            session.setAttribute("verificado", "true");
+            return "redirect:/cadastrarAlunoVerificado";
         }
-
-        return "Usuarios/Aluno/cadastrarAluno";
     }
 
     @GetMapping("/cadastrarAlunoVerificado")

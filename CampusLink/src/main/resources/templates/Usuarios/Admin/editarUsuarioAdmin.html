@@ -6,7 +6,7 @@
     <title>Editar Usuário | CampusLink</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/editarUsuarioAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/editarUsuarioAdmin.css}">
 </head>
 
 <body>
@@ -50,37 +50,31 @@
                 </div>
 
                 <div class="editar-admin-campo">
-                    <label for="identificador"
-                           th:text="${usuario.perfil == 'Aluno' ? 'RGM' : 'Matrícula'}">
+                    <label for="identificador" th:text="${usuario.perfil == 'Aluno' ? 'RGM' : 'Matrícula'}">
                         Identificador
                     </label>
 
-                    <input id="identificador" name="identificador" type="text"
-                           th:value="${usuario.identificador}" required>
+                    <input id="identificador" name="identificador" type="text" th:value="${usuario.identificador}" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email"
-                           th:value="${usuario.email}" required>
+                    <input id="email" name="email" type="email" th:value="${usuario.email}" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="telefone">Telefone</label>
-                    <input id="telefone" name="telefone" type="text"
-                           th:value="${usuario.telefone}" required>
+                    <input id="telefone" name="telefone" type="text" th:value="${usuario.telefone}" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="dataNasc">Data de nascimento</label>
-                    <input id="dataNasc" name="dataNasc" type="date"
-                           th:value="${usuario.dataNasc}" required>
+                    <input id="dataNasc" name="dataNasc" type="date" th:value="${usuario.dataNasc}" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="perfilUsuario">Perfil</label>
-                    <input id="perfilUsuario" type="text"
-                           th:value="${usuario.perfil}" readonly>
+                    <input id="perfilUsuario" type="text" th:value="${usuario.perfil}" readonly>
                 </div>
 
                 <div class="editar-admin-acoes">

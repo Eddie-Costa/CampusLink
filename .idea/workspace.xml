@@ -14,10 +14,10 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Dockerfile" />
-        <option value="JavaScript File" />
         <option value="Class" />
         <option value="HTML File" />
         <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -52,7 +52,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "local/eddie-esqueceuSenhaMerge",
+    "git-widget-placeholder": "local/Santhiago-Admin",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "list.type.of.created.stylesheet": "CSS",
@@ -78,8 +78,11 @@
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js" />
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\Admin" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Geral" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Usuarios\Professor" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.CampusLink.dto.Professor" />

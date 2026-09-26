@@ -75,24 +75,25 @@ public class cadastrarProfessorController {
 
         session.removeAttribute("verificado");
 
+        session.setAttribute("email2FA", professor.getEmail().toLowerCase());
+        session.setAttribute("redirect", "Cadastro");
+        session.setAttribute("tipoUsuario", "professor");
+        session.setAttribute("Matricula", professor.getMatricula());
+        session.setAttribute("Nome", professor.getNome().toLowerCase());
+        session.setAttribute("Email", professor.getEmail().toLowerCase());
+        session.setAttribute("Telefone", professor.getTelefone());
+        session.setAttribute("DataNasc", professor.getDataNasc());
+        session.setAttribute("Senha", encoder.encode(professor.getSenha()));
+
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(professor.getEmail().toLowerCase());
             emailService.enviarCodigo(professor.getEmail().toLowerCase(), codigo);
 
-            session.setAttribute("email2FA", professor.getEmail().toLowerCase());
-            session.setAttribute("redirect", "Cadastro");
-            session.setAttribute("tipoUsuario", "professor");
-            session.setAttribute("Matricula", professor.getMatricula());
-            session.setAttribute("Nome", professor.getNome().toLowerCase());
-            session.setAttribute("Email", professor.getEmail().toLowerCase());
-            session.setAttribute("Telefone", professor.getTelefone());
-            session.setAttribute("DataNasc", professor.getDataNasc());
-            session.setAttribute("Senha", encoder.encode(professor.getSenha()));
-
             return "redirect:/verificarProfessor";
+        } else {
+            session.setAttribute("verificado", "true");
+            return "redirect:/cadastrarProfessorVerificado";
         }
-
-        return "Usuarios/Professor/cadastrarProfessor";
     }
 
     @GetMapping("/cadastrarProfessorVerificado")

@@ -1,4 +1,3 @@
-/* Fonte Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 *{
@@ -8,11 +7,10 @@
 }
 
 body{
-    background-image: url('../images/bg.png');
+    background-image: url('/images/bg.png');
     background-size: cover;
 }
 
-/* Título */
 h2{
     text-align: center;
     margin-top: 60px;
@@ -20,7 +18,6 @@ h2{
     font-weight: 800;
 }
 
-/* Label */
 .label_info{
     margin-top: 5px;
     margin-bottom: 10px;
@@ -31,7 +28,6 @@ h2{
     font-weight: 800;
 }
 
-/* Formulário */
 .form-verificacao{
     display: flex;
     flex-direction: column;
@@ -55,7 +51,6 @@ h2{
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* Campo de código */
 input[name="codigo"]{
     width: 100%;
     height: 40px;
@@ -68,7 +63,6 @@ input[name="codigo"]{
     font-size: 15px;
 }
 
-/* Botão */
 button[type="submit"]{
     margin-top: 20px;
 
@@ -92,7 +86,6 @@ button[type="submit"]:hover{
     background-color: #1B4965;
 }
 
-/* Mensagem de erro */
 p{
     margin-top: 15px;
 

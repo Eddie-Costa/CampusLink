@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${turma.nomeTurma}">Ambiente da turma</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/ambienteTurmaStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css}">
 </head>
+
 <body th:with="abrirModalConteudo=${abrirModalAdicionarConteudo != null and abrirModalAdicionarConteudo}">
 
 <div th:replace="~{fragments/header :: nav}"></div>
@@ -26,7 +27,8 @@
 </div>
 
 <!--Conteiner Turma-->
-<main class="container mt-4 turmas-page">
+<main class="container mt-4 turmas-page"
+      th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}">
 
     <a class="voltar-turmas" th:href="@{/turmas}">Voltar para turmas</a>
     <h1 th:text="${turma.nomeTurma}">Nome da turma</h1>
@@ -98,10 +100,13 @@
                         <!--Botoes adicionarPessoas e RemoverPessoas-->
                         <div class="modal-footer">
                             <button type="button" class="acao-turma" data-bs-toggle="modal"
-                                    data-bs-target="#adicionarPessoasModal">Adicionar Pessoas
+                                    data-bs-target="#adicionarPessoasModal">
+                                Adicionar Pessoas
                             </button>
+
                             <button type="button" class="acao-turma" data-bs-toggle="modal"
-                                    data-bs-target="#removerPessoasModal">Remover Pessoas
+                                    data-bs-target="#removerPessoasModal">
+                                Remover Pessoas
                             </button>
                         </div>
                     </div>
@@ -109,8 +114,9 @@
             </div>
 
             <!--Modal adicionarPessoas-->
-            <div class="modal fade" id="adicionarPessoasModal" tabindex="-1" aria-labelledby="adicionarPessoasModalLabel"
-                 aria-hidden="true">
+            <div class="modal fade" id="adicionarPessoasModal" tabindex="-1"
+                 aria-labelledby="adicionarPessoasModalLabel" aria-hidden="true">
+
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content campus-modal">
 
@@ -120,12 +126,15 @@
                         </div>
 
                         <form th:action="@{/adicionarPessoas}" th:object="${turma}" method="post">
+
                             <div class="modal-body">
 
                                 <input type="hidden" th:field="*{id}"/>
 
                                 <label for="emailPessoaAdicionar" class="form-label">Email da pessoa:</label>
-                                <input id="emailPessoaAdicionar" type="text" class="form-control" th:field="*{emailPessoa}"
+
+                                <input id="emailPessoaAdicionar" type="text" class="form-control"
+                                       th:field="*{emailPessoa}"
                                        placeholder="Ex: 11231405551@aluno.umc.br" required>
 
                                 <div class="erro-campo" th:if="${#fields.hasErrors('emailPessoa')}"
@@ -133,9 +142,15 @@
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-campus">Adicionar pessoa</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+
+                                <button type="submit" class="btn btn-campus">
+                                    Adicionar pessoa
+                                </button>
                             </div>
+
                         </form>
 
                     </div>
@@ -143,8 +158,9 @@
             </div>
 
             <!--Modal removerPessoas-->
-            <div class="modal fade" id="removerPessoasModal" tabindex="-1" aria-labelledby="removerPessoasModalLabel"
-                 aria-hidden="true">
+            <div class="modal fade" id="removerPessoasModal" tabindex="-1"
+                 aria-labelledby="removerPessoasModalLabel" aria-hidden="true">
+
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content campus-modal">
 
@@ -154,12 +170,15 @@
                         </div>
 
                         <form th:action="@{/removerPessoas}" th:object="${turma}" method="post">
+
                             <div class="modal-body">
 
                                 <input type="hidden" th:field="*{id}"/>
 
                                 <label for="emailPessoaRemover" class="form-label">Email da pessoa:</label>
-                                <input id="emailPessoaRemover" type="text" class="form-control" th:field="*{emailPessoa}"
+
+                                <input id="emailPessoaRemover" type="text" class="form-control"
+                                       th:field="*{emailPessoa}"
                                        placeholder="Ex: 11231405551@aluno.umc.br" required>
 
                                 <div class="erro-campo" th:if="${#fields.hasErrors('emailPessoa')}"
@@ -167,9 +186,15 @@
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-campus">Remover pessoa</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+
+                                <button type="submit" class="btn btn-campus">
+                                    Remover pessoa
+                                </button>
                             </div>
+
                         </form>
 
                     </div>
@@ -179,13 +204,17 @@
             <!--
             Botão excluir turma
             Só aparece se for um professor e for um admin da turma
-            Antes de enviar aparece uma caixa de confirmação anunciando o perigo de seguir com a ação
             -->
-            <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}" method="post"
-                  onsubmit="return confirm('Tem certeza que deseja excluir esta turma? Isso removerá também todos os alunos e professores vinculados a ela.');">
+            <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
+                  method="post" class="form-excluir-turma">
+
                 <input type="hidden" th:field="*{id}"/>
-                <button type="submit" class="btn btn-danger">Excluir Turma</button>
+
+                <button type="submit" class="btn btn-danger">
+                    Excluir Turma
+                </button>
             </form>
+
         </div>
 
         <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
@@ -193,37 +222,62 @@
         </div>
 
         <div class="conteudo-acoes" th:if="${session.tipoUsuario == 'professor'}">
+
             <button type="button" class="acao-turma" data-bs-toggle="modal"
-                    data-bs-target="#adicionarConteudoModal">Adicionar Conteúdo</button>
+                    data-bs-target="#adicionarConteudoModal">
+                Adicionar Conteúdo
+            </button>
+
             <button type="button" class="acao-turma" data-bs-toggle="modal"
-                    data-bs-target="#selecionarConteudoModal">Editar Conteúdo</button>
+                    data-bs-target="#selecionarConteudoModal">
+                Editar Conteúdo
+            </button>
+
         </div>
 
         <section class="lista-conteudos" aria-label="Conteúdos da turma">
+
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
                  th:classappend="${conteudo.status == 'suspenso_denuncia'} ? 'conteudo-suspenso' : ''"
                  th:if="${session.tipoUsuario == 'professor' or conteudo.status != 'removido'}"
-                 th:attr="data-id=${conteudo.id}, data-titulo=${conteudo.titulo}, data-url=${conteudo.url}, data-duracao=${conteudo.duracaoEstimada}">
-                <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo</span>
+                 th:attr="data-id=${conteudo.id},
+                          data-titulo=${conteudo.titulo},
+                          data-url=${conteudo.url},
+                          data-duracao=${conteudo.duracaoEstimada}">
+
+                <span class="conteudo-nome" th:text="${conteudo.titulo}">
+                    Conteúdo
+                </span>
 
                 <div class="conteudo-meta">
-                <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
-                      th:text="${conteudo.duracaoEstimada}">Tempo</span>
+
+                    <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
+                          th:text="${conteudo.duracaoEstimada}">
+                        Tempo
+                    </span>
 
                     <a th:if="${conteudo.url != null and !conteudo.url.isBlank() and (session.tipoUsuario == 'professor' or conteudo.status == 'ativo')}"
-                       th:href="${conteudo.url}" target="_blank" rel="noopener noreferrer"
-                       class="conteudo-link">Abrir link</a>
+                       th:href="${conteudo.url}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="conteudo-link">
+                        Abrir link
+                    </a>
 
                     <a th:if="${arquivosPorConteudo.get(conteudo.id) != null and (session.tipoUsuario == 'professor' or conteudo.status == 'ativo')}"
                        th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo.get(conteudo.id).id})}"
-                       class="conteudo-link">Baixar arquivo</a>
+                       class="conteudo-link">
+                        Baixar arquivo
+                    </a>
 
                     <span th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'suspenso_denuncia'}"
                           class="status-conteudo status-suspenso">
-                        Suspenso para análise</span>
+                        Suspenso para análise
+                    </span>
 
                     <button th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo'}"
-                            type="button" class="btn btn-outline-danger btn-sm"
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
                             data-bs-toggle="modal"
                             th:attr="data-bs-target='#denunciarConteudoModal-' + ${conteudo.id}">
                         Denunciar conteúdo
@@ -232,14 +286,18 @@
                     <form th:if="${session.tipoUsuario == 'professor'}"
                           th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
                           method="post"
-                          onsubmit="return confirm('Excluir este conteúdo? Essa ação não pode ser desfeita.');"
                           class="conteudo-excluir-form">
+
                         <input type="hidden" th:if="${_csrf != null}"
-                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
                         <button type="submit" class="conteudo-excluir" aria-label="Excluir conteúdo">
                             Excluir
                         </button>
+
                     </form>
+
                 </div>
             </div>
 
@@ -248,147 +306,235 @@
     </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectModal = document.getElementById('selecionarConteudoModal');
-
-        document.querySelectorAll('.conteudo-selecionar-item').forEach(function (button) {
-            button.addEventListener('click', function () {
-                const conteudoId = this.dataset.id;
-                const editModal = document.getElementById('editarConteudoModal-' + conteudoId);
-
-                if (selectModal && editModal) {
-                    const selectModalInstance = bootstrap.Modal.getOrCreateInstance(selectModal);
-                    const editModalInstance = bootstrap.Modal.getOrCreateInstance(editModal);
-
-                    selectModalInstance.hide();
-                    editModalInstance.show();
-                }
-            });
-        });
-    });
-</script>
-
+<!--Modal para escolher conteúdo-->
 <div class="modal fade" id="selecionarConteudoModal" tabindex="-1"
      aria-labelledby="selecionarConteudoTitulo" aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content campus-modal">
+
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="selecionarConteudoTitulo">Selecione o conteúdo para editar</h2>
+                <h2 class="modal-title fs-5" id="selecionarConteudoTitulo">
+                    Selecione o conteúdo para editar
+                </h2>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
+
             <div class="modal-body">
+
                 <ul class="lista-selecionar-conteudo" id="listaSelecionarConteudo">
+
                     <li th:each="conteudo : ${conteudos}">
-                        <button type="button" class="conteudo-selecionar-item"
+
+                        <button type="button"
+                                class="conteudo-selecionar-item"
                                 th:attr="data-id=${conteudo.id}"
-                                th:text="${conteudo.titulo}">Conteúdo
+                                th:text="${conteudo.titulo}">
+                            Conteúdo
                         </button>
+
                     </li>
+
                 </ul>
+
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
             </div>
+
         </div>
     </div>
 </div>
 
+<!--Modal editar conteúdo-->
 <div class="modal fade" th:each="conteudo : ${conteudos}"
      th:id="'editarConteudoModal-' + ${conteudo.id}"
      tabindex="-1" aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content campus-modal">
+
             <div class="modal-header">
-                <h2 class="modal-title fs-5" th:text="'Editar: ' + ${conteudo.titulo}">Editar Conteúdo</h2>
+
+                <h2 class="modal-title fs-5" th:text="'Editar: ' + ${conteudo.titulo}">
+                    Editar Conteúdo
+                </h2>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+
             </div>
+
             <form th:action="@{/turmas/{id}/conteudos/{idConteudo}/editar(id=${turma.id}, idConteudo=${conteudo.id})}"
-                  method="post" enctype="multipart/form-data">
+                  method="post"
+                  enctype="multipart/form-data">
+
                 <div class="modal-body">
+
                     <input type="hidden" th:if="${_csrf != null}"
-                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
 
                     <label class="form-label">Nome do conteúdo</label>
-                    <input type="text" name="titulo" class="form-control mb-3" th:value="${conteudo.titulo}" required>
+
+                    <input type="text"
+                           name="titulo"
+                           class="form-control mb-3"
+                           th:value="${conteudo.titulo}"
+                           required>
 
                     <label class="form-label">URL</label>
-                    <input type="text" name="url" class="form-control mb-3" th:value="${conteudo.url}">
+
+                    <input type="text"
+                           name="url"
+                           class="form-control mb-3"
+                           th:value="${conteudo.url}">
 
                     <label class="form-label">Tempo de visualização</label>
-                    <input type="text" name="duracaoEstimada" class="form-control mb-3"
+
+                    <input type="text"
+                           name="duracaoEstimada"
+                           class="form-control mb-3"
                            th:value="${conteudo.duracaoEstimada}">
 
                     <label class="form-label">Arquivo</label>
+
                     <div class="form-text mb-2"
                          th:if="${arquivosPorConteudo.get(conteudo.id) != null}"
                          th:text="'Arquivo atual: ' + ${arquivosPorConteudo.get(conteudo.id).nomeOriginal}">
                     </div>
 
-                    <div class="form-text mb-2" th:unless="${arquivosPorConteudo.get(conteudo.id) != null}">
+                    <div class="form-text mb-2"
+                         th:unless="${arquivosPorConteudo.get(conteudo.id) != null}">
                         Nenhum arquivo enviado ainda.
                     </div>
 
-                    <input type="file" name="arquivo" class="form-control"
+                    <input type="file"
+                           name="arquivo"
+                           class="form-control"
                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
 
-                    <div class="form-text">Opcional. Envie um novo arquivo para substituir o atual.</div>
+                    <div class="form-text">
+                        Opcional. Envie um novo arquivo para substituir o atual.
+                    </div>
+
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-campus">Salvar alterações</button>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-campus">
+                        Salvar alterações
+                    </button>
+
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>
 
+<!--Modal adicionar conteúdo-->
 <div class="modal fade" id="adicionarConteudoModal" tabindex="-1"
      aria-labelledby="adicionarConteudoTitulo" aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content campus-modal">
+
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="adicionarConteudoTitulo">Adicionar Conteúdo</h2>
+
+                <h2 class="modal-title fs-5" id="adicionarConteudoTitulo">
+                    Adicionar Conteúdo
+                </h2>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+
             </div>
 
-            <form th:action="@{/turmas/{id}/conteudos(id=${turma.id})}" th:object="${conteudo}"
-                  method="post" enctype="multipart/form-data">
+            <form th:action="@{/turmas/{id}/conteudos(id=${turma.id})}"
+                  th:object="${conteudo}"
+                  method="post"
+                  enctype="multipart/form-data">
 
                 <div class="modal-body">
+
                     <input type="hidden" th:if="${_csrf != null}"
-                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
 
-                    <label for="titulo" class="form-label">Nome do conteúdo</label>
-                    <input id="titulo" type="text" class="form-control mb-3" th:field="*{titulo}"
-                           placeholder="Ex: Aula 1 - Introdução" required>
+                    <label for="titulo" class="form-label">
+                        Nome do conteúdo
+                    </label>
 
-                    <div class="erro-campo" th:if="${#fields.hasErrors('titulo')}"
-                         th:errors="*{titulo}"></div>
+                    <input id="titulo"
+                           type="text"
+                           class="form-control mb-3"
+                           th:field="*{titulo}"
+                           placeholder="Ex: Aula 1 - Introdução"
+                           required>
 
-                    <label for="url" class="form-label">URL</label>
-                    <input id="url" type="text" class="form-control mb-3" th:field="*{url}"
+                    <div class="erro-campo"
+                         th:if="${#fields.hasErrors('titulo')}"
+                         th:errors="*{titulo}">
+                    </div>
+
+                    <label for="url" class="form-label">
+                        URL
+                    </label>
+
+                    <input id="url"
+                           type="text"
+                           class="form-control mb-3"
+                           th:field="*{url}"
                            placeholder="Ex: https://...">
 
-                    <label for="duracaoEstimada" class="form-label">Tempo de visualização</label>
-                    <input id="duracaoEstimada" type="text" class="form-control mb-3"
-                           th:field="*{duracaoEstimada}" placeholder="Ex: 15 min">
+                    <label for="duracaoEstimada" class="form-label">
+                        Tempo de visualização
+                    </label>
 
-                    <label for="arquivo" class="form-label">Arquivos</label>
-                    <input id="arquivo" name="arquivo" type="file" class="form-control"
+                    <input id="duracaoEstimada"
+                           type="text"
+                           class="form-control mb-3"
+                           th:field="*{duracaoEstimada}"
+                           placeholder="Ex: 15 min">
+
+                    <label for="arquivo" class="form-label">
+                        Arquivos
+                    </label>
+
+                    <input id="arquivo"
+                           name="arquivo"
+                           type="file"
+                           class="form-control"
                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
 
-                    <div class="form-text">Opcional. Formatos: PDF, PNG, JPG, DOC, DOCX, PPT e PPTX. Máximo 6 MB.</div>
+                    <div class="form-text">
+                        Opcional. Formatos: PDF, PNG, JPG, DOC, DOCX, PPT e PPTX. Máximo 6 MB.
+                    </div>
+
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-campus">Cadastrar</button>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-campus">
+                        Cadastrar
+                    </button>
+
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>
@@ -403,20 +549,29 @@
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
-                <h2 class="modal-title fs-5">Denunciar conteúdo</h2>
+
+                <h2 class="modal-title fs-5">
+                    Denunciar conteúdo
+                </h2>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+
             </div>
 
             <form th:action="@{/turmas/{idTurma}/conteudos/{idConteudo}/denunciar(idTurma=${turma.id}, idConteudo=${conteudo.id})}"
                   method="post">
 
                 <div class="modal-body">
+
                     <input type="hidden" th:if="${_csrf != null}"
-                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
 
                     <p>
                         Você está denunciando:
-                        <strong th:text="${conteudo.titulo}">Conteúdo</strong>
+                        <strong th:text="${conteudo.titulo}">
+                            Conteúdo
+                        </strong>
                     </p>
 
                     <label class="form-label" th:for="'motivoDenuncia-' + ${conteudo.id}">
@@ -430,29 +585,29 @@
                               maxlength="500"
                               placeholder="Explique o motivo da denúncia"
                               required></textarea>
+
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Confirmar denúncia</button>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-danger">
+                        Confirmar denúncia
+                    </button>
+
                 </div>
 
             </form>
+
         </div>
     </div>
 </div>
 
-<!--Ao enviar uma ação re-abre o modal participantes-->
-<script th:if="${abrirModalParticipantes}" th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function () {
-        const modalElement = document.getElementById('participantesTurma');
-
-        if (modalElement) {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
-    });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js}"></script>
 
 </body>
 </html>
