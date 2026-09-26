@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Professores da Turma | CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/professoresTurmaAdmin.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="professores-turma-admin-page">
+
+    <div class="professores-turma-admin-container">
+
+        <div class="professores-turma-admin-topo">
+
+            <div>
+                <p class="professores-turma-admin-etiqueta">Administração</p>
+                <h1>Professores da turma</h1>
+
+                <p>
+                    Turma:
+                    <span class="professores-turma-admin-nome" th:text="${turma.nomeTurma}">
+                        Nome da turma
+                    </span>
+                </p>
+            </div>
+
+            <a th:href="@{/admin/turmas}" class="professores-turma-admin-voltar">
+                Voltar para turmas
+            </a>
+
+        </div>
+
+        <div th:if="${mensagemSucesso}" class="alert alert-success professores-turma-admin-mensagem" th:text="${mensagemSucesso}"></div>
+
+        <div th:if="${mensagemErro}" class="alert alert-danger professores-turma-admin-mensagem" th:text="${mensagemErro}"></div>
+
+        <section class="professores-turma-admin-card professores-turma-admin-adicionar">
+
+            <div class="professores-turma-admin-card-topo">
+                <h2>Adicionar professor à turma</h2>
+            </div>
+
+            <div class="professores-turma-admin-adicionar-conteudo">
+
+                <form th:action="@{/admin/turmas/{idTurma}/professores/adicionar(idTurma=${turma.id})}"
+                      method="post"
+                      class="professores-turma-admin-form">
+
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="professores-turma-admin-campo">
+
+                        <label for="idProfessor">Professor disponível</label>
+
+                        <select id="idProfessor"
+                                name="idProfessor"
+                                class="professores-turma-admin-select"
+                                required>
+
+                            <option value="">Selecione um professor</option>
+
+                            <option th:each="professor : ${professoresDisponiveis}"
+                                    th:value="${professor.idPerfil}"
+                                    th:text="${professor.nome + ' - Matrícula: ' + professor.identificador}">
+                                Professor
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <button type="submit"
+                            class="professores-turma-admin-adicionar-botao"
+                            th:disabled="${#lists.isEmpty(professoresDisponiveis)}">
+                        Adicionar professor
+                    </button>
+
+                </form>
+
+                <p th:if="${#lists.isEmpty(professoresDisponiveis)}"
+                   class="professores-turma-admin-sem-disponiveis">
+                    Não existem professores ativos disponíveis para adicionar nesta turma.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="professores-turma-admin-card">
+
+            <div class="professores-turma-admin-card-topo">
+
+                <h2>Professores vinculados</h2>
+
+                <span class="professores-turma-admin-total"
+                      th:text="${#lists.size(professores) + ' professores'}">
+                    0 professores
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="professores-turma-admin-tabela">
+
+                    <thead>
+
+                    <tr>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th>Função</th>
+                        <th>Ações</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="professor : ${professores}">
+
+                        <td>
+                            <span class="professor-turma-nome" th:text="${professor.nome}">
+                                Nome do professor
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="professor-turma-matricula" th:text="${professor.identificador}">
+                                Matrícula
+                            </span>
+                        </td>
+
+                        <td th:text="${professor.email}">
+                            E-mail
+                        </td>
+
+                        <td th:text="${professor.telefone != null && !professor.telefone.isBlank() ? professor.telefone : 'Não informado'}">
+                            Telefone
+                        </td>
+
+                        <td>
+
+                            <span th:if="${professor.status}"
+                                  class="professor-turma-status professor-turma-ativo">
+                                Ativo
+                            </span>
+
+                            <span th:unless="${professor.status}"
+                                  class="professor-turma-status professor-turma-inativo">
+                                Inativo
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span th:if="${turma.idProprietario != null && turma.idProprietario == professor.idPerfil}"
+                                  class="professor-turma-responsavel">
+                                Responsável
+                            </span>
+
+                            <span th:unless="${turma.idProprietario != null && turma.idProprietario == professor.idPerfil}"
+                                  class="professor-turma-vinculado">
+                                Professor
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <form th:if="${turma.idProprietario == null || turma.idProprietario != professor.idPerfil}"
+                                  th:action="@{/admin/turmas/{idTurma}/professores/{idProfessor}/remover(idTurma=${turma.id}, idProfessor=${professor.idPerfil})}"
+                                  method="post">
+
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                <button type="submit" class="professor-turma-remover">
+                                    Remover
+                                </button>
+
+                            </form>
+
+                            <span th:if="${turma.idProprietario != null && turma.idProprietario == professor.idPerfil}"
+                                  class="professor-turma-remover-bloqueado">
+                                Não removível
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(professores)}">
+
+                        <td colspan="7" class="professores-turma-admin-vazio">
+                            Nenhum professor está vinculado a esta turma
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

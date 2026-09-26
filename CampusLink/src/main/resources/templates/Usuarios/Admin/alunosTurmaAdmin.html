@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Alunos da Turma | CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/alunosTurmaAdmin.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="alunos-turma-admin-page">
+
+    <div class="alunos-turma-admin-container">
+
+        <div class="alunos-turma-admin-topo">
+
+            <div>
+                <p class="alunos-turma-admin-etiqueta">Administração</p>
+                <h1>Alunos da turma</h1>
+
+                <p>
+                    Turma:
+                    <span class="alunos-turma-admin-nome" th:text="${turma.nomeTurma}">
+                        Nome da turma
+                    </span>
+                </p>
+            </div>
+
+            <a th:href="@{/admin/turmas}" class="alunos-turma-admin-voltar">
+                Voltar para turmas
+            </a>
+
+        </div>
+
+        <div th:if="${mensagemSucesso}" class="alert alert-success alunos-turma-admin-mensagem" th:text="${mensagemSucesso}"></div>
+
+        <div th:if="${mensagemErro}" class="alert alert-danger alunos-turma-admin-mensagem" th:text="${mensagemErro}"></div>
+
+        <section class="alunos-turma-admin-card alunos-turma-admin-adicionar">
+
+            <div class="alunos-turma-admin-card-topo">
+                <h2>Adicionar aluno à turma</h2>
+            </div>
+
+            <div class="alunos-turma-admin-adicionar-conteudo">
+
+                <form th:action="@{/admin/turmas/{idTurma}/alunos/adicionar(idTurma=${turma.id})}" method="post" class="alunos-turma-admin-form">
+
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="alunos-turma-admin-campo">
+
+                        <label for="idAluno">Aluno disponível</label>
+
+                        <select id="idAluno" name="idAluno" class="alunos-turma-admin-select" required>
+
+                            <option value="">Selecione um aluno</option>
+
+                            <option th:each="aluno : ${alunosDisponiveis}" th:value="${aluno.idPerfil}" th:text="${aluno.nome + ' - RGM: ' + aluno.identificador}">
+                                Aluno
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <button type="submit" class="alunos-turma-admin-adicionar-botao" th:disabled="${#lists.isEmpty(alunosDisponiveis)}">
+                        Adicionar aluno
+                    </button>
+
+                </form>
+
+                <p th:if="${#lists.isEmpty(alunosDisponiveis)}" class="alunos-turma-admin-sem-disponiveis">
+                    Não existem alunos ativos disponíveis para adicionar nesta turma.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="alunos-turma-admin-card">
+
+            <div class="alunos-turma-admin-card-topo">
+
+                <h2>Alunos vinculados</h2>
+
+                <span class="alunos-turma-admin-total" th:text="${#lists.size(alunos) + ' alunos'}">
+                    0 alunos
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="alunos-turma-admin-tabela">
+
+                    <thead>
+
+                    <tr>
+                        <th>Nome</th>
+                        <th>RGM</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="aluno : ${alunos}">
+
+                        <td>
+                            <span class="aluno-turma-nome" th:text="${aluno.nome}">
+                                Nome do aluno
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="aluno-turma-rgm" th:text="${aluno.identificador}">
+                                RGM
+                            </span>
+                        </td>
+
+                        <td th:text="${aluno.email}">
+                            E-mail
+                        </td>
+
+                        <td th:text="${aluno.telefone != null && !aluno.telefone.isBlank() ? aluno.telefone : 'Não informado'}">
+                            Telefone
+                        </td>
+
+                        <td>
+
+                            <span th:if="${aluno.status}" class="aluno-turma-status aluno-turma-ativo">
+                                Ativo
+                            </span>
+
+                            <span th:unless="${aluno.status}" class="aluno-turma-status aluno-turma-inativo">
+                                Inativo
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <form th:action="@{/admin/turmas/{idTurma}/alunos/{idAluno}/remover(idTurma=${turma.id}, idAluno=${aluno.idPerfil})}" method="post">
+
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                <button type="submit" class="aluno-turma-remover">
+                                    Remover
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(alunos)}">
+
+                        <td colspan="6" class="alunos-turma-admin-vazio">
+                            Nenhum aluno está vinculado a esta turma
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
