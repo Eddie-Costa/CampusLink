@@ -28,11 +28,17 @@
 <main class="turmas-page">
     <div class="turmas-container">
 
+        <input type="text"
+               id="buscaTurma"
+               class="busca-turma"
+               placeholder="Qual turma está procurando?"
+               th:if="${!#lists.isEmpty(turmas)}">
+
         <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
             <p>Você ainda não está em nenhuma turma.</p>
         </div>
 
-        <div class="lista-turmas" th:unless="${#lists.isEmpty(turmas)}">
+        <div class="lista-turmas" id="listaTurmas" th:unless="${#lists.isEmpty(turmas)}">
             <a class="turma-card" th:each="turma : ${turmas}" th:href="@{/turmas/{id}(id=${turma.id})}">
                 <div class="turma-icon">
                     <i class="bi bi-person-circle"></i>
@@ -78,6 +84,19 @@
 
     </div>
 </main>
+
+<script>
+    const inputBusca = document.getElementById('buscaTurma');
+    if (inputBusca) {
+        inputBusca.addEventListener('input', () => {
+            const termo = inputBusca.value.trim().toLowerCase();
+            document.querySelectorAll('#listaTurmas .turma-card').forEach(card => {
+                const nome = card.querySelector('.turma-nome').textContent.toLowerCase();
+                card.style.display = nome.includes(termo) ? '' : 'none';
+            });
+        });
+    }
+</script>
 
 </body>
 </html>
