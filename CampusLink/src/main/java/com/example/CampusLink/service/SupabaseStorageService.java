@@ -75,12 +75,16 @@ public class SupabaseStorageService {
     }
 
     public void excluir(String storagePath) {
+        excluir(bucket, storagePath);
+    }
+
+    public void excluir(String bucketId, String storagePath) {
 
         Map<String, List<String>> body =
                 Map.of("prefixes", List.of(storagePath));
 
         restClient.method(HttpMethod.DELETE)
-                .uri("/storage/v1/object/{bucket}", bucket)
+                .uri("/storage/v1/object/{bucket}", bucketId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()

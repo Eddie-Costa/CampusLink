@@ -2,6 +2,8 @@ package com.example.CampusLink.dao;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import com.example.CampusLink.dto.DadosUsuarioDTO;
+import com.example.CampusLink.service.SupabaseStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -28,6 +30,167 @@ public class usuarioDAO {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private SupabaseStorageService storage;
+
+    public DadosUsuarioDTO consultarDadosPessoais(String email) throws SQLException {
+        String sql = """
+                SELECT u.id, u.nome, u.email, u.telefone, u.datanasc, u.perfil, u.created_at,
+                       COALESCE(a.rgm, p.matricula, adm.matricula) AS identificador
+                FROM public."USUARIOS" u
+                LEFT JOIN public."ALUNOS" a ON a.id_usuario = u.id
+                LEFT JOIN public."PROFESSORES" p ON p.id_usuario = u.id
+                LEFT JOIN public."ADMINISTRADOR" adm ON adm.id_usuario = u.id
+                WHERE LOWER(u.email) = ? AND u.status = true
+                """;
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, normalizarEmail(email));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    DadosUsuarioDTO dadosUsuario = new DadosUsuarioDTO();
+                    dadosUsuario.setId(rs.getLong("id"));
+                    dadosUsuario.setNome(rs.getString("nome"));
+                    dadosUsuario.setEmail(rs.getString("email"));
+                    dadosUsuario.setTelefone(rs.getString("telefone"));
+                    dadosUsuario.setDataNascimento(rs.getDate("datanasc").toLocalDate());
+                    dadosUsuario.setPerfil(rs.getString("perfil"));
+                    dadosUsuario.setIdentificador(rs.getString("identificador"));
+                    dadosUsuario.setDataCadastro(rs.getDate("created_at").toLocalDate());
+                    return dadosUsuario;
+                }
+
+                return null;
+            }
+        }
+    }
+
+    public boolean possuiVinculosParaExclusao(long idUsuario) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            return possuiVinculosParaExclusao(conn, idUsuario);
+        }
+    }
+
+    private boolean possuiVinculosParaExclusao(Connection conn, long idUsuario) throws SQLException {
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1 FROM public."PROFESSORES" p WHERE p.id_usuario = ? AND (
+                        EXISTS (SELECT 1 FROM public."TURMAS" t WHERE t.id_proprietario = p.id)
+                        OR EXISTS (SELECT 1 FROM public."CONTEUDOS" c WHERE c.id_professor = p.id AND c.status <> 'removido')
+                        OR EXISTS (SELECT 1 FROM public."EVENTOS" e WHERE e.id_professor = p.id)
+                    )
+                )
+                """;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                rs.next();
+                return rs.getBoolean(1);
+            }
+        }
+    }
+
+    public void excluirDadosPessoais(long idUsuario, String email) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT id FROM public.\"USUARIOS\" WHERE id = ? AND LOWER(email) = ? FOR UPDATE")) {
+                    stmt.setLong(1, idUsuario);
+                    stmt.setString(2, normalizarEmail(email));
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new IllegalStateException("Conta não encontrada.");
+                        }
+                    }
+                }
+                // Repete a checagem na confirmação, pois vínculos podem ter sido criados após o envio do código.
+                if (possuiVinculosParaExclusao(conn, idUsuario)) {
+                    throw new IllegalStateException("Remova ou transfira suas turmas, materiais e eventos antes de excluir a conta.");
+                }
+
+                // "Remover material" oculta o conteúdo no CampusLink. Na exclusão da conta,
+                // elimina também esses registros e os arquivos que já foram retirados de circulação.
+                excluirMateriaisRemovidos(conn, idUsuario);
+
+                executarExclusao(conn, """
+                        DELETE FROM public."DENUNCIAS"
+                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                           OR id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
+                        """, idUsuario, idUsuario);
+                executarExclusao(conn, """
+                        DELETE FROM public."DISPONIBILIDADES"
+                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                        """, idUsuario);
+                executarExclusao(conn, """
+                        DELETE FROM public."ALUNO_TURMA"
+                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                        """, idUsuario);
+                executarExclusao(conn, """
+                        DELETE FROM public."PROFESSOR_TURMA"
+                        WHERE id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
+                        """, idUsuario);
+                executarExclusao(conn, """
+                        UPDATE public."TURMAS" t SET id_alunos = array_remove(t.id_alunos, a.id)
+                        FROM public."ALUNOS" a WHERE a.id_usuario = ? AND a.id = ANY(t.id_alunos)
+                        """, idUsuario);
+                executarExclusao(conn, """
+                        UPDATE public."TURMAS" t SET id_professores = array_remove(t.id_professores, p.id)
+                        FROM public."PROFESSORES" p WHERE p.id_usuario = ? AND p.id = ANY(t.id_professores)
+                        """, idUsuario);
+                executarExclusao(conn, "DELETE FROM public.\"ALUNOS\" WHERE id_usuario = ?", idUsuario);
+                executarExclusao(conn, "DELETE FROM public.\"PROFESSORES\" WHERE id_usuario = ?", idUsuario);
+                executarExclusao(conn, "DELETE FROM public.\"ADMINISTRADOR\" WHERE id_usuario = ?", idUsuario);
+                executarExclusao(conn, "DELETE FROM public.\"USUARIOS\" WHERE id = ?", idUsuario);
+                conn.commit();
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
+        }
+    }
+
+    private void executarExclusao(Connection conn, String sql, long... ids) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                stmt.setLong(i + 1, ids[i]);
+            }
+            stmt.executeUpdate();
+        }
+    }
+
+    private void excluirMateriaisRemovidos(Connection conn, long idUsuario) throws SQLException {
+        String conteudos = """
+                SELECT c.id FROM public."CONTEUDOS" c
+                JOIN public."PROFESSORES" p ON p.id = c.id_professor
+                WHERE p.id_usuario = ? AND c.status = 'removido' FOR UPDATE OF c
+                """;
+        try (PreparedStatement stmt = conn.prepareStatement(conteudos)) {
+            stmt.setLong(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    long idConteudo = rs.getLong("id");
+                    try (PreparedStatement arquivos = conn.prepareStatement(
+                            "SELECT bucket_id, storage_path FROM public.\"ARQUIVOS\" WHERE id_conteudo = ?")) {
+                        arquivos.setLong(1, idConteudo);
+                        try (ResultSet files = arquivos.executeQuery()) {
+                            while (files.next()) {
+                                storage.excluir(files.getString("bucket_id"), files.getString("storage_path"));
+                            }
+                        }
+                    }
+                    executarExclusao(conn, "DELETE FROM public.\"ARQUIVOS\" WHERE id_conteudo = ?", idConteudo);
+                    executarExclusao(conn, "DELETE FROM public.\"EVENTO_CONTEUDO\" WHERE id_conteudo = ?", idConteudo);
+                    executarExclusao(conn, "DELETE FROM public.\"DENUNCIAS\" WHERE id_conteudo = ?", idConteudo);
+                    executarExclusao(conn, "DELETE FROM public.\"CONTEUDOS\" WHERE id = ?", idConteudo);
+                }
+            }
+        }
+    }
 
     public void InsertCadastroUsuarioIntoBD(String Tipo, String IDENTIFICADOR, String NOME, String EMAIL, String TELEFONE, String DATANASC, String SENHA) throws SQLException {
         String emailNormalizado = normalizarEmail(EMAIL);

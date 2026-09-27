@@ -13,6 +13,10 @@
 
 <div class="choice-wrapper">
 
+    <div th:if="${param.contaExcluida != null}" class="alert alert-success" role="status">
+        Sua conta foi excluída e suas sessões foram encerradas.
+    </div>
+
     <h1 class="choice-title">Quem bom que voltou!</h1>
 
     <div class="choice-container">

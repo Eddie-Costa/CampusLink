@@ -1,6 +1,7 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.dto.DadosUsuarioDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -284,14 +285,7 @@ public class emailService {
         }
     }
 
-    @Async("emailTaskExecutor")
-    public void enviarEmailDados(
-            String para,
-            String Nome,
-            String Sobrenome,
-            String Email,
-            String DT_Reg
-    ) {
+    public void enviarEmailDados(DadosUsuarioDTO dadosUsuario) {
 
         String operacaoId = UUID.randomUUID().toString();
         logger.debug("Iniciando envio de email de exportação de dados. operacaoId={}", operacaoId);
@@ -308,16 +302,21 @@ public class emailService {
                 new SimpleMailMessage();
 
         mensagem.setFrom("tccumcriqedmat@gmail.com");
-        mensagem.setTo(para);
+        mensagem.setTo(dadosUsuario.getEmail());
         mensagem.setSubject(
                 "Dados pessoais - Exportação de dados"
         );
 
         String corpoEmail =
-                "Nome: " + Nome + "\n"
-                        + "Sobrenome: " + Sobrenome + "\n"
-                        + "Email: " + Email + "\n"
-                        + "Data de Registro: " + DT_Reg;
+                "Nome: " + dadosUsuario.getNome() + "\n"
+                        + "Email: " + dadosUsuario.getEmail() + "\n"
+                        + "Telefone: " + dadosUsuario.getTelefone() + "\n"
+                        + "Data de nascimento: " + dadosUsuario.getDataNascimento() + "\n"
+                        + "Tipo de conta: " + dadosUsuario.getTipoConta() + "\n"
+                        + dadosUsuario.getRotuloIdentificador() + ": " + dadosUsuario.getIdentificador() + "\n"
+                        + "Data de Registro: " + dadosUsuario.getDataCadastro() + "\n\n"
+                        + "Esta cópia contém os dados cadastrais exibidos na área de perfil.\n"
+                        + "Para outras solicitações sobre seus dados, consulte os Termos de Uso na plataforma.";
 
         mensagem.setText(corpoEmail);
 
