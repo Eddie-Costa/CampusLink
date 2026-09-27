@@ -17,6 +17,7 @@
         <option value="Class" />
         <option value="HTML File" />
         <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -65,7 +66,7 @@
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\CampusLink\src\main\resources\static\css" />
@@ -75,7 +76,11 @@
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\java\com\example\CampusLink\service" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\Admin" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Geral" />
+      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Usuarios\Professor" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.CampusLink.dto.Professor" />

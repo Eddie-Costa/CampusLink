@@ -10,11 +10,11 @@
 body{
     background-color: #EBEBEB;
     font-family: "Inter", sans-serif;
-    background-image: url('../images/bg.png');
+    background-image: url('../../images/bg.png');
     background-size: cover;
 }
 
-/* ===== Login (existente) ===== */
+/* ===== Cadastro Aluno e Professor ===== */
 
 .title{
     text-align: center;
@@ -23,15 +23,16 @@ body{
     font-weight: 800;
 }
 
-.form-login{
+.form-cadastrarAluno,
+.form-cadastrarProfessor{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     margin: 20px auto;
     padding: 30px;
-    width: 100%;
-    max-width: 350px;
+    width: calc(100% - 32px);
+    max-width: 500px;
     background-color: white;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -65,8 +66,48 @@ body{
     cursor: pointer;
 }
 
-.Sendbutton:hover{
+.Sendbutton:hover:not(:disabled){
     background-color: #1B4965;
+}
+
+.Sendbutton:disabled{
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.termos-container{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.termos-container .label_info{
+    margin-top: 0;
+    align-self: auto;
+}
+
+.abrir-termos{
+    color: #1B4965;
+    font-weight: 800;
+}
+
+.abrir-termos:hover{
+    color: #5FA8D3;
+}
+
+.termos-container .checkbox{
+    width: 16px;
+    height: 16px;
+    accent-color: #1B4965;
+}
+
+.termos-container small{
+    width: 100%;
+    color: #1B4965;
+    font-size: 12px;
 }
 
 .linksuteis{

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Gerenciar Turmas | CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/turmasAdmin.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="turmas-admin-page">
+
+    <div class="turmas-admin-container">
+
+        <div class="turmas-admin-topo">
+
+            <div>
+                <p class="turmas-admin-etiqueta">Administração</p>
+                <h1>Gerenciar turmas</h1>
+                <p>Visualize e gerencie as turmas cadastradas no CampusLink.</p>
+            </div>
+
+            <div class="turmas-admin-topo-acoes">
+
+                <a th:href="@{/admin/turmas/cadastrar}" class="turmas-admin-cadastrar">
+                    + Cadastrar turma
+                </a>
+
+                <a th:href="@{/admin/painel}" class="turmas-admin-voltar">
+                    Voltar para o painel
+                </a>
+
+            </div>
+
+        </div>
+
+        <div th:if="${mensagemSucesso}" class="alert alert-success turmas-admin-mensagem" th:text="${mensagemSucesso}"></div>
+
+        <div th:if="${mensagemErro}" class="alert alert-danger turmas-admin-mensagem" th:text="${mensagemErro}"></div>
+
+        <section class="turmas-admin-card">
+
+            <div class="turmas-admin-card-topo">
+
+                <div>
+                    <h2>Turmas cadastradas</h2>
+
+                    <p>
+                        Total:
+                        <span th:text="${#lists.size(turmas)}">0</span>
+                    </p>
+                </div>
+
+                <div class="turmas-admin-busca">
+
+                    <label for="buscarTurma">Buscar turma</label>
+
+                    <input type="text"
+                           id="buscarTurma"
+                           placeholder="Digite o nome da turma">
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="turmas-admin-tabela">
+
+                    <thead>
+
+                    <tr>
+                        <th>Turma</th>
+                        <th>Descrição</th>
+                        <th>Proprietário</th>
+                        <th>Alunos</th>
+                        <th>Professores</th>
+                        <th>Ações</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="turma : ${turmas}"
+                        class="turma-linha"
+                        th:attr="data-nome=${turma.nomeTurma}">
+
+                        <td>
+                            <span class="turma-nome" th:text="${turma.nomeTurma}">
+                                Nome da turma
+                            </span>
+                        </td>
+
+                        <td>
+                            <span th:text="${turma.descricao != null && !turma.descricao.isBlank() ? turma.descricao : 'Sem descrição'}">
+                                Descrição
+                            </span>
+                        </td>
+
+                        <td>
+                            <span th:text="${turma.nomeProprietario != null ? turma.nomeProprietario : 'Não definido'}">
+                                Proprietário
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="turma-contador" th:text="${turma.quantidadeAlunos}">
+                                0
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="turma-contador" th:text="${turma.quantidadeProfessores}">
+                                0
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <div class="turma-acoes">
+
+                                <a th:href="@{/admin/turmas/{idTurma}/alunos(idTurma=${turma.id})}"
+                                   class="turma-alunos-botao">
+                                    Alunos
+                                </a>
+
+                                <a th:href="@{/admin/turmas/{idTurma}/professores(idTurma=${turma.id})}"
+                                   class="turma-alunos-botao">
+                                    Professores
+                                </a>
+
+                                <a th:href="@{/admin/turmas/{idTurma}/editar(idTurma=${turma.id})}"
+                                   class="turma-editar">
+                                    Editar
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(turmas)}">
+
+                        <td colspan="6" class="turmas-admin-vazio">
+                            Nenhuma turma cadastrada
+                        </td>
+
+                    </tr>
+
+                    <tr id="nenhumaTurmaEncontrada">
+
+                        <td colspan="6" class="turmas-admin-vazio">
+                            Nenhuma turma encontrada com essa busca
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/Usuarios/Admin/turmasAdmin.js}"></script>
+
+</body>
+</html>

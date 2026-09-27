@@ -1,4 +1,3 @@
-﻿/* Fonte Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 .pagina-autenticacao {
@@ -34,7 +33,17 @@
     font-weight: 800;
 }
 
-.form-autenticacao {
+.label_info{
+    margin-top: 5px;
+    margin-bottom: 10px;
+
+    align-self: center;
+
+    color: #1B4965;
+    font-weight: 800;
+}
+
+.form-verificacao{
     display: flex;
     flex-direction: column;
     align-items: center;
