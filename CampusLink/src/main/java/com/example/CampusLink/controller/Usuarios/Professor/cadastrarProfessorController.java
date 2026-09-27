@@ -44,13 +44,20 @@ public class cadastrarProfessorController {
     }
 
     @GetMapping("/cadastrarProfessor")
-    public String CadastrarProfessor(org.springframework.ui.Model model) {
+    public String CadastrarProfessor(org.springframework.ui.Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
+
         model.addAttribute("professor", new cadastrarProfessorDTO());
         return "Usuarios/Professor/cadastrarProfessor";
     }
 
     @PostMapping("/cadastrarProfessor")
     public String VerificacaoRegistrar(@Valid @ModelAttribute("professor") cadastrarProfessorDTO professor, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
 
         //Encriptador
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
@@ -75,28 +82,32 @@ public class cadastrarProfessorController {
 
         session.removeAttribute("verificado");
 
+        session.setAttribute("email2FA", professor.getEmail().toLowerCase());
+        session.setAttribute("redirect", "Cadastro");
+        session.setAttribute("tipoUsuario", "professor");
+        session.setAttribute("Matricula", professor.getMatricula());
+        session.setAttribute("Nome", professor.getNome().toLowerCase());
+        session.setAttribute("Email", professor.getEmail().toLowerCase());
+        session.setAttribute("Telefone", professor.getTelefone());
+        session.setAttribute("DataNasc", professor.getDataNasc());
+        session.setAttribute("Senha", encoder.encode(professor.getSenha()));
+
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(professor.getEmail().toLowerCase());
             emailService.enviarCodigo(professor.getEmail().toLowerCase(), codigo);
 
-            session.setAttribute("email2FA", professor.getEmail().toLowerCase());
-            session.setAttribute("redirect", "Cadastro");
-            session.setAttribute("tipoUsuario", "professor");
-            session.setAttribute("Matricula", professor.getMatricula());
-            session.setAttribute("Nome", professor.getNome().toLowerCase());
-            session.setAttribute("Email", professor.getEmail().toLowerCase());
-            session.setAttribute("Telefone", professor.getTelefone());
-            session.setAttribute("DataNasc", professor.getDataNasc());
-            session.setAttribute("Senha", encoder.encode(professor.getSenha()));
-
             return "redirect:/verificarProfessor";
+        } else {
+            session.setAttribute("verificado", "true");
+            return "redirect:/cadastrarProfessorVerificado";
         }
-
-        return "Usuarios/Professor/cadastrarProfessor";
     }
 
     @GetMapping("/cadastrarProfessorVerificado")
     public String registrar(@Valid @ModelAttribute("professor") cadastrarProfessorDTO professor, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
 
         if (!"true".equals(session.getAttribute("verificado"))) {
             return "redirect:/cadastrarProfessor";

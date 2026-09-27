@@ -57,3 +57,43 @@ function renderizarTermos(destino, texto) {
     // O documento é sempre tratado como texto, nunca como HTML executável.
     destino.replaceChildren(documento);
 }
+
+// O mesmo modal permite consultar os termos no rodapé e nos cadastros.
+(() => {
+    const modal = document.getElementById("modalTermos");
+    const destino = document.getElementById("textoTermos");
+    if (!modal || !destino) return;
+
+    let carregados = false;
+    let carregando = false;
+
+    modal.addEventListener("show.bs.modal", async () => {
+        if (carregados || carregando) return;
+
+        carregando = true;
+        destino.textContent = "Carregando termos...";
+        const controlador = new AbortController();
+        const limite = setTimeout(() => controlador.abort(), 15000);
+
+        try {
+            const resposta = await fetch(destino.dataset.url, { signal: controlador.signal });
+            if (!resposta.ok || resposta.redirected ||
+                !resposta.headers.get("Content-Type")?.toLowerCase().startsWith("text/plain")) {
+                throw new Error("Não foi possível obter o documento de termos.");
+            }
+
+            const texto = await resposta.text();
+            if (!texto.trim()) throw new Error("O documento de termos está vazio.");
+
+            renderizarTermos(destino, texto);
+            carregados = true;
+            modal.dispatchEvent(new Event("termos:carregados"));
+        } catch {
+            destino.textContent =
+                "Não foi possível carregar os termos. Feche e abra esta janela para tentar novamente.";
+        } finally {
+            clearTimeout(limite);
+            carregando = false;
+        }
+    });
+})();

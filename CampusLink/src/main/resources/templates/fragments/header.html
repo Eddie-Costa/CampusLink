@@ -76,6 +76,12 @@
                 </div>
 
                 <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
+                    <a th:href="@{/profile}" class="user-profile">
+                        <img th:src="@{/js/images/UserIcon.png}" alt="Usuário" class="user-icon">
+                    </a>
+                </div>
+
+                <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
                     <a th:href="@{/logout}" class="btn btn-outline-primary btn-sm me-2">Logout</a>
                 </div>
 

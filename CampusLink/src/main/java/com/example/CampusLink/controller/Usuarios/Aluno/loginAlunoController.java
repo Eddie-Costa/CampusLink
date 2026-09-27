@@ -41,13 +41,20 @@ public class loginAlunoController {
     private usuarioDAO usuarioDAO;
 
     @GetMapping("/loginAluno")
-    public String loginPage(Model model) {
+    public String loginPage(Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
+
         model.addAttribute("aluno", new loginAlunoDTO());
         return "Usuarios/Aluno/loginAluno";
     }
 
     @PostMapping("/loginAluno")
     public String fazerLogin(@Valid @ModelAttribute("aluno") loginAlunoDTO loginAlunoDTO, BindingResult result, Model model, HttpSession session) throws SQLException {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
 
         String email = loginAlunoDTO.getEmail();
 

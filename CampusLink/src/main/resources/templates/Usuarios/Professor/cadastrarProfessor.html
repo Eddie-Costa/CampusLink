@@ -8,20 +8,6 @@
 </head>
 
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-    <div id="modalTermos" class="modal fade" tabindex="-1"
-         aria-labelledby="tituloTermos" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="tituloTermos" class="modal-title fs-5">Termos de Uso</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div id="textoTermos" class="modal-body termos-documento" th:attr="data-url=@{/documentos/termos-v1.0.txt}"  aria-live="polite">Carregando termos...</div>
-            </div>
-        </div>
-    </div>
 
     <div th:replace="~{fragments/header :: nav}"></div>
 
@@ -71,58 +57,12 @@
             </div>
         </form>
     </main>
-<script th:src="@{/js/termos.js}"></script>
+<div th:replace="~{fragments/footer :: footer}"></div>
 <script>
     const campos = document.querySelectorAll("#matricula, #nome, #email, #telefone, #datanasc, #senha");
     const checkbox = document.getElementById("termos");
     const botao = document.getElementById("btnSubmit");
-    const textoTermos = document.getElementById("textoTermos");
     let termosCarregados = false;
-    let carregandoTermos = false;
-
-    async function carregarTermos() {
-        if (termosCarregados || carregandoTermos) {
-            return;
-        }
-
-        carregandoTermos = true;
-        checkbox.disabled = true;
-        checkbox.checked = false;
-        validarCampos();
-        textoTermos.textContent = "Carregando termos...";
-
-        const controlador = new AbortController();
-        const limite = setTimeout(() => controlador.abort(), 15000);
-
-        try {
-            const resposta = await fetch(textoTermos.dataset.url, {
-                signal: controlador.signal
-            });
-
-            if (!resposta.ok || resposta.redirected ||
-                !resposta.headers.get("Content-Type")?.toLowerCase().startsWith("text/plain")) {
-                throw new Error("Não foi possível obter o documento de termos.");
-            }
-
-            const texto = await resposta.text();
-            if (!texto.trim()) {
-                throw new Error("O documento de termos está vazio.");
-            }
-
-            renderizarTermos(textoTermos, texto);
-            termosCarregados = true;
-            checkbox.disabled = false;
-            document.getElementById("orientacaoTermos").textContent =
-                "Após ler os termos, marque a opção de aceite para continuar.";
-        } catch {
-            textoTermos.textContent =
-                "Não foi possível carregar os termos. Feche e abra esta janela para tentar novamente.";
-        } finally {
-            clearTimeout(limite);
-            carregandoTermos = false;
-            validarCampos();
-        }
-    }
 
     function validarCampos() {
         let todosPreenchidos = true;
@@ -143,7 +83,13 @@
     });
 
     checkbox.addEventListener("change", validarCampos);
-    document.getElementById("modalTermos").addEventListener("show.bs.modal", carregarTermos);
+    document.getElementById("modalTermos").addEventListener("termos:carregados", () => {
+        termosCarregados = true;
+        checkbox.disabled = false;
+        document.getElementById("orientacaoTermos").textContent =
+            "Após ler os termos, marque a opção de aceite para continuar.";
+        validarCampos();
+    });
     validarCampos();
 </script>
 </body>
