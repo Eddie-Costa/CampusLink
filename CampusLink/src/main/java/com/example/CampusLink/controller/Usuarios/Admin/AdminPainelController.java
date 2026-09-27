@@ -8,17 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AdminPainelController {
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
-
     @GetMapping("/admin/painel")
     public String painelAdmin(HttpSession session) {
 
-        // verifica se existe um usuario logado
-        if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:" + URL_LOGIN_ADMIN;
-        }
-
-        // permite somente o perfil de administrador
+        // permite acessar somente se estiver logado como administrador
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
