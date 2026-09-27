@@ -1,7 +1,9 @@
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import com.example.CampusLink.dao.usuarioDAO;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -11,9 +13,14 @@ import org.slf4j.MDC;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Controller
 public class LogoutController {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(LogoutController.class);
 
@@ -41,6 +48,8 @@ public class LogoutController {
             } else if (usuarioLogado instanceof loginProfessorDTO) {
 
                 tipoUsuario = "professor";
+            } else if (usuarioLogado instanceof loginAdminDTO) {
+                tipoUsuario = "admin";
             }
         }
 
@@ -53,18 +62,25 @@ public class LogoutController {
         } else if ("professor".equals(tipoUsuario)) {
 
             usuario = MDC.get("professor");
+        } else if ("admin".equals(tipoUsuario)) {
+            usuario = MDC.get("admin");
         }
 
-        String sessao = MDC.get("sessionId");
-
-        logger.info("sessao encerrada para o usuario {}", usuario != null ? usuario : "usuario autenticado");
-        logger.info("sessao de id {} invalidada", sessao != null ? sessao : session.getId());
-
-        // remove os dados usados pelos logs
+        logger.info("Sessão encerrada para o usuário {}", usuario != null ? usuario : "usuario autenticado");
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", LogoutController.class.getName(), "logout", null,
+                        MessageFormatter.arrayFormat("Sessão encerrada para o usuário {}", new Object[]{usuario != null ? usuario : "usuario autenticado"}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
+        // O evento de logout precisa existir antes da consolidacao no listener.
+        session.invalidate();
         MDC.remove("aluno");
         MDC.remove("professor");
+        MDC.remove("admin");
         MDC.remove("sessionId");
-        session.invalidate();
         return "redirect:/home";
     }
 }

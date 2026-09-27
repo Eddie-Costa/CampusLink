@@ -10,7 +10,7 @@
 body{
     background-color: #EBEBEB;
     font-family: "Inter", sans-serif;
-    background-image: url('../images/bg.png');
+    background-image: url('../../images/bg.png');
     background-size: cover;
 }
 

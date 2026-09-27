@@ -6,81 +6,120 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 </head>
 <body>
-    <main>
-        <div th:fragment="nav" class="nav">
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-            <div class="container px-4">
-                <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-0 border-bottom">
-                    <div class="col-md-3 mb-2 mb-md-0">
-                        <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
-                            <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height=auto alt="CampusLink logo">
-                        </a>
-                    </div>
+<main>
+    <div th:fragment="nav" class="nav">
+        <link rel="stylesheet" th:href="@{/css/profileMenu.css}">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-                    
-                    <div class="flex-grow-1 d-flex justify-content-center">
-                        <!-- Links para usuarios não logados -->
-                        <div th:if="${session.usuarioLogado == null}">
-                        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">  
+        <div class="container px-4">
+            <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-0 border-bottom">
+
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
+                        <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height=auto alt="CampusLink logo">
+                    </a>
+                </div>
+
+                <div class="flex-grow-1 d-flex justify-content-center">
+
+                    <!-- Links para usuarios não logados -->
+                    <div th:if="${session.usuarioLogado == null}">
+                        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                             <li>
                                 <a href="/funcionalidades" class="nav-link px-2">Funcionalidades</a>
-                            </li>  
+                            </li>
                             <li>
                                 <a href="/sobre-nos" class="nav-link px-2">Sobre Nós</a>
-                            </li> 
-                        </ul> 
-                        </div>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <!-- Links para usuarios logados -->
-                        <div th:if="${session.usuarioLogado != null}">
-                        
+                    <!-- Links para usuarios logados -->
+                    <div th:if="${session.usuarioLogado != null}">
+
                         <!-- Links para alunos -->
                         <div th:if="${session.tipoUsuario == 'aluno'}">
-                            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0"> 
+                            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                                 <li>
                                     <a href="/turmas" class="nav-link px-2">Turmas</a>
-                                </li> 
+                                </li>
                                 <li>
                                     <a href="/score" class="nav-link px-2">Score</a>
-                                </li>  
+                                </li>
                                 <li>
                                     <a href="/eventos" th:href="@{/eventos}" class="nav-link px-2">Plano de Estudos</a>
-                                </li> 
-                            </ul> 
+                                </li>
+                            </ul>
                         </div>
 
                         <!-- Links para professores -->
                         <div th:if="${session.tipoUsuario == 'professor'}">
-                            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0"> 
+                            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                                 <li>
                                     <a href="/turmas" class="nav-link px-2">Turmas</a>
                                 </li>
+
                                 <li>
                                     <a href="/eventos" class="nav-link px-2">Eventos</a>
                                 </li>
+
                                 <li>
                                     <a href="/acompanhamento" class="nav-link px-2">Acompanhamento</a>
-                                </li>  
-                            </ul> 
-                        </div>
-                        </div>
-                    </div>
+                                </li>
 
-                    <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
-                        <a th:href="@{/logout}" class="btn btn-outline-primary btn-sm me-2">Logout</a>
-                    </div>
-                    
-                    <!-- Links para usuarios não logados -->
-                    <div th:if="${session.usuarioLogado == null}" class="col-md-3 text-end"> 
-                        <a href="/login" class="btn btn-outline-primary btn-sm me-2">Fazer Login</a>
-                        <a href="/cadastrar" class="btn btn-primary btn-sm">Cadastrar</a>
-                    </div>
+                                <li>
+                                    <a th:href="@{/meus-conteudos}" class="nav-link px-2">Meus Conteúdos</a>
+                                </li>
+                            </ul>
+                        </div>
 
-                </header>
-            </div>
+                    </div>
+                </div>
+
+                <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
+                    <div class="dropdown account-menu">
+                        <button class="account-avatar" type="button" id="menuConta" data-bs-toggle="dropdown"
+                                aria-expanded="false" aria-label="Abrir menu da conta">
+                            <span th:text="${#strings.toUpperCase(#strings.substring(session.usuarioLogado.email, 0, 1))}">U</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end account-dropdown" aria-labelledby="menuConta">
+                            <div class="account-summary">
+                                <span class="account-avatar account-avatar-static" aria-hidden="true"
+                                      th:text="${#strings.toUpperCase(#strings.substring(session.usuarioLogado.email, 0, 1))}">U</span>
+                                <div>
+                                    <strong>Minha conta</strong>
+                                    <span class="account-email" th:text="${session.usuarioLogado.email}"></span>
+                                    <a th:href="@{/profile}">Acessar meu perfil</a>
+                                </div>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <a class="dropdown-item" th:href="@{/profile#meus-dados}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M5 17c0-4 8-4 8 0m2-8h4m-4 4h4"/></svg>
+                                Seus dados no CampusLink
+                            </a>
+                            <a class="dropdown-item" th:href="@{/documentos/termos-v1.0.txt}"
+                               data-bs-toggle="modal" data-bs-target="#modalTermos">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></svg>
+                                Termos de Uso
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a class="dropdown-item" th:href="@{/logout}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></svg>
+                                Sair
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Links para usuarios não logados -->
+                <div th:if="${session.usuarioLogado == null}" class="col-md-3 text-end">
+                    <a href="/login" class="btn btn-outline-primary btn-sm me-2">Fazer Login</a>
+                    <a href="/cadastrar" class="btn btn-primary btn-sm">Cadastrar</a>
+                </div>
+
+            </header>
         </div>
-    
-    </main>
-    
+    </div>
+</main>
 </body>
 </html>

@@ -1,0 +1,85 @@
+.account-menu {
+    display: inline-block;
+    text-align: left;
+}
+
+.account-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(17, 24, 63);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.account-avatar:focus-visible {
+    outline: 3px solid #5fa8d3;
+    outline-offset: 3px;
+}
+
+.account-avatar-static {
+    width: 48px;
+    height: 48px;
+}
+
+.account-dropdown {
+    --bs-dropdown-link-active-bg: rgb(17, 24, 63);
+    width: min(340px, calc(100vw - 32px));
+    padding: 12px 0;
+    border: 1px solid #e1e5ef;
+    border-radius: 18px;
+    box-shadow: 0 14px 40px #11183f24;
+    color: rgb(17, 24, 63);
+}
+
+.account-summary {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 20px;
+}
+
+.account-summary > div {
+    min-width: 0;
+}
+
+.account-summary strong, .account-email {
+    display: block;
+}
+
+.account-email {
+    font-size: .85rem;
+    color: #596584;
+    overflow-wrap: anywhere;
+    margin: 3px 0 9px;
+}
+
+.account-summary a {
+    font-size: .9rem;
+    color: #205b9a;
+    text-decoration: none;
+}
+
+.account-summary a:hover {
+    text-decoration: underline;
+}
+
+.account-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    font-size: .95rem;
+}
+
+.account-dropdown svg {
+    width: 23px;
+    height: 23px;
+    flex-shrink: 0;
+}
