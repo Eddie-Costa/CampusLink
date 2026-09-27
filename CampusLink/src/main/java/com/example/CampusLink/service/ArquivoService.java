@@ -17,7 +17,7 @@ public class ArquivoService {
     private final String bucket;
 
     private static final long TAMANHO_MAXIMO =
-            6L * 1024 * 1024;
+            50L * 1024 * 1024;
 
     private static final Set<String> TIPOS_PERMITIDOS =
             Set.of(
@@ -29,6 +29,8 @@ public class ArquivoService {
                     "application/vnd.ms-powerpoint",
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation"
             );
+    private static final Set<String> EXTENSOES_PERMITIDAS =
+            Set.of("pdf", "png", "jpg", "jpeg", "doc", "docx", "ppt", "pptx");
 
     public ArquivoService(
             ArquivoDAO arquivoDAO,
@@ -46,8 +48,14 @@ public class ArquivoService {
 
         validarArquivo(arquivo);
 
-        String storagePath =
-                storageService.upload(arquivo);
+        String storagePath;
+        try {
+            storagePath = storageService.upload(arquivo);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            throw new IllegalArgumentException(
+                    "Não foi possível enviar o arquivo. Verifique o tamanho e tente novamente."
+            );
+        }
 
         ArquivoDTO arquivoDTO =
                 new ArquivoDTO();
@@ -204,7 +212,18 @@ public class ArquivoService {
                 > TAMANHO_MAXIMO) {
 
             throw new IllegalArgumentException(
-                    "O arquivo deve possuir no máximo 6 MB."
+                    "O arquivo deve possuir no máximo 50 MB."
+            );
+        }
+
+        String extensao = extrairExtensao(arquivo.getOriginalFilename());
+
+        if (extensao == null
+                || !EXTENSOES_PERMITIDAS.contains(extensao)) {
+
+            throw new IllegalArgumentException(
+                    "Extensão de arquivo não permitida. Formatos aceitos: "
+                            + "PDF, PNG, JPG, JPEG, DOC, DOCX, PPT e PPTX."
             );
         }
 
@@ -218,5 +237,20 @@ public class ArquivoService {
                     "Tipo de arquivo não permitido."
             );
         }
+    }
+
+    private String extrairExtensao(String nomeArquivo) {
+
+        if (nomeArquivo == null) {
+            return null;
+        }
+
+        int ponto = nomeArquivo.lastIndexOf('.');
+
+        if (ponto < 0 || ponto == nomeArquivo.length() - 1) {
+            return null;
+        }
+
+        return nomeArquivo.substring(ponto + 1).toLowerCase();
     }
 }
