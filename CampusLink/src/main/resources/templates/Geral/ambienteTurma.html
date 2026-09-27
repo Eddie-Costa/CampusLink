@@ -28,7 +28,7 @@
 
 <!--Conteiner Turma-->
 <main class="container mt-4 turmas-page"
-      th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}">
+      th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}, data-abrir-modal-conteudo=${abrirModalConteudo}">
 
     <a class="voltar-turmas" th:href="@{/turmas}">Voltar para turmas</a>
     <h1 th:text="${turma.nomeTurma}">Nome da turma</h1>
@@ -297,22 +297,6 @@
             </div>
         </section>
 
-        <div class="conteudo-acoes"
-             th:if="${session.tipoUsuario == 'professor'}">
-            <button type="button"
-                    class="acao-turma"
-                    data-bs-toggle="modal"
-                    data-bs-target="#adicionarConteudoModal">
-                Adicionar Conteúdo
-            </button>
-
-            <button type="button"
-                    class="acao-turma"
-                    data-bs-toggle="modal"
-                    data-bs-target="#selecionarConteudoModal">
-                Editar Conteúdo
-            </button>
-        </div>
     </div>
 </main>
 

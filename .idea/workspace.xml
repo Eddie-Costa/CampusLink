@@ -17,14 +17,13 @@
         <option value="Class" />
         <option value="HTML File" />
         <option value="CSS File" />
-        <option value="JavaScript File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="local/eddie-esqueceuSenhaMerge" />
+        <entry key="$PROJECT_DIR$" value="local/mergeEdRiq" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -52,7 +51,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "local/mergeEdRiq",
+    "git-widget-placeholder": "local/mergeEdRiq-Sant",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "list.type.of.created.stylesheet": "CSS",
@@ -66,7 +65,7 @@
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\CampusLink\src\main\resources\static\css" />
@@ -76,11 +75,7 @@
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\java\com\example\CampusLink\service" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\" />
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\" />
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\js\Usuarios\Admin" />
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Geral" />
-      <recent name="C:\GitHub\CampusLink\CampusLink\src\main\resources\static\css\Usuarios\Professor" />
+      <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example.CampusLink.dto.Professor" />
@@ -150,7 +145,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>199</line>
+          <line>201</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -160,7 +155,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>23</line>
+          <line>25</line>
           <properties class="com.example.CampusLink.dao.usuarioDAO">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />

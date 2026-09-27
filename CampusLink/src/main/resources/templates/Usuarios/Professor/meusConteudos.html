@@ -120,64 +120,6 @@
                         </h2>
                     </div>
 
-                    <div class="conteudo-acoes">
-
-                        <span class="status-conteudo status-ativo"
-                              th:if="${conteudo.status == 'ativo'}">
-                            Ativo
-                        </span>
-
-                        <span class="status-conteudo status-suspenso"
-                              th:if="${conteudo.status == 'suspenso_denuncia'}">
-                            Suspenso por denúncia
-                        </span>
-
-                        <span class="status-conteudo status-removido"
-                              th:if="${conteudo.status == 'removido'}">
-                            Removido
-                        </span>
-
-                        <form th:if="${conteudo.status == 'suspenso_denuncia' and not conteudo.revisaoSolicitada}"
-                              th:action="@{/meus-conteudos/{idConteudo}/solicitar-revisao(idConteudo=${conteudo.id})}"
-                              method="post">
-
-                            <input type="hidden"
-                                   th:if="${_csrf != null}"
-                                   th:name="${_csrf.parameterName}"
-                                   th:value="${_csrf.token}">
-
-                            <button type="submit" class="botao-analise">
-                                Solicitar análise
-                            </button>
-
-                        </form>
-
-                        <span class="analise-solicitada"
-                              th:if="${conteudo.status == 'suspenso_denuncia' and conteudo.revisaoSolicitada}">
-                            Análise solicitada
-                        </span>
-
-                        <form th:if="${conteudo.status != 'removido'}"
-                              th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}"
-                              method="post"
-                              class="form-remover-conteudo">
-
-                            <input type="hidden"
-                                   th:if="${_csrf != null}"
-                                   th:name="${_csrf.parameterName}"
-                                   th:value="${_csrf.token}">
-
-                            <button type="submit"
-                                    class="botao-remover"
-                                    title="Remover conteúdo"
-                                    aria-label="Remover conteúdo">
-                                🗑
-                            </button>
-
-                        </form>
-
-                    </div>
-
                 </div>
 
                 <p class="conteudo-descricao"
@@ -252,6 +194,64 @@
             </article>
 
         </section>
+
+        <div class="conteudo-acoes">
+
+                        <span class="status-conteudo status-ativo"
+                              th:if="${conteudo.status == 'ativo'}">
+                            Ativo
+                        </span>
+
+            <span class="status-conteudo status-suspenso"
+                  th:if="${conteudo.status == 'suspenso_denuncia'}">
+                            Suspenso por denúncia
+                        </span>
+
+            <span class="status-conteudo status-removido"
+                  th:if="${conteudo.status == 'removido'}">
+                            Removido
+                        </span>
+
+            <form th:if="${conteudo.status == 'suspenso_denuncia' and not conteudo.revisaoSolicitada}"
+                  th:action="@{/meus-conteudos/{idConteudo}/solicitar-revisao(idConteudo=${conteudo.id})}"
+                  method="post">
+
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <button type="submit" class="botao-analise">
+                    Solicitar análise
+                </button>
+
+            </form>
+
+            <span class="analise-solicitada"
+                  th:if="${conteudo.status == 'suspenso_denuncia' and conteudo.revisaoSolicitada}">
+                            Análise solicitada
+                        </span>
+
+            <form th:if="${conteudo.status != 'removido'}"
+                  th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}"
+                  method="post"
+                  class="form-remover-conteudo">
+
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <button type="submit"
+                        class="botao-remover"
+                        title="Remover conteúdo"
+                        aria-label="Remover conteúdo">
+                    🗑
+                </button>
+
+            </form>
+
+        </div>
 
     </div>
 

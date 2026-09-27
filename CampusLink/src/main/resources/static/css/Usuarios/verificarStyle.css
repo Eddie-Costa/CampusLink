@@ -7,7 +7,7 @@
     flex-direction: column;
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background: url('../images/bg.png') center / cover;
+    background: url('../../images/bg.png') center / cover;
 }
 
 /* O formulário ocupa espaço no fluxo e mantém o rodapé após o conteúdo. */
@@ -43,7 +43,7 @@
     font-weight: 800;
 }
 
-.form-verificacao{
+.form-autenticacao{
     display: flex;
     flex-direction: column;
     align-items: center;
