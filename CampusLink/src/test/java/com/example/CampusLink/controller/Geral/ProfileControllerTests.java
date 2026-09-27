@@ -147,6 +147,8 @@ class ProfileControllerTests {
                         .param("codigo", codigo).param("confirmar", "true"))
                 .andExpect(redirectedUrl("/login?contaExcluida"));
         verify(usuarios).excluirDadosPessoais(42, "titular@example.com");
+        verify(usuarios).InserirLogsNoBD(isNull(), eq("INFO"), anyString(), eq("confirmarExclusao"),
+                isNull(), eq("Conta excluída. usuarioId=42"), isNull(), isNull());
         verify(sessoes).encerrarSessoesDoUsuario("titular@example.com");
         assertTrue(session.isInvalid());
     }
@@ -171,6 +173,8 @@ class ProfileControllerTests {
                     .param("codigo", "000000").param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
         }
         assertNull(session.getAttribute("exclusaoPendente"));
+        verify(usuarios).InserirLogsNoBD(isNull(), eq("WARN"), anyString(), eq("confirmarExclusao"),
+                isNull(), contains("Limite de tentativas de exclusão atingido"), isNull(), isNull());
         verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
     }
 
@@ -183,6 +187,8 @@ class ProfileControllerTests {
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", login).param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
         mvc.perform(post("/profile/excluir/cancelar").session(session).with(csrf())).andExpect(redirectedUrl("/profile"));
+        verify(usuarios).InserirLogsNoBD(isNull(), eq("INFO"), anyString(), eq("cancelarExclusao"),
+                isNull(), contains("cancelada. usuarioId=42"), isNull(), isNull());
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", codigo).param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
         verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
@@ -195,6 +201,8 @@ class ProfileControllerTests {
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", codigo).param("confirmar", "true")).andExpect(status().isServiceUnavailable());
         assertFalse(session.isInvalid());
+        verify(usuarios).InserirLogsNoBD(isNull(), eq("ERROR"), anyString(), eq("erroBanco"),
+                isNull(), anyString(), isNull(), contains("SQLException: indisponivel"));
         verifyNoInteractions(sessoes);
     }
 

@@ -2,6 +2,7 @@ package com.example.CampusLink.config;
 
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionEvent;
@@ -41,6 +42,8 @@ public class SessaoLogListener implements HttpSessionListener {
                     emailSessao = aluno.getEmail();
                 } else if (usuario instanceof loginProfessorDTO professor) {
                     emailSessao = professor.getEmail();
+                } else if (usuario instanceof loginAdminDTO admin) {
+                    emailSessao = admin.getEmail();
                 }
 
                 if (email.equalsIgnoreCase(emailSessao)) {
@@ -68,6 +71,8 @@ public class SessaoLogListener implements HttpSessionListener {
             email = aluno.getEmail();
         } else if (usuario instanceof loginProfessorDTO professor) {
             email = professor.getEmail();
+        } else if (usuario instanceof loginAdminDTO admin) {
+            email = admin.getEmail();
         }
 
         try {

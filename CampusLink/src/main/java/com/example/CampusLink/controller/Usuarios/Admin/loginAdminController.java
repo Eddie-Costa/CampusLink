@@ -1,5 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
+import org.slf4j.helpers.MessageFormatter;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.service.LoginAttemptService;
@@ -9,7 +10,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -66,23 +66,10 @@ public class loginAdminController {
         if (LoginAttemptService.estaBloqueado(email)) {
 
             logger.warn("Conta bloqueada para administrador {}", email);
-
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(
-                            null,
-                            "WARN",
-                            loginAdminController.class.getName(),
-                            "fazerLogin",
-                            null,
-                            MessageFormatter.arrayFormat(
-                                    "Conta bloqueada para administrador {}",
-                                    new Object[]{email}
-                            ).getMessage(),
-                            null,
-                            null
-                    );
-
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAdminController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada para administrador {}", new Object[]{email}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
@@ -99,6 +86,14 @@ public class loginAdminController {
         if (result.hasErrors()) {
 
             logger.warn("Dados de login inválidos para administrador {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAdminController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Dados de login inválidos para administrador {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute(
                     "mensagemDeErro",
@@ -144,23 +139,41 @@ public class loginAdminController {
 
             session.setMaxInactiveInterval(900);
 
-            logger.info(
-                    "Login concluído. perfil=admin email={} doisFatores=false",
-                    email
-            );
+            logger.info("Login concluído. perfil=admin email={} doisFatores=false", email);
+            if (logger.isInfoEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "INFO", loginAdminController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Login concluído. perfil=admin email={} doisFatores=false", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             return "redirect:/admin/painel";
         }
 
         loginAttemptService.loginFalhou(email);
 
-        logger.warn(
-                "Credenciais inválidas para administrador {}. Tentativas: {}",
-                email,
-                loginAttemptService.getTentativas(email)
-        );
+        logger.warn("Credenciais inválidas para administrador {}. Tentativas: {}", email, loginAttemptService.getTentativas(email));
+        if (logger.isWarnEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "WARN", loginAdminController.class.getName(), "fazerLogin", null,
+                        MessageFormatter.arrayFormat("Credenciais inválidas para administrador {}. Tentativas: {}", new Object[]{email, loginAttemptService.getTentativas(email)}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         if (loginAttemptService.getTentativas(email) >= 5) {
+            logger.warn("Conta bloqueada por excesso de tentativas para administrador {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginAdminController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para administrador {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute(
                     "mensagemDeErro",

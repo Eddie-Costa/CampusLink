@@ -137,7 +137,17 @@ public class ConteudoService {
             return conteudoDAO.listarPorProfessor(idProfessor);
 
         } catch (SQLException e) {
-
+            logger.error("Erro ao listar conteúdos do professor. professorId={}", idProfessor, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPorProfessor", null,
+                            MessageFormatter.arrayFormat("Erro ao listar conteúdos do professor. professorId={}", new Object[]{idProfessor}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             throw new RuntimeException("Não foi possível listar os conteúdos do professor.", e);
         }
     }
@@ -155,9 +165,42 @@ public class ConteudoService {
 
         try {
 
-            return conteudoDAO.removerConteudoProfessor(idConteudo, idProfessor);
+            boolean removido = conteudoDAO.removerConteudoProfessor(idConteudo, idProfessor);
+            if (removido) {
+                logger.info("Conteúdo removido pelo professor. conteudoId={} professorId={}", idConteudo, idProfessor);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                                MessageFormatter.arrayFormat("Conteúdo removido pelo professor. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            } else {
+                logger.warn("Remoção de conteúdo recusada. conteudoId={} professorId={}", idConteudo, idProfessor);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                                MessageFormatter.arrayFormat("Remoção de conteúdo recusada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            }
+            return removido;
 
         } catch (SQLException e) {
+            logger.error("Erro ao remover conteúdo do professor. conteudoId={} professorId={}", idConteudo, idProfessor, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                            MessageFormatter.arrayFormat("Erro ao remover conteúdo do professor. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             throw new RuntimeException("Não foi possível remover o conteúdo.", e);
         }
     }
@@ -165,9 +208,42 @@ public class ConteudoService {
     public boolean solicitarRevisao(Long idConteudo, Long idProfessor) {
 
         try {
-            return conteudoDAO.solicitarRevisao(idConteudo, idProfessor);
+            boolean solicitado = conteudoDAO.solicitarRevisao(idConteudo, idProfessor);
+            if (solicitado) {
+                logger.info("Revisão de conteúdo solicitada. conteudoId={} professorId={}", idConteudo, idProfessor);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "solicitarRevisao", null,
+                                MessageFormatter.arrayFormat("Revisão de conteúdo solicitada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            } else {
+                logger.warn("Solicitação de revisão recusada. conteudoId={} professorId={}", idConteudo, idProfessor);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "solicitarRevisao", null,
+                                MessageFormatter.arrayFormat("Solicitação de revisão recusada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            }
+            return solicitado;
 
         } catch (SQLException e) {
+            logger.error("Erro ao solicitar revisão. conteudoId={} professorId={}", idConteudo, idProfessor, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "solicitarRevisao", null,
+                            MessageFormatter.arrayFormat("Erro ao solicitar revisão. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             throw new RuntimeException("Não foi possível solicitar a análise.", e);
         }
     }

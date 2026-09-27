@@ -1,5 +1,8 @@
 package com.example.CampusLink.controller.Geral;
 
+import org.slf4j.helpers.MessageFormatter;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import com.example.CampusLink.config.SessaoLogListener;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
@@ -69,7 +72,17 @@ public class ProfileController {
             emailService.enviarEmailDados(dados);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Seus dados cadastrais foram enviados para o e-mail da sua conta.");
         } catch (MailException e) {
-            logger.warn("Falha no envio da exportação de dados cadastrais.");
+            logger.error("Falha no envio da exportação de dados cadastrais. usuarioId={}", dados.getId(), e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ProfileController.class.getName(), "exportar", null,
+                            MessageFormatter.arrayFormat("Falha no envio da exportação de dados cadastrais. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível enviar o e-mail. Tente novamente mais tarde.");
         }
         return "redirect:/profile";
@@ -85,6 +98,15 @@ public class ProfileController {
             return "redirect:/login";
         }
         if (usuarioDAO.possuiVinculosParaExclusao(dados.getId())) {
+            logger.warn("Exclusão de conta recusada: vínculos existentes. usuarioId={}", dados.getId());
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "solicitarExclusao", null,
+                            MessageFormatter.arrayFormat("Exclusão de conta recusada: vínculos existentes. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("mensagemErro", "Antes de excluir sua conta, remova ou transfira suas turmas, materiais e eventos.");
             return "redirect:/profile";
         }
@@ -92,6 +114,15 @@ public class ProfileController {
         synchronized (session) {
             Long ultimoEnvio = (Long) session.getAttribute("ultimoEnvioExclusao");
             if (ultimoEnvio != null && System.currentTimeMillis() - ultimoEnvio < 120_000) {
+                logger.warn("Reenvio de código de exclusão recusado: intervalo mínimo. usuarioId={}", dados.getId());
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "solicitarExclusao", null,
+                                MessageFormatter.arrayFormat("Reenvio de código de exclusão recusado: intervalo mínimo. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", "Aguarde dois minutos entre os envios do código de exclusão.");
                 return "redirect:/profile";
             }
@@ -103,8 +134,28 @@ public class ProfileController {
                 emailService.enviarCodigo(dados.getEmail(), codigo);
                 session.setAttribute("exclusaoPendente", true);
                 session.setAttribute("tentativasExclusao", 0);
+                logger.info("Exclusão de conta solicitada. usuarioId={}", dados.getId());
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "solicitarExclusao", null,
+                                MessageFormatter.arrayFormat("Exclusão de conta solicitada. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Solicitamos o envio de um código ao seu e-mail. Ele vale por cinco minutos.");
             } catch (MailException e) {
+                logger.error("Falha ao solicitar envio do código de exclusão. usuarioId={}", dados.getId(), e);
+                if (logger.isErrorEnabled()) {
+                    try {
+                        StringWriter excecaoLogBD = new StringWriter();
+                        e.printStackTrace(new PrintWriter(excecaoLogBD));
+                        usuarioDAO.InserirLogsNoBD(null, "ERROR", ProfileController.class.getName(), "solicitarExclusao", null,
+                                MessageFormatter.arrayFormat("Falha ao solicitar envio do código de exclusão. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, excecaoLogBD.toString());
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 twoFactorService.limparCodigo(chave);
                 session.removeAttribute("exclusaoPendente");
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível enviar o código. Tente novamente mais tarde.");
@@ -126,6 +177,15 @@ public class ProfileController {
         }
         synchronized (session) {
             if (!Boolean.TRUE.equals(session.getAttribute("exclusaoPendente")) || !confirmar) {
+                logger.warn("Exclusão recusada: solicitação ou confirmação ausente. usuarioId={}", dados.getId());
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
+                                MessageFormatter.arrayFormat("Exclusão recusada: solicitação ou confirmação ausente. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", "Solicite um código e confirme que deseja excluir a conta.");
                 return "redirect:/profile";
             }
@@ -133,7 +193,25 @@ public class ProfileController {
             int tentativas = (Integer) session.getAttribute("tentativasExclusao");
             if (!codigo.matches("\\d{6}") || !twoFactorService.validarCodigo(chave, codigo)) {
                 session.setAttribute("tentativasExclusao", ++tentativas);
+                logger.warn("Código de exclusão inválido ou expirado. usuarioId={} tentativas={}", dados.getId(), tentativas);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
+                                MessageFormatter.arrayFormat("Código de exclusão inválido ou expirado. usuarioId={} tentativas={}", new Object[]{dados.getId(), tentativas}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 if (tentativas >= 5) {
+                    logger.warn("Limite de tentativas de exclusão atingido. usuarioId={}", dados.getId());
+                    if (logger.isWarnEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
+                                    MessageFormatter.arrayFormat("Limite de tentativas de exclusão atingido. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     twoFactorService.limparCodigo(chave);
                     session.removeAttribute("exclusaoPendente");
                     redirectAttributes.addFlashAttribute("mensagemErro", "Limite de tentativas atingido. Solicite outro código.");
@@ -146,7 +224,25 @@ public class ProfileController {
             session.removeAttribute("tentativasExclusao");
             try {
                 usuarioDAO.excluirDadosPessoais(dados.getId(), dados.getEmail());
+                logger.info("Conta excluída. usuarioId={}", dados.getId());
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "confirmarExclusao", null,
+                                MessageFormatter.arrayFormat("Conta excluída. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
             } catch (IllegalStateException e) {
+                logger.warn("Exclusão de conta recusada. usuarioId={} motivo={}", dados.getId(), e.getMessage());
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
+                                MessageFormatter.arrayFormat("Exclusão de conta recusada. usuarioId={} motivo={}", new Object[]{dados.getId(), e.getMessage()}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
                 return "redirect:/profile";
             }
@@ -173,6 +269,15 @@ public class ProfileController {
         twoFactorService.limparCodigo(chaveExclusao(session, dados));
         session.removeAttribute("exclusaoPendente");
         session.removeAttribute("tentativasExclusao");
+        logger.info("Solicitação de exclusão de conta cancelada. usuarioId={}", dados.getId());
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "cancelarExclusao", null,
+                        MessageFormatter.arrayFormat("Solicitação de exclusão de conta cancelada. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         return "redirect:/profile";
     }
 
@@ -204,7 +309,18 @@ public class ProfileController {
     }
 
     @ExceptionHandler({SQLException.class, RestClientException.class})
-    public String erroBanco(Model model, HttpServletResponse response) {
+    public String erroBanco(Exception e, Model model, HttpServletResponse response) {
+        logger.error("Erro ao acessar ou alterar dados do perfil.", e);
+        if (logger.isErrorEnabled()) {
+            try {
+                StringWriter excecaoLogBD = new StringWriter();
+                e.printStackTrace(new PrintWriter(excecaoLogBD));
+                usuarioDAO.InserirLogsNoBD(null, "ERROR", ProfileController.class.getName(), "erroBanco", null,
+                        "Erro ao acessar ou alterar dados do perfil.", null, excecaoLogBD.toString());
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         model.addAttribute("mensagemErro", "Não foi possível acessar seus dados. Tente novamente mais tarde.");
         return "Geral/profile";

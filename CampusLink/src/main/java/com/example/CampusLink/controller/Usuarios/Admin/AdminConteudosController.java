@@ -1,5 +1,10 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
+import org.slf4j.helpers.MessageFormatter;
+import java.io.StringWriter;
+import java.io.PrintWriter;
+import com.example.CampusLink.dao.usuarioDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -26,6 +31,9 @@ import java.util.Map;
 
 @Controller
 public class AdminConteudosController {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(AdminConteudosController.class);
 
@@ -83,6 +91,16 @@ public class AdminConteudosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao carregar conteúdos para análise", e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "listarConteudos", null,
+                            "erro ao carregar conteúdos para análise", null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute("mensagemErro", "Não foi possível carregar os conteúdos para análise.");
             model.addAttribute("conteudos", new ArrayList<ConteudoDTO>());
@@ -119,6 +137,16 @@ public class AdminConteudosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao liberar o conteúdo {}", idConteudo, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "liberarConteudo", null,
+                            MessageFormatter.arrayFormat("erro ao liberar o conteúdo {}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível liberar o conteúdo.");
         }
@@ -143,6 +171,15 @@ public class AdminConteudosController {
         }
 
         if (comentarioAdmin == null || comentarioAdmin.isBlank()) {
+            logger.warn("Reprovação recusada: motivo vazio. conteudoId={}", idConteudo);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", AdminConteudosController.class.getName(), "reprovarConteudo", null,
+                            MessageFormatter.arrayFormat("Reprovação recusada: motivo vazio. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("mensagemErro", "Informe o motivo da reprovação.");
 
             return "redirect:/admin/conteudos-denunciados";
@@ -159,6 +196,16 @@ public class AdminConteudosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao reprovar o conteúdo {}", idConteudo, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "reprovarConteudo", null,
+                            MessageFormatter.arrayFormat("erro ao reprovar o conteúdo {}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível reprovar o conteúdo.");
         }

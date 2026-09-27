@@ -24,6 +24,7 @@ public class SessaoLogFilter extends OncePerRequestFilter {
         MDC.remove("sessaoLogId");
         MDC.remove("aluno");
         MDC.remove("professor");
+        MDC.remove("admin");
         MDC.remove("sessionId");
 
         try {
@@ -47,7 +48,7 @@ public class SessaoLogFilter extends OncePerRequestFilter {
                 String perfil = (String) session.getAttribute("tipoUsuario");
                 String email = (String) session.getAttribute("email2FA");
                 if (session.getAttribute("usuarioLogado") != null && email != null
-                        && ("aluno".equals(perfil) || "professor".equals(perfil))) {
+                        && ("aluno".equals(perfil) || "professor".equals(perfil) || "admin".equals(perfil))) {
                     MDC.put(perfil, email);
                 }
             }
@@ -58,6 +59,7 @@ public class SessaoLogFilter extends OncePerRequestFilter {
             MDC.remove("sessaoLogId");
             MDC.remove("aluno");
             MDC.remove("professor");
+            MDC.remove("admin");
             MDC.remove("sessionId");
         }
     }

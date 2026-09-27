@@ -1,5 +1,8 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
+import org.slf4j.helpers.MessageFormatter;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import com.example.CampusLink.dao.AdminUsuarioDAO;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Admin.cadastrarUsuarioAdminDTO;
@@ -59,6 +62,16 @@ public class AdminUsuariosController {
 
         } catch (SQLException e) {
             logger.error("erro ao carregar usuarios para o administrador", e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "listarUsuarios", null,
+                            "erro ao carregar usuarios para o administrador", null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute("mensagemErro", "Não foi possível carregar os usuários.");
             model.addAttribute("usuarios", new ArrayList<usuarioAdminDTO>());
@@ -143,12 +156,31 @@ public class AdminUsuariosController {
                     senhaCriptografada
             );
 
+            logger.info("Usuário cadastrado pelo administrador. perfil={} email={}", usuario.getPerfil(), usuario.getEmail());
+            if (logger.isInfoEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarUsuario", null,
+                            MessageFormatter.arrayFormat("Usuário cadastrado pelo administrador. perfil={} email={}", new Object[]{usuario.getPerfil(), usuario.getEmail()}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Usuário cadastrado com sucesso.");
 
             return "redirect:/admin/usuarios";
 
         } catch (SQLException e) {
             logger.error("erro ao cadastrar usuario pelo administrador", e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarUsuario", null,
+                            "erro ao cadastrar usuario pelo administrador", null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute("mensagemErro", "Não foi possível cadastrar o usuário.");
 
@@ -186,6 +218,16 @@ public class AdminUsuariosController {
 
         } catch (SQLException e) {
             logger.error("erro ao buscar usuario {} para edicao", idUsuario, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "editarUsuario", null,
+                            MessageFormatter.arrayFormat("erro ao buscar usuario {} para edicao", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível carregar o usuário.");
             return "redirect:/admin/usuarios";
@@ -250,8 +292,26 @@ public class AdminUsuariosController {
             boolean atualizado = adminUsuarioDAO.atualizarUsuario(usuario);
 
             if (atualizado) {
+                logger.info("Usuário atualizado pelo administrador. usuarioId={}", idUsuario);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                                MessageFormatter.arrayFormat("Usuário atualizado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Usuário atualizado com sucesso.");
             } else {
+                logger.warn("Atualização de usuário não realizada. usuarioId={}", idUsuario);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                                MessageFormatter.arrayFormat("Atualização de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível atualizar o usuário.");
             }
 
@@ -259,6 +319,16 @@ public class AdminUsuariosController {
 
         } catch (SQLException e) {
             logger.error("erro ao atualizar usuario {}", idUsuario, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                            MessageFormatter.arrayFormat("erro ao atualizar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             model.addAttribute("mensagemErro", "Erro ao atualizar o usuário.");
             model.addAttribute("usuario", usuario);
@@ -286,13 +356,41 @@ public class AdminUsuariosController {
             boolean alterado = adminUsuarioDAO.atualizarStatusUsuario(idUsuario, false);
 
             if (alterado) {
+                logger.info("Usuário desativado pelo administrador. usuarioId={}", idUsuario);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                                MessageFormatter.arrayFormat("Usuário desativado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Usuário desativado com sucesso.");
             } else {
+                logger.warn("Desativação de usuário não realizada. usuarioId={}", idUsuario);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                                MessageFormatter.arrayFormat("Desativação de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível desativar o usuário.");
             }
 
         } catch (SQLException e) {
             logger.error("erro ao desativar usuario {}", idUsuario, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                            MessageFormatter.arrayFormat("erro ao desativar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao desativar o usuário.");
         }
@@ -319,13 +417,41 @@ public class AdminUsuariosController {
             boolean alterado = adminUsuarioDAO.atualizarStatusUsuario(idUsuario, true);
 
             if (alterado) {
+                logger.info("Usuário ativado pelo administrador. usuarioId={}", idUsuario);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                                MessageFormatter.arrayFormat("Usuário ativado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Usuário ativado com sucesso.");
             } else {
+                logger.warn("Ativação de usuário não realizada. usuarioId={}", idUsuario);
+                if (logger.isWarnEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                                MessageFormatter.arrayFormat("Ativação de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível ativar o usuário.");
             }
 
         } catch (SQLException e) {
             logger.error("erro ao ativar usuario {}", idUsuario, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                            MessageFormatter.arrayFormat("erro ao ativar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao ativar o usuário.");
         }
