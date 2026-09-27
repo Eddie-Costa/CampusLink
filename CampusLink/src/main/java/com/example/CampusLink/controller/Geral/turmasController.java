@@ -12,13 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.service.ConteudoService;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.CampusLink.service.ArquivoService;
 import java.sql.SQLException;
@@ -140,15 +136,50 @@ public class turmasController {
         }
         if (result.hasErrors()) {
             model.addAttribute("abrirModalAdicionarConteudo", true);
-            return ambienteTurma(String.valueOf(id), model, session);
-        }
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
 
+            List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
+            model.addAttribute("conteudos", conteudos);
+
+            Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+            for (ConteudoDTO conteudo : conteudos) {
+                ArquivoDTO arquivoExistente = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+                if (arquivoExistente != null) {
+                    arquivosPorConteudo.put(conteudo.getId(), arquivoExistente);
+                }
+            }
+            model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
+
+            return "Geral/ambienteTurma";
+        }
         String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
 
         conteudoDTO.setIdTurma(id);
         conteudoDTO.setIdProfessor(Long.parseLong(idProfessor));
 
-        conteudoService.criar(conteudoDTO, arquivo);
+        try {
+            conteudoService.criar(conteudoDTO, arquivo);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+
+            List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
+            model.addAttribute("conteudos", conteudos);
+
+            Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+            for (ConteudoDTO conteudo : conteudos) {
+                ArquivoDTO arquivoExistente = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+                if (arquivoExistente != null) {
+                    arquivosPorConteudo.put(conteudo.getId(), arquivoExistente);
+                }
+            }
+            model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
+
+            return "Geral/ambienteTurma";
+        }
 
         return "redirect:/turmas/" + id;
     }
@@ -249,14 +280,52 @@ public class turmasController {
         }
 
         if (result.hasErrors()) {
-            return ambienteTurma(String.valueOf(id), model, session);
+            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+
+            List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
+            model.addAttribute("conteudos", conteudos);
+
+            Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+            for (ConteudoDTO conteudo : conteudos) {
+                ArquivoDTO arquivoExistente = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+                if (arquivoExistente != null) {
+                    arquivosPorConteudo.put(conteudo.getId(), arquivoExistente);
+                }
+            }
+            model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
+
+            return "Geral/ambienteTurma";
         }
 
         conteudoDTO.setId(idConteudo);
-        conteudoService.atualizar(conteudoDTO);
 
-        if (arquivo != null && !arquivo.isEmpty()) {
-            arquivoService.salvar(arquivo, idConteudo);
+        try {
+            conteudoService.atualizar(conteudoDTO);
+
+            if (arquivo != null && !arquivo.isEmpty()) {
+                arquivoService.salvar(arquivo, idConteudo);
+            }
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("idTurma", String.valueOf(id));
+            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+
+            List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
+            model.addAttribute("conteudos", conteudos);
+
+            Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+            for (ConteudoDTO conteudo : conteudos) {
+                ArquivoDTO arquivoExistente = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
+                if (arquivoExistente != null) {
+                    arquivosPorConteudo.put(conteudo.getId(), arquivoExistente);
+                }
+            }
+            model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
+
+            return "Geral/ambienteTurma";
         }
 
         return "redirect:/turmas/" + id;
@@ -412,7 +481,22 @@ public class turmasController {
         }
 
         model.addAttribute("abrirModalParticipantes", true);
-        return ambienteTurma(String.valueOf(turmaDTO.getId()), model, session);
+        return "Geral/ambienteTurma";
+    }
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public String tratarArquivoMuitoGrande(
+            jakarta.servlet.http.HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
+
+        String uri = request.getRequestURI();
+        String id = uri.replaceAll(".*?/turmas/(\\d+).*", "$1");
+
+        redirectAttributes.addFlashAttribute(
+                "mensagemErro",
+                "O arquivo enviado é muito grande. O limite é de 50 MB."
+        );
+
+        return "redirect:/turmas/" + id;
     }
 
 

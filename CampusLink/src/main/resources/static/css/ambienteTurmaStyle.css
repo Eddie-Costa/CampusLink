@@ -156,11 +156,8 @@ main.container > p {
 
 .conteudo-card {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    min-height: 57px;
+    flex-direction: column;
+    gap: 6px;
     padding: 12px 27px;
     border-radius: 17px;
     background-color: var(--branco);
@@ -169,8 +166,20 @@ main.container > p {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.conteudo-card.conteudo-suspenso {
-    background-color: #c7c9cc;
+.conteudo-linha-principal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    min-height: 33px;
+}
+
+.conteudo-descricao {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6b8c;
+    overflow-wrap: anywhere;
 }
 
 .conteudo-card:hover {
@@ -225,13 +234,12 @@ main.container > p {
 }
 
 .conteudo-acoes {
-    position: absolute;
-    left: 35px;
-    bottom: 38px;
+    position: static;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 12px 18px;
+    margin-top: 24px;
 }
 
 .conteudo-acoes .acao-turma {

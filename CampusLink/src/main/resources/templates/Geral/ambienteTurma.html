@@ -192,31 +192,29 @@
             Essa turma ainda não possui conteúdos cadastrados.
         </div>
 
-        <div class="conteudo-acoes" th:if="${session.tipoUsuario == 'professor'}">
-            <button type="button" class="acao-turma" data-bs-toggle="modal"
-                    data-bs-target="#adicionarConteudoModal">Adicionar Conteúdo</button>
-            <button type="button" class="acao-turma" data-bs-toggle="modal"
-                    data-bs-target="#selecionarConteudoModal">Editar Conteúdo</button>
-        </div>
-
         <section class="lista-conteudos" aria-label="Conteúdos da turma">
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
                  th:classappend="${conteudo.status == 'suspenso_denuncia'} ? 'conteudo-suspenso' : ''"
                  th:if="${session.tipoUsuario == 'professor' or conteudo.status != 'removido'}"
                  th:attr="data-id=${conteudo.id}, data-titulo=${conteudo.titulo}, data-url=${conteudo.url}, data-duracao=${conteudo.duracaoEstimada}">
-                <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo</span>
 
-                <div class="conteudo-meta">
-                <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
-                      th:text="${conteudo.duracaoEstimada}">Tempo</span>
+                <div class="conteudo-linha-principal">
+                    <span class="conteudo-nome"
+                          th:text="${conteudo.titulo}">Conteúdo</span>
 
-                    <a th:if="${conteudo.url != null and !conteudo.url.isBlank() and (session.tipoUsuario == 'professor' or conteudo.status == 'ativo')}"
-                       th:href="${conteudo.url}" target="_blank" rel="noopener noreferrer"
-                       class="conteudo-link">Abrir link</a>
+                    <div class="conteudo-meta">
+                        <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
+                              th:text="${conteudo.duracaoEstimada}">Tempo</span>
 
-                    <a th:if="${arquivosPorConteudo.get(conteudo.id) != null and (session.tipoUsuario == 'professor' or conteudo.status == 'ativo')}"
-                       th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo.get(conteudo.id).id})}"
-                       class="conteudo-link">Baixar arquivo</a>
+                        <a th:if="${conteudo.url != null and !conteudo.url.isBlank()}"
+                           th:href="${conteudo.url}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="conteudo-link">Abrir Link</a>
+
+                        <a th:if="${arquivosPorConteudo.get(conteudo.id) != null}"
+                           th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo.get(conteudo.id).id})}"
+                           class="conteudo-link">Baixar arquivo</a>
 
                     <span th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'suspenso_denuncia'}"
                           class="status-conteudo status-suspenso">
@@ -243,8 +241,28 @@
                 </div>
             </div>
 
+                <p class="conteudo-descricao"
+                   th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
+                   th:text="${conteudo.descricao}">Descrição do conteúdo</p>
+            </div>
         </section>
 
+        <div class="conteudo-acoes"
+             th:if="${session.tipoUsuario == 'professor'}">
+            <button type="button"
+                    class="acao-turma"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adicionarConteudoModal">
+                Adicionar Conteúdo
+            </button>
+
+            <button type="button"
+                    class="acao-turma"
+                    data-bs-toggle="modal"
+                    data-bs-target="#selecionarConteudoModal">
+                Editar Conteúdo
+            </button>
+        </div>
     </div>
 </main>
 
@@ -262,10 +280,30 @@
                     const selectModalInstance = bootstrap.Modal.getOrCreateInstance(selectModal);
                     const editModalInstance = bootstrap.Modal.getOrCreateInstance(editModal);
 
+                    selectModal.addEventListener('hidden.bs.modal', function abrirEdicao() {
+                        selectModal.removeEventListener('hidden.bs.modal', abrirEdicao);
+                        editModalInstance.show();
+                    });
+
                     selectModalInstance.hide();
-                    editModalInstance.show();
                 }
             });
+        });
+
+        // Rede de segurança: se por algum motivo sobrar um backdrop
+        // sem nenhum modal aberto, remove e destrava a página.
+        document.addEventListener('hidden.bs.modal', function () {
+            setTimeout(function () {
+                const algumModalAberto = document.querySelector('.modal.show');
+                if (!algumModalAberto) {
+                    document.querySelectorAll('.modal-backdrop').forEach(function (bd) {
+                        bd.remove();
+                    });
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('overflow');
+                    document.body.style.removeProperty('padding-right');
+                }
+            }, 350);
         });
     });
 </script>
@@ -313,27 +351,65 @@
                     <label class="form-label">Nome do conteúdo</label>
                     <input type="text" name="titulo" class="form-control mb-3" th:value="${conteudo.titulo}" required>
 
-                    <label class="form-label">URL</label>
-                    <input type="text" name="url" class="form-control mb-3" th:value="${conteudo.url}">
+                    <label class="form-label">Tipo de conteúdo</label>
+                    <select class="form-control mb-3 tipo-conteudo-editar" autocomplete="off">
+                        <option value="LINK">Link</option>
+                        <option value="YOUTUBE">Vídeo do YouTube</option>
+                        <option value="GOOGLE_BOOKS">Livro (Google Books)</option>
+                        <option value="ARQUIVO">Arquivo</option>
+                    </select>
 
-                    <label class="form-label">Tempo de visualização</label>
-                    <input type="text" name="duracaoEstimada" class="form-control mb-3"
-                           th:value="${conteudo.duracaoEstimada}">
-
-                    <label class="form-label">Arquivo</label>
-                    <div class="form-text mb-2"
-                         th:if="${arquivosPorConteudo.get(conteudo.id) != null}"
-                         th:text="'Arquivo atual: ' + ${arquivosPorConteudo.get(conteudo.id).nomeOriginal}">
+                    <div class="campo-link-editar">
+                        <label class="form-label">URL</label>
+                        <input type="text" name="url" class="form-control mb-3" th:value="${conteudo.url}">
                     </div>
 
-                    <div class="form-text mb-2" th:unless="${arquivosPorConteudo.get(conteudo.id) != null}">
-                        Nenhum arquivo enviado ainda.
+                    <div class="campo-youtube-editar" style="display: none;">
+                        <label class="form-label">Buscar vídeo no YouTube</label>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control busca-youtube-editar"
+                                   placeholder="Digite palavras-chave e busque">
+                            <button type="button" class="btn btn-secondary btn-buscar-youtube-editar">Buscar</button>
+                        </div>
+                        <div class="resultados-youtube-editar"></div>
                     </div>
 
-                    <input type="file" name="arquivo" class="form-control"
-                           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
+                    <div class="campo-google-books-editar" style="display: none;">
+                        <label class="form-label">Buscar livro no Google Books</label>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control busca-google-books-editar"
+                                   placeholder="Digite título ou autor e busque">
+                            <button type="button" class="btn btn-secondary btn-buscar-google-books-editar">Buscar</button>
+                        </div>
+                        <div class="resultados-google-books-editar"></div>
+                    </div>
+                    <label class="form-label">Descrição</label>
+                    <textarea name="descricao" class="form-control mb-1"
+                              rows="3" maxlength="1000"
+                              th:text="${conteudo.descricao}"></textarea>
+                    <div class="form-text mb-3">
+                        <span th:id="'contadorDescricaoEditar-' + ${conteudo.id}">0</span>/1000 caracteres
+                    </div>
 
-                    <div class="form-text">Opcional. Envie um novo arquivo para substituir o atual.</div>
+                    <div class="campo-duracao-editar" style="display: none;">
+                        <label class="form-label">Tempo de visualização</label>
+                        <input type="text" name="duracaoEstimada" class="form-control mb-3"
+                               th:value="${conteudo.duracaoEstimada}">
+                    </div>
+
+                    <div class="campo-arquivo-editar" style="display: none;">
+                        <label class="form-label">Arquivo</label>
+                        <div class="form-text mb-2"
+                             th:if="${arquivosPorConteudo.get(conteudo.id) != null}"
+                             th:text="'Arquivo atual: ' + ${arquivosPorConteudo.get(conteudo.id).nomeOriginal}">
+                        </div>
+                        <div class="form-text mb-2" th:unless="${arquivosPorConteudo.get(conteudo.id) != null}">
+                            Nenhum arquivo enviado ainda.
+                        </div>
+                        <input type="file" name="arquivo" class="form-control"
+                               accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
+                        <div class="form-text">Opcional. Envie um novo arquivo para substituir o atual.</div>
+                    </div>
                 </div>
 
                 <div class="modal-footer">
@@ -367,20 +443,64 @@
 
                     <div class="erro-campo" th:if="${#fields.hasErrors('titulo')}"
                          th:errors="*{titulo}"></div>
+                    <label for="tipoConteudo" class="form-label">Tipo de conteúdo</label>
+                    <select id="tipoConteudo" name="tipoSelecionado" class="form-control mb-3">
+                        <option value="LINK">Link</option>
+                        <option value="YOUTUBE">Vídeo do YouTube</option>
+                        <option value="GOOGLE_BOOKS">Livro (Google Books)</option>
+                        <option value="ARQUIVO">Arquivo</option>
+                    </select>
 
-                    <label for="url" class="form-label">URL</label>
-                    <input id="url" type="text" class="form-control mb-3" th:field="*{url}"
-                           placeholder="Ex: https://...">
+                    <div id="campoLink">
+                        <label for="url" class="form-label">URL</label>
+                        <input id="url" type="text" class="form-control mb-3" th:field="*{url}"
+                               placeholder="Ex: https://...">
+                        <div class="erro-campo" th:if="${#fields.hasErrors('url')}"
+                             th:errors="*{url}"></div>
+                    </div>
 
-                    <label for="duracaoEstimada" class="form-label">Tempo de visualização</label>
-                    <input id="duracaoEstimada" type="text" class="form-control mb-3"
-                           th:field="*{duracaoEstimada}" placeholder="Ex: 15 min">
+                    <div id="campoYoutube" style="display: none;">
+                        <label class="form-label">Buscar vídeo no YouTube</label>
+                        <div class="input-group mb-2">
+                            <input type="text" id="buscaYoutube" class="form-control"
+                                   placeholder="Digite palavras-chave e busque">
+                            <button type="button" class="btn btn-secondary" id="btnBuscarYoutube">Buscar</button>
+                        </div>
+                        <div id="resultadosYoutube"></div>
+                    </div>
 
-                    <label for="arquivo" class="form-label">Arquivos</label>
-                    <input id="arquivo" name="arquivo" type="file" class="form-control"
-                           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
+                    <div id="campoGoogleBooks" style="display: none;">
+                        <label class="form-label">Buscar livro no Google Books</label>
+                        <div class="input-group mb-2">
+                            <input type="text" id="buscaGoogleBooks" class="form-control"
+                                   placeholder="Digite título ou autor e busque">
+                            <button type="button" class="btn btn-secondary" id="btnBuscarGoogleBooks">Buscar</button>
+                        </div>
+                        <div id="resultadosGoogleBooks"></div>
+                    </div>
 
-                    <div class="form-text">Opcional. Formatos: PDF, PNG, JPG, DOC, DOCX, PPT e PPTX. Máximo 6 MB.</div>
+                    <label for="descricao" class="form-label">Descrição</label>
+                    <textarea id="descricao" class="form-control mb-1" th:field="*{descricao}"
+                              rows="3" maxlength="1000"
+                              placeholder="Explique brevemente do que se trata este conteúdo"></textarea>
+                    <div class="form-text mb-3">
+                        <span id="contadorDescricaoAdicionar">0</span>/1000 caracteres
+                    </div>
+                    <div class="erro-campo" th:if="${#fields.hasErrors('descricao')}"
+                         th:errors="*{descricao}"></div>
+
+                    <div id="campoDuracao" style="display: none;">
+                        <label for="duracaoEstimada" class="form-label">Tempo de visualização</label>
+                        <input id="duracaoEstimada" type="text" class="form-control mb-3"
+                               th:field="*{duracaoEstimada}" placeholder="Ex: 15 min">
+                    </div>
+
+                    <div id="campoArquivo">
+                        <label for="arquivo" class="form-label">Arquivos</label>
+                        <input id="arquivo" name="arquivo" type="file" class="form-control"
+                               accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx">
+                        <div class="form-text">Opcional. Formatos: PDF, PNG, JPG, DOC, DOCX, PPT e PPTX. Máximo 50 MB.</div>
+                    </div>
                 </div>
 
                 <div class="modal-footer">
@@ -449,6 +569,364 @@
         if (modalElement) {
             const modal = new bootstrap.Modal(modalElement);
             modal.show();
+        }
+    });
+</script>
+<!--Ao dar erro no cadastro, reabre o modal de Adicionar Conteúdo-->
+<script th:if="${abrirModalConteudo}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalElement = document.getElementById('adicionarConteudoModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        function ligarContador(textarea, contador) {
+            if (!textarea || !contador) return;
+
+            function atualizar() {
+                contador.textContent = textarea.value.length;
+            }
+
+            textarea.addEventListener('input', atualizar);
+            atualizar();
+        }
+
+        ligarContador(
+            document.getElementById('descricao'),
+            document.getElementById('contadorDescricaoAdicionar')
+        );
+
+        document.querySelectorAll('textarea[name="descricao"]').forEach(function (textarea) {
+            const modal = textarea.closest('.modal');
+            if (!modal) return;
+            const contador = modal.querySelector('[id^="contadorDescricaoEditar-"]');
+            ligarContador(textarea, contador);
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const selectTipo = document.getElementById('tipoConteudo');
+        const campoLink = document.getElementById('campoLink');
+        const campoYoutube = document.getElementById('campoYoutube');
+        const campoGoogleBooks = document.getElementById('campoGoogleBooks');
+        const campoArquivo = document.getElementById('campoArquivo');
+        const campoDuracao = document.getElementById('campoDuracao');
+
+        function atualizarCamposVisiveis() {
+            if (!selectTipo) return;
+
+            const tipo = selectTipo.value;
+
+            campoLink.style.display = (tipo === 'LINK') ? '' : 'none';
+            campoYoutube.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+            campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
+            campoArquivo.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
+            campoDuracao.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+        }
+
+        if (selectTipo) {
+            selectTipo.value = 'LINK';
+            selectTipo.addEventListener('change', atualizarCamposVisiveis);
+            atualizarCamposVisiveis();
+        }
+
+        // Busca de vídeos do YouTube
+        const btnBuscarYoutube = document.getElementById('btnBuscarYoutube');
+        const inputBuscaYoutube = document.getElementById('buscaYoutube');
+        const resultadosYoutube = document.getElementById('resultadosYoutube');
+        const inputUrl = document.getElementById('url');
+        const inputTitulo = document.getElementById('titulo');
+        const inputDuracao = document.getElementById('duracaoEstimada');
+
+        function buscarVideos() {
+            const termo = inputBuscaYoutube.value.trim();
+            if (!termo) return;
+
+            resultadosYoutube.innerHTML = '<p class="form-text">Buscando...</p>';
+
+            fetch('/youtube/buscar?q=' + encodeURIComponent(termo))
+                .then(function (resposta) {
+                    if (!resposta.ok) throw new Error('Falha na busca');
+                    return resposta.json();
+                })
+                .then(function (videos) {
+                    resultadosYoutube.innerHTML = '';
+
+                    if (videos.length === 0) {
+                        resultadosYoutube.innerHTML = '<p class="form-text">Nenhum vídeo encontrado.</p>';
+                        return;
+                    }
+
+                    videos.forEach(function (video) {
+                        const item = document.createElement('div');
+                        item.className = 'resultado-youtube-item';
+                        item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
+
+                        item.innerHTML =
+                            '<img src="' + video.thumbnailUrl + '" style="width:80px; border-radius:4px;">' +
+                            '<div>' +
+                            '<div style="font-weight:600; font-size:14px;">' + video.titulo + '</div>' +
+                            '<div style="font-size:12px; color:#666;">' + video.canal + ' · ' + video.duracao + '</div>' +
+                            '</div>';
+
+                        item.addEventListener('click', function () {
+                            inputUrl.value = 'https://www.youtube.com/watch?v=' + video.videoId;
+                            if (inputTitulo && !inputTitulo.value.trim()) {
+                                inputTitulo.value = video.titulo;
+                            }
+                            if (inputDuracao) {
+                                inputDuracao.value = video.duracao;
+                            }
+                            resultadosYoutube.innerHTML = '<p class="form-text">Selecionado: ' + video.titulo + '</p>';
+                        });
+
+                        resultadosYoutube.appendChild(item);
+                    });
+                })
+                .catch(function () {
+                    resultadosYoutube.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                });
+        }
+
+        if (btnBuscarYoutube) {
+            btnBuscarYoutube.addEventListener('click', buscarVideos);
+        }
+
+        if (inputBuscaYoutube) {
+            inputBuscaYoutube.addEventListener('keydown', function (evento) {
+                if (evento.key === 'Enter') {
+                    evento.preventDefault();
+                    buscarVideos();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('.tipo-conteudo-editar').forEach(function (selectTipo) {
+            const modalBody = selectTipo.closest('.modal-body');
+            if (!modalBody) return;
+
+            const campoLinkEditar = modalBody.querySelector('.campo-link-editar');
+            const campoYoutubeEditar = modalBody.querySelector('.campo-youtube-editar');
+            const campoGoogleBooks = modalBody.querySelector('.campo-google-books-editar');
+            const campoDuracaoEditar = modalBody.querySelector('.campo-duracao-editar');
+            const campoArquivoEditar = modalBody.querySelector('.campo-arquivo-editar');
+            const inputUrlEditar = campoLinkEditar.querySelector('input[name="url"]');
+            const inputDuracaoEditar = modalBody.querySelector('input[name="duracaoEstimada"]');
+
+            function atualizarCampos() {
+                const tipo = selectTipo.value;
+                campoLinkEditar.style.display = (tipo === 'LINK') ? '' : 'none';
+                campoYoutubeEditar.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+                campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
+                campoDuracaoEditar.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+                campoArquivoEditar.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
+            }
+
+            selectTipo.value = 'LINK';
+            selectTipo.addEventListener('change', atualizarCampos);
+            atualizarCampos();
+
+            // Busca de vídeos do YouTube (Editar)
+            const inputBuscaYoutubeEditar = campoYoutubeEditar.querySelector('.busca-youtube-editar');
+            const btnBuscarYoutubeEditar = campoYoutubeEditar.querySelector('.btn-buscar-youtube-editar');
+            const resultadosYoutubeEditar = campoYoutubeEditar.querySelector('.resultados-youtube-editar');
+
+            function buscarVideosEditar() {
+                const termo = inputBuscaYoutubeEditar.value.trim();
+                if (!termo) return;
+
+                resultadosYoutubeEditar.innerHTML = '<p class="form-text">Buscando...</p>';
+
+                fetch('/youtube/buscar?q=' + encodeURIComponent(termo))
+                    .then(function (resposta) {
+                        if (!resposta.ok) throw new Error('Falha na busca');
+                        return resposta.json();
+                    })
+                    .then(function (videos) {
+                        resultadosYoutubeEditar.innerHTML = '';
+
+                        if (videos.length === 0) {
+                            resultadosYoutubeEditar.innerHTML = '<p class="form-text">Nenhum vídeo encontrado.</p>';
+                            return;
+                        }
+
+                        videos.forEach(function (video) {
+                            const item = document.createElement('div');
+                            item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
+
+                            item.innerHTML =
+                                '<img src="' + video.thumbnailUrl + '" style="width:80px; border-radius:4px;">' +
+                                '<div>' +
+                                '<div style="font-weight:600; font-size:14px;">' + video.titulo + '</div>' +
+                                '<div style="font-size:12px; color:#666;">' + video.canal + ' · ' + video.duracao + '</div>' +
+                                '</div>';
+
+                            item.addEventListener('click', function () {
+                                inputUrlEditar.value = 'https://www.youtube.com/watch?v=' + video.videoId;
+                                if (inputDuracaoEditar) inputDuracaoEditar.value = video.duracao;
+                                resultadosYoutubeEditar.innerHTML = '<p class="form-text">Selecionado: ' + video.titulo + '</p>';
+                            });
+
+                            resultadosYoutubeEditar.appendChild(item);
+                        });
+                    })
+                    .catch(function () {
+                        resultadosYoutubeEditar.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                    });
+            }
+
+            if (btnBuscarYoutubeEditar) btnBuscarYoutubeEditar.addEventListener('click', buscarVideosEditar);
+            if (inputBuscaYoutubeEditar) {
+                inputBuscaYoutubeEditar.addEventListener('keydown', function (evento) {
+                    if (evento.key === 'Enter') {
+                        evento.preventDefault();
+                        buscarVideosEditar();
+                    }
+                });
+            }
+
+            // Busca de livros do Google Books (Editar)
+            const inputBuscaBooksEditar = campoGoogleBooks.querySelector('.busca-google-books-editar');
+            const btnBuscarBooksEditar = campoGoogleBooks.querySelector('.btn-buscar-google-books-editar');
+            const resultadosBooksEditar = campoGoogleBooks.querySelector('.resultados-google-books-editar');
+
+            function buscarLivrosEditar() {
+                const termo = inputBuscaBooksEditar.value.trim();
+                if (!termo) return;
+
+                resultadosBooksEditar.innerHTML = '<p class="form-text">Buscando...</p>';
+
+                fetch('/googlebooks/buscar?q=' + encodeURIComponent(termo))
+                    .then(function (resposta) {
+                        if (!resposta.ok) throw new Error('Falha na busca');
+                        return resposta.json();
+                    })
+                    .then(function (livros) {
+                        resultadosBooksEditar.innerHTML = '';
+
+                        if (livros.length === 0) {
+                            resultadosBooksEditar.innerHTML = '<p class="form-text">Nenhum livro encontrado.</p>';
+                            return;
+                        }
+
+                        livros.forEach(function (livro) {
+                            const item = document.createElement('div');
+                            item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
+
+                            const capa = livro.thumbnailUrl
+                                ? '<img src="' + livro.thumbnailUrl + '" style="width:50px; border-radius:4px;">'
+                                : '<div style="width:50px; height:70px; background:#eee; border-radius:4px;"></div>';
+
+                            item.innerHTML =
+                                capa +
+                                '<div>' +
+                                '<div style="font-weight:600; font-size:14px;">' + livro.titulo + '</div>' +
+                                '<div style="font-size:12px; color:#666;">' + livro.autores + ' · ' + livro.anoPublicacao + '</div>' +
+                                '</div>';
+
+                            item.addEventListener('click', function () {
+                                inputUrlEditar.value = livro.linkGoogleBooks;
+                                resultadosBooksEditar.innerHTML = '<p class="form-text">Selecionado: ' + livro.titulo + '</p>';
+                            });
+
+                            resultadosBooksEditar.appendChild(item);
+                        });
+                    })
+                    .catch(function () {
+                        resultadosBooksEditar.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                    });
+            }
+
+            if (btnBuscarBooksEditar) btnBuscarBooksEditar.addEventListener('click', buscarLivrosEditar);
+            if (inputBuscaBooksEditar) {
+                inputBuscaBooksEditar.addEventListener('keydown', function (evento) {
+                    if (evento.key === 'Enter') {
+                        evento.preventDefault();
+                        buscarLivrosEditar();
+                    }
+                });
+            }
+        });
+
+        // Busca de livros do Google Books (modal Adicionar Conteúdo)
+        const btnBuscarBooks = document.getElementById('btnBuscarGoogleBooks');
+        const inputBuscaBooks = document.getElementById('buscaGoogleBooks');
+        const resultadosBooks = document.getElementById('resultadosGoogleBooks');
+        const inputUrlAdicionar = document.getElementById('url');
+        const inputTituloAdicionar = document.getElementById('titulo');
+
+        function buscarLivros() {
+            const termo = inputBuscaBooks.value.trim();
+            if (!termo) return;
+
+            resultadosBooks.innerHTML = '<p class="form-text">Buscando...</p>';
+
+            fetch('/googlebooks/buscar?q=' + encodeURIComponent(termo))
+                .then(function (resposta) {
+                    if (!resposta.ok) throw new Error('Falha na busca');
+                    return resposta.json();
+                })
+                .then(function (livros) {
+                    resultadosBooks.innerHTML = '';
+
+                    if (livros.length === 0) {
+                        resultadosBooks.innerHTML = '<p class="form-text">Nenhum livro encontrado.</p>';
+                        return;
+                    }
+
+                    livros.forEach(function (livro) {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
+
+                        const capa = livro.thumbnailUrl
+                            ? '<img src="' + livro.thumbnailUrl + '" style="width:50px; border-radius:4px;">'
+                            : '<div style="width:50px; height:70px; background:#eee; border-radius:4px;"></div>';
+
+                        item.innerHTML =
+                            capa +
+                            '<div>' +
+                            '<div style="font-weight:600; font-size:14px;">' + livro.titulo + '</div>' +
+                            '<div style="font-size:12px; color:#666;">' + livro.autores + ' · ' + livro.anoPublicacao + '</div>' +
+                            '</div>';
+
+                        item.addEventListener('click', function () {
+                            inputUrlAdicionar.value = livro.linkGoogleBooks;
+                            if (inputTituloAdicionar && !inputTituloAdicionar.value.trim()) {
+                                inputTituloAdicionar.value = livro.titulo;
+                            }
+                            resultadosBooks.innerHTML = '<p class="form-text">Selecionado: ' + livro.titulo + '</p>';
+                        });
+
+                        resultadosBooks.appendChild(item);
+                    });
+                })
+                .catch(function () {
+                    resultadosBooks.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                });
+        }
+
+        if (btnBuscarBooks) {
+            btnBuscarBooks.addEventListener('click', buscarLivros);
+        }
+
+        if (inputBuscaBooks) {
+            inputBuscaBooks.addEventListener('keydown', function (evento) {
+                if (evento.key === 'Enter') {
+                    evento.preventDefault();
+                    buscarLivros();
+                }
+            });
         }
     });
 </script>

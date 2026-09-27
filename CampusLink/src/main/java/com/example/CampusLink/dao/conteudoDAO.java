@@ -393,21 +393,28 @@ public class conteudoDAO {
     public void atualizar(ConteudoDTO conteudo) throws SQLException {
 
         String sql = """
+        
                 UPDATE public."CONTEUDOS"
-                SET "titulo" = ?,
-                    "url" = ?,
-                    "duracao_estimada" = ?,
-                    "tipo" = ?
-                WHERE "id" = ?
-                """;
-
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        SET
+            "titulo" = ?,
+            "descricao" = ?,
+            "url" = ?,
+            "duracao_estimada" = ?,
+            "tipo" = ?
+        WHERE "id" = ?
+        """;
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
 
             stmt.setString(1, conteudo.getTitulo());
-            stmt.setString(2, conteudo.getUrl());
-            stmt.setString(3, conteudo.getDuracaoEstimada());
-            stmt.setString(4, conteudo.getTipo());
-            stmt.setLong(5, conteudo.getId());
+            String descricao = conteudo.getDescricao();
+            stmt.setString(2, descricao == null ? "" : descricao);
+            stmt.setString(3, conteudo.getUrl());
+            stmt.setString(4, conteudo.getDuracaoEstimada());
+            stmt.setString(5, conteudo.getTipo());
+            stmt.setLong(6, conteudo.getId());
 
             stmt.executeUpdate();
         }
