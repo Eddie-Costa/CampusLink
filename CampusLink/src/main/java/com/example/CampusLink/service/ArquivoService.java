@@ -77,14 +77,6 @@ public class ArquivoService {
             }
             throw e;
         }
-        String storagePath;
-        try {
-            storagePath = storageService.upload(arquivo);
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
-            throw new IllegalArgumentException(
-                    "Não foi possível enviar o arquivo. Verifique o tamanho e tente novamente."
-            );
-        }
 
         ArquivoDTO arquivoDTO =
                 new ArquivoDTO();

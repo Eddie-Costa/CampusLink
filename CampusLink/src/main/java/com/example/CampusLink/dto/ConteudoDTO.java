@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.CampusLink.validation.UrlValida;
 
 
