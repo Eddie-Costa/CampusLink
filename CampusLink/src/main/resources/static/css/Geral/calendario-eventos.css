@@ -43,7 +43,7 @@ body {
     min-height: 100vh;
     margin: 0;
     overflow: hidden;
-    border: 2px solid var(--azul-borda);
+    border: none;
     background: transparent;
 }
 
@@ -76,9 +76,7 @@ body {
     font-weight: bold;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     animation: aparecer 0.4s ease;
-    transition:
-            opacity 0.4s ease,
-            transform 0.4s ease;
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .popup-sucesso.ocultar {
@@ -155,7 +153,7 @@ body {
     color: var(--azul-texto);
 }
 
-/* Área que mantém o calendário e o resumo lado a lado */
+/* coloca o calendario e o resumo lado a lado */
 .calendar-area {
     display: flex;
     align-items: flex-start;
@@ -167,11 +165,11 @@ body {
 
 .calendar-area .calendar {
     flex: 1 1 920px;
+    min-width: 0;
     width: auto;
     margin: 0;
 }
 
-/* Resumo das prioridades exibido ao lado do calendário */
 .prioridades-resumo {
     flex: 0 0 240px;
     padding: 18px;
@@ -254,7 +252,6 @@ body {
     color: var(--azul-escuro);
 }
 
-/* Legenda posicionada abaixo do resumo de prioridades */
 .resumo-legenda {
     display: flex;
     flex-direction: column;
@@ -296,6 +293,24 @@ body {
     box-shadow: 0 5px 12px rgba(17, 24, 63, 0.08);
 }
 
+/* centraliza os nomes dos dias da semana */
+.calendar-weekday {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: 10px 2px;
+    background: var(--fundo-claro);
+    color: var(--azul-texto);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    white-space: nowrap;
+}
+
 .day-cell {
     position: relative;
     min-height: 92px;
@@ -307,6 +322,10 @@ body {
 .day-cell.adjacent-month {
     background: var(--cinza-fora-mes);
     color: var(--cinza-texto);
+}
+
+.day-cell.calendar-empty {
+    background: var(--fundo-claro);
 }
 
 .day-cell.tem-evento,
@@ -417,13 +436,11 @@ body {
     box-shadow: 0 0 8px rgba(32, 185, 107, 0.55);
 }
 
-.day-cell.tem-disponibilidade.tem-evento
-.disponibilidade-marcador {
+.day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
     bottom: 28px;
 }
 
-.day-cell.tem-disponibilidade.tem-evento
-.evento-marcador {
+.day-cell.tem-disponibilidade.tem-evento .evento-marcador {
     bottom: 7px;
 }
 
@@ -508,7 +525,6 @@ body {
     font-size: 20px;
 }
 
-/* Ações do cabeçalho dos cards */
 .eventos-acoes {
     display: flex;
     align-items: center;
@@ -517,7 +533,6 @@ body {
     flex-wrap: wrap;
 }
 
-/* Botão para ocultar e mostrar os cards comuns */
 .botao-alternar-cards {
     padding: 8px 14px;
     border: 1px solid var(--azul-escuro);
@@ -527,10 +542,7 @@ body {
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition:
-            background 0.2s ease,
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .botao-alternar-cards:hover {
@@ -544,7 +556,6 @@ body {
     outline-offset: 2px;
 }
 
-/* Área do último evento cadastrado */
 .ultimo-evento-destaque {
     margin-bottom: 18px;
     padding: 14px;
@@ -575,16 +586,11 @@ body {
     margin-bottom: 0;
 }
 
-/* O selo "Novo" agora é um elemento real ao lado do nome do evento. */
 .evento-item-fixo::before {
     content: none;
 }
 
-/*
- * Quando o usuário oculta os cards,
- * somente a lista comum desaparece.
- * O último evento continua visível acima.
- */
+/* mantem o ultimo evento visivel ao ocultar os outros */
 .eventos-lista.cards-ocultos {
     display: none;
 }
@@ -640,10 +646,7 @@ body {
     border-radius: 9px;
     background: rgba(255, 255, 255, 0.82);
     box-shadow: 0 3px 8px rgba(17, 24, 63, 0.12);
-    transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease,
-            border-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .evento-item:hover {
@@ -653,45 +656,33 @@ body {
 .evento-item[data-prioridade="ALTA"] {
     border-color: rgba(229, 57, 53, 0.68);
     border-left-color: var(--vermelho-evento);
-    box-shadow:
-            0 0 9px rgba(229, 57, 53, 0.72),
-            0 4px 12px rgba(17, 24, 63, 0.14);
+    box-shadow: 0 0 9px rgba(229, 57, 53, 0.72), 0 4px 12px rgba(17, 24, 63, 0.14);
 }
 
 .evento-item[data-prioridade="ALTA"]:hover {
-    box-shadow:
-            0 0 14px rgba(229, 57, 53, 0.88),
-            0 5px 15px rgba(17, 24, 63, 0.18);
+    box-shadow: 0 0 14px rgba(229, 57, 53, 0.88), 0 5px 15px rgba(17, 24, 63, 0.18);
 }
 
 .evento-item[data-prioridade="MEDIA"],
 .evento-item:not([data-prioridade]) {
     border-color: rgba(242, 201, 76, 0.78);
     border-left-color: var(--amarelo-evento);
-    box-shadow:
-            0 0 9px rgba(242, 201, 76, 0.72),
-            0 4px 12px rgba(17, 24, 63, 0.14);
+    box-shadow: 0 0 9px rgba(242, 201, 76, 0.72), 0 4px 12px rgba(17, 24, 63, 0.14);
 }
 
 .evento-item[data-prioridade="MEDIA"]:hover,
 .evento-item:not([data-prioridade]):hover {
-    box-shadow:
-            0 0 14px rgba(242, 201, 76, 0.9),
-            0 5px 15px rgba(17, 24, 63, 0.18);
+    box-shadow: 0 0 14px rgba(242, 201, 76, 0.9), 0 5px 15px rgba(17, 24, 63, 0.18);
 }
 
 .evento-item[data-prioridade="BAIXA"] {
     border-color: rgba(45, 156, 229, 0.68);
     border-left-color: var(--azul-prioridade);
-    box-shadow:
-            0 0 9px rgba(45, 156, 229, 0.68),
-            0 4px 12px rgba(17, 24, 63, 0.14);
+    box-shadow: 0 0 9px rgba(45, 156, 229, 0.68), 0 4px 12px rgba(17, 24, 63, 0.14);
 }
 
 .evento-item[data-prioridade="BAIXA"]:hover {
-    box-shadow:
-            0 0 14px rgba(45, 156, 229, 0.86),
-            0 5px 15px rgba(17, 24, 63, 0.18);
+    box-shadow: 0 0 14px rgba(45, 156, 229, 0.86), 0 5px 15px rgba(17, 24, 63, 0.18);
 }
 
 .evento-cabecalho {
@@ -764,11 +755,7 @@ body {
     background: rgba(229, 57, 53, 0.09);
     color: #c92f2b;
     cursor: pointer;
-    transition:
-            background 0.2s ease,
-            color 0.2s ease,
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .botao-excluir-evento svg {
@@ -859,7 +846,6 @@ body {
     color: var(--azul-texto);
 }
 
-/* Informações de conteúdo exibidas dentro dos cards */
 .evento-conteudos {
     margin-top: 8px;
     color: #303b5f;
@@ -894,7 +880,7 @@ body {
     margin: 3px 0;
 }
 
-/* Em telas menores, o resumo desce para baixo do calendário */
+/* coloca o resumo abaixo do calendario em telas menores */
 @media (max-width: 1050px) {
     .calendar-area {
         flex-direction: column;
@@ -961,6 +947,12 @@ body {
         border-radius: 16px;
     }
 
+    .calendar-weekday {
+        min-height: 38px;
+        padding: 9px 1px;
+        font-size: 11px;
+    }
+
     .day-cell {
         min-height: 70px;
         padding: 7px 5px;
@@ -993,13 +985,11 @@ body {
         bottom: 4px;
     }
 
-    .day-cell.tem-disponibilidade.tem-evento
-    .disponibilidade-marcador {
+    .day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
         bottom: 23px;
     }
 
-    .day-cell.tem-disponibilidade.tem-evento
-    .evento-marcador {
+    .day-cell.tem-disponibilidade.tem-evento .evento-marcador {
         bottom: 4px;
     }
 

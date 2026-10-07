@@ -23,9 +23,7 @@
 
             <h2>Eventos cadastrados</h2>
 
-            <article class="evento-item evento-item-fundo" th:each="evento : ${eventos}"
-                     th:attr="data-prioridade=${evento.prioridade}">
-
+            <article class="evento-item evento-item-fundo" th:each="evento : ${eventos}" th:attr="data-prioridade=${evento.prioridade}">
                 <div class="evento-cabecalho">
                     <div class="evento-identificacao">
                         <h3 th:text="${evento.nome}">Nome do evento</h3>
@@ -57,25 +55,25 @@
                         </span>
                     </p>
                 </div>
-
             </article>
         </section>
 
         <div class="cadastro-conteudo">
-
             <section class="event-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-cadastro">
 
-                <h1 id="titulo-cadastro"
+                <a class="btn-close position-absolute top-0 end-0 m-3"
+                   href="/eventos" th:href="@{/eventos}" data-bs-theme="dark"
+                   aria-label="Fechar cadastro e voltar ao calendário" title="Fechar">
+                </a>
+
+                <h1 id="titulo-cadastro" class="px-3"
                     th:text="${session.tipoUsuario == 'aluno' ? 'Cadastrar Disponibilidade' : 'Cadastrar Evento'}">
                     Cadastrar Evento
                 </h1>
 
-                <!-- Formulario do professor -->
-                <form class="event-form"
-                      th:if="${session.tipoUsuario == 'professor'}"
-                      action="/eventos/cadastrar"
-                      th:action="@{/eventos/cadastrar}"
-                      method="post">
+                <!-- formulario do professor -->
+                <form class="event-form" th:if="${session.tipoUsuario == 'professor'}"
+                      action="/eventos/cadastrar" th:action="@{/eventos/cadastrar}" method="post">
 
                     <label for="nomeEvento">Nome do evento</label>
                     <input type="text" id="nomeEvento" name="nome" placeholder="Digite o nome do evento" required>
@@ -90,8 +88,7 @@
                     </select>
 
                     <label for="descricaoEvento">Descrição</label>
-                    <textarea id="descricaoEvento" name="descricao" rows="3"
-                              placeholder="Descreva o evento (opcional)">
+                    <textarea id="descricaoEvento" name="descricao" rows="3" placeholder="Descreva o evento (opcional)">
                     </textarea>
 
                     <label for="inicioEvento">Início</label>
@@ -109,30 +106,22 @@
                     </select>
 
                     <label for="duracaoEvento">Duração estimada (minutos)</label>
-                    <input type="number" id="duracaoEvento" name="duracaoEstimadaMinutos"
-                           min="1" placeholder="Ex.: 120" required>
+                    <input type="number" id="duracaoEvento" name="duracaoEstimadaMinutos" min="1" placeholder="Ex.: 120" required>
 
                     <label for="turmaEvento">Turma</label>
 
                     <div class="bg-white rounded-1 p-1">
-
-                        <input type="search" id="buscarTurma"
-                               class="border-bottom rounded-0"
-                               placeholder="Pesquisar turma..."
-                               aria-label="Pesquisar turma"
-                               aria-controls="turmaEvento"
-                               autocomplete="off">
+                        <input type="search" id="buscarTurma" class="border-bottom rounded-0"
+                               placeholder="Pesquisar turma..." aria-label="Pesquisar turma"
+                               aria-controls="turmaEvento" autocomplete="off">
 
                         <select id="turmaEvento" name="turmaId" class="rounded-0" required>
                             <option value="">Selecione a turma</option>
 
-                            <option th:each="turma : ${turmasProfessor}"
-                                    th:value="${turma.id}"
-                                    th:text="${turma.nomeTurma}">
+                            <option th:each="turma : ${turmasProfessor}" th:value="${turma.id}" th:text="${turma.nomeTurma}">
                                 Nome da turma
                             </option>
                         </select>
-
                     </div>
 
                     <small id="mensagemBuscaTurma" class="select-help" role="status" hidden>
@@ -147,24 +136,15 @@
                     <label for="conteudosRelacionados">Conteúdos relacionados</label>
 
                     <div class="bg-white rounded-1 p-1">
+                        <input type="search" id="buscarConteudo" class="border-bottom rounded-0"
+                               placeholder="Pesquisar conteúdo..." aria-label="Pesquisar conteúdo"
+                               aria-controls="conteudosRelacionados" autocomplete="off" disabled>
 
-                        <input type="search" id="buscarConteudo"
-                               class="border-bottom rounded-0"
-                               placeholder="Pesquisar conteúdo..."
-                               aria-label="Pesquisar conteúdo"
-                               aria-controls="conteudosRelacionados"
-                               autocomplete="off"
-                               disabled>
-
-                        <select id="conteudosRelacionados" name="conteudoIds"
-                                class="rounded-0" multiple size="3" disabled>
-
+                        <select id="conteudosRelacionados" name="conteudoIds" class="rounded-0" multiple size="3" disabled>
                             <option value="" disabled>
                                 Selecione uma turma primeiro
                             </option>
-
                         </select>
-
                     </div>
 
                     <small id="mensagemBuscaConteudo" class="select-help" role="status" hidden>
@@ -180,15 +160,11 @@
                     <button class="register-button" type="submit">
                         Cadastrar
                     </button>
-
                 </form>
 
-                <!-- Formulario do aluno -->
-                <form class="event-form disponibilidade-form"
-                      th:if="${session.tipoUsuario == 'aluno'}"
-                      action="/eventos/cadastrar-disponibilidade"
-                      th:action="@{/eventos/cadastrar-disponibilidade}"
-                      method="post">
+                <!-- formulario do aluno -->
+                <form class="event-form disponibilidade-form" th:if="${session.tipoUsuario == 'aluno'}"
+                      action="/eventos/cadastrar-disponibilidade" th:action="@{/eventos/cadastrar-disponibilidade}" method="post">
 
                     <label for="dataDisponibilidade">Data</label>
                     <input type="date" id="dataDisponibilidade" name="data" required>
@@ -204,66 +180,41 @@
                     <button class="register-button" type="submit">
                         Cadastrar
                     </button>
-
                 </form>
 
-                <a class="back-link"
-                   href="/eventos"
-                   th:href="@{/eventos}"
-                   th:text="${session.tipoUsuario == 'aluno' ? 'Voltar para o calendário' : 'Voltar para eventos'}">
-                    Voltar para eventos
-                </a>
-
                 <p class="form-error" th:if="${erro}" th:text="${erro}"></p>
-
             </section>
 
-            <div class="divisor-cadastro"
-                 aria-hidden="true"
-                 th:if="${session.tipoUsuario == 'professor'}">
-            </div>
+            <div class="divisor-cadastro" aria-hidden="true" th:if="${session.tipoUsuario == 'professor'}"></div>
 
-            <section class="eventos-do-dia"
-                     th:if="${session.tipoUsuario == 'professor'}"
-                     aria-labelledby="titulo-eventos-dia">
-
+            <section class="eventos-do-dia" th:if="${session.tipoUsuario == 'professor'}" aria-labelledby="titulo-eventos-dia">
                 <div class="eventos-dia-cabecalho">
-
                     <div>
                         <p class="eventos-dia-legenda">Agenda</p>
                         <h2 id="titulo-eventos-dia">Eventos do dia</h2>
                     </div>
 
                     <time id="dataEventosDia"></time>
-
                 </div>
 
                 <div id="gradeHorarios" class="grade-horarios" aria-live="polite"></div>
-
             </section>
 
             <div id="eventosDados" hidden>
-
-                <div class="evento-dado"
-                     th:each="evento : ${eventos}"
+                <div class="evento-dado" th:each="evento : ${eventos}"
                      th:data-nome="${evento.nome}"
                      th:data-inicio="${#temporals.format(evento.inicio, 'yyyy-MM-dd HH:mm')}"
                      th:data-fim="${#temporals.format(evento.fim, 'yyyy-MM-dd HH:mm')}"
                      th:data-prioridade="${evento.prioridade}">
                 </div>
-
             </div>
 
             <div id="disponibilidadesDados" hidden>
-
-                <div class="disponibilidade-dado"
-                     th:each="disponibilidade : ${disponibilidades}"
+                <div class="disponibilidade-dado" th:each="disponibilidade : ${disponibilidades}"
                      th:data-data="${#temporals.format(disponibilidade.data, 'yyyy-MM-dd')}"
                      th:data-horas="${disponibilidade.horasDisponiveis}">
                 </div>
-
             </div>
-
         </div>
     </main>
 </div>
@@ -271,7 +222,6 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 <script th:src="@{/js/Geral/cadastrar-eventos.js}"></script>
 
 </body>

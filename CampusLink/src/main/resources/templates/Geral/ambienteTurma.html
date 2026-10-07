@@ -260,36 +260,42 @@
                            th:href="@{/arquivos/{id}/download(id=${arquivosPorConteudo.get(conteudo.id).id})}"
                            class="conteudo-link">Baixar arquivo</a>
 
-                    <span th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'suspenso_denuncia'}"
-                          class="status-conteudo status-suspenso">
+                        <span th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'suspenso_denuncia'}"
+                              class="status-conteudo status-suspenso">
                         Suspenso para análise
                     </span>
 
-                    <button th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo'}"
-                            type="button"
-                            class="btn btn-outline-danger btn-sm"
-                            data-bs-toggle="modal"
-                            th:attr="data-bs-target='#denunciarConteudoModal-' + ${conteudo.id}">
-                        Denunciar conteúdo
-                    </button>
+                        <button th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo'}"
+                                type="button"
+                                class="btn btn-link text-danger p-1 d-inline-flex align-items-center justify-content-center"
+                                data-bs-toggle="modal"
+                                title="Denunciar conteúdo"
+                                aria-label="Denunciar conteúdo"
+                                th:attr="data-bs-target='#denunciarConteudoModal-' + ${conteudo.id}">
 
-                    <form th:if="${session.tipoUsuario == 'professor'}"
-                          th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
-                          method="post"
-                          class="conteudo-excluir-form">
-
-                        <input type="hidden" th:if="${_csrf != null}"
-                               th:name="${_csrf.parameterName}"
-                               th:value="${_csrf.token}">
-
-                        <button type="submit" class="conteudo-excluir" aria-label="Excluir conteúdo">
-                            Excluir
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 fill="currentColor" aria-hidden="true" focusable="false">
+                                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2V7Zm0 9h2v2h-2v-2Z"></path>
+                            </svg>
                         </button>
 
-                    </form>
+                        <form th:if="${session.tipoUsuario == 'professor'}"
+                              th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
+                              method="post"
+                              class="conteudo-excluir-form">
 
+                            <input type="hidden" th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <button type="submit" class="conteudo-excluir" aria-label="Excluir conteúdo">
+                                Excluir
+                            </button>
+
+                        </form>
+
+                    </div>
                 </div>
-            </div>
 
                 <p class="conteudo-descricao"
                    th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
@@ -412,6 +418,7 @@
                         </div>
                         <div class="resultados-google-books-editar"></div>
                     </div>
+
                     <label class="form-label">Descrição</label>
                     <textarea name="descricao" class="form-control mb-1"
                               rows="3" maxlength="1000"
@@ -500,6 +507,7 @@
 
                     <div class="erro-campo" th:if="${#fields.hasErrors('titulo')}"
                          th:errors="*{titulo}"></div>
+
                     <label for="tipoConteudo" class="form-label">Tipo de conteúdo</label>
                     <select id="tipoConteudo" name="tipoSelecionado" class="form-control mb-3">
                         <option value="LINK">Link</option>
