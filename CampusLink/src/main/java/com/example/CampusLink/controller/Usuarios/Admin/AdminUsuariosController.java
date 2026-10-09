@@ -1,3 +1,4 @@
+
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import org.slf4j.helpers.MessageFormatter;
@@ -33,7 +34,7 @@ public class AdminUsuariosController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminUsuariosController.class);
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+    private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     private final AdminUsuarioDAO adminUsuarioDAO;
     private final usuarioDAO usuarioDAO;
@@ -386,7 +387,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
                     usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "desativarUsuario", null,
-                            MessageFormatter.arrayFormat("erro ao desativar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
+                            "erro ao desativar usuario {}", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }

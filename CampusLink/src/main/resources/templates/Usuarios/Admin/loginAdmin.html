@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,7 +15,7 @@
 <main>
     <h1 class="title">LOGIN ADMINISTRADOR</h1>
 
-    <form th:action="@{/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31}" th:object="${admin}" method="post" class="form-login">
+    <form th:action="@{/admin/login}" th:object="${admin}" method="post" class="form-login">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
         <label class="label_info">E-mail</label>
