@@ -1,3 +1,4 @@
+
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.conteudoDAO;
@@ -176,6 +177,16 @@ public class ConteudoService {
 
     public Map<String, Integer> contarPorProfessor(Long idProfessor) throws SQLException {
         return conteudoDAO.contarPorProfessor(idProfessor);
+    }
+
+    // lista dez conteudos por pagina para o administrador
+    public List<ConteudoDTO> listarTodosParaAdminPaginado(int pagina, String busca, String status) throws SQLException {
+        return conteudoDAO.listarTodosParaAdminPaginado(pagina, busca, status);
+    }
+
+    // conta os conteudos encontrados para a paginacao do administrador
+    public int contarFiltradosParaAdmin(String busca, String status) throws SQLException {
+        return conteudoDAO.contarFiltradosParaAdmin(busca, status);
     }
 
     public List<ConteudoDTO> listarParaAnaliseAdmin() {

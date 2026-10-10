@@ -1,3 +1,4 @@
+
 package com.example.CampusLink.dao;
 
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -29,6 +30,20 @@ public class conteudoDAO {
             AND (
                 POSITION(LOWER(?) IN LOWER(COALESCE(c."titulo", ''))) > 0
                 OR POSITION(LOWER(?) IN LOWER(COALESCE(c."status", ''))) > 0
+                OR EXISTS (
+                    SELECT 1 FROM public."TURMAS" t
+                    WHERE t."id" = ANY(c."id_turma")
+                    AND POSITION(LOWER(?) IN LOWER(COALESCE(t."nome_turma", ''))) > 0
+                )
+            )
+            """;
+
+    private static final String SQL_FILTROS_ADMIN = """
+            WHERE (? = 'todos' OR c."status" = ?)
+            AND (
+                POSITION(LOWER(?) IN LOWER(COALESCE(c."titulo", ''))) > 0
+                OR POSITION(LOWER(?) IN LOWER(COALESCE(c."tipo", ''))) > 0
+                OR POSITION(LOWER(?) IN LOWER(COALESCE(u."nome", ''))) > 0
                 OR EXISTS (
                     SELECT 1 FROM public."TURMAS" t
                     WHERE t."id" = ANY(c."id_turma")
@@ -261,6 +276,84 @@ public class conteudoDAO {
         stmt.setLong(1, idProfessor);
         stmt.setString(2, statusTexto);
         stmt.setString(3, statusTexto);
+        stmt.setString(4, buscaTexto);
+        stmt.setString(5, buscaTexto);
+        stmt.setString(6, buscaTexto);
+    }
+
+    // lista dez conteudos por pagina para o administrador
+    public List<ConteudoDTO> listarTodosParaAdminPaginado(int pagina, String busca, String status) throws SQLException {
+        List<ConteudoDTO> conteudos = new ArrayList<>();
+        long inicio = Math.max(0L, (long) pagina) * 10;
+
+        String sql = """
+                SELECT c.*,
+                    u."nome" AS nome_professor,
+                    (SELECT MIN(t."id") FROM public."TURMAS" t
+                     WHERE t."id" = ANY(c."id_turma")) AS turma_id,
+                    (SELECT STRING_AGG(t."nome_turma", ', ' ORDER BY t."nome_turma", t."id")
+                     FROM public."TURMAS" t WHERE t."id" = ANY(c."id_turma")) AS nome_turma
+                FROM public."CONTEUDOS" c
+                LEFT JOIN public."PROFESSORES" p ON p."id" = c."id_professor"
+                LEFT JOIN public."USUARIOS" u ON u."id" = p."id_usuario"
+                """ + SQL_FILTROS_ADMIN + """
+                ORDER BY c."created_at" DESC NULLS LAST, c."id" DESC
+                LIMIT 10 OFFSET ?
+                """;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            preencherFiltrosAdmin(stmt, busca, status);
+            stmt.setLong(7, inicio);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Long idTurma = rs.getObject("turma_id", Long.class);
+
+                    ConteudoDTO conteudo = montarConteudo(rs, idTurma);
+                    conteudo.setNomeProfessor(rs.getString("nome_professor"));
+                    conteudo.setNomeTurma(rs.getString("nome_turma"));
+                    conteudos.add(conteudo);
+                }
+            }
+        }
+
+        return conteudos;
+    }
+
+    // conta os conteudos encontrados para montar a paginacao
+    public int contarFiltradosParaAdmin(String busca, String status) throws SQLException {
+        String sql = """
+                SELECT COUNT(*) AS quantidade
+                FROM public."CONTEUDOS" c
+                LEFT JOIN public."PROFESSORES" p ON p."id" = c."id_professor"
+                LEFT JOIN public."USUARIOS" u ON u."id" = p."id_usuario"
+                """ + SQL_FILTROS_ADMIN;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            preencherFiltrosAdmin(stmt, busca, status);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                rs.next();
+                return rs.getInt("quantidade");
+            }
+        }
+    }
+
+    private void preencherFiltrosAdmin(PreparedStatement stmt, String busca, String status) throws SQLException {
+        String buscaTexto = busca == null ? "" : busca.trim();
+        String statusTexto = status == null ? "todos" : status.trim().toLowerCase(Locale.ROOT);
+
+        if (!"ativo".equals(statusTexto) && !"suspenso_denuncia".equals(statusTexto) && !"removido".equals(statusTexto)) {
+            statusTexto = "todos";
+        }
+
+        stmt.setString(1, statusTexto);
+        stmt.setString(2, statusTexto);
+        stmt.setString(3, buscaTexto);
         stmt.setString(4, buscaTexto);
         stmt.setString(5, buscaTexto);
         stmt.setString(6, buscaTexto);
