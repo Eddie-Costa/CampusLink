@@ -10,6 +10,7 @@ import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.exception.SQLErrorHandler;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,8 @@ public class VerificarController {
                     defaultValue = ""
             ) String codigo,
             HttpSession session,
-            Model model
+            Model model,
+            HttpServletResponse response
     ) throws SQLException {
 
         String email = (String) session.getAttribute("email2FA");
@@ -91,6 +93,7 @@ public class VerificarController {
 
             prepararModeloVerificacao(model, false, email);
             model.addAttribute("erro", codigoExpirado ? "o codigo expirou solicite um novo codigo" : "codigo invalido tente novamente");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return "Geral/verificar";
         }
 
