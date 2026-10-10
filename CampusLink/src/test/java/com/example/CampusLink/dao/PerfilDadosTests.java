@@ -20,6 +20,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@org.springframework.test.context.ContextConfiguration(initializers = com.example.CampusLink.support.BancoTesteInitializer.class)
 @SpringBootTest
 class PerfilDadosTests {
     @Autowired DataSource dataSource;
