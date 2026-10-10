@@ -27,27 +27,19 @@
 <main class="turmas-page">
     <div class="turmas-container">
 
-        <input type="text"
+        <div class="busca-turma-container" th:if="${!#lists.isEmpty(turmas)}">
+            <input type="text"
                id="buscaTurma"
                class="busca-turma"
                placeholder="Qual turma está procurando?"
-               th:if="${!#lists.isEmpty(turmas)}">
-
-        <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
-            <p>Você ainda não está em nenhuma turma.</p>
+                   role="combobox"
+                   aria-autocomplete="list"
+                   aria-controls="sugestoesTurma"
+                   aria-expanded="false">
+            <div id="sugestoesTurma" class="sugestoes-turma" role="listbox" hidden></div>
         </div>
 
-        <div class="lista-turmas" id="listaTurmas" th:unless="${#lists.isEmpty(turmas)}">
-            <a class="turma-card" th:each="turma : ${turmas}" th:href="@{/turmas/{id}(id=${turma.id})}">
-                <div class="turma-icon">
-                    <i class="bi bi-person-circle"></i>
-                </div>
-
-                <span class="turma-nome" th:text="${turma.nomeTurma}">Turma #1</span>
-            </a>
-        </div>
-
-        <div th:if="${session.tipoUsuario == 'professor'}">
+        <div class="turmas-acoes" th:if="${session.tipoUsuario == 'professor'}">
             <button type="button" class="acao-turma" data-bs-toggle="modal" data-bs-target="#criarTurmaModal">Criar Turma</button>
 
             <div class="modal fade" id="criarTurmaModal" tabindex="-1">
@@ -80,6 +72,20 @@
                 </div>
             </div>
         </div>
+        <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
+            <p>Você ainda não está em nenhuma turma.</p>
+        </div>
+
+        <div class="lista-turmas" id="listaTurmas" th:unless="${#lists.isEmpty(turmas)}">
+            <a class="turma-card" th:each="turma : ${turmas}" th:href="@{/turmas/{id}(id=${turma.id})}" th:attr="aria-label=${turma.nomeTurma}">
+                <div class="turma-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+
+                <span class="turma-nome" th:text="${turma.nomeTurma}" th:title="${turma.nomeTurma}">Turma #1</span>
+            </a>
+        </div>
+
 
     </div>
 </main>
@@ -87,12 +93,43 @@
 <script>
     const inputBusca = document.getElementById('buscaTurma');
     if (inputBusca) {
+        const sugestoes = document.getElementById('sugestoesTurma');
+        const cartoes = Array.from(document.querySelectorAll('#listaTurmas .turma-card'));
+        const normalizar = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
         inputBusca.addEventListener('input', () => {
-            const termo = inputBusca.value.trim().toLowerCase();
-            document.querySelectorAll('#listaTurmas .turma-card').forEach(card => {
-                const nome = card.querySelector('.turma-nome').textContent.toLowerCase();
-                card.style.display = nome.includes(termo) ? '' : 'none';
+            const termo = normalizar(inputBusca.value.trim());
+            const correspondencias = [];
+
+            cartoes.forEach(card => {
+                const nome = card.querySelector('.turma-nome').textContent.trim();
+                const corresponde = normalizar(nome).includes(termo);
+                card.style.display = corresponde ? '' : 'none';
+                if (termo && corresponde) correspondencias.push({ nome, href: card.href });
             });
+
+            sugestoes.replaceChildren();
+            if (!termo) {
+                sugestoes.hidden = true;
+            } else if (correspondencias.length) {
+                correspondencias.forEach(({ nome, href }) => {
+                    const opcao = document.createElement('a');
+                    opcao.className = 'sugestao-turma';
+                    opcao.href = href;
+                    opcao.setAttribute('role', 'option');
+                    opcao.textContent = nome;
+                    sugestoes.appendChild(opcao);
+                });
+                sugestoes.hidden = false;
+            } else {
+                const vazio = document.createElement('span');
+                vazio.className = 'sugestao-turma-vazia';
+                vazio.textContent = 'Nenhuma turma encontrada';
+                sugestoes.appendChild(vazio);
+                sugestoes.hidden = false;
+            }
+
+            inputBusca.setAttribute('aria-expanded', String(!sugestoes.hidden));
         });
     }
 </script>
