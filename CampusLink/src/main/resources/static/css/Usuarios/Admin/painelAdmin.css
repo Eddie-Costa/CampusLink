@@ -34,17 +34,28 @@ body {
     justify-content: space-between;
     gap: 20px;
     margin-bottom: 28px;
+    padding: 24px;
+    background-color: #fff;
+    border: 1px solid var(--admin-borda);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+}
+
+.admin-topo > div {
+    min-width: 0;
 }
 
 .admin-topo h1 {
     margin: 0 0 8px;
     font-size: 32px;
     font-weight: 700;
+    overflow-wrap: break-word;
 }
 
 .admin-topo p {
     margin: 0;
     color: var(--admin-texto);
+    line-height: 1.5;
 }
 
 .admin-topo .admin-etiqueta {
@@ -61,6 +72,8 @@ body {
 }
 
 .admin-card {
+    display: flex;
+    flex-direction: column;
     padding: 24px;
     background-color: #fff;
     border: 1px solid var(--admin-borda);
@@ -79,14 +92,22 @@ body {
     margin: 0;
     font-size: 23px;
     font-weight: 700;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .admin-descricao {
     margin: 15px 0 20px;
     color: var(--admin-texto);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    line-height: 1.6;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.admin-card > .btn {
+    align-self: flex-start;
+    margin-top: auto;
+    max-width: 100%;
+    white-space: normal;
 }
 
 @media (max-width: 700px) {
@@ -100,6 +121,7 @@ body {
         align-items: flex-start;
     }
 
+    .admin-topo,
     .admin-card {
         padding: 18px;
     }

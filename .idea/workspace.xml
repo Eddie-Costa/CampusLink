@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="" />
+    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminUsuariosController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminUsuariosController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Professor/MeusConteudosController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Professor/MeusConteudosController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/AdminUsuarioDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/AdminUsuarioDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/conteudoDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/conteudoDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dto/Admin/usuarioAdminDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dto/Admin/usuarioAdminDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/service/ConteudoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/service/ConteudoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Admin/painelAdmin.css" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Admin/painelAdmin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Admin/usuariosAdmin.css" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Admin/usuariosAdmin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Usuarios/Admin/usuariosAdmin.html" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Usuarios/Admin/usuariosAdmin.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,6 +41,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;MatheusSanthiago&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Eddie-Costa/CampusLink.git&quot;,
+    &quot;accountId&quot;: &quot;85ae252e-2b69-41a9-9bad-431d63dd3487&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -37,38 +61,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.CampusLinkApplication.executor": "Run",
-    "Application.Unnamed.executor": "Run",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Maven.CampusLink [clean,install,-U].executor": "Run",
-    "Maven.CampusLink [clean,install,-u].executor": "Run",
-    "Maven.CampusLink [clean].executor": "Run",
-    "Maven.CampusLink [spring-boot:run].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "Local/M.Santhiago__Controle__Eventos__ADMIN",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.jshint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.jshint": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.CampusLinkApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Maven.CampusLink [clean,install,-U].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.CampusLink [clean,install,-u].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.CampusLink [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.CampusLink [spring-boot:run].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/ajustes-admin-paginacao&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\CampusLink\src\main\resources\static\css" />
@@ -149,23 +173,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>201</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
           <line>189</line>
           <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>25</line>
-          <properties class="com.example.CampusLink.dao.usuarioDAO">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

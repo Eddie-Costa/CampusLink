@@ -56,132 +56,149 @@
         <section class="filtros-conteudos">
             <div class="campo-busca">
                 <label for="campoBusca" class="form-label">Buscar conteúdo</label>
-                <input type="text" id="campoBusca" class="form-control" placeholder="Digite o nome do conteúdo ou da turma">
+                <input type="text" id="campoBusca" class="form-control" th:value="${busca}" placeholder="Digite o nome do conteúdo ou da turma">
             </div>
 
             <div class="campo-status">
                 <label for="filtroStatus" class="form-label">Status</label>
 
                 <select id="filtroStatus" class="form-select">
-                    <option value="todos">Todos</option>
-                    <option value="ativo">Ativos</option>
-                    <option value="suspenso_denuncia">Suspensos</option>
-                    <option value="removido">Removidos</option>
+                    <option value="todos" th:selected="${statusSelecionado == 'todos'}">Todos</option>
+                    <option value="ativo" th:selected="${statusSelecionado == 'ativo'}">Ativos</option>
+                    <option value="suspenso_denuncia" th:selected="${statusSelecionado == 'suspenso_denuncia'}">Suspensos</option>
+                    <option value="removido" th:selected="${statusSelecionado == 'removido'}">Removidos</option>
                 </select>
             </div>
         </section>
 
-        <section class="lista-conteudos">
-            <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
-                Você ainda não cadastrou nenhum conteúdo
-            </div>
+        <div id="erroCarregamento" class="alert alert-danger d-none" role="alert"></div>
 
-            <div id="semResultadoBusca" class="sem-conteudos d-none">
-                Nenhum conteúdo encontrado
-            </div>
-
-            <article class="conteudo-card" th:each="conteudo : ${conteudos}" th:attr="data-titulo=${conteudo.titulo}, data-turma=${conteudo.nomeTurma}, data-status=${conteudo.status}">
-
-                <div class="conteudo-cabecalho">
-                    <div class="conteudo-titulo">
-                        <h2 th:text="${conteudo.titulo}">Nome do conteúdo</h2>
-                    </div>
-
-                    <div class="conteudo-acoes">
-                        <span class="status-conteudo status-ativo" th:if="${conteudo.status == 'ativo'}">
-                            Ativo
-                        </span>
-
-                        <span class="status-conteudo status-suspenso" th:if="${conteudo.status == 'suspenso_denuncia'}">
-                            Suspenso por denúncia
-                        </span>
-
-                        <span class="status-conteudo status-removido" th:if="${conteudo.status == 'removido'}">
-                            Removido
-                        </span>
-
-                        <form th:if="${conteudo.status == 'suspenso_denuncia' and not conteudo.revisaoSolicitada}"
-                              th:action="@{/meus-conteudos/{idConteudo}/solicitar-revisao(idConteudo=${conteudo.id})}" method="post">
-
-                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                            <button type="submit" class="botao-analise">
-                                Solicitar análise
-                            </button>
-                        </form>
-
-                        <span class="analise-solicitada" th:if="${conteudo.status == 'suspenso_denuncia' and conteudo.revisaoSolicitada}">
-                            Análise solicitada
-                        </span>
-
-                        <form th:if="${conteudo.status != 'removido'}"
-                              th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}" method="post" class="form-remover-conteudo">
-
-                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                            <button type="submit" class="botao-remover" title="Remover conteúdo" aria-label="Remover conteúdo">
-                                🗑
-                            </button>
-                        </form>
-                    </div>
+        <section id="blocoConteudos" th:fragment="blocoConteudos" th:attr="data-proxima-pagina=${proximaPagina}, data-tem-mais=${temMais}, data-total=${totalFiltrados}, data-url=@{/meus-conteudos}">
+            <div id="listaConteudos" class="lista-conteudos">
+                <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
+                    <span th:if="${totalFiltrados > 0}">Não há conteúdos nesta página</span>
+                    <span th:if="${totalFiltrados == 0 and busca.isEmpty() and statusSelecionado == 'todos'}">Você ainda não cadastrou nenhum conteúdo</span>
+                    <span th:if="${totalFiltrados == 0 and (!busca.isEmpty() or statusSelecionado != 'todos')}">Nenhum conteúdo encontrado</span>
                 </div>
 
-                <p class="conteudo-descricao" th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}" th:text="${conteudo.descricao}">
-                    Descrição do conteúdo
+                <div id="semResultadoBusca" class="sem-conteudos d-none">
+                    Nenhum conteúdo encontrado
+                </div>
+
+                <article class="conteudo-card" th:each="conteudo : ${conteudos}" th:attr="data-titulo=${conteudo.titulo}, data-turma=${conteudo.nomeTurma}, data-status=${conteudo.status}">
+
+                    <div class="conteudo-cabecalho">
+                        <div class="conteudo-titulo">
+                            <h2 th:text="${conteudo.titulo}">Nome do conteúdo</h2>
+                        </div>
+
+                        <div class="conteudo-acoes">
+                            <span class="status-conteudo status-ativo" th:if="${conteudo.status == 'ativo'}">
+                                Ativo
+                            </span>
+
+                            <span class="status-conteudo status-suspenso" th:if="${conteudo.status == 'suspenso_denuncia'}">
+                                Suspenso por denúncia
+                            </span>
+
+                            <span class="status-conteudo status-removido" th:if="${conteudo.status == 'removido'}">
+                                Removido
+                            </span>
+
+                            <form th:if="${conteudo.status == 'suspenso_denuncia' and not conteudo.revisaoSolicitada}"
+                                  th:action="@{/meus-conteudos/{idConteudo}/solicitar-revisao(idConteudo=${conteudo.id})}" method="post">
+
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                <button type="submit" class="botao-analise">
+                                    Solicitar análise
+                                </button>
+                            </form>
+
+                            <span class="analise-solicitada" th:if="${conteudo.status == 'suspenso_denuncia' and conteudo.revisaoSolicitada}">
+                                Análise solicitada
+                            </span>
+
+                            <form class="form-remover-conteudo" method="post" th:if="${conteudo.status != 'removido'}"
+                                  th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}">
+
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                <button type="submit" class="botao-remover" title="Remover conteúdo" aria-label="Remover conteúdo">
+                                    🗑
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <p class="conteudo-descricao" th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}" th:text="${conteudo.descricao}">
+                        Descrição do conteúdo
+                    </p>
+
+                    <div class="comentario-admin"
+                         th:if="${conteudo.status == 'removido' and conteudo.comentarioAdmin != null and !conteudo.comentarioAdmin.isBlank()}">
+
+                        <span class="comentario-admin-titulo">
+                            Motivo da reprovação pelo administrador
+                        </span>
+
+                        <p th:text="${conteudo.comentarioAdmin}">
+                            Motivo informado pelo administrador
+                        </p>
+                    </div>
+
+                    <div class="conteudo-informacoes">
+                        <div class="informacao">
+                            <span class="informacao-titulo">Turma</span>
+
+                            <span class="informacao-valor" th:text="${conteudo.nomeTurma != null ? conteudo.nomeTurma : 'Turma não encontrada'}">
+                                Turma
+                            </span>
+                        </div>
+
+                        <div class="informacao">
+                            <span class="informacao-titulo">Tipo</span>
+
+                            <span class="informacao-valor" th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">
+                                Tipo
+                            </span>
+                        </div>
+
+                        <div class="informacao">
+                            <span class="informacao-titulo">Duração</span>
+
+                            <span class="informacao-valor"
+                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : 'Não informada'}">
+                                Duração
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="conteudo-denuncias" th:if="${conteudo.alunosDenunciaram != null and !conteudo.alunosDenunciaram.isEmpty()}">
+                        <span class="denuncias-titulo">
+                            Denunciado por
+                        </span>
+
+                        <div class="lista-denunciantes">
+                            <span class="denunciante" th:each="aluno : ${conteudo.alunosDenunciaram}" th:text="${aluno}">
+                                Nome do aluno
+                            </span>
+                        </div>
+                    </div>
+
+                </article>
+            </div>
+
+            <div class="text-center mt-4">
+                <p id="quantidadeExibida" class="mb-3" aria-live="polite">
+                    Mostrando <span id="totalExibido" th:text="${#lists.size(conteudos)}">0</span>
+                    de <span id="totalEncontrado" th:text="${totalFiltrados}">0</span> conteúdos
                 </p>
 
-                <div class="comentario-admin"
-                     th:if="${conteudo.status == 'removido' and conteudo.comentarioAdmin != null and !conteudo.comentarioAdmin.isBlank()}">
-
-                    <span class="comentario-admin-titulo">
-                        Motivo da reprovação pelo administrador
-                    </span>
-
-                    <p th:text="${conteudo.comentarioAdmin}">
-                        Motivo informado pelo administrador
-                    </p>
-                </div>
-
-                <div class="conteudo-informacoes">
-                    <div class="informacao">
-                        <span class="informacao-titulo">Turma</span>
-
-                        <span class="informacao-valor" th:text="${conteudo.nomeTurma != null ? conteudo.nomeTurma : 'Turma não encontrada'}">
-                            Turma
-                        </span>
-                    </div>
-
-                    <div class="informacao">
-                        <span class="informacao-titulo">Tipo</span>
-
-                        <span class="informacao-valor" th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">
-                            Tipo
-                        </span>
-                    </div>
-
-                    <div class="informacao">
-                        <span class="informacao-titulo">Duração</span>
-
-                        <span class="informacao-valor"
-                              th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : 'Não informada'}">
-                            Duração
-                        </span>
-                    </div>
-                </div>
-
-                <div class="conteudo-denuncias" th:if="${conteudo.alunosDenunciaram != null and !conteudo.alunosDenunciaram.isEmpty()}">
-                    <span class="denuncias-titulo">
-                        Denunciado por
-                    </span>
-
-                    <div class="lista-denunciantes">
-                        <span class="denunciante" th:each="aluno : ${conteudo.alunosDenunciaram}" th:text="${aluno}">
-                            Nome do aluno
-                        </span>
-                    </div>
-                </div>
-
-            </article>
+                <button type="button" id="botaoMostrarMais" class="btn btn-dark px-4" th:classappend="${!temMais} ? 'd-none'" aria-controls="listaConteudos">
+                    Mostrar mais 10
+                </button>
+            </div>
         </section>
 
     </div>
