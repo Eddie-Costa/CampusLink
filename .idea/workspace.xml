@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="" />
+    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Professor/meusConteudos.css" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Usuarios/Professor/meusConteudos.css" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,6 +20,7 @@
         <option value="Class" />
         <option value="HTML File" />
         <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -28,6 +32,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;MatheusSanthiago&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Eddie-Costa/CampusLink.git&quot;,
+    &quot;accountId&quot;: &quot;85ae252e-2b69-41a9-9bad-431d63dd3487&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -59,7 +75,9 @@
     &quot;last_opened_file_path&quot;: &quot;C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css&quot;,
     &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
@@ -78,6 +96,7 @@
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\java\com\example\CampusLink\service" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\GitHub\CampusLink\CampusLink" />
       <recent name="C:\Users\eddie\OneDrive\Documentos\.git\CampusLink\CampusLink\src\main\resources\templates" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -148,23 +167,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>201</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
           <line>308</line>
           <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/usuarioDAO.java</url>
-          <line>25</line>
-          <properties class="com.example.CampusLink.dao.usuarioDAO">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

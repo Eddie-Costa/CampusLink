@@ -24,4 +24,6 @@ public class usuarioAdminDTO {
     private String perfil;
 
     private boolean status;
+
+    private boolean master;
 }

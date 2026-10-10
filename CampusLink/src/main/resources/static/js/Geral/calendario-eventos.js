@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
         'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const nomesDiasSemana = [
+        'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
+        'Quinta-feira', 'Sexta-feira', 'Sábado'
+    ];
+
     const pagina = document.querySelector('.page-content');
     const tipoUsuario = pagina ? pagina.dataset.tipoUsuario || '' : '';
     const usuarioEhAluno = tipoUsuario.toLowerCase() === 'aluno';
@@ -102,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const marcador = document.createElement('span');
-
         marcador.classList.add('evento-marcador');
 
         const iniciouHoje = eventos.some(function (evento) {
@@ -290,9 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         todosOsCartoesEventos.forEach(function (cartao) {
             removerBadgeNovo(cartao);
-
             cartao.hidden = true;
-
             listaEventos.appendChild(cartao);
         });
 
@@ -318,7 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         adicionarBadgeNovo(ultimoCartaoDoMes);
-
         ultimoCartaoDoMes.hidden = false;
 
         if (ultimoEventoContainer && ultimoEventoDestaque) {
@@ -334,7 +336,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cartoesOrdenados.forEach(function (cartao) {
             cartao.hidden = false;
-
             listaEventos.appendChild(cartao);
         });
     }
@@ -345,80 +346,63 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         calendario.innerHTML = '';
-
         mesExibido.textContent = `${meses[mesAtual]} de ${anoAtual}`;
+        seletorMes.value = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
 
-        seletorMes.value =
-            `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+        // mostra os dias da semana acima das datas
+        diasSemana.forEach(function (dia, indice) {
+            const cabecalho = document.createElement('div');
 
-        const primeiroDiaSemana =
-            new Date(anoAtual, mesAtual, 1).getDay();
+            cabecalho.classList.add('calendar-weekday');
+            cabecalho.textContent = dia;
+            cabecalho.title = nomesDiasSemana[indice];
 
-        const ultimoDiaMes =
-            new Date(anoAtual, mesAtual + 1, 0).getDate();
+            calendario.appendChild(cabecalho);
+        });
 
-        const quantidadeCelulas =
-            Math.ceil((primeiroDiaSemana + ultimoDiaMes) / 7) * 7;
+        const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay();
+        const ultimoDiaMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+        const quantidadeCelulas = Math.ceil((primeiroDiaSemana + ultimoDiaMes) / 7) * 7;
 
         for (let indice = 0; indice < quantidadeCelulas; indice++) {
-            const data =
-                new Date(
-                    anoAtual,
-                    mesAtual,
-                    indice - primeiroDiaSemana + 1
-                );
-
-            const dataFormatada = formatarData(data);
-
-            const pertenceAoMesAtual =
-                data.getMonth() === mesAtual &&
-                data.getFullYear() === anoAtual;
-
-            const celula =
-                document.createElement('div');
+            const dia = indice - primeiroDiaSemana + 1;
+            const celula = document.createElement('div');
 
             celula.classList.add('day-cell');
-            celula.setAttribute('role', 'gridcell');
 
-            if (!pertenceAoMesAtual) {
-                celula.classList.add('adjacent-month');
+            // deixa vazios os lugares que pertencem a outro mes
+            if (dia < 1 || dia > ultimoDiaMes) {
+                celula.classList.add('adjacent-month', 'calendar-empty');
+                celula.setAttribute('aria-hidden', 'true');
+                calendario.appendChild(celula);
+                continue;
             }
 
-            const numeroDia =
-                document.createElement('span');
+            const data = new Date(anoAtual, mesAtual, dia);
+            const dataFormatada = formatarData(data);
+
+            celula.setAttribute('role', 'gridcell');
+            celula.setAttribute('aria-label', `${dia} de ${meses[mesAtual]} de ${anoAtual}`);
+
+            const numeroDia = document.createElement('span');
 
             numeroDia.classList.add('day-number');
-            numeroDia.textContent =
-                String(data.getDate()).padStart(2, '0');
+            numeroDia.textContent = String(dia).padStart(2, '0');
 
-            const linkCadastro =
-                document.createElement('a');
+            const linkCadastro = document.createElement('a');
 
             linkCadastro.classList.add('day-add');
-            linkCadastro.href =
-                `${urlCadastro}?data=${dataFormatada}`;
-
+            linkCadastro.href = `${urlCadastro}?data=${dataFormatada}`;
             linkCadastro.textContent = '+';
 
-            const acao =
-                usuarioEhAluno
-                    ? 'Cadastrar disponibilidade'
-                    : 'Cadastrar evento';
+            const acao = usuarioEhAluno ? 'Cadastrar disponibilidade' : 'Cadastrar evento';
 
-            linkCadastro.setAttribute(
-                'aria-label',
-                `${acao} no dia ${data.getDate()}`
-            );
+            linkCadastro.setAttribute('aria-label', `${acao} no dia ${dia} de ${meses[mesAtual]} de ${anoAtual}`);
 
-            const eventosDoDia =
-                buscarEventosDoDia(dataFormatada);
+            const eventosDoDia = buscarEventosDoDia(dataFormatada);
 
             if (usuarioEhProfessor && eventosDoDia.length > 0) {
-                const marcadorEvento =
-                    criarMarcadorEvento(
-                        eventosDoDia,
-                        dataFormatada
-                    );
+                const marcadorEvento = criarMarcadorEvento(eventosDoDia, dataFormatada);
 
                 if (marcadorEvento) {
                     celula.classList.add('tem-evento');
@@ -427,20 +411,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (usuarioEhAluno) {
-                const disponibilidadeEncontrada =
-                    buscarDisponibilidade(dataFormatada);
+                const disponibilidadeEncontrada = buscarDisponibilidade(dataFormatada);
+                const disponibilidade = disponibilidadeEncontrada || {
+                    data: dataFormatada,
+                    horas: 0
+                };
 
-                const disponibilidade =
-                    disponibilidadeEncontrada || {
-                        data: dataFormatada,
-                        horas: 0
-                    };
-
-                const marcadorDisponibilidade =
-                    criarMarcadorDisponibilidade(disponibilidade);
+                const marcadorDisponibilidade = criarMarcadorDisponibilidade(disponibilidade);
 
                 celula.classList.add('tem-disponibilidade');
-
                 celula.appendChild(marcadorDisponibilidade);
             }
 
@@ -481,10 +460,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (seletorMes) {
         seletorMes.addEventListener('change', function () {
-            const partes = this.value.split('-');
+            if (!this.value) {
+                return;
+            }
 
-            anoAtual = Number(partes[0]);
-            mesAtual = Number(partes[1]) - 1;
+            const partes = this.value.split('-');
+            const anoSelecionado = Number(partes[0]);
+            const mesSelecionado = Number(partes[1]) - 1;
+
+            if (!Number.isInteger(anoSelecionado) || !Number.isInteger(mesSelecionado)
+                || anoSelecionado < 1 || mesSelecionado < 0 || mesSelecionado > 11) {
+                return;
+            }
+
+            anoAtual = anoSelecionado;
+            mesAtual = mesSelecionado;
 
             atualizarCalendario();
         });
@@ -499,24 +489,15 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function () {
                 popup.remove();
             }, 400);
-
         }, 3500);
     }
 
     if (listaEventos && botaoAlternarCards) {
         botaoAlternarCards.addEventListener('click', function () {
-            const estaOculto =
-                listaEventos.classList.toggle('cards-ocultos');
+            const estaOculto = listaEventos.classList.toggle('cards-ocultos');
 
-            this.textContent =
-                estaOculto
-                    ? 'Mostrar cards'
-                    : 'Ocultar cards';
-
-            this.setAttribute(
-                'aria-expanded',
-                String(!estaOculto)
-            );
+            this.textContent = estaOculto ? 'Mostrar cards' : 'Ocultar cards';
+            this.setAttribute('aria-expanded', String(!estaOculto));
         });
     }
 
@@ -528,8 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.form-excluir-evento').forEach(function (form) {
         form.addEventListener('submit', function (event) {
-            const confirmar =
-                confirm('Deseja realmente excluir este evento?');
+            const confirmar = confirm('Deseja realmente excluir este evento?');
 
             if (!confirmar) {
                 event.preventDefault();

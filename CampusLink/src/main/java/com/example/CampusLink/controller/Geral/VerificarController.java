@@ -1,3 +1,4 @@
+
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dao.alunoDAO;
@@ -27,7 +28,7 @@ public class VerificarController {
 
     private static final Logger logger = LoggerFactory.getLogger(VerificarController.class);
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+    private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     @Autowired
     private TwoFactorService twoFactorService;

@@ -46,8 +46,12 @@ public class usuarioDAO {
                 LEFT JOIN public."ADMINISTRADOR" adm ON adm.id_usuario = u.id
                 WHERE LOWER(u.email) = ? AND u.status = true
                 """;
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setString(1, normalizarEmail(email));
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     DadosUsuarioDTO dadosUsuario = new DadosUsuarioDTO();
@@ -59,6 +63,7 @@ public class usuarioDAO {
                     dadosUsuario.setPerfil(rs.getString("perfil"));
                     dadosUsuario.setIdentificador(rs.getString("identificador"));
                     dadosUsuario.setDataCadastro(rs.getDate("created_at").toLocalDate());
+
                     return dadosUsuario;
                 }
 
@@ -83,8 +88,10 @@ public class usuarioDAO {
                     )
                 )
                 """;
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, idUsuario);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next();
                 return rs.getBoolean(1);
@@ -95,24 +102,36 @@ public class usuarioDAO {
     public void excluirDadosPessoais(long idUsuario, String email) throws SQLException {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
+
             try {
+                // impede mudancas no perfil durante a exclusao da conta
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "LOCK TABLE public.\"ADMINISTRADOR\" IN SHARE ROW EXCLUSIVE MODE")) {
+
+                    stmt.execute();
+                }
+
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SELECT id FROM public.\"USUARIOS\" WHERE id = ? AND LOWER(email) = ? FOR UPDATE")) {
+
                     stmt.setLong(1, idUsuario);
                     stmt.setString(2, normalizarEmail(email));
+
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (!rs.next()) {
                             throw new IllegalStateException("Conta não encontrada.");
                         }
                     }
                 }
-                // Repete a checagem na confirmação, pois vínculos podem ter sido criados após o envio do código.
+
+                impedirExclusaoProprioAdministrador(conn, idUsuario);
+
+                // confere novamente os vinculos antes de excluir a conta
                 if (possuiVinculosParaExclusao(conn, idUsuario)) {
                     throw new IllegalStateException("Remova ou transfira suas turmas, materiais e eventos antes de excluir a conta.");
                 }
 
-                // "Remover material" oculta o conteúdo no CampusLink. Na exclusão da conta,
-                // elimina também esses registros e os arquivos que já foram retirados de circulação.
+                // apaga os materiais que ja estavam removidos e seus arquivos
                 excluirMateriaisRemovidos(conn, idUsuario);
 
                 executarExclusao(conn, """
@@ -120,38 +139,66 @@ public class usuarioDAO {
                         WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
                            OR id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
                         """, idUsuario, idUsuario);
+
                 executarExclusao(conn, """
                         DELETE FROM public."DISPONIBILIDADES"
                         WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
                         """, idUsuario);
+
                 executarExclusao(conn, """
                         DELETE FROM public."ALUNO_TURMA"
                         WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
                         """, idUsuario);
+
                 executarExclusao(conn, """
                         DELETE FROM public."PROFESSOR_TURMA"
                         WHERE id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
                         """, idUsuario);
+
                 executarExclusao(conn, """
                         UPDATE public."TURMAS" t SET id_alunos = array_remove(t.id_alunos, a.id)
                         FROM public."ALUNOS" a WHERE a.id_usuario = ? AND a.id = ANY(t.id_alunos)
                         """, idUsuario);
+
                 executarExclusao(conn, """
                         UPDATE public."TURMAS" t SET id_professores = array_remove(t.id_professores, p.id)
                         FROM public."PROFESSORES" p WHERE p.id_usuario = ? AND p.id = ANY(t.id_professores)
                         """, idUsuario);
+
                 executarExclusao(conn, "DELETE FROM public.\"ALUNOS\" WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, "DELETE FROM public.\"PROFESSORES\" WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, "DELETE FROM public.\"ADMINISTRADOR\" WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, "DELETE FROM public.\"USUARIOS\" WHERE id = ?", idUsuario);
+
                 conn.commit();
+
             } catch (SQLException | RuntimeException e) {
                 try {
                     conn.rollback();
+
                 } catch (SQLException rollbackError) {
                     e.addSuppressed(rollbackError);
                 }
+
                 throw e;
+            }
+        }
+    }
+
+    private void impedirExclusaoProprioAdministrador(Connection conn, long idUsuario) throws SQLException {
+        String sql = "SELECT master FROM public.\"ADMINISTRADOR\" WHERE id_usuario = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    if (rs.getBoolean("master")) {
+                        throw new IllegalStateException("Sua conta de administrador master só pode ser excluída por outro administrador master.");
+                    }
+
+                    throw new IllegalStateException("Sua conta de administrador deve ser excluída por outro administrador na página de gerenciamento de usuários.");
+                }
             }
         }
     }
@@ -161,6 +208,7 @@ public class usuarioDAO {
             for (int i = 0; i < ids.length; i++) {
                 stmt.setLong(i + 1, ids[i]);
             }
+
             stmt.executeUpdate();
         }
     }
@@ -171,20 +219,26 @@ public class usuarioDAO {
                 JOIN public."PROFESSORES" p ON p.id = c.id_professor
                 WHERE p.id_usuario = ? AND c.status = 'removido' FOR UPDATE OF c
                 """;
+
         try (PreparedStatement stmt = conn.prepareStatement(conteudos)) {
             stmt.setLong(1, idUsuario);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     long idConteudo = rs.getLong("id");
+
                     try (PreparedStatement arquivos = conn.prepareStatement(
                             "SELECT bucket_id, storage_path FROM public.\"ARQUIVOS\" WHERE id_conteudo = ?")) {
+
                         arquivos.setLong(1, idConteudo);
+
                         try (ResultSet files = arquivos.executeQuery()) {
                             while (files.next()) {
                                 storage.excluir(files.getString("bucket_id"), files.getString("storage_path"));
                             }
                         }
                     }
+
                     executarExclusao(conn, "DELETE FROM public.\"ARQUIVOS\" WHERE id_conteudo = ?", idConteudo);
                     executarExclusao(conn, "DELETE FROM public.\"EVENTO_CONTEUDO\" WHERE id_conteudo = ?", idConteudo);
                     executarExclusao(conn, "DELETE FROM public.\"DENUNCIAS\" WHERE id_conteudo = ?", idConteudo);
@@ -202,9 +256,11 @@ public class usuarioDAO {
         if (Tipo.equalsIgnoreCase("Aluno")) {
             tabelaEspecifica = "ALUNOS";
             colunaIdentificador = "rgm";
+
         } else if (Tipo.equalsIgnoreCase("Professor")) {
             tabelaEspecifica = "PROFESSORES";
             colunaIdentificador = "matricula";
+
         } else {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + Tipo);
         }
@@ -247,6 +303,7 @@ public class usuarioDAO {
             }
 
             conn.commit();
+
         } catch (SQLException e) {
             throw e;
         }
@@ -373,7 +430,7 @@ public class usuarioDAO {
     private void atualizarHistoricoSessao(Connection conn, UUID sessaoLogId) throws SQLException {
         String sql = """
             UPDATE public."LOGS_SESSOES" s SET log_completo = COALESCE(( SELECT string_agg(concat_ws(' ', e.data_hora::text, '[' || e.nivel || ']', e.classe,
-            'eventoId=' || e.id, 'operacao=' || e.operacao, 'operacaoId=' || e.operacao_id, e.mensagem, E'\\nDetalhes: ' || e.detalhes::text, E'\\nExcecao: ' || e.excecao), E'\\n' ORDER BY e.data_hora, e.id)
+            'eventoId=' || e.id, 'operacao=' || e.operacao, 'operacaoId=' || e.operacao_id, e.mensagem, E'\nDetalhes: ' || e.detalhes::text, E'\nExcecao: ' || e.excecao), E'\n' ORDER BY e.data_hora, e.id)
             FROM public."LOGS_EVENTOS" e WHERE e.sessao_log_id = s.sessao_log_id), ''), historico_gerado_em = clock_timestamp() WHERE s.sessao_log_id = ?
             """;
 
@@ -386,6 +443,7 @@ public class usuarioDAO {
     private void desfazerTransacaoLog(Connection conn, Exception causa) {
         try {
             conn.rollback();
+
         } catch (SQLException erroRollback) {
             causa.addSuppressed(erroRollback);
         }

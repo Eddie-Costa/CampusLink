@@ -20,38 +20,36 @@ public class AdminUsuarioDAO {
     @Autowired
     private DataSource dataSource;
 
+    private static final String SQL_USUARIOS = """
+            SELECT
+                u.id AS id_usuario,
+                a.id AS id_aluno,
+                p.id AS id_professor,
+                adm.id_usuario AS id_admin,
+                a.rgm,
+                p.matricula,
+                u.nome,
+                u.email,
+                u.telefone,
+                u.datanasc,
+                u.status,
+                COALESCE(adm.master, false) AS master
+            FROM public."USUARIOS" u
+            LEFT JOIN public."ALUNOS" a ON a.id_usuario = u.id
+            LEFT JOIN public."PROFESSORES" p ON p.id_usuario = u.id
+            LEFT JOIN public."ADMINISTRADOR" adm ON adm.id_usuario = u.id
+            """;
+
     public List<usuarioAdminDTO> listarUsuarios() throws SQLException {
-
         List<usuarioAdminDTO> usuarios = new ArrayList<>();
+        String sql = SQL_USUARIOS + " WHERE a.id IS NOT NULL OR p.id IS NOT NULL OR adm.id_usuario IS NOT NULL ORDER BY u.nome, u.id";
 
-        String sql = """
-                SELECT
-                    u.id AS id_usuario,
-                    a.id AS id_aluno,
-                    p.id AS id_professor,
-                    a.rgm,
-                    p.matricula,
-                    u.nome,
-                    u.email,
-                    u.telefone,
-                    u.datanasc,
-                    u.status
-                FROM public."USUARIOS" u
-                LEFT JOIN public."ALUNOS" a ON a.id_usuario = u.id
-                LEFT JOIN public."PROFESSORES" p ON p.id_usuario = u.id
-                WHERE a.id IS NOT NULL OR p.id IS NOT NULL
-                ORDER BY u.nome
-                """;
-
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()
-        ) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                usuarioAdminDTO usuario = montarUsuario(rs);
-                usuarios.add(usuario);
+                usuarios.add(montarUsuario(rs));
             }
         }
 
@@ -59,46 +57,18 @@ public class AdminUsuarioDAO {
     }
 
     public usuarioAdminDTO buscarUsuarioPorId(Long idUsuario) throws SQLException {
-
-        String sql = """
-                SELECT
-                    u.id AS id_usuario,
-                    a.id AS id_aluno,
-                    p.id AS id_professor,
-                    a.rgm,
-                    p.matricula,
-                    u.nome,
-                    u.email,
-                    u.telefone,
-                    u.datanasc,
-                    u.status
-                FROM public."USUARIOS" u
-                LEFT JOIN public."ALUNOS" a ON a.id_usuario = u.id
-                LEFT JOIN public."PROFESSORES" p ON p.id_usuario = u.id
-                WHERE u.id = ?
-                AND (a.id IS NOT NULL OR p.id IS NOT NULL)
-                """;
-
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-
-            stmt.setLong(1, idUsuario);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-
-                if (rs.next()) {
-                    return montarUsuario(rs);
-                }
-            }
+        try (Connection conn = dataSource.getConnection()) {
+            return buscarUsuarioPorId(conn, idUsuario);
         }
+    }
 
-        return null;
+    public usuarioAdminDTO buscarAdministradorPorEmail(String email) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            return buscarAdministradorPorEmail(conn, email);
+        }
     }
 
     public List<String> validarDadosEdicao(Long idUsuario, String perfil, String identificador, String email, String telefone) throws SQLException {
-
         List<String> erros = new ArrayList<>();
 
         if (emailJaExiste(idUsuario, email)) {
@@ -121,7 +91,6 @@ public class AdminUsuarioDAO {
     }
 
     public boolean atualizarUsuario(usuarioAdminDTO usuario) throws SQLException {
-
         String sqlUsuario = """
                 UPDATE public."USUARIOS"
                 SET nome = ?,
@@ -152,7 +121,6 @@ public class AdminUsuarioDAO {
         }
 
         try (Connection conn = dataSource.getConnection()) {
-
             conn.setAutoCommit(false);
 
             try {
@@ -196,11 +164,15 @@ public class AdminUsuarioDAO {
     }
 
     public boolean atualizarStatusUsuario(Long idUsuario, boolean status) throws SQLException {
-
         String sql = """
                 UPDATE public."USUARIOS" u
                 SET status = ?
                 WHERE u.id = ?
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM public."ADMINISTRADOR" adm
+                    WHERE adm.id_usuario = u.id
+                )
                 AND (
                     EXISTS (
                         SELECT 1
@@ -216,22 +188,191 @@ public class AdminUsuarioDAO {
                 )
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setBoolean(1, status);
             stmt.setLong(2, idUsuario);
 
-            int linhasAlteradas = stmt.executeUpdate();
+            return stmt.executeUpdate() > 0;
+        }
+    }
 
-            return linhasAlteradas > 0;
+    public boolean atualizarStatusUsuario(Long idUsuario, boolean status, String emailAdmin) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                bloquearAdministradores(conn);
+
+                usuarioAdminDTO adminLogado = buscarAdministradorPorEmail(conn, emailAdmin);
+                validarAdministradorLogado(adminLogado);
+
+                usuarioAdminDTO usuario = buscarUsuarioPorId(conn, idUsuario);
+
+                if (usuario == null) {
+                    conn.rollback();
+                    return false;
+                }
+
+                if ("Administrador".equals(usuario.getPerfil())) {
+                    validarAlteracaoAdministrador(conn, usuario, adminLogado, !status);
+                }
+
+                String sql = "UPDATE public.\"USUARIOS\" SET status = ? WHERE id = ?";
+
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setBoolean(1, status);
+                    stmt.setLong(2, idUsuario);
+
+                    boolean alterado = stmt.executeUpdate() > 0;
+
+                    conn.commit();
+                    return alterado;
+                }
+
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    public boolean excluirAdministrador(Long idUsuario, String emailAdmin) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                bloquearAdministradores(conn);
+
+                usuarioAdminDTO adminLogado = buscarAdministradorPorEmail(conn, emailAdmin);
+                validarAdministradorLogado(adminLogado);
+
+                usuarioAdminDTO usuario = buscarUsuarioPorId(conn, idUsuario);
+
+                if (usuario == null || !"Administrador".equals(usuario.getPerfil())) {
+                    conn.rollback();
+                    return false;
+                }
+
+                validarAlteracaoAdministrador(conn, usuario, adminLogado, true);
+
+                String sqlAdmin = "DELETE FROM public.\"ADMINISTRADOR\" WHERE id_usuario = ?";
+
+                try (PreparedStatement stmt = conn.prepareStatement(sqlAdmin)) {
+                    stmt.setLong(1, idUsuario);
+                    stmt.executeUpdate();
+                }
+
+                String sqlUsuario = """
+                        DELETE FROM public."USUARIOS" u
+                        WHERE u.id = ?
+                        AND NOT EXISTS (
+                            SELECT 1 FROM public."ALUNOS" a WHERE a.id_usuario = u.id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM public."PROFESSORES" p WHERE p.id_usuario = u.id
+                        )
+                        """;
+
+                try (PreparedStatement stmt = conn.prepareStatement(sqlUsuario)) {
+                    stmt.setLong(1, idUsuario);
+
+                    if (stmt.executeUpdate() == 0) {
+                        throw new IllegalStateException("Esta conta também possui perfil de aluno ou professor. Utilize a desativação.");
+                    }
+                }
+
+                conn.commit();
+                return true;
+
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    private usuarioAdminDTO buscarUsuarioPorId(Connection conn, Long idUsuario) throws SQLException {
+        String sql = SQL_USUARIOS + " WHERE u.id = ? AND (a.id IS NOT NULL OR p.id IS NOT NULL OR adm.id_usuario IS NOT NULL)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? montarUsuario(rs) : null;
+            }
+        }
+    }
+
+    private usuarioAdminDTO buscarAdministradorPorEmail(Connection conn, String email) throws SQLException {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+
+        String sql = SQL_USUARIOS + " WHERE LOWER(u.email) = ? AND adm.id_usuario IS NOT NULL";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, normalizarEmail(email));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? montarUsuario(rs) : null;
+            }
+        }
+    }
+
+    private void bloquearAdministradores(Connection conn) throws SQLException {
+        // evita duas alteracoes ao mesmo tempo durante a conferencia dos administradores
+        String sql = "LOCK TABLE public.\"ADMINISTRADOR\", public.\"USUARIOS\" IN SHARE ROW EXCLUSIVE MODE";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.execute();
+        }
+    }
+
+    private void validarAdministradorLogado(usuarioAdminDTO adminLogado) {
+        if (adminLogado == null || !adminLogado.isStatus()) {
+            throw new IllegalStateException("Sua conta de administrador não está disponível. Entre novamente.");
+        }
+    }
+
+    private void validarAlteracaoAdministrador(Connection conn, usuarioAdminDTO usuario, usuarioAdminDTO adminLogado, boolean retirada) throws SQLException {
+        if (usuario.isMaster() && !adminLogado.isMaster()) {
+            throw new IllegalStateException("Somente outro administrador master pode alterar esta conta.");
+        }
+
+        if (retirada) {
+            if (usuario.isStatus() && contarAdministradoresAtivos(conn) <= 1) {
+                throw new IllegalStateException("O sistema precisa manter pelo menos um administrador ativo.");
+            }
+
+            if (usuario.getIdUsuario().equals(adminLogado.getIdUsuario())) {
+                throw new IllegalStateException("Você não pode excluir ou desativar sua própria conta de administrador.");
+            }
+        }
+    }
+
+    private int contarAdministradoresAtivos(Connection conn) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM public."USUARIOS" u
+                WHERE u.status = true
+                AND EXISTS (
+                    SELECT 1
+                    FROM public."ADMINISTRADOR" adm
+                    WHERE adm.id_usuario = u.id
+                )
+                """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            rs.next();
+            return rs.getInt(1);
         }
     }
 
     private boolean emailJaExiste(Long idUsuario, String email) throws SQLException {
-
         String sql = """
                 SELECT 1
                 FROM public."USUARIOS"
@@ -239,10 +380,8 @@ public class AdminUsuarioDAO {
                 AND id <> ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, normalizarEmail(email));
             stmt.setLong(2, idUsuario);
@@ -254,7 +393,6 @@ public class AdminUsuarioDAO {
     }
 
     private boolean telefoneJaExiste(Long idUsuario, String telefone) throws SQLException {
-
         String sql = """
                 SELECT 1
                 FROM public."USUARIOS"
@@ -262,10 +400,8 @@ public class AdminUsuarioDAO {
                 AND id <> ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, telefone);
             stmt.setLong(2, idUsuario);
@@ -277,7 +413,6 @@ public class AdminUsuarioDAO {
     }
 
     private boolean identificadorJaExiste(Long idUsuario, String perfil, String identificador) throws SQLException {
-
         String sql;
 
         if ("Aluno".equalsIgnoreCase(perfil)) {
@@ -300,10 +435,8 @@ public class AdminUsuarioDAO {
             return true;
         }
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, identificador);
             stmt.setLong(2, idUsuario);
@@ -315,7 +448,6 @@ public class AdminUsuarioDAO {
     }
 
     private usuarioAdminDTO montarUsuario(ResultSet rs) throws SQLException {
-
         usuarioAdminDTO usuario = new usuarioAdminDTO();
 
         usuario.setIdUsuario(rs.getLong("id_usuario"));
@@ -323,6 +455,7 @@ public class AdminUsuarioDAO {
         usuario.setEmail(rs.getString("email"));
         usuario.setTelefone(rs.getString("telefone"));
         usuario.setStatus(rs.getBoolean("status"));
+        usuario.setMaster(rs.getBoolean("master"));
 
         Date dataNasc = rs.getDate("datanasc");
 
@@ -332,8 +465,13 @@ public class AdminUsuarioDAO {
 
         Long idAluno = rs.getObject("id_aluno", Long.class);
         Long idProfessor = rs.getObject("id_professor", Long.class);
+        Long idAdmin = rs.getObject("id_admin", Long.class);
 
-        if (idAluno != null) {
+        if (idAdmin != null) {
+            usuario.setIdentificador(String.valueOf(usuario.getIdUsuario()));
+            usuario.setPerfil("Administrador");
+
+        } else if (idAluno != null) {
             usuario.setIdPerfil(idAluno);
             usuario.setIdentificador(rs.getString("rgm"));
             usuario.setPerfil("Aluno");

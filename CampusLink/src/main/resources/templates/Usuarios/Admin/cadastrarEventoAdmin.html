@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Cadastrar Evento | CampusLink</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/cadastrarEventoAdmin.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="cadastrar-evento-admin-page">
+
+    <div class="cadastrar-evento-admin-container">
+
+        <div class="cadastrar-evento-admin-topo">
+
+            <div>
+                <p class="cadastrar-evento-admin-etiqueta">Administração</p>
+                <h1>Cadastrar evento</h1>
+                <p>Cadastre um novo evento para uma turma do CampusLink.</p>
+            </div>
+
+            <a th:href="@{/admin/eventos}" class="cadastrar-evento-admin-voltar">
+                Voltar para eventos
+            </a>
+
+        </div>
+
+        <div th:if="${mensagemErro}" class="alert alert-danger cadastrar-evento-admin-mensagem" th:text="${mensagemErro}"></div>
+
+        <div th:if="${#lists.isEmpty(turmas)}" class="alert alert-warning cadastrar-evento-admin-mensagem">
+            Nenhuma turma cadastrada foi encontrada. Cadastre uma turma antes de criar um evento.
+        </div>
+
+        <section class="cadastrar-evento-admin-card">
+
+            <form th:action="@{/admin/eventos/cadastrar}" method="post" id="formCadastrarEvento">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <h2 class="cadastrar-evento-admin-secao-titulo">Informações do evento</h2>
+
+                <div class="cadastrar-evento-admin-grupo">
+
+                    <label for="nomeEvento">Nome do evento</label>
+
+                    <input type="text" id="nomeEvento" name="nome" class="cadastrar-evento-admin-input"
+                           placeholder="Digite o nome do evento" maxlength="150" required>
+
+                </div>
+
+                <div class="cadastrar-evento-admin-linha">
+
+                    <div class="cadastrar-evento-admin-grupo">
+
+                        <label for="tipoEvento">Tipo do evento</label>
+
+                        <select id="tipoEvento" name="tipo" class="cadastrar-evento-admin-select" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="PROVA">Prova</option>
+                            <option value="TRABALHO">Trabalho</option>
+                            <option value="APRESENTACAO">Apresentação</option>
+                            <option value="OUTRO">Outro prazo acadêmico</option>
+                        </select>
+
+                    </div>
+
+                    <div class="cadastrar-evento-admin-grupo">
+
+                        <label for="prioridadeEvento">Prioridade</label>
+
+                        <select id="prioridadeEvento" name="prioridade" class="cadastrar-evento-admin-select" required>
+                            <option value="">Selecione a prioridade</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="MEDIA">Média</option>
+                            <option value="BAIXA">Baixa</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="cadastrar-evento-admin-grupo">
+
+                    <label for="descricaoEvento">Descrição</label>
+
+                    <textarea id="descricaoEvento" name="descricao" class="cadastrar-evento-admin-textarea"
+                              rows="4" placeholder="Descreva o evento (opcional)"></textarea>
+
+                </div>
+
+                <div class="cadastrar-evento-admin-linha">
+
+                    <div class="cadastrar-evento-admin-grupo">
+
+                        <label for="inicioEvento">Início do evento</label>
+
+                        <input type="datetime-local" id="inicioEvento" name="inicio"
+                               class="cadastrar-evento-admin-input" required>
+
+                    </div>
+
+                    <div class="cadastrar-evento-admin-grupo">
+
+                        <label for="fimEvento">Fim do evento</label>
+
+                        <input type="datetime-local" id="fimEvento" name="fim"
+                               class="cadastrar-evento-admin-input" required>
+
+                    </div>
+
+                </div>
+
+                <h2 class="cadastrar-evento-admin-secao-titulo">Turma e professor</h2>
+
+                <div class="cadastrar-evento-admin-grupo">
+
+                    <label for="turmaEvento">Turma</label>
+
+                    <input type="search" id="buscarTurma" class="cadastrar-evento-admin-input cadastrar-evento-admin-busca"
+                           placeholder="Pesquisar turma pelo nome" autocomplete="off">
+
+                    <select id="turmaEvento" name="turmaId" class="cadastrar-evento-admin-select" required>
+
+                        <option value="">Selecione uma turma</option>
+
+                        <option th:each="turma : ${turmas}" th:value="${turma.id}" th:text="${turma.nomeTurma}">
+                            Nome da turma
+                        </option>
+
+                    </select>
+
+                    <small id="mensagemBuscaTurma" class="cadastrar-evento-admin-ajuda" hidden>
+                        Nenhuma turma encontrada.
+                    </small>
+
+                </div>
+
+                <div class="cadastrar-evento-admin-grupo">
+
+                    <label for="professorEvento">Professor responsável pelo evento</label>
+
+                    <select id="professorEvento" name="idProfessor" class="cadastrar-evento-admin-select" required disabled>
+
+                        <option value="">Selecione uma turma primeiro</option>
+
+                    </select>
+
+                    <small class="cadastrar-evento-admin-ajuda">
+                        Serão exibidos somente os professores ativos vinculados à turma escolhida.
+                    </small>
+
+                </div>
+
+                <h2 class="cadastrar-evento-admin-secao-titulo">Conteúdos relacionados</h2>
+
+                <div class="cadastrar-evento-admin-grupo">
+
+                    <label for="conteudosRelacionados">Selecione os conteúdos</label>
+
+                    <input type="search" id="buscarConteudo" class="cadastrar-evento-admin-input cadastrar-evento-admin-busca"
+                           placeholder="Pesquisar conteúdo pelo nome" autocomplete="off" disabled>
+
+                    <select id="conteudosRelacionados" name="conteudoIds" class="cadastrar-evento-admin-select cadastrar-evento-admin-multiselect"
+                            multiple size="5" disabled>
+
+                        <option value="" disabled>Selecione uma turma primeiro</option>
+
+                    </select>
+
+                    <small id="mensagemBuscaConteudo" class="cadastrar-evento-admin-ajuda" hidden>
+                        Nenhum conteúdo encontrado.
+                    </small>
+
+                    <small class="cadastrar-evento-admin-ajuda">
+                        Este campo é opcional. Você poderá selecionar mais de um conteúdo utilizando Ctrl + clique.
+                    </small>
+
+                </div>
+
+                <div class="cadastrar-evento-admin-acoes">
+
+                    <a th:href="@{/admin/eventos}" class="cadastrar-evento-admin-cancelar">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="cadastrar-evento-admin-salvar" th:disabled="${#lists.isEmpty(turmas)}">
+                        Cadastrar evento
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/Usuarios/Admin/cadastrarEventoAdmin.js}"></script>
+
+</body>
+</html>

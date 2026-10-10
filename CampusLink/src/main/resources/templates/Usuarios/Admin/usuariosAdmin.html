@@ -20,148 +20,125 @@
             <div>
                 <p class="usuarios-admin-etiqueta">Administração</p>
                 <h1>Gerenciar usuários</h1>
-                <p>Visualize e gerencie os alunos e professores cadastrados no CampusLink</p>
+                <p>Visualize e gerencie os alunos, professores e administradores do CampusLink</p>
             </div>
 
             <div class="usuarios-admin-topo-acoes">
-                <a th:href="@{/admin/usuarios/cadastrar}" class="usuarios-admin-cadastrar">
-                    + Cadastrar usuário
-                </a>
-
-                <a th:href="@{/admin/painel}" class="usuarios-admin-voltar">
-                    Voltar
-                </a>
+                <a th:href="@{/admin/usuarios/cadastrar}" class="usuarios-admin-cadastrar">+ Cadastrar usuário</a>
+                <a th:href="@{/admin/painel}" class="usuarios-admin-voltar">Voltar</a>
             </div>
         </header>
 
-        <div th:if="${mensagemSucesso}" class="alert alert-success usuarios-admin-mensagem" th:text="${mensagemSucesso}"></div>
-
-        <div th:if="${mensagemErro}" class="alert alert-danger usuarios-admin-mensagem" th:text="${mensagemErro}"></div>
+        <div th:if="${mensagemSucesso}" class="alert alert-success usuarios-admin-mensagem" role="status" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert alert-danger usuarios-admin-mensagem" role="alert" th:text="${mensagemErro}"></div>
 
         <section class="usuarios-admin-card">
-
             <div class="usuarios-admin-card-topo">
                 <h2>Usuários cadastrados</h2>
-
-                <span class="usuarios-admin-total" th:text="${#lists.size(usuarios) + ' usuários'}">
-                    0 usuários
-                </span>
+                <span class="usuarios-admin-total" th:text="${#lists.size(usuarios) + ' usuários'}">0 usuários</span>
             </div>
 
             <div class="usuarios-admin-busca">
-                <input id="buscarUsuario" type="text" placeholder="Buscar por nome, e-mail, RGM ou matrícula">
+                <label for="buscarUsuario" class="visually-hidden">Buscar usuário</label>
+                <input id="buscarUsuario" type="search" placeholder="Buscar por nome, e-mail, ID, RGM ou matrícula">
             </div>
 
             <div class="table-responsive">
-
                 <table class="usuarios-admin-tabela">
                     <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>Identificador</th>
-                        <th>E-mail</th>
-                        <th>Telefone</th>
-                        <th>Perfil</th>
-                        <th>Status</th>
-                        <th>Ações</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Identificador</th>
+                        <th scope="col">E-mail</th>
+                        <th scope="col">Telefone</th>
+                        <th scope="col">Perfil</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Ações</th>
                     </tr>
                     </thead>
 
                     <tbody>
-
-                    <tr class="usuario-linha" th:each="usuario : ${usuarios}"
-                        th:attr="data-nome=${usuario.nome},data-email=${usuario.email},data-identificador=${usuario.identificador}">
+                    <tr class="usuario-linha" th:each="usuario : ${usuarios}" th:attr="data-nome=${usuario.nome},data-email=${usuario.email},data-identificador=${usuario.identificador}"
+                        th:with="ehAdmin=${usuario.perfil == 'Administrador'},propriaConta=${adminLogado != null and usuario.idUsuario == adminLogado.idUsuario},
+                                 podeGerenciar=${adminLogado != null and (not usuario.master or adminLogado.master)},
+                                 podeRetirar=${podeGerenciar and not propriaConta and (not usuario.status or totalAdministradoresAtivos > 1)}">
 
                         <td th:text="${usuario.nome}">Nome</td>
+                        <td th:text="${usuario.identificador}">Identificador</td>
+                        <td th:text="${usuario.email}">email@campuslink.com</td>
+                        <td th:text="${usuario.telefone}">Telefone</td>
 
-                        <td th:text="${usuario.identificador}">
-                            Identificador
-                        </td>
-
-                        <td th:text="${usuario.email}">
-                            email@campuslink.com
-                        </td>
-
-                        <td th:text="${usuario.telefone}">
-                            Telefone
+                        <td>
+                            <span class="usuario-perfil usuario-aluno" th:if="${usuario.perfil == 'Aluno'}">Aluno</span>
+                            <span class="usuario-perfil usuario-professor" th:if="${usuario.perfil == 'Professor'}">Professor</span>
+                            <span class="usuario-perfil bg-secondary text-white" th:if="${ehAdmin and not usuario.master}">Administrador</span>
+                            <span class="usuario-perfil bg-warning text-dark" th:if="${ehAdmin and usuario.master}">Admin master</span>
                         </td>
 
                         <td>
-                            <span class="usuario-perfil usuario-aluno" th:if="${usuario.perfil == 'Aluno'}">
-                                Aluno
-                            </span>
-
-                            <span class="usuario-perfil usuario-professor" th:if="${usuario.perfil == 'Professor'}">
-                                Professor
-                            </span>
-                        </td>
-
-                        <td>
-                            <span class="usuario-status usuario-ativo" th:if="${usuario.status}">
-                                Ativo
-                            </span>
-
-                            <span class="usuario-status usuario-inativo" th:unless="${usuario.status}">
-                                Inativo
-                            </span>
+                            <span class="usuario-status usuario-ativo" th:if="${usuario.status}">Ativo</span>
+                            <span class="usuario-status usuario-inativo" th:unless="${usuario.status}">Inativo</span>
                         </td>
 
                         <td>
                             <div class="usuario-acoes">
+                                <a th:if="${not ehAdmin}" th:href="@{/admin/usuarios/{idUsuario}/editar(idUsuario=${usuario.idUsuario})}" class="usuario-botao usuario-botao-editar">Editar</a>
 
-                                <a th:href="@{/admin/usuarios/{idUsuario}/editar(idUsuario=${usuario.idUsuario})}"
-                                   class="usuario-botao usuario-botao-editar">
-                                    Editar
-                                </a>
-
-                                <form th:if="${usuario.status}"
-                                      th:action="@{/admin/usuarios/{idUsuario}/desativar(idUsuario=${usuario.idUsuario})}"
-                                      method="post">
-
+                                <form th:if="${usuario.status and (not ehAdmin or podeRetirar)}" th:action="@{/admin/usuarios/{idUsuario}/desativar(idUsuario=${usuario.idUsuario})}" method="post">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                                    <button type="submit" class="usuario-botao usuario-botao-desativar">
-                                        Desativar
-                                    </button>
-
+                                    <button type="submit" class="usuario-botao usuario-botao-desativar">Desativar</button>
                                 </form>
 
-                                <form th:unless="${usuario.status}"
-                                      th:action="@{/admin/usuarios/{idUsuario}/ativar(idUsuario=${usuario.idUsuario})}"
-                                      method="post">
-
+                                <form th:if="${not usuario.status and (not ehAdmin or podeGerenciar)}" th:action="@{/admin/usuarios/{idUsuario}/ativar(idUsuario=${usuario.idUsuario})}" method="post">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                                    <button type="submit" class="usuario-botao usuario-botao-ativar">
-                                        Ativar
-                                    </button>
-
+                                    <button type="submit" class="usuario-botao usuario-botao-ativar">Ativar</button>
                                 </form>
 
+                                <button th:if="${ehAdmin and podeRetirar}" type="button" class="usuario-botao usuario-botao-desativar" data-bs-toggle="modal" th:attr="data-bs-target=${'#excluirAdmin' + usuario.idUsuario}">Excluir</button>
+
+                                <span th:if="${ehAdmin and propriaConta}" class="small text-muted">Sua conta</span>
+                                <span th:if="${ehAdmin and not propriaConta and not podeGerenciar}" class="small text-muted">Somente master</span>
+                                <span th:if="${ehAdmin and usuario.status and totalAdministradoresAtivos <= 1}" class="small text-muted">Último admin ativo</span>
+                            </div>
+
+                            <div th:if="${ehAdmin and podeRetirar}" class="modal fade" th:id="${'excluirAdmin' + usuario.idUsuario}" tabindex="-1" th:attr="aria-labelledby=${'tituloExcluirAdmin' + usuario.idUsuario}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h2 class="modal-title fs-5" th:id="${'tituloExcluirAdmin' + usuario.idUsuario}">Excluir administrador</h2>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <p>Deseja excluir a conta de <strong th:text="${usuario.nome}">Nome</strong>?</p>
+                                            <p class="mb-0">Essa exclusão é permanente.</p>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+                                            <form th:action="@{/admin/usuarios/{idUsuario}/excluir(idUsuario=${usuario.idUsuario})}" method="post">
+                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                <button type="submit" class="btn btn-danger">Excluir administrador</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
-
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">
-                            Nenhum usuário cadastrado
-                        </td>
+                        <td colspan="7" class="usuarios-admin-vazio">Nenhum usuário cadastrado</td>
                     </tr>
 
-                    <tr id="nenhumResultado">
-                        <td colspan="7" class="usuarios-admin-vazio">
-                            Nenhum usuário encontrado
-                        </td>
+                    <tr id="nenhumResultado" th:if="${not #lists.isEmpty(usuarios)}">
+                        <td colspan="7" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
                     </tr>
-
                     </tbody>
                 </table>
-
             </div>
-
         </section>
-
     </div>
 </main>
 

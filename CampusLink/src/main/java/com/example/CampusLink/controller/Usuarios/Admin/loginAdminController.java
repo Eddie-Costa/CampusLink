@@ -1,3 +1,4 @@
+
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import org.slf4j.helpers.MessageFormatter;
@@ -27,7 +28,7 @@ public class loginAdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(loginAdminController.class);
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+    private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     @Value("${campuslink.twofa.enabled:true}")
     private boolean twoFactorEnabled;
@@ -169,7 +170,7 @@ public class loginAdminController {
             if (logger.isWarnEnabled()) {
                 try {
                     usuarioDAO.InserirLogsNoBD(null, "WARN", loginAdminController.class.getName(), "fazerLogin", null,
-                            MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para administrador {}", new Object[]{email}).getMessage(), null, null);
+                            MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para administrador {}", new Object[]{email, loginAttemptService.getTentativas(email)}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }

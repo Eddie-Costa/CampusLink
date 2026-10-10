@@ -1,3 +1,4 @@
+
 :root {
     --azul-campus: var(--campus-navy);
     --azul-hover: var(--campus-navy-hover);
@@ -341,6 +342,45 @@ body {
     width: calc(100% - 40px);
     max-width: 500px;
     margin: 20px auto 0;
+}
+
+/* botao mostrar mais igual ao do administrador */
+
+#botaoMostrarMais {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 170px;
+    min-height: 42px;
+    padding: 10px 22px !important;
+    border: 1px solid var(--azul-campus);
+    border-radius: 22px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+#botaoMostrarMais:hover {
+    background-color: var(--azul-hover);
+    border-color: var(--azul-hover);
+    color: var(--branco);
+}
+
+#botaoMostrarMais:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#botaoMostrarMais:focus-visible {
+    outline: 3px solid #7e94ce;
+    outline-offset: 3px;
+    box-shadow: none;
 }
 
 @media (max-width: 900px) {
