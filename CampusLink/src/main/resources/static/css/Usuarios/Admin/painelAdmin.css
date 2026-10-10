@@ -1,14 +1,14 @@
 :root {
-    --admin-azul: #11183f;
-    --admin-azul-claro: #1d2b62;
-    --admin-texto: #344054;
-    --admin-borda: #d9e1ed;
+    --admin-azul: var(--campus-navy);
+    --admin-azul-claro: var(--campus-navy-hover);
+    --admin-texto: var(--campus-muted);
+    --admin-borda: var(--campus-border);
 }
 
 body {
     min-height: 100vh;
     margin: 0;
-    background-color: #b7c5d9;
+    background-color: var(--campus-page-bg);
     background-image: url("/images/bg.png");
     background-position: center;
     background-repeat: no-repeat;
@@ -65,7 +65,7 @@ body {
     background-color: #fff;
     border: 1px solid var(--admin-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .admin-card-topo {

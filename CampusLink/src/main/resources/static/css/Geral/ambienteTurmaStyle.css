@@ -1,8 +1,8 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
+    --cinza-fundo: var(--campus-page-bg);
 }
 
 *,
@@ -36,37 +36,50 @@ body {
     width: calc(100% - 48px);
     max-width: 1625px;
     min-height: 456px;
-    margin: 125px auto 60px;
+    margin: 88px auto 64px;
     padding: 100px 42px 46px;
     border-radius: 25px;
     background-color: var(--azul-campus);
-    box-shadow: 0 12px 25px rgba(17, 24, 63, 0.28);
+    box-shadow: 0 12px 25px rgba(var(--campus-navy-rgb), 0.28);
 }
 
 .voltar-turmas {
     position: absolute;
-    top: -46px;
-    right: 18px;
+    top: 20px;
+    left: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    z-index: 1;
+}
+
+.voltar-turmas.acao-turma {
+    background-color: var(--branco);
     color: var(--azul-campus);
-    font-size: 17px;
-    font-weight: 700;
+}
+
+.voltar-turmas.acao-turma:hover {
+    background-color: var(--campus-border);
+    color: var(--azul-campus);
     text-decoration: none;
 }
 
-.voltar-turmas:hover {
-    color: var(--azul-hover);
-    text-decoration: underline;
+.voltar-turmas.acao-turma:focus-visible {
+    outline: 3px solid var(--campus-accent);
+    outline-offset: 3px;
 }
 
 .turmas-page > h1 {
     position: absolute;
-    top: -35px;
+    top: -24px;
     left: 50%;
     max-width: calc(100% - 48px);
     margin: 0;
     padding: 10px 35px;
     transform: translateX(-50%);
-    border-radius: 27px 27px 0 0;
+    border: 1px solid var(--branco);
+    border-radius: 27px;
     background-color: var(--azul-campus);
     color: var(--branco);
     font-size: 29px;
@@ -104,7 +117,7 @@ main.container > p {
     padding: 6px 12px;
     border: 0;
     border-radius: 18px;
-    background-color: #d93025;
+    background-color: var(--campus-danger);
     color: var(--branco);
     font-size: 12px;
     font-weight: 700;
@@ -114,7 +127,7 @@ main.container > p {
 }
 
 .btn.btn-danger:hover {
-    background-color: #b42318;
+    background-color: var(--campus-danger-text);
     color: var(--branco);
     transform: translateY(-2px);
 }
@@ -139,7 +152,7 @@ main.container > p {
 }
 
 .acao-turma:hover {
-    background-color: #e3e6ed;
+    background-color: var(--campus-border);
     transform: translateY(-2px);
 }
 
@@ -178,7 +191,7 @@ main.container > p {
 .conteudo-descricao {
     margin: 0;
     font-size: 14px;
-    color: #5a6b8c;
+    color: var(--campus-muted);
     overflow-wrap: anywhere;
 }
 
@@ -202,7 +215,7 @@ main.container > p {
 }
 
 .conteudo-link {
-    color: #005bd3;
+    color: var(--campus-link);
     font-weight: 700;
 }
 
@@ -222,9 +235,9 @@ main.container > p {
 }
 
 .status-suspenso {
-    border: 1px solid #ffe69c;
-    background-color: #fff3cd;
-    color: #664d03;
+    border: 1px solid var(--campus-warning-border);
+    background-color: var(--campus-warning-bg);
+    color: var(--campus-warning-text);
 }
 
 .sem-conteudos {
@@ -248,11 +261,26 @@ main.container > p {
     margin: 0;
 }
 
+.conteudo-acoes .participantes-turma {
+    margin-left: auto;
+}
+
+.conteudo-acoes .form-excluir-turma {
+    margin: 0;
+}
+
+.conteudo-acoes .form-excluir-turma .btn.btn-danger {
+    width: auto;
+    min-width: 175px;
+    min-height: 34px;
+    padding: 7px 15px;
+}
+
 .campus-modal {
     overflow: hidden;
     border: 0;
     border-radius: 18px;
-    background-color: #f5f7fb;
+    background-color: var(--campus-surface);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -280,7 +308,67 @@ main.container > p {
 .campus-modal .modal-footer {
     padding: 16px 24px 22px;
     border-top: 0;
-    background-color: #f5f7fb;
+    background-color: var(--campus-surface);
+}
+
+#adicionarPessoasModal .modal-dialog {
+    max-width: 560px;
+}
+
+#adicionarPessoasModal .campus-modal {
+    overflow: visible;
+}
+
+#adicionarPessoasModal .modal-header {
+    border-radius: 18px 18px 0 0;
+}
+
+#adicionarPessoasModal .modal-body {
+    overflow: visible;
+}
+
+#participantesTurma .modal-dialog,
+#participantesTurma .modal-content {
+    max-height: calc(100vh - 2rem);
+}
+
+#participantesTurma .modal-body {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#participantesTurma .participantes-lista {
+    max-height: 60vh;
+    overflow: auto;
+}
+
+#participantesTurma .participantes-lista table {
+    border: 1px solid var(--campus-border);
+    border-collapse: collapse;
+}
+
+#participantesTurma .participantes-lista th,
+#participantesTurma .participantes-lista td {
+    border: 1px solid var(--campus-border);
+    padding: 10px 12px;
+}
+
+#participantesTurma .participantes-lista thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--campus-surface-alt);
+}
+
+#participantesTurma .form-remover-participante {
+    margin: 0;
+}
+
+#participantesTurma .form-remover-participante .btn.btn-danger {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 6px 12px;
 }
 
 .campus-modal .form-label {
@@ -291,14 +379,73 @@ main.container > p {
 
 .campus-modal .form-control {
     min-height: 44px;
-    border: 1px solid #c7cedb;
+    border: 1px solid var(--campus-border);
     border-radius: 10px;
     color: var(--azul-campus);
 }
 
 .campus-modal .form-control:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.15);
+}
+
+.campo-autocomplete-pessoa {
+    position: relative;
+    z-index: 2;
+}
+
+.sugestoes-pessoas {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 5;
+    max-height: min(260px, 40vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 6px;
+    border: 1px solid var(--campus-border);
+    border-radius: 12px;
+    background: var(--campus-surface);
+    box-shadow: 0 8px 20px rgba(var(--campus-navy-rgb), 0.18);
+}
+
+.sugestoes-pessoas[hidden] {
+    display: none;
+}
+
+.sugestao-pessoa,
+.sugestao-pessoa-vazia {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--azul-campus);
+    text-align: left;
+}
+
+.sugestao-pessoa {
+    cursor: pointer;
+}
+
+.sugestao-pessoa:hover,
+.sugestao-pessoa:focus-visible {
+    outline: none;
+    background: var(--campus-surface-alt);
+}
+
+.sugestao-pessoa-nome {
+    font-weight: 700;
+}
+
+.sugestao-pessoa-detalhes {
+    color: var(--campus-muted);
+    font-size: 13px;
 }
 
 .btn-campus {
@@ -316,7 +463,7 @@ main.container > p {
 
 .erro-campo {
     margin-top: 7px;
-    color: #c62828;
+    color: var(--campus-danger);
     font-size: 14px;
     font-weight: 700;
 }
@@ -340,7 +487,7 @@ main.container > p {
 }
 
 .conteudo-excluir:hover {
-    background-color: #e3e6ed;
+    background-color: var(--campus-border);
     color: var(--azul-campus);
     transform: translateY(-2px);
 }
@@ -352,7 +499,7 @@ main.container > p {
 @media (max-width: 800px) {
     .turmas-page {
         width: calc(100% - 24px);
-        margin-top: 105px;
+        margin-top: 88px;
         padding: 95px 22px 30px;
     }
 
@@ -380,17 +527,17 @@ main.container > p {
 
 @media (max-width: 480px) {
     .turmas-page {
+        margin-top: 88px;
         padding-top: 105px;
     }
 
     .voltar-turmas {
-        top: -43px;
-        right: 8px;
-        font-size: 13px;
+        top: 20px;
+        left: 22px;
     }
 
     .turmas-page > h1 {
-        top: -35px;
+        top: -20px;
         padding: 10px 14px;
         font-size: 18px;
     }

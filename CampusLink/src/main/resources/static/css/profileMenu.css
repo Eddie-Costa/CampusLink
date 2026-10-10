@@ -1,4 +1,6 @@
 .account-menu {
+    position: relative;
+    z-index: 1050;
     display: inline-block;
     text-align: left;
 }
@@ -12,14 +14,14 @@
     flex-shrink: 0;
     border: 0;
     border-radius: 50%;
-    background: rgb(17, 24, 63);
+    background: var(--campus-navy);
     color: #fff;
     font-size: 1.05rem;
     font-weight: 700;
 }
 
 .account-avatar:focus-visible {
-    outline: 3px solid #5fa8d3;
+    outline: 3px solid var(--campus-accent);
     outline-offset: 3px;
 }
 
@@ -29,13 +31,13 @@
 }
 
 .account-dropdown {
-    --bs-dropdown-link-active-bg: rgb(17, 24, 63);
+    --bs-dropdown-link-active-bg: var(--campus-navy);
     width: min(340px, calc(100vw - 32px));
     padding: 12px 0;
-    border: 1px solid #e1e5ef;
+    border: 1px solid var(--campus-border);
     border-radius: 18px;
-    box-shadow: 0 14px 40px #11183f24;
-    color: rgb(17, 24, 63);
+    box-shadow: 0 14px 40px rgba(var(--campus-navy-rgb), 0.14);
+    color: var(--campus-navy);
 }
 
 .account-summary {
@@ -55,14 +57,14 @@
 
 .account-email {
     font-size: .85rem;
-    color: #596584;
+    color: var(--campus-muted);
     overflow-wrap: anywhere;
     margin: 3px 0 9px;
 }
 
 .account-summary a {
     font-size: .9rem;
-    color: #205b9a;
+    color: var(--campus-link);
     text-decoration: none;
 }
 

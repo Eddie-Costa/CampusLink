@@ -1,9 +1,9 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #5f6878;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
 }
 
 * {
@@ -74,11 +74,11 @@ body {
     padding: 28px;
     border-radius: 18px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .numero-card {
-    color: #8993ac;
+    color: var(--cinza-texto);
     font-size: 13px;
     font-weight: 700;
 }
@@ -112,7 +112,7 @@ body {
 
 .funcionalidades-final p {
     margin: 0;
-    color: #d5daea;
+    color: var(--campus-border);
 }
 
 .acoes-final {

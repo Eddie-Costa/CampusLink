@@ -56,20 +56,20 @@ body {
     width: 100%;
     height: 48px;
     padding: 0 20px;
-    border: 2px solid #11194d;
+    border: 2px solid var(--campus-navy);
     border-radius: 14px;
     background-color: rgba(255, 255, 255, 0.9);
-    color: #11194d;
+    color: var(--campus-navy);
     font-size: 15px;
 }
 
 .busca-turma::placeholder {
-    color: #6b7290;
+    color: var(--campus-muted);
 }
 
 .busca-turma:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.25);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 .sugestoes-turma {
@@ -80,10 +80,10 @@ body {
     max-height: 280px;
     overflow-y: auto;
     padding: 6px;
-    border: 1px solid #c9cee0;
+    border: 1px solid var(--campus-border);
     border-radius: 12px;
     background: #ffffff;
-    box-shadow: 0 8px 20px rgba(15, 25, 75, 0.18);
+    box-shadow: 0 8px 20px rgba(var(--campus-navy-rgb), 0.18);
 }
 
 .sugestoes-turma[hidden] {
@@ -95,19 +95,19 @@ body {
     display: block;
     padding: 10px 14px;
     border-radius: 8px;
-    color: #11194d;
+    color: var(--campus-navy);
     text-decoration: none;
 }
 
 .sugestao-turma:hover,
 .sugestao-turma:focus {
-    background: #eef0f8;
-    color: #11194d;
+    background: var(--campus-surface-alt);
+    color: var(--campus-navy);
     outline: none;
 }
 
 .sugestao-turma-vazia {
-    color: #6b7290;
+    color: var(--campus-muted);
 }
 
 
@@ -138,7 +138,7 @@ body {
     gap: 14px;
     padding: 20px;
     border-radius: 22px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     text-decoration: none;
     text-align: center;
@@ -153,9 +153,9 @@ body {
 
 .turma-card:hover {
     color: white;
-    background-color: #182363;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 10px 25px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -208,7 +208,7 @@ body {
     justify-content: center;
     border: none;
     border-radius: 25px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: #ffffff;
     font-size: 18px;
     font-weight: 700;
@@ -227,9 +227,9 @@ body {
 
 .acao-turma:hover {
     color: white;
-    background-color: #192566;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 6px 16px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -243,7 +243,7 @@ body {
     text-align: center;
     border-radius: 20px;
     background-color: rgba(255, 255, 255, 0.65);
-    color: #11194d;
+    color: var(--campus-navy);
     font-size: 18px;
     font-weight: 600;
 }
@@ -285,7 +285,7 @@ body {
     justify-content: space-between;
     padding: 18px 32px;
     border-radius: 18px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: #ffffff;
     transition:
             transform 0.2s ease,
@@ -295,9 +295,9 @@ body {
 
 
 .conteudo-card:hover {
-    background-color: #182363;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 8px 20px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -339,7 +339,7 @@ body {
 
 
 .campus-modal .modal-header {
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     border: none;
     padding: 20px 24px;
@@ -353,7 +353,7 @@ body {
 
 .campus-modal .modal-body {
     padding: 25px;
-    color: #11194d;
+    color: var(--campus-navy);
 }
 
 
@@ -367,27 +367,27 @@ body {
 .campus-modal .form-control {
     height: 48px;
     border-radius: 10px;
-    border: 1px solid #cad1df;
+    border: 1px solid var(--campus-border);
 }
 
 
 .campus-modal .form-control:focus {
-    border-color: #11194d;
-    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.15);
+    border-color: var(--campus-navy);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.15);
 }
 
 
 /* Botão do modal */
 
 .btn-campus {
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     border: none;
 }
 
 
 .btn-campus:hover {
-    background-color: #192566;
+    background-color: var(--campus-navy-hover);
     color: white;
 }
 
@@ -396,7 +396,7 @@ body {
 
 .erro-campo {
     margin-top: 6px;
-    color: #c62828;
+    color: var(--campus-danger);
     font-size: 14px;
 }
 

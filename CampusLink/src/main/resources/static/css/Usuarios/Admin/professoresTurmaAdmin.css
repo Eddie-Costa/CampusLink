@@ -1,14 +1,14 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
-    --cinza-borda: #d9e1ed;
-    --verde: #16834b;
-    --cinza-status: #667085;
-    --vermelho: #c62828;
-    --amarelo: #9a6700;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
+    --cinza-borda: var(--campus-border);
+    --verde: var(--campus-success);
+    --cinza-status: var(--campus-muted);
+    --vermelho: var(--campus-danger);
+    --amarelo: var(--campus-warning-text);
 }
 
 * {
@@ -101,7 +101,7 @@ body {
     background-color: var(--branco);
     border: 1px solid var(--cinza-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .professores-turma-admin-adicionar {
@@ -167,7 +167,7 @@ body {
 
 .professores-turma-admin-select:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .professores-turma-admin-adicionar-botao {
@@ -188,8 +188,8 @@ body {
 }
 
 .professores-turma-admin-adicionar-botao:disabled {
-    border-color: #aab2c0;
-    background-color: #aab2c0;
+    border-color: var(--campus-border);
+    background-color: var(--campus-border);
     cursor: not-allowed;
 }
 
@@ -207,7 +207,7 @@ body {
 
 .professores-turma-admin-tabela thead th {
     padding: 14px 18px;
-    background-color: #f4f6fa;
+    background-color: var(--campus-surface);
     color: var(--azul-campus);
     border-bottom: 1px solid var(--cinza-borda);
     font-size: 13px;
@@ -217,8 +217,8 @@ body {
 
 .professores-turma-admin-tabela tbody td {
     padding: 15px 18px;
-    color: #344054;
-    border-bottom: 1px solid #edf0f5;
+    color: var(--campus-muted);
+    border-bottom: 1px solid var(--campus-border);
     vertical-align: middle;
 }
 
@@ -227,7 +227,7 @@ body {
 }
 
 .professores-turma-admin-tabela tbody tr:hover td {
-    background-color: #f8f9fc;
+    background-color: var(--campus-surface);
 }
 
 .professor-turma-nome {
@@ -250,7 +250,7 @@ body {
 }
 
 .professor-turma-ativo {
-    background-color: #dcfce7;
+    background-color: var(--campus-success-bg);
     color: var(--verde);
 }
 
@@ -271,7 +271,7 @@ body {
 }
 
 .professor-turma-responsavel {
-    background-color: #fff3cd;
+    background-color: var(--campus-warning-bg);
     color: var(--amarelo);
 }
 

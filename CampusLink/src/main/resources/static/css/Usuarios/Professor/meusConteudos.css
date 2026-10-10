@@ -1,9 +1,9 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
 }
 
 * {
@@ -51,7 +51,7 @@ body {
 
 .titulo-pagina p {
     margin: 0;
-    color: #4d5870;
+    color: var(--campus-muted);
 }
 
 .resumo-conteudos {
@@ -106,14 +106,14 @@ body {
 .filtros-conteudos .form-control,
 .filtros-conteudos .form-select {
     min-height: 46px;
-    border: 1px solid #c8ced8;
+    border: 1px solid var(--campus-border);
     border-radius: 10px;
 }
 
 .filtros-conteudos .form-control:focus,
 .filtros-conteudos .form-select:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.15);
 }
 
 .lista-conteudos {
@@ -172,23 +172,23 @@ body {
 .comentario-admin {
     margin-top: 16px;
     padding: 14px 16px;
-    border: 1px solid #f1aeb5;
+    border: 1px solid var(--campus-danger-border);
     border-left: 4px solid #dc3545;
     border-radius: 10px;
-    background-color: #f8d7da;
+    background-color: var(--campus-danger-bg);
 }
 
 .comentario-admin-titulo {
     display: block;
     margin-bottom: 7px;
-    color: #842029;
+    color: var(--campus-danger-text);
     font-size: 13px;
     font-weight: bold;
 }
 
 .comentario-admin p {
     margin: 0;
-    color: #58151c;
+    color: var(--campus-danger-text);
     font-size: 14px;
     line-height: 1.5;
     white-space: pre-wrap;
@@ -208,18 +208,18 @@ body {
 }
 
 .status-ativo {
-    background-color: #d1e7dd;
-    color: #0f5132;
+    background-color: var(--campus-success-bg);
+    color: var(--campus-success-text);
 }
 
 .status-suspenso {
-    background-color: #fff3cd;
-    color: #664d03;
+    background-color: var(--campus-warning-bg);
+    color: var(--campus-warning-text);
 }
 
 .status-removido {
-    background-color: #f8d7da;
-    color: #842029;
+    background-color: var(--campus-danger-bg);
+    color: var(--campus-danger-text);
 }
 
 .botao-analise {
@@ -275,7 +275,7 @@ body {
     gap: 40px;
     margin-top: 20px;
     padding-top: 18px;
-    border-top: 1px solid #e2e5ea;
+    border-top: 1px solid var(--campus-border);
 }
 
 .informacao {
@@ -301,7 +301,7 @@ body {
 .conteudo-denuncias {
     margin-top: 18px;
     padding-top: 16px;
-    border-top: 1px solid #e2e5ea;
+    border-top: 1px solid var(--campus-border);
 }
 
 .denuncias-titulo {
@@ -322,7 +322,7 @@ body {
 .denunciante {
     padding: 5px 10px;
     border-radius: 8px;
-    background-color: #f0f2f5;
+    background-color: var(--campus-surface-alt);
     color: var(--azul-campus);
     font-size: 12px;
     font-weight: bold;

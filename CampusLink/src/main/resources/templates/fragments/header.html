@@ -7,7 +7,8 @@
 </head>
 <body>
 <main>
-    <div th:fragment="nav" class="nav">
+    <div th:fragment="nav" class="nav site-header-nav">
+        <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
         <link rel="stylesheet" th:href="@{/css/profileMenu.css}">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -78,7 +79,7 @@
 
                 <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
                     <div class="dropdown account-menu">
-                        <button class="account-avatar" type="button" id="menuConta" data-bs-toggle="dropdown"
+                        <button class="account-avatar" type="button" id="menuConta"
                                 aria-expanded="false" aria-label="Abrir menu da conta">
                             <span th:text="${#strings.toUpperCase(#strings.substring(session.usuarioLogado.email, 0, 1))}">U</span>
                         </button>
@@ -119,6 +120,38 @@
 
             </header>
         </div>
+        <script>
+            (() => {
+                const menu = document.querySelector('.account-menu');
+                const botao = document.getElementById('menuConta');
+                const opcoes = document.querySelector('.account-dropdown');
+                if (!menu || !botao || !opcoes) return;
+
+                const fecharMenu = () => {
+                    botao.setAttribute('aria-expanded', 'false');
+                    opcoes.classList.remove('show');
+                };
+
+                botao.addEventListener('click', () => {
+                    const abrir = botao.getAttribute('aria-expanded') !== 'true';
+                    botao.setAttribute('aria-expanded', String(abrir));
+                    opcoes.classList.toggle('show', abrir);
+                });
+
+                document.addEventListener('click', event => {
+                    if (!menu.contains(event.target) || event.target.closest('.dropdown-item')) {
+                        fecharMenu();
+                    }
+                });
+
+                document.addEventListener('keydown', event => {
+                    if (event.key === 'Escape' && botao.getAttribute('aria-expanded') === 'true') {
+                        fecharMenu();
+                        botao.focus();
+                    }
+                });
+            })();
+        </script>
     </div>
 </main>
 </body>

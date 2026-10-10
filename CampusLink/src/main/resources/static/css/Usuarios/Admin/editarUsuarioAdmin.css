@@ -1,10 +1,10 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
-    --cinza-borda: #d9e1ed;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
+    --cinza-borda: var(--campus-border);
 }
 
 * {
@@ -92,7 +92,7 @@ body {
     background-color: var(--branco);
     border: 1px solid var(--cinza-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .editar-admin-card-topo {
@@ -125,7 +125,7 @@ body {
 .editar-admin-campo input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #cfd7e3;
+    border: 1px solid var(--campus-border);
     border-radius: 9px;
     outline: none;
     background-color: var(--branco);
@@ -135,11 +135,11 @@ body {
 
 .editar-admin-campo input:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .editar-admin-campo input[readonly] {
-    background-color: #f2f4f7;
+    background-color: var(--campus-surface-alt);
     color: var(--cinza-texto);
     cursor: not-allowed;
 }
@@ -162,14 +162,14 @@ body {
 }
 
 .editar-admin-cancelar {
-    border: 1px solid #98a2b3;
+    border: 1px solid var(--campus-border);
     background-color: var(--branco);
-    color: #475467;
+    color: var(--campus-muted);
 }
 
 .editar-admin-cancelar:hover {
-    background-color: #f2f4f7;
-    color: #344054;
+    background-color: var(--campus-surface-alt);
+    color: var(--campus-muted);
 }
 
 .editar-admin-salvar {

@@ -10,11 +10,134 @@ document.addEventListener('DOMContentLoaded', function () {
                 const selectModalInstance = bootstrap.Modal.getOrCreateInstance(selectModal);
                 const editModalInstance = bootstrap.Modal.getOrCreateInstance(editModal);
 
+                selectModal.addEventListener('hidden.bs.modal', function abrirEdicao() {
+                    editModalInstance.show();
+                }, { once: true });
+
                 selectModalInstance.hide();
-                editModalInstance.show();
             }
         });
     });
+
+    const participantesModal = document.getElementById('participantesTurma');
+    const adicionarPessoasModal = document.getElementById('adicionarPessoasModal');
+    const abrirAdicionarPessoas = document.getElementById('abrirAdicionarPessoasModal');
+    let retornarAosParticipantes = false;
+
+    if (participantesModal && adicionarPessoasModal && abrirAdicionarPessoas) {
+        abrirAdicionarPessoas.addEventListener('click', function () {
+            retornarAosParticipantes = true;
+            participantesModal.addEventListener('hidden.bs.modal', function abrirFormulario() {
+                bootstrap.Modal.getOrCreateInstance(adicionarPessoasModal).show();
+            }, { once: true });
+            bootstrap.Modal.getOrCreateInstance(participantesModal).hide();
+        });
+
+        adicionarPessoasModal.addEventListener('hidden.bs.modal', function () {
+            if (!retornarAosParticipantes) return;
+
+            retornarAosParticipantes = false;
+            bootstrap.Modal.getOrCreateInstance(participantesModal).show();
+        });
+    }
+
+    const campoAutocompletePessoa = document.querySelector('.campo-autocomplete-pessoa');
+    const inputPessoa = document.getElementById('emailPessoaAdicionar');
+    const listaSugestoesPessoas = document.getElementById('sugestoesPessoasAdicionar');
+
+    if (campoAutocompletePessoa && inputPessoa && listaSugestoesPessoas) {
+        const urlSugestoes = campoAutocompletePessoa.dataset.sugestoesUrl;
+        let temporizadorSugestoes;
+        let requisicaoSugestoes;
+
+        function fecharSugestoesPessoas() {
+            listaSugestoesPessoas.replaceChildren();
+            listaSugestoesPessoas.hidden = true;
+            inputPessoa.setAttribute('aria-expanded', 'false');
+            inputPessoa.removeAttribute('aria-activedescendant');
+        }
+
+        function mostrarSugestoesPessoas(pessoas) {
+            listaSugestoesPessoas.replaceChildren();
+
+            if (!pessoas.length) {
+                const vazio = document.createElement('span');
+                vazio.className = 'sugestao-pessoa-vazia';
+                vazio.textContent = 'Nenhuma pessoa encontrada';
+                listaSugestoesPessoas.appendChild(vazio);
+            } else {
+                pessoas.forEach(function (pessoa, indice) {
+                    const opcao = document.createElement('button');
+                    opcao.type = 'button';
+                    opcao.className = 'sugestao-pessoa';
+                    opcao.id = `sugestao-pessoa-${indice}`;
+                    opcao.setAttribute('role', 'option');
+                    opcao.setAttribute('aria-label', `${pessoa.nomePessoa}, ${pessoa.emailPessoa}`);
+
+                    const nome = document.createElement('span');
+                    nome.className = 'sugestao-pessoa-nome';
+                    nome.textContent = pessoa.nomePessoa;
+
+                    const detalhes = document.createElement('span');
+                    detalhes.className = 'sugestao-pessoa-detalhes';
+                    detalhes.textContent = `${pessoa.emailPessoa} · ${pessoa.tipoUsuario}`;
+
+                    opcao.append(nome, detalhes);
+                    opcao.addEventListener('click', function () {
+                        inputPessoa.value = pessoa.emailPessoa;
+                        fecharSugestoesPessoas();
+                        inputPessoa.focus();
+                    });
+                    listaSugestoesPessoas.appendChild(opcao);
+                });
+            }
+
+            listaSugestoesPessoas.hidden = false;
+            inputPessoa.setAttribute('aria-expanded', 'true');
+        }
+
+        inputPessoa.addEventListener('input', function () {
+            window.clearTimeout(temporizadorSugestoes);
+            if (requisicaoSugestoes) requisicaoSugestoes.abort();
+
+            const consulta = inputPessoa.value.trim();
+            if (consulta.length < 2) {
+                fecharSugestoesPessoas();
+                return;
+            }
+
+            temporizadorSugestoes = window.setTimeout(async function () {
+                requisicaoSugestoes = new AbortController();
+                try {
+                    const resposta = await fetch(`${urlSugestoes}?q=${encodeURIComponent(consulta)}`, {
+                        headers: { Accept: 'application/json' },
+                        signal: requisicaoSugestoes.signal
+                    });
+                    if (!resposta.ok) {
+                        fecharSugestoesPessoas();
+                        return;
+                    }
+                    mostrarSugestoesPessoas(await resposta.json());
+                } catch (erro) {
+                    if (erro.name !== 'AbortError') fecharSugestoesPessoas();
+                }
+            }, 180);
+        });
+
+        inputPessoa.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape') {
+                fecharSugestoesPessoas();
+            } else if (evento.key === 'ArrowDown' && !listaSugestoesPessoas.hidden) {
+                evento.preventDefault();
+                const primeiraOpcao = listaSugestoesPessoas.querySelector('.sugestao-pessoa');
+                if (primeiraOpcao) primeiraOpcao.focus();
+            }
+        });
+
+        document.addEventListener('click', function (evento) {
+            if (!campoAutocompletePessoa.contains(evento.target)) fecharSugestoesPessoas();
+        });
+    }
 
     const paginaTurma = document.querySelector('.turmas-page');
 
@@ -34,6 +157,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    if (paginaTurma && paginaTurma.dataset.abrirModalEditarTurma === 'true') {
+        const modalElement = document.getElementById('editarTurmaModal');
+        if (modalElement) {
+            bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        }
+    }
+
     const formExcluirTurma = document.querySelector('.form-excluir-turma');
 
     if (formExcluirTurma) {
@@ -47,6 +177,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    document.querySelectorAll('.form-remover-participante').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            const nome = form.dataset.nome || 'este participante';
+            const confirmar = confirm(
+                `Tem certeza que deseja remover ${nome} desta turma? Esta ação não pode ser desfeita.`
+            );
+
+            if (!confirmar) {
+                event.preventDefault();
+            }
+        });
+    });
 
     document.querySelectorAll('.conteudo-excluir-form').forEach(function (form) {
         form.addEventListener('submit', function (event) {

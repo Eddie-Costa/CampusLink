@@ -1,10 +1,10 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
-    --cinza-borda: #d9e1ed;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
+    --cinza-borda: var(--campus-border);
 }
 
 * {
@@ -115,7 +115,7 @@ body {
     background-color: var(--branco);
     border: 1px solid var(--cinza-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .usuarios-admin-card-topo {
@@ -150,7 +150,7 @@ body {
 .usuarios-admin-busca input {
     width: 100%;
     padding: 11px 14px;
-    border: 1px solid #cfd7e3;
+    border: 1px solid var(--campus-border);
     border-radius: 10px;
     outline: none;
     font-size: 14px;
@@ -159,12 +159,12 @@ body {
 }
 
 .usuarios-admin-busca input::placeholder {
-    color: #98a2b3;
+    color: var(--cinza-texto);
 }
 
 .usuarios-admin-busca input:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .usuarios-admin-tabela {
@@ -174,7 +174,7 @@ body {
 
 .usuarios-admin-tabela thead th {
     padding: 14px 18px;
-    background-color: #f4f6fa;
+    background-color: var(--campus-surface);
     color: var(--azul-campus);
     border-bottom: 1px solid var(--cinza-borda);
     font-size: 13px;
@@ -184,8 +184,8 @@ body {
 
 .usuarios-admin-tabela tbody td {
     padding: 16px 18px;
-    color: #344054;
-    border-bottom: 1px solid #edf0f5;
+    color: var(--campus-muted);
+    border-bottom: 1px solid var(--campus-border);
     vertical-align: middle;
 }
 
@@ -194,7 +194,7 @@ body {
 }
 
 .usuarios-admin-tabela tbody tr:hover td {
-    background-color: #f8f9fc;
+    background-color: var(--campus-surface);
 }
 
 .usuario-perfil,
@@ -219,13 +219,13 @@ body {
 }
 
 .usuario-ativo {
-    background-color: #d1e7dd;
-    color: #0f5132;
+    background-color: var(--campus-success-bg);
+    color: var(--campus-success-text);
 }
 
 .usuario-inativo {
-    background-color: #e4e7ec;
-    color: #475467;
+    background-color: var(--campus-border);
+    color: var(--campus-muted);
 }
 
 .usuario-acoes {
@@ -262,13 +262,13 @@ body {
 }
 
 .usuario-botao-ativar {
-    border: 1px solid #198754;
+    border: 1px solid var(--campus-success);
     background-color: var(--branco);
-    color: #198754;
+    color: var(--campus-success);
 }
 
 .usuario-botao-ativar:hover {
-    background-color: #198754;
+    background-color: var(--campus-success);
     color: var(--branco);
 }
 

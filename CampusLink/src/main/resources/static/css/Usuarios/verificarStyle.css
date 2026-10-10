@@ -28,7 +28,7 @@
 .pagina-autenticacao main > .title {
     margin: 0;
     text-align: center;
-    color: #1B4965;
+    color: var(--campus-link);
     font-size: clamp(1.5rem, 5vw, 2rem);
     font-weight: 800;
 }
@@ -39,7 +39,7 @@
 
     align-self: center;
 
-    color: #1B4965;
+    color: var(--campus-link);
     font-weight: 800;
 }
 
@@ -57,7 +57,7 @@
 
 .form-autenticacao .label_info {
     margin: 5px 0 10px;
-    color: #1B4965;
+    color: var(--campus-link);
     font-weight: 800;
 }
 
@@ -78,7 +78,7 @@
     padding: 10px;
     border: none;
     border-radius: 10px;
-    background-color: #5FA8D3;
+    background-color: var(--campus-accent);
     color: white;
     font-weight: 800;
     cursor: pointer;
@@ -86,13 +86,13 @@
 }
 
 .form-autenticacao .Sendbutton:hover {
-    background-color: #1B4965;
+    background-color: var(--campus-link);
 }
 
 .form-autenticacao .textbox:focus-visible,
 .form-autenticacao .Sendbutton:focus-visible,
 .form-autenticacao .link_pull:focus-visible {
-    outline: 3px solid #1B4965;
+    outline: 3px solid var(--campus-link);
     outline-offset: 3px;
 }
 
@@ -102,7 +102,7 @@
     margin: 0;
     text-align: center;
     overflow-wrap: anywhere;
-    color: #b42318;
+    color: var(--campus-danger-text);
     font-size: 14px;
     font-weight: 600;
 }

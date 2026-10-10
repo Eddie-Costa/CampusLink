@@ -1,9 +1,9 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #5f6878;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
 }
 
 * {
@@ -68,7 +68,7 @@ body {
 .home-texto p {
     max-width: 600px;
     margin: 0;
-    color: var(--cinza-texto);
+    color: var(--azul-campus);
     font-size: 18px;
     line-height: 1.6;
 }
@@ -122,7 +122,7 @@ body {
     overflow: hidden;
     border-radius: 24px;
     background-color: var(--azul-campus);
-    box-shadow: 0 18px 35px rgba(17, 24, 63, 0.25);
+    box-shadow: 0 18px 35px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 .painel-topo {
@@ -138,8 +138,8 @@ body {
 .painel-status {
     padding: 5px 10px;
     border-radius: 15px;
-    background-color: #d1e7dd;
-    color: #0f5132;
+    background-color: var(--campus-success-bg);
+    color: var(--campus-success-text);
     font-size: 11px;
 }
 
@@ -161,7 +161,7 @@ body {
 
 .painel-numero {
     min-width: 42px;
-    color: #9aabd3;
+    color: var(--campus-border);
     font-size: 22px;
     font-weight: 700;
 }
@@ -173,7 +173,7 @@ body {
 
 .painel-item p {
     margin: 5px 0 0;
-    color: #d1d6e3;
+    color: var(--campus-border);
     font-size: 13px;
 }
 
@@ -189,11 +189,11 @@ body {
     padding: 28px;
     border-radius: 18px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .recurso-numero {
-    color: #7d88a5;
+    color: var(--cinza-texto);
     font-size: 13px;
     font-weight: 700;
 }
@@ -221,7 +221,7 @@ body {
     padding: 32px;
     border-radius: 20px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .home-final h2 {

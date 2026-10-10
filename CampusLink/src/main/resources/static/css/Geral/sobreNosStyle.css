@@ -1,8 +1,8 @@
 :root {
-    --azul-campus: #11183f;
+    --azul-campus: var(--campus-navy);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #5f6878;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
 }
 
 * {
@@ -75,7 +75,7 @@ body {
     border-radius: 22px;
     background-color: var(--azul-campus);
     color: var(--branco);
-    box-shadow: 0 15px 30px rgba(17, 24, 63, 0.22);
+    box-shadow: 0 15px 30px rgba(var(--campus-navy-rgb), 0.22);
 }
 
 .painel-titulo {
@@ -87,7 +87,7 @@ body {
 
 .sobre-painel p {
     margin: 0;
-    color: #d5daea;
+    color: var(--campus-border);
     font-size: 15px;
     line-height: 1.7;
 }
@@ -97,7 +97,7 @@ body {
     padding: 32px;
     border-radius: 20px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .sobre-bloco h2 {
@@ -126,11 +126,11 @@ body {
     padding: 28px;
     border-radius: 18px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .valor-card > span {
-    color: #8792aa;
+    color: var(--cinza-texto);
     font-size: 13px;
     font-weight: 700;
 }
@@ -157,7 +157,7 @@ body {
     padding: 30px;
     border-radius: 20px;
     background-color: var(--branco);
-    box-shadow: 0 5px 15px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 5px 15px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .sobre-final h2 {

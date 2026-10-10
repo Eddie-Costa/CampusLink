@@ -142,18 +142,36 @@ public class turmaDAO {
         return null;
     }
 
+    public boolean atualizarTurmaDoProprietario(String idTurma, String idProfessor,
+                                                 String nomeTurma, String descricao) throws SQLException {
+        String sql = "UPDATE public.\"TURMAS\" SET nome_turma = ?, descricao = ? " +
+                "WHERE id = ? AND id_proprietario = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nomeTurma);
+            stmt.setString(2, descricao);
+            stmt.setLong(3, Long.parseLong(idTurma));
+            stmt.setLong(4, Long.parseLong(idProfessor));
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
     public List<TurmaDTO> buscarParticipantesDaTurma(String idTurma) throws SQLException {
-        String sql = "(SELECT u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
+        String sql = "SELECT participantes.nome, participantes.email, participantes.tipo_usuario FROM (" +
+                "SELECT u.nome AS nome, u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
                 "JOIN public.\"ALUNOS\" a ON a.id = at.id_aluno " +
                 "JOIN public.\"USUARIOS\" u ON u.id = a.id_usuario " +
-                "WHERE at.id_turma = ?) " +
+                "WHERE at.id_turma = ? " +
                 "UNION ALL " +
-                "(SELECT u.email AS email, CASE WHEN t.id_proprietario = pt.id_professor THEN 'Professor Admin' ELSE 'Professor' END AS tipo_usuario FROM public.\"PROFESSOR_TURMA\" pt " +
+                "SELECT u.nome AS nome, u.email AS email, CASE WHEN t.id_proprietario = pt.id_professor THEN 'Professor Admin' ELSE 'Professor' END AS tipo_usuario FROM public.\"PROFESSOR_TURMA\" pt " +
                 "JOIN public.\"PROFESSORES\" p ON p.id = pt.id_professor " +
                 "JOIN public.\"USUARIOS\" u ON u.id = p.id_usuario " +
                 "JOIN public.\"TURMAS\" t ON t.id = pt.id_turma " +
-                "WHERE pt.id_turma = ?) " +
-                "ORDER BY tipo_usuario, email";
+                "WHERE pt.id_turma = ?) participantes " +
+                "ORDER BY CASE participantes.tipo_usuario " +
+                "WHEN 'Professor Admin' THEN 0 WHEN 'Professor' THEN 1 ELSE 2 END, " +
+                "LOWER(participantes.nome), LOWER(participantes.email)";
 
         List<TurmaDTO> participantes = new ArrayList<>();
 
@@ -167,6 +185,7 @@ public class turmaDAO {
                 while (rs.next()) {
                     TurmaDTO participante = new TurmaDTO();
                     participante.setEmailPessoa(rs.getString("email"));
+                    participante.setNomePessoa(rs.getString("nome"));
                     participante.setTipoUsuario(rs.getString("tipo_usuario"));
                     participantes.add(participante);
                 }
@@ -174,6 +193,46 @@ public class turmaDAO {
         }
 
         return participantes;
+    }
+
+    public List<TurmaDTO> buscarSugestoesPessoasDaTurma(String termo, String idTurma) throws SQLException {
+        String sql = "SELECT u.nome, u.email, "
+                + "CASE WHEN a.id IS NOT NULL THEN 'Aluno' ELSE 'Professor' END AS tipo_usuario "
+                + "FROM public.\"USUARIOS\" u "
+                + "LEFT JOIN public.\"ALUNOS\" a ON a.id_usuario = u.id "
+                + "LEFT JOIN public.\"PROFESSORES\" p ON p.id_usuario = u.id "
+                + "WHERE u.status = true AND (a.id IS NOT NULL OR p.id IS NOT NULL) "
+                + "AND (u.nome ILIKE ? OR u.email ILIKE ?) "
+                + "AND NOT EXISTS (SELECT 1 FROM public.\"ALUNO_TURMA\" at "
+                + "JOIN public.\"ALUNOS\" aluno ON aluno.id = at.id_aluno "
+                + "WHERE at.id_turma = ? AND aluno.id_usuario = u.id) "
+                + "AND NOT EXISTS (SELECT 1 FROM public.\"PROFESSOR_TURMA\" pt "
+                + "JOIN public.\"PROFESSORES\" professor ON professor.id = pt.id_professor "
+                + "WHERE pt.id_turma = ? AND professor.id_usuario = u.id) "
+                + "ORDER BY LOWER(u.nome), LOWER(u.email) LIMIT 10";
+
+        List<TurmaDTO> sugestoes = new ArrayList<>();
+        String padrao = "%" + termo.trim() + "%";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, padrao);
+            stmt.setString(2, padrao);
+            stmt.setLong(3, Long.parseLong(idTurma));
+            stmt.setLong(4, Long.parseLong(idTurma));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TurmaDTO sugestao = new TurmaDTO();
+                    sugestao.setNomePessoa(rs.getString("nome"));
+                    sugestao.setEmailPessoa(rs.getString("email"));
+                    sugestao.setTipoUsuario(rs.getString("tipo_usuario"));
+                    sugestoes.add(sugestao);
+                }
+            }
+        }
+
+        return sugestoes;
     }
 
     public void excluirTurma(String idTurma, String idProfessor) throws SQLException {

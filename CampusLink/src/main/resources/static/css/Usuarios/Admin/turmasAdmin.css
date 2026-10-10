@@ -1,10 +1,10 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
-    --cinza-borda: #d9e1ed;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
+    --cinza-borda: var(--campus-border);
 }
 
 * {
@@ -117,7 +117,7 @@ body {
     background-color: var(--branco);
     border: 1px solid var(--cinza-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .turmas-admin-card-topo {
@@ -154,7 +154,7 @@ body {
     gap: 5px;
     min-width: 278px;
     padding: 18px 24px;
-    background-color: #f8f9fc;
+    background-color: var(--campus-surface);
 }
 
 .turmas-admin-busca label {
@@ -169,11 +169,11 @@ body {
     width: 153px;
     height: 25px;
     padding: 2px 4px;
-    border: 2px solid #222222;
+    border: 2px solid var(--campus-navy);
     border-radius: 2px;
     outline: none;
     background-color: var(--branco);
-    color: #222222;
+    color: var(--campus-navy);
     font-size: 13px;
 }
 
@@ -189,7 +189,7 @@ body {
 
 .turmas-admin-tabela thead th {
     padding: 14px 18px;
-    background-color: #f4f6fa;
+    background-color: var(--campus-surface);
     color: var(--azul-campus);
     border-bottom: 1px solid var(--cinza-borda);
     font-size: 13px;
@@ -199,8 +199,8 @@ body {
 
 .turmas-admin-tabela tbody td {
     padding: 15px 18px;
-    color: #344054;
-    border-bottom: 1px solid #edf0f5;
+    color: var(--campus-muted);
+    border-bottom: 1px solid var(--campus-border);
     vertical-align: middle;
 }
 
@@ -209,7 +209,7 @@ body {
 }
 
 .turmas-admin-tabela tbody tr:hover td {
-    background-color: #f8f9fc;
+    background-color: var(--campus-surface);
 }
 
 .turma-nome {

@@ -8,7 +8,7 @@
 }
 
 body{
-    background-color: #EBEBEB;
+    background-color: var(--campus-surface-alt);
     font-family: "Inter", sans-serif;
     background-image: url('../../images/bg.png');
     background-size: cover;
@@ -19,7 +19,7 @@ body{
 .title{
     text-align: center;
     margin-top: 20px;
-    color: #1B4965;
+    color: var(--campus-link);
     font-weight: 800;
 }
 
@@ -39,7 +39,7 @@ body{
 
 .label_info{
     margin-top: 15px;
-    color: #1B4965;
+    color: var(--campus-link);
     font-weight: 800;
     align-self: flex-start;
 }
@@ -59,14 +59,14 @@ body{
     height: 40px;
     border: none;
     border-radius: 10px;
-    background-color: #5FA8D3;
+    background-color: var(--campus-accent);
     color: white;
     font-weight: 800;
     cursor: pointer;
 }
 
 .Sendbutton:hover{
-    background-color: #1B4965;
+    background-color: var(--campus-link);
 }
 
 .linksuteis{
@@ -78,13 +78,13 @@ body{
 
 .link_pull{
     text-decoration: none;
-    color: #1B4965;
+    color: var(--campus-link);
     font-weight: 800;
     margin-top: 10px;
 }
 
 .link_pull:hover{
-    color: #5FA8D3;
+    color: var(--campus-accent);
 }
 
 p[name="mensagemDeErro"]{
@@ -105,14 +105,14 @@ p[name="mensagemDeErro"]{
 
 .choice-title{
     text-align: center;
-    color: #111844;
+    color: var(--campus-navy);
     font-weight: 800;
     margin-bottom: 40px;
     font-size: 2.2rem;
 }
 
 .choice-title .highlight{
-    color: #5FA8D3;
+    color: var(--campus-accent);
 }
 
 .choice-container{
@@ -137,13 +137,13 @@ p[name="mensagemDeErro"]{
 }
 
 .panel-aluno{
-    background-color: #111844;
+    background-color: var(--campus-navy);
     color: white;
 }
 
 .panel-professor{
     background-color: white;
-    color: #111844;
+    color: var(--campus-navy);
 }
 
 .panel-name{
@@ -186,22 +186,22 @@ p[name="mensagemDeErro"]{
 
 .choice-btn-light{
     background-color: white;
-    color: #111844;
+    color: var(--campus-navy);
 }
 
 .choice-btn-light:hover{
-    background-color: #111844;
+    background-color: var(--campus-navy);
     color: white;
     border: 1px solid white;
 }
 
 .choice-btn-dark{
-    background-color: #111844;
+    background-color: var(--campus-navy);
     color: white;
 }
 
 .choice-btn-dark:hover{
     background-color: white;
-    color: #111844;
-    border: 1px solid #111844;
+    color: var(--campus-navy);
+    border: 1px solid var(--campus-navy);
 }

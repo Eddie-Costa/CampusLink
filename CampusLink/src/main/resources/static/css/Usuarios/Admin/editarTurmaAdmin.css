@@ -1,11 +1,11 @@
 :root {
-    --azul-campus: #11183f;
-    --azul-hover: #1d2b62;
+    --azul-campus: var(--campus-navy);
+    --azul-hover: var(--campus-navy-hover);
     --branco: #ffffff;
-    --cinza-fundo: #b7c5d9;
-    --cinza-texto: #667085;
-    --cinza-borda: #d9e1ed;
-    --vermelho: #c62828;
+    --cinza-fundo: var(--campus-page-bg);
+    --cinza-texto: var(--campus-muted);
+    --cinza-borda: var(--campus-border);
+    --vermelho: var(--campus-danger);
 }
 
 * {
@@ -93,7 +93,7 @@ body {
     background-color: var(--branco);
     border: 1px solid var(--cinza-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .editar-turma-admin-grupo {
@@ -128,14 +128,14 @@ body {
 
 .editar-turma-admin-input::placeholder,
 .editar-turma-admin-textarea::placeholder {
-    color: #98a2b3;
+    color: var(--cinza-texto);
 }
 
 .editar-turma-admin-input:focus,
 .editar-turma-admin-textarea:focus,
 .editar-turma-admin-select:focus {
     border-color: var(--azul-campus);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .editar-turma-admin-erro {
@@ -170,7 +170,7 @@ body {
 }
 
 .editar-turma-admin-cancelar:hover {
-    background-color: #f4f6fa;
+    background-color: var(--campus-surface);
 }
 
 .editar-turma-admin-salvar {
@@ -184,8 +184,8 @@ body {
 }
 
 .editar-turma-admin-salvar:disabled {
-    border-color: #aab2c0;
-    background-color: #aab2c0;
+    border-color: var(--campus-border);
+    background-color: var(--campus-border);
     cursor: not-allowed;
 }
 
