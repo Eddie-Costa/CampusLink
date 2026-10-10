@@ -1,0 +1,139 @@
+/* Compacta as páginas que permitem escolher o perfil de acesso. */
+body.pagina-escolha {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+body.pagina-escolha > .site-header-nav,
+body.pagina-escolha > .site-footer-container {
+    flex-shrink: 0;
+}
+
+body.pagina-escolha > .site-footer-container > footer {
+    margin-top: 8px !important;
+}
+
+.choice-wrapper {
+    flex: 1 0 auto;
+    align-items: stretch;
+    justify-content: center;
+    padding: 18px 20px 12px;
+}
+
+.choice-title {
+    align-self: center;
+    margin: 0 0 18px;
+    font-size: clamp(1.55rem, 2.5vw, 1.9rem);
+}
+
+.choice-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 420px));
+    grid-auto-rows: minmax(0, 1fr);
+    align-self: center;
+    flex: 1 0 auto;
+    gap: 18px;
+    width: min(100%, 858px);
+}
+
+.choice-panel {
+    min-width: 0;
+    height: 100%;
+    padding: 22px 24px;
+    border-radius: 14px;
+}
+
+.panel-name {
+    margin-bottom: 7px;
+    font-size: 1.55rem;
+}
+
+.panel-subtitle {
+    margin-bottom: 7px;
+    font-size: 0.92rem;
+}
+
+.panel-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding: 0;
+}
+
+.panel-list li {
+    margin-top: 0;
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+.choice-btn {
+    height: 38px;
+    max-width: 190px;
+    flex-shrink: 0;
+}
+
+.choice-wrapper > .alert {
+    width: min(100%, 858px);
+    margin: 0 auto 12px;
+    padding: 8px 12px;
+}
+
+@media (max-height: 720px) and (min-width: 701px) {
+    .choice-wrapper {
+        padding-top: 10px;
+        padding-bottom: 8px;
+    }
+
+    .choice-title {
+        margin-bottom: 12px;
+        font-size: 1.5rem;
+    }
+
+    .choice-container {
+        gap: 14px;
+    }
+
+    .choice-panel {
+        padding: 16px 20px;
+    }
+
+    .panel-name {
+        margin-bottom: 4px;
+        font-size: 1.35rem;
+    }
+
+    .panel-subtitle {
+        margin-bottom: 4px;
+    }
+
+    .panel-list {
+        margin-bottom: 10px;
+        gap: 6px;
+    }
+
+    .panel-list li {
+        font-size: 0.82rem;
+        line-height: 1.25;
+    }
+}
+
+@media (max-width: 700px) {
+    .choice-wrapper {
+        padding: 18px 16px 22px;
+    }
+
+    .choice-container {
+        grid-template-columns: minmax(0, 420px);
+        grid-auto-rows: minmax(240px, auto);
+        justify-content: center;
+        gap: 14px;
+    }
+
+    .choice-panel {
+        padding: 20px 22px;
+    }
+}

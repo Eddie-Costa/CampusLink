@@ -16,8 +16,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 30px;
-    padding: 60px 20px 40px;
+    padding: 40px 20px;
 }
 
 .pagina-autenticacao > .nav,
@@ -28,7 +29,7 @@
 .pagina-autenticacao main > .title {
     margin: 0;
     text-align: center;
-    color: var(--campus-link);
+    color: var(--campus-navy);
     font-size: clamp(1.5rem, 5vw, 2rem);
     font-weight: 800;
 }
@@ -39,7 +40,7 @@
 
     align-self: center;
 
-    color: var(--campus-link);
+    color: var(--campus-navy);
     font-weight: 800;
 }
 
@@ -50,15 +51,25 @@
     width: 100%;
     max-width: 350px;
     padding: 30px;
-    background-color: white;
+    background-color: var(--campus-white);
+    border: 1px solid var(--campus-border);
     border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 32px rgba(var(--campus-navy-rgb), 0.16);
 }
 
 .form-autenticacao .label_info {
     margin: 5px 0 10px;
-    color: var(--campus-link);
+    color: var(--campus-navy);
     font-weight: 800;
+}
+
+.form-autenticacao .descricao-codigo {
+    width: 100%;
+    margin: -2px 0 18px;
+    color: var(--campus-muted, #667085);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
 }
 
 .form-autenticacao .textbox {
@@ -66,9 +77,39 @@
     min-width: 0;
     min-height: 40px;
     padding: 8px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--campus-border-strong);
     border-radius: 8px;
+    background-color: var(--campus-white);
+    color: var(--campus-navy);
     font-size: 15px;
+}
+
+.codigo-inputs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 9px;
+    width: 100%;
+}
+
+.form-autenticacao .codigo-digit {
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+    padding: 0;
+    border: 1px solid var(--campus-border);
+    border-radius: 10px;
+    background: var(--campus-white);
+    color: var(--campus-navy);
+    font-size: 1.35rem;
+    font-weight: 700;
+    text-align: center;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.form-autenticacao .codigo-digit:focus {
+    border-color: var(--campus-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--campus-accent-rgb), 0.18);
 }
 
 .form-autenticacao .Sendbutton {
@@ -78,21 +119,21 @@
     padding: 10px;
     border: none;
     border-radius: 10px;
-    background-color: var(--campus-accent);
-    color: white;
+    background-color: var(--campus-navy);
+    color: var(--campus-white);
     font-weight: 800;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .form-autenticacao .Sendbutton:hover {
-    background-color: var(--campus-link);
+    background-color: var(--campus-navy-hover);
 }
 
 .form-autenticacao .textbox:focus-visible,
 .form-autenticacao .Sendbutton:focus-visible,
 .form-autenticacao .link_pull:focus-visible {
-    outline: 3px solid var(--campus-link);
+    outline: 3px solid var(--campus-accent);
     outline-offset: 3px;
 }
 

@@ -130,13 +130,37 @@
                 const fecharMenu = () => {
                     botao.setAttribute('aria-expanded', 'false');
                     opcoes.classList.remove('show');
+                    opcoes.style.removeProperty('top');
+                    opcoes.style.removeProperty('left');
+                };
+
+                const posicionarMenu = () => {
+                    if (!opcoes.classList.contains('show')) return;
+
+                    const margem = 12;
+                    const avatar = botao.getBoundingClientRect();
+                    const largura = Math.min(opcoes.offsetWidth, window.innerWidth - margem * 2);
+                    const esquerda = Math.max(margem, Math.min(avatar.right - largura, window.innerWidth - largura - margem));
+                    const altura = opcoes.offsetHeight;
+                    let topo = avatar.bottom + 8;
+
+                    if (topo + altura > window.innerHeight - margem) {
+                        topo = Math.max(margem, avatar.top - altura - 8);
+                    }
+
+                    opcoes.style.left = `${esquerda}px`;
+                    opcoes.style.top = `${topo}px`;
                 };
 
                 botao.addEventListener('click', () => {
                     const abrir = botao.getAttribute('aria-expanded') !== 'true';
                     botao.setAttribute('aria-expanded', String(abrir));
                     opcoes.classList.toggle('show', abrir);
+                    if (abrir) requestAnimationFrame(posicionarMenu);
                 });
+
+                window.addEventListener('resize', posicionarMenu);
+                window.addEventListener('scroll', posicionarMenu, true);
 
                 document.addEventListener('click', event => {
                     if (!menu.contains(event.target) || event.target.closest('.dropdown-item')) {

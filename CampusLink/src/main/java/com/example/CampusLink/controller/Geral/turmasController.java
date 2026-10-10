@@ -625,7 +625,22 @@ public class turmasController {
             return "redirect:/turmas/" + idTurma;
         }
 
-        boolean removido = turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
+        String emailPessoa = turmaDTO.getEmailPessoa().trim();
+        boolean professorAdmin = participantes.stream().anyMatch(participante ->
+                participante.getEmailPessoa() != null
+                        && participante.getEmailPessoa().equalsIgnoreCase(emailPessoa)
+                        && "Professor Admin".equalsIgnoreCase(participante.getTipoUsuario()));
+
+        if (professorAdmin) {
+            redirectAttributes.addFlashAttribute(
+                    "mensagemErro",
+                    "O professor administrador da turma não pode ser removido."
+            );
+            redirectAttributes.addFlashAttribute("abrirModalParticipantes", true);
+            return "redirect:/turmas/" + idTurma;
+        }
+
+        boolean removido = turmaDAO.revomerPessoaTurma(emailPessoa, idTurma);
 
         if (!removido) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível remover este participante.");

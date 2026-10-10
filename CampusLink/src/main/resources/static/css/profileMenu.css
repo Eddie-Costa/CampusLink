@@ -33,11 +33,21 @@
 .account-dropdown {
     --bs-dropdown-link-active-bg: var(--campus-navy);
     width: min(340px, calc(100vw - 32px));
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
     padding: 12px 0;
     border: 1px solid var(--campus-border);
     border-radius: 18px;
     box-shadow: 0 14px 40px rgba(var(--campus-navy-rgb), 0.14);
     color: var(--campus-navy);
+}
+
+.account-dropdown.show {
+    position: fixed !important;
+    inset: auto;
+    z-index: 1060;
+    margin: 0;
+    transform: none !important;
 }
 
 .account-summary {
@@ -76,8 +86,11 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
     padding: 12px 20px;
     font-size: .95rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .account-dropdown svg {

@@ -91,7 +91,8 @@
                                         <td th:text="${participante.emailPessoa}">email@exemplo.com</td>
                                         <td th:text="${participante.tipoUsuario}">Professor</td>
                                         <td th:if="${isProfessorTurma}">
-                                            <form th:action="@{/removerPessoas}" method="post"
+                                            <form th:unless="${#strings.equalsIgnoreCase(participante.tipoUsuario, 'Professor Admin')}"
+                                                  th:action="@{/removerPessoas}" method="post"
                                                   class="form-remover-participante"
                                                   th:attr="data-nome=${participante.nomePessoa}">
                                                 <input type="hidden" name="id" th:value="${turma.id}">
