@@ -82,7 +82,7 @@ public class DisponibilidadeController {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
         }
-        return "Usuarios/Aluno/calendario-disponibilidade";
+        return "Geral/calendario-eventos";
     }
 
     // mostra o formulario de disponibilidade
@@ -128,7 +128,7 @@ public class DisponibilidadeController {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
         }
-        return "Usuarios/Aluno/cadastrar-disponibilidade";
+        return "Geral/cadastrar-eventos";
     }
 
     // cadastra a disponibilidade do aluno

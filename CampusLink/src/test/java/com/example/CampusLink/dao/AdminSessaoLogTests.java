@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@org.springframework.test.context.ContextConfiguration(initializers = com.example.CampusLink.support.BancoTesteInitializer.class)
 @SpringBootTest(classes = AdminSessaoLogTests.BancoTeste.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class AdminSessaoLogTests {
     @Configuration(proxyBeanMethods = false)
