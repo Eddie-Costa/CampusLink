@@ -3,7 +3,11 @@ package com.example.CampusLink.controller.Geral;
 import com.example.CampusLink.dto.YoutubeVideoDTO;
 import com.example.CampusLink.service.YoutubeService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class YoutubeController {
@@ -110,4 +115,14 @@ public class YoutubeController {
 
         return youtubeService.buscarVideos(termo);
     }
+
+        @ExceptionHandler(MissingServletRequestParameterException.class)
+        public ResponseEntity<Map<String, String>> parametroObrigatorioAusente(
+                        MissingServletRequestParameterException excecao) {
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                                "error", "Parâmetro obrigatório ausente.",
+                                "parameter", excecao.getParameterName()
+                ));
+        }
 }
