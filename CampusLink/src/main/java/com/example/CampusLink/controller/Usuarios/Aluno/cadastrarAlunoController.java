@@ -63,6 +63,7 @@ public class cadastrarAlunoController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         if (result.hasErrors()) {
+            aluno.setSenha(null);
             logger.warn("Dados inválidos no cadastro do aluno. erros={}", result.getFieldErrors().stream()
                     .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
                     .toList());
@@ -94,13 +95,35 @@ public class cadastrarAlunoController {
 
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(aluno.getEmail().toLowerCase());
-            emailService.enviarCodigo(aluno.getEmail().toLowerCase(), codigo);
+            try {
+                emailService.enviarCodigo(aluno.getEmail().toLowerCase(), codigo);
+            } catch (RuntimeException erroEnvio) {
+                twoFactorService.limparCodigo(aluno.getEmail().toLowerCase());
+                limparDadosTemporarios(session);
+                aluno.setSenha(null);
+                model.addAttribute("mensagemDeErro", "Nao foi possivel enviar o codigo de verificacao. Tente novamente.");
+                logger.error("Erro ao enviar codigo de verificacao para o cadastro do aluno.", erroEnvio);
+                return "Usuarios/Aluno/cadastrarAluno";
+            }
 
             return "redirect:/verificarAluno";
         } else {
             session.setAttribute("verificado", "true");
             return "redirect:/cadastrarAlunoVerificado";
         }
+    }
+
+    private void limparDadosTemporarios(HttpSession session) {
+        session.removeAttribute("email2FA");
+        session.removeAttribute("redirect");
+        session.removeAttribute("tipoUsuario");
+        session.removeAttribute("Rgm");
+        session.removeAttribute("Nome");
+        session.removeAttribute("Email");
+        session.removeAttribute("Telefone");
+        session.removeAttribute("DataNasc");
+        session.removeAttribute("Senha");
+        session.removeAttribute("verificado");
     }
 
     @GetMapping("/cadastrarAlunoVerificado")
