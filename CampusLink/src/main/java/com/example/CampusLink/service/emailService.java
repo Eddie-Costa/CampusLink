@@ -1,24 +1,50 @@
 package com.example.CampusLink.service;
 
+import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.dto.DadosUsuarioDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.web.util.HtmlUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Service
 public class emailService {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
+
+    private static final Logger logger = LoggerFactory.getLogger(emailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
 
     @Async("emailTaskExecutor")
     public void enviarCodigo(String para, String codigo) {
+
+        String operacaoId = UUID.randomUUID().toString();
+        logger.debug("Iniciando envio de email de 2FA. operacaoId={}", operacaoId);
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Iniciando envio de email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         try {
             MimeMessage mensagem =
@@ -221,49 +247,188 @@ public class emailService {
 
             mailSender.send(mensagem);
 
-            System.out.println(
-                    "Email HTML de 2FA enviado com sucesso!"
-            );
+            logger.info("Email HTML de 2FA enviado com sucesso! operacaoId={}", operacaoId);
+            if (logger.isInfoEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Email HTML de 2FA enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
 
         } catch (MessagingException e) {
 
-            System.err.println(
-                    "Erro ao montar o email HTML de 2FA: "
-                            + e.getMessage()
-            );
+            logger.error("Erro ao montar o email HTML de 2FA. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao montar o email HTML de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+        } catch (MailException e) {
+            logger.error("Erro ao enviar email de 2FA. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao enviar email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+            throw e;
         }
     }
 
-    @Async("emailTaskExecutor")
-    public void enviarEmailDados(
-            String para,
-            String Nome,
-            String Sobrenome,
-            String Email,
-            String DT_Reg
-    ) {
+    public void enviarEmailDados(DadosUsuarioDTO dadosUsuario) {
 
-        SimpleMailMessage mensagem =
-                new SimpleMailMessage();
-
-        mensagem.setFrom("tccumcriqedmat@gmail.com");
-        mensagem.setTo(para);
-        mensagem.setSubject(
-                "Dados pessoais - Exportação de dados"
-        );
+        String operacaoId = UUID.randomUUID().toString();
+        logger.debug("Iniciando envio de email de exportação de dados. operacaoId={}", operacaoId);
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Iniciando envio de email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         String corpoEmail =
-                "Nome: " + Nome + "\n"
-                        + "Sobrenome: " + Sobrenome + "\n"
-                        + "Email: " + Email + "\n"
-                        + "Data de Registro: " + DT_Reg;
+                "Nome: " + dadosUsuario.getNome() + "\n"
+                        + "Email: " + dadosUsuario.getEmail() + "\n"
+                        + "Telefone: " + dadosUsuario.getTelefone() + "\n"
+                        + "Data de nascimento: " + dadosUsuario.getDataNascimento() + "\n"
+                        + "Tipo de conta: " + dadosUsuario.getTipoConta() + "\n"
+                        + dadosUsuario.getRotuloIdentificador() + ": " + dadosUsuario.getIdentificador() + "\n"
+                        + "Data de Registro: " + dadosUsuario.getDataCadastro() + "\n\n"
+                        + "Esta cópia contém os dados cadastrais exibidos na área de perfil.\n"
+                        + "Para outras solicitações sobre seus dados, consulte os Termos de Uso na plataforma.";
 
-        mensagem.setText(corpoEmail);
+        try {
+            MimeMessage mensagem = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    mensagem,
+                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                    StandardCharsets.UTF_8.name()
+            );
+            helper.setFrom("tccumcriqedmat@gmail.com");
+            helper.setTo(dadosUsuario.getEmail());
+            helper.setSubject("Dados pessoais - Exportação de dados");
+            helper.setText(corpoEmail, montarEmailDadosHtml(dadosUsuario));
+            mailSender.send(mensagem);
+        } catch (MessagingException | MailException e) {
+            logger.error("Erro ao enviar email de exportação de dados. operacaoId={}", operacaoId, e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                            MessageFormatter.arrayFormat("Erro ao enviar email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+            if (e instanceof MailException mailException) {
+                throw mailException;
+            }
+            throw new MailPreparationException("Erro ao montar o email de exportação de dados", e);
+        }
 
-        mailSender.send(mensagem);
+        logger.info("Email de exportação de dados enviado com sucesso! operacaoId={}", operacaoId);
+        if (logger.isInfoEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                        MessageFormatter.arrayFormat("Email de exportação de dados enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
+    }
 
-        System.out.println(
-                "Email enviado com sucesso!"
-        );
+    private String montarEmailDadosHtml(DadosUsuarioDTO dadosUsuario) {
+        String campos = campoDadosHtml("Nome", dadosUsuario.getNome())
+                + campoDadosHtml("E-mail", dadosUsuario.getEmail())
+                + campoDadosHtml("Telefone", dadosUsuario.getTelefone())
+                + campoDadosHtml("Data de nascimento", dadosUsuario.getDataNascimento())
+                + campoDadosHtml("Tipo de conta", dadosUsuario.getTipoConta())
+                + campoDadosHtml(dadosUsuario.getRotuloIdentificador(), dadosUsuario.getIdentificador())
+                + campoDadosHtml("Data de registro", dadosUsuario.getDataCadastro());
+
+        return """
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Seus dados pessoais - CampusLink</title>
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #eef2f7; font-family: Arial, Helvetica, sans-serif;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                           style="width: 100%; background-color: #eef2f7;">
+                        <tr>
+                            <td align="center" style="padding: 35px 15px;">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                       style="width: 100%; max-width: 600px; overflow: hidden; background-color: #ffffff;
+                                              border-radius: 14px; box-shadow: 0 4px 15px rgba(17, 24, 63, 0.15);">
+                                    <tr>
+                                        <td align="center" style="padding: 28px 20px; background-color: #11183f; color: #ffffff;">
+                                            <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">CampusLink</h1>
+                                            <p style="margin: 8px 0 0; color: #dce5ff; font-size: 14px;">
+                                                integração para sua vida acadêmica
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 35px 24px; color: #27314f;">
+                                            <h2 style="margin: 0 0 18px; color: #11183f; font-size: 23px; text-align: center;">
+                                                Seus dados pessoais
+                                            </h2>
+                                            <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6; text-align: center;">
+                                                Conforme sua solicitação, aqui está uma cópia dos dados
+                                                cadastrais exibidos na sua área de perfil.
+                                            </p>
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                                   style="width: 100%; table-layout: fixed; background-color: #eef2ff; border-radius: 10px;">
+                                                {{CAMPOS}}
+                                            </table>
+                                            <p style="margin: 24px 0 0; color: #596584; font-size: 13px; line-height: 1.6; text-align: center;">
+                                                Para outras solicitações sobre seus dados, consulte os
+                                                <strong>Termos de Uso</strong> na plataforma.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding: 18px; background-color: #f5f7fb; color: #737b89; font-size: 12px;">
+                                            Este é um e-mail automático. Não responda esta mensagem.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+                """.replace("{{CAMPOS}}", campos);
+    }
+
+    private String campoDadosHtml(String rotulo, Object valor) {
+        String texto = valor == null || valor.toString().isBlank() ? "Não informado" : valor.toString();
+        return """
+                <tr>
+                    <td style="padding: 14px 18px; border-bottom: 1px solid #dce5ff; overflow-wrap: anywhere; word-break: break-word;">
+                        <p style="margin: 0 0 5px; color: #596584; font-size: 12px; font-weight: bold;">%s</p>
+                        <p style="margin: 0; color: #11183f; font-size: 15px; line-height: 1.6;">%s</p>
+                    </td>
+                </tr>
+                """.formatted(
+                        HtmlUtils.htmlEscape(rotulo, StandardCharsets.UTF_8.name()),
+                        HtmlUtils.htmlEscape(texto, StandardCharsets.UTF_8.name())
+                );
     }
 }

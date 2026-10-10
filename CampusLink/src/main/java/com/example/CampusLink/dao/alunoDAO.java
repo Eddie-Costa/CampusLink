@@ -11,9 +11,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Repository
 public class alunoDAO {
+
+    @Autowired
+    private usuarioDAO usuarioDAO;
 
     private static final Logger logger =
             LoggerFactory.getLogger(alunoDAO.class);
@@ -31,6 +36,14 @@ public class alunoDAO {
                 """;
 
         logger.debug("Consultando credenciais do aluno no banco.");
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", alunoDAO.class.getName(), "buscarPorEmailAluno", null,
+                        "Consultando credenciais do aluno no banco.", null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         try (
                 Connection conn = dataSource.getConnection();
@@ -45,15 +58,41 @@ public class alunoDAO {
                     usuario.setEmail(rs.getString("email"));
                     usuario.setSenha(rs.getString("senha"));
                     logger.debug("Credenciais do aluno encontradas.");
+                    if (logger.isDebugEnabled()) {
+                        try {
+                            usuarioDAO.InserirLogsNoBD(null, "DEBUG", alunoDAO.class.getName(), "buscarPorEmailAluno", null,
+                                    "Credenciais do aluno encontradas.", null, null);
+                        } catch (Exception erroLogBD) {
+                            logger.error("Erro ao gravar log no banco.", erroLogBD);
+                        }
+                    }
                     return usuario;
                 }
             }
 
         } catch (SQLException e) {
             logger.error("Erro ao buscar credenciais do aluno no banco.", e);
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    usuarioDAO.InserirLogsNoBD(null, "ERROR", alunoDAO.class.getName(), "buscarPorEmailAluno", null,
+                            "Erro ao buscar credenciais do aluno no banco.", null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             throw e;
         }
         logger.debug("Nenhum aluno encontrado na consulta de credenciais.");
+        if (logger.isDebugEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "DEBUG", alunoDAO.class.getName(), "buscarPorEmailAluno", null,
+                        "Nenhum aluno encontrado na consulta de credenciais.", null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
         return null;
     }
 

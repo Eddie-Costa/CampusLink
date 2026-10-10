@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="footer" class="container">
+    <link rel="stylesheet" th:href="@{/css/termos.css}">
+    <footer class="py-3 my-4">
+        <nav aria-label="Navegação do rodapé">
+            <ul class="nav justify-content-center border-bottom pb-3 mb-3"
+                style="--bs-nav-link-color: rgb(17, 24, 63); --bs-nav-link-hover-color: rgb(17, 24, 63);">
+                <li class="nav-item">
+                    <a th:href="@{/home}" class="nav-link px-2">Início</a>
+                </li>
+                <li class="nav-item"><a th:href="@{/funcionalidades}" class="nav-link px-2">Funcionalidades</a></li>
+                <li class="nav-item"><a th:href="@{/sobre-nos}" class="nav-link px-2">Sobre Nós</a></li>
+                <li class="nav-item">
+                    <a th:href="@{/documentos/termos-v1.0.txt}" class="nav-link px-2"
+                       data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso</a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-body-secondary">© <span th:text="${#dates.year(#dates.createNow())}">2026</span> CampusLink</p>
+    </footer>
+
+    <div id="modalTermos" class="modal fade" tabindex="-1" aria-labelledby="tituloTermos" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="tituloTermos" class="modal-title fs-5">Termos de Uso</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div id="textoTermos" class="modal-body termos-documento"
+                     th:attr="data-url=@{/documentos/termos-v1.0.txt}" aria-live="polite">Carregando termos...</div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/Usuarios/termos.js}"></script>
+</div>
+</body>
+</html>

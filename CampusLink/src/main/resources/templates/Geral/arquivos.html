@@ -20,9 +20,6 @@
 
 <body>
 
-<script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-</script>
 
 
 <!-- HEADER -->
@@ -313,7 +310,7 @@
                                     id=${arquivo.id}
                                 )}"
                                 method="post"
-                                class="d-inline">
+                                class="d-inline form-excluir-arquivo">
 
 
                             <!-- CSRF -->
@@ -327,8 +324,7 @@
 
                             <button
                                     type="submit"
-                                    class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Deseja realmente excluir este material?');">
+                                    class="btn btn-sm btn-outline-danger">
 
                                 Excluir
 
@@ -371,6 +367,9 @@
 </div>
 
 
+<script th:src="@{/js/Geral/arquivos.js}"></script>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 
 </html>

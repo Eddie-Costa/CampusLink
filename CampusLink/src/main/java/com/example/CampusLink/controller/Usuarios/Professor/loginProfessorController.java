@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.sql.SQLException;
 
@@ -41,25 +42,48 @@ public class loginProfessorController {
     private usuarioDAO usuarioDAO;
 
     @GetMapping("/loginProfessor")
-    public String loginPage(Model model) {
+    public String loginPage(Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
+
         model.addAttribute("professor", new loginProfessorDTO());
         return "Usuarios/Professor/loginProfessor";
     }
 
     @PostMapping("/loginProfessor")
     public String fazerLogin(@Valid @ModelAttribute("professor") loginProfessorDTO loginProfessorDTO, BindingResult result, Model model, HttpSession session) throws SQLException {
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/home";
+        }
 
         String email = loginProfessorDTO.getEmail();
 
         //Verifica bloqueio
         if (LoginAttemptService.estaBloqueado(email)) {
             logger.warn("Conta bloqueada para professor {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada para professor {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Conta bloqueada por muitas tentativas. Tente mais tarde.");
             return "Usuarios/Professor/loginProfessor";
         }
 
         if (result.hasErrors()) {
             logger.warn("Dados de login inválidos para professor {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Dados de login inválidos para professor {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Erro ao fazer login, tente novamente!!!");
             return "Usuarios/Professor/loginProfessor";
         }
@@ -91,15 +115,42 @@ public class loginProfessorController {
             session.setAttribute("usuarioLogado", usuarioDAO.buscarPorEmailProfessor(email));
             session.setMaxInactiveInterval(900);
 
+            if (session.getAttribute("usuarioLogado") != null) {
+                logger.info("Login concluído. perfil=professor email={} doisFatores=false", email);
+                if (logger.isInfoEnabled()) {
+                    try {
+                        usuarioDAO.InserirLogsNoBD(null, "INFO", loginProfessorController.class.getName(), "fazerLogin", null,
+                                MessageFormatter.arrayFormat("Login concluído. perfil=professor email={} doisFatores=false", new Object[]{email}).getMessage(), null, null);
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            }
             return "redirect:/home";
         }
 
         //Erro de Login
         loginAttemptService.loginFalhou(email);
         logger.warn("Credenciais inválidas para professor {}. Tentativas: {}", email, loginAttemptService.getTentativas(email));
+        if (logger.isWarnEnabled()) {
+            try {
+                usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                        MessageFormatter.arrayFormat("Credenciais inválidas para professor {}. Tentativas: {}", new Object[]{email, loginAttemptService.getTentativas(email)}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
 
         if (loginAttemptService.getTentativas(email) >= 5) {
             logger.warn("Conta bloqueada por excesso de tentativas para professor {}", email);
+            if (logger.isWarnEnabled()) {
+                try {
+                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                            MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para professor {}", new Object[]{email}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
             model.addAttribute("mensagemDeErro", "Conta bloqueada por 10 minutos.");
         } else {
             model.addAttribute("mensagemDeErro", "Email ou senha inválidos.");

@@ -39,16 +39,9 @@ public class SupabaseStorageService {
                 mimeType = "application/octet-stream";
             }
 
-            restClient.post()
-                    .uri(
-                            "/storage/v1/object/{bucket}/{storagePath}",
-                            bucket,
-                            storagePath
-                    )
+            restClient.post().uri("/storage/v1/object/{bucket}/{storagePath}", bucket, storagePath)
                     .header("x-upsert", "false")
-                    .contentType(
-                            MediaType.parseMediaType(mimeType)
-                    )
+                    .contentType(MediaType.parseMediaType(mimeType))
                     .body(arquivo.getBytes())
                     .retrieve()
                     .toBodilessEntity();
@@ -56,11 +49,7 @@ public class SupabaseStorageService {
             return storagePath;
 
         } catch (IOException e) {
-
-            throw new RuntimeException(
-                    "Não foi possível processar o arquivo.",
-                    e
-            );
+            throw new RuntimeException("Não foi possível processar o arquivo.", e);
         }
     }
 
@@ -86,19 +75,16 @@ public class SupabaseStorageService {
     }
 
     public void excluir(String storagePath) {
+        excluir(bucket, storagePath);
+    }
+
+    public void excluir(String bucketId, String storagePath) {
 
         Map<String, List<String>> body =
-                Map.of(
-                        "prefixes",
-                        List.of(storagePath)
-                );
+                Map.of("prefixes", List.of(storagePath));
 
-        restClient
-                .method(HttpMethod.DELETE)
-                .uri(
-                        "/storage/v1/object/{bucket}",
-                        bucket
-                )
+        restClient.method(HttpMethod.DELETE)
+                .uri("/storage/v1/object/{bucket}", bucketId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
@@ -108,20 +94,15 @@ public class SupabaseStorageService {
     private String gerarStoragePath(
             MultipartFile arquivo) {
 
-        String nomeOriginal =
-                arquivo.getOriginalFilename();
+        String nomeOriginal = arquivo.getOriginalFilename();
 
         String extensao = "";
 
-        if (nomeOriginal != null
-                && nomeOriginal.contains(".")) {
+        if (nomeOriginal != null && nomeOriginal.contains(".")) {
 
-            extensao = nomeOriginal.substring(
-                    nomeOriginal.lastIndexOf(".")
-            );
+            extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
         }
 
-        return UUID.randomUUID()
-                + extensao.toLowerCase();
+        return UUID.randomUUID() + extensao.toLowerCase();
     }
 }

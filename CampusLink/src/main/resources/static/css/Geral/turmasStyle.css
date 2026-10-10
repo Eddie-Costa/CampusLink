@@ -16,7 +16,7 @@ body {
 body {
     font-family: Arial, Helvetica, sans-serif;
     color: #ffffff;
-    background-image: url('../images/bg.png');
+    background-image: url('/images/bg.png');
     background-size: cover;
 }
 
@@ -43,30 +43,60 @@ body {
 
 
 /* ===============================
-   LISTA DE TURMAS
+   BARRA DE PESQUISA
 ================================ */
 
-.lista-turmas {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
+.busca-turma {
+    width: 100%;
+    height: 48px;
+    margin-bottom: 28px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #11194d;
+    font-size: 15px;
+}
+
+.busca-turma::placeholder {
+    color: #6b7290;
+}
+
+.busca-turma:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.25);
 }
 
 
 /* ===============================
-   CARD DA TURMA
+   LISTA DE TURMAS (grid)
+================================ */
+
+.lista-turmas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+}
+
+
+/* ===============================
+   CARD DA TURMA (quadrado)
 ================================ */
 
 .turma-card {
+    aspect-ratio: 1 / 1;
     width: 100%;
-    min-height: 118px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 25px 42px;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
     border-radius: 22px;
     background-color: #11194d;
     color: white;
     text-decoration: none;
+    text-align: center;
     transition:
         transform 0.2s ease,
         background-color 0.2s ease,
@@ -92,14 +122,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 36px;
 }
 
 
 /* Ícone de usuário */
 
 .turma-icon i {
-    font-size: 48px;
+    font-size: 44px;
     color: #ffffff;
 }
 
@@ -109,7 +138,7 @@ body {
 ================================ */
 
 .turma-nome {
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 700;
     color: white;
 }
@@ -327,31 +356,29 @@ body {
         padding: 20px 15px;
     }
 
+    .busca-turma {
+        height: 44px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
 
     .lista-turmas {
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 16px;
     }
-
 
     .turma-card {
-        min-height: 95px;
-        padding: 20px 24px;
         border-radius: 18px;
+        padding: 16px;
+        gap: 10px;
     }
-
-
-    .turma-icon {
-        margin-right: 22px;
-    }
-
 
     .turma-icon i {
-        font-size: 40px;
+        font-size: 36px;
     }
 
-
     .turma-nome {
-        font-size: 21px;
+        font-size: 16px;
     }
 
     .acao-turma {
@@ -364,20 +391,21 @@ body {
 
 @media (max-width: 480px) {
 
-    .turma-card {
-        padding: 18px;
+    .lista-turmas {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 14px;
     }
 
-    .turma-icon {
-        margin-right: 16px;
+    .turma-card {
+        padding: 14px;
     }
 
     .turma-icon i {
-        font-size: 36px;
+        font-size: 32px;
     }
 
     .turma-nome {
-        font-size: 18px;
+        font-size: 14px;
     }
 
 }
