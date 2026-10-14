@@ -28,7 +28,7 @@
 
 <!--Conteiner Turma-->
 <main class="container mt-4 turmas-page"
-      th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}, data-abrir-modal-conteudo=${abrirModalConteudo}">
+    th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}, data-abrir-modal-conteudo=${abrirModalConteudo}, data-abrir-modal-editar-id=${abrirModalEditarId}">
 
     <a class="voltar-turmas" th:href="@{/turmas}">Voltar para turmas</a>
     <h1 th:text="${turma.nomeTurma}">Nome da turma</h1>
@@ -217,9 +217,7 @@
 
         </div>
 
-        <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
-            Essa turma ainda não possui conteúdos cadastrados.
-        </div>
+
 
         <div class="conteudo-acoes" th:if="${session.tipoUsuario == 'professor'}">
 
@@ -232,10 +230,41 @@
                     data-bs-target="#selecionarConteudoModal">
                 Editar Conteúdo
             </button>
+            <button type="button" class="acao-turma" data-bs-toggle="modal"
+                    data-bs-target="#solicitarDominioModal">
+                Solicitar Domínio
+            </button>
 
         </div>
+        <form th:action="@{/turmas/{id}(id=${idTurma})}" method="get" class="busca-conteudos">
+            <input type="search" name="q" th:value="${termoBusca}"
+                   placeholder="Buscar conteúdos..." maxlength="100"
+                   aria-label="Buscar conteúdos">
+
+            <select name="tipo" aria-label="Filtrar por tipo">
+                <option value="" th:selected="${#strings.isEmpty(tipoFiltro)}">Todos os tipos</option>
+                <option value="link" th:selected="${tipoFiltro == 'link'}">Link</option>
+                <option value="arquivo" th:selected="${tipoFiltro == 'arquivo'}">Arquivo</option>
+                <option value="texto" th:selected="${tipoFiltro == 'texto'}">Somente texto</option>
+            </select>
+
+            <button type="submit">Buscar</button>
+
+            <a th:if="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}"
+               th:href="@{/turmas/{id}(id=${idTurma})}"
+               class="busca-limpar">Limpar</a>
+        </form>
 
         <section class="lista-conteudos" aria-label="Conteúdos da turma">
+
+                    <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
+            <span th:if="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
+                Nenhum conteúdo encontrado para essa busca.
+            </span>
+                        <span th:unless="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
+                Essa turma ainda não possui conteúdos cadastrados.
+            </span>
+                </div>
 
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
                  th:classappend="${conteudo.status == 'suspenso_denuncia'} ? 'conteudo-suspenso' : ''"
@@ -347,6 +376,7 @@
 <!--Modal editar conteúdo-->
 <div class="modal fade" th:each="conteudo : ${conteudos}"
      th:id="'editarConteudoModal-' + ${conteudo.id}"
+     th:with="dados=${(abrirModalEditarId != null and abrirModalEditarId == conteudo.id) ? conteudoEditado : conteudo}"
      tabindex="-1" aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered">
@@ -372,12 +402,16 @@
                            th:name="${_csrf.parameterName}"
                            th:value="${_csrf.token}">
 
+                    <div class="erro-campo mb-3"
+                         th:if="${erroEditar != null and abrirModalEditarId != null and abrirModalEditarId == conteudo.id}"
+                         th:text="${erroEditar}"></div>
+
                     <label class="form-label">Nome do conteúdo</label>
 
                     <input type="text"
                            name="titulo"
                            class="form-control mb-3"
-                           th:value="${conteudo.titulo}"
+                           th:value="${dados.titulo}"
                            required>
 
                     <label class="form-label">Tipo de conteúdo</label>
@@ -390,7 +424,10 @@
 
                     <div class="campo-link-editar">
                         <label class="form-label">URL</label>
-                        <input type="text" name="url" class="form-control mb-3" th:value="${conteudo.url}">
+                        <input type="text" name="url" class="form-control mb-3" th:value="${dados.url}">
+                        <div class="form-text mb-3">
+                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                        </div>
                     </div>
 
                     <div class="campo-youtube-editar" style="display: none;">
@@ -415,7 +452,7 @@
                     <label class="form-label">Descrição</label>
                     <textarea name="descricao" class="form-control mb-1"
                               rows="3" maxlength="1000"
-                              th:text="${conteudo.descricao}"></textarea>
+                              th:text="${dados.descricao}"></textarea>
                     <div class="form-text mb-3">
                         <span th:id="'contadorDescricaoEditar-' + ${conteudo.id}">0</span>/1000 caracteres
                     </div>
@@ -458,7 +495,82 @@
         </div>
     </div>
 </div>
+<!--Modal solicitar domínio-->
+<div class="modal fade" id="solicitarDominioModal" tabindex="-1"
+     aria-labelledby="solicitarDominioTitulo" aria-hidden="true"
+     th:if="${session.tipoUsuario == 'professor'}">
 
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content campus-modal">
+
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="solicitarDominioTitulo">Solicitar Domínio</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <form th:action="@{/turmas/{id}/dominios(id=${turma.id})}" method="post">
+
+                <div class="modal-body">
+
+                    <input type="hidden" th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <p class="form-text">
+                        Links só podem ser de domínios autorizados. Se o site que você quer usar
+                        não estiver liberado, solicite aqui e o administrador vai analisar.
+                    </p>
+
+                    <label for="dominioSolicitado" class="form-label">Domínio</label>
+                    <input id="dominioSolicitado" name="dominio" type="text" class="form-control mb-1"
+                           placeholder="Ex: exemplo.com.br" maxlength="253" required>
+                    <div class="form-text mb-3">
+                        Informe só o endereço do site. Se colar um link inteiro, usaremos apenas o domínio.
+                    </div>
+
+                    <label for="justificativaDominio" class="form-label">Por que esse site é necessário? (opcional)</label>
+                    <textarea id="justificativaDominio" name="justificativa" class="form-control mb-3"
+                              rows="3" maxlength="500"
+                              placeholder="Ex: Site oficial da biblioteca usada na disciplina"></textarea>
+
+                    <h3 class="h6">Minhas solicitações</h3>
+
+                    <p th:if="${#lists.isEmpty(solicitacoesDominio)}" class="mb-0">
+                        Você ainda não fez nenhuma solicitação.
+                    </p>
+
+                    <div th:if="${!#lists.isEmpty(solicitacoesDominio)}" class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th scope="col">Domínio</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Resposta do administrador</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="s : ${solicitacoesDominio}">
+                                <td th:text="${s.dominio}">exemplo.com</td>
+                                <td>
+                                    <span class="badge text-bg-warning" th:if="${s.status == 'pendente'}">Em análise</span>
+                                    <span class="badge text-bg-success" th:if="${s.status == 'aprovado'}">Aprovado</span>
+                                    <span class="badge text-bg-danger" th:if="${s.status == 'rejeitado'}">Rejeitado</span>
+                                </td>
+                                <td th:text="${s.comentarioAdmin != null ? s.comentarioAdmin : '-'}">Resposta</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-campus">Enviar solicitação</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
 <!--Modal adicionar conteúdo-->
 <div class="modal fade" id="adicionarConteudoModal" tabindex="-1"
      aria-labelledby="adicionarConteudoTitulo" aria-hidden="true">
@@ -508,12 +620,16 @@
                         <option value="ARQUIVO">Arquivo</option>
                     </select>
 
+
                     <div id="campoLink">
                         <label for="url" class="form-label">URL</label>
                         <input id="url" type="text" class="form-control mb-3" th:field="*{url}"
                                placeholder="Ex: https://...">
                         <div class="erro-campo" th:if="${#fields.hasErrors('url')}"
                              th:errors="*{url}"></div>
+                        <div class="form-text mb-3">
+                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                        </div>
                     </div>
 
                     <div id="campoYoutube" style="display: none;">

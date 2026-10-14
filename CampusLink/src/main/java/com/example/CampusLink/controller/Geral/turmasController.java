@@ -23,6 +23,7 @@ import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.dao.usuarioDAO;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.helpers.MessageFormatter;
+import com.example.CampusLink.service.DominioService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,9 @@ public class turmasController {
     @Autowired
     private ArquivoService arquivoService;
 
+    @Autowired
+    private DominioService dominioService;
+
     @GetMapping("/turmas")
     public String Turmas(Model model, HttpSession session) throws SQLException {
         if (session.getAttribute("usuarioLogado") == null) {
@@ -73,7 +77,10 @@ public class turmasController {
     }
 
     @GetMapping("/turmas/{id}")
-    public String ambienteTurma(@PathVariable String id, Model model, HttpSession session) throws SQLException {
+    public String ambienteTurma(@PathVariable String id,
+                                @RequestParam(required = false) String q,
+                                @RequestParam(required = false) String tipo,
+                                Model model, HttpSession session) throws SQLException {
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -88,6 +95,13 @@ public class turmasController {
         if (session.getAttribute("tipoUsuario") != null && "professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())) {
             String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
             isTurmaAdmin = turma.getIdProprietario() != null && turma.getIdProprietario().toString().equals(idProfessor);
+
+            try {
+                model.addAttribute("solicitacoesDominio",
+                        dominioService.listarPorProfessor(Long.parseLong(idProfessor)));
+            } catch (RuntimeException e) {
+                logger.error("Erro ao carregar solicitações de domínio do professor {}", idProfessor, e);
+            }
         }
 
         List<TurmaDTO> participantesTurma = turmaDAO.buscarParticipantesDaTurma(id);
@@ -98,8 +112,10 @@ public class turmasController {
         if (!model.containsAttribute("conteudo")) {
             model.addAttribute("conteudo", new ConteudoDTO());
         }
-        List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(Long.parseLong(id));
+        List<ConteudoDTO> conteudos = conteudoService.buscarPorTurma(Long.parseLong(id), q, tipo);
         model.addAttribute("conteudos", conteudos);
+        model.addAttribute("termoBusca", q == null ? "" : q.trim());
+        model.addAttribute("tipoFiltro", tipo == null ? "" : tipo);
 
         Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
         for (ConteudoDTO conteudo : conteudos) {
@@ -138,6 +154,7 @@ public class turmasController {
             model.addAttribute("abrirModalAdicionarConteudo", true);
             model.addAttribute("idTurma", String.valueOf(id));
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
@@ -165,6 +182,7 @@ public class turmasController {
             model.addAttribute("abrirModalAdicionarConteudo", true);
             model.addAttribute("idTurma", String.valueOf(id));
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
@@ -256,7 +274,7 @@ public class turmasController {
     @PostMapping("/turmas/{id}/conteudos/{idConteudo}/editar")
     public String editarConteudo(@PathVariable Long id,
                                  @PathVariable Long idConteudo,
-                                 @Valid @ModelAttribute("conteudo") ConteudoDTO conteudoDTO,
+                                 @Valid @ModelAttribute("conteudoEditado") ConteudoDTO conteudoDTO,
                                  BindingResult result,
                                  @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
                                  HttpSession session,
@@ -280,9 +298,12 @@ public class turmasController {
         }
 
         if (result.hasErrors()) {
-            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("abrirModalEditarId", idConteudo);
+            model.addAttribute("erroEditar", result.getAllErrors().get(0).getDefaultMessage());
+            model.addAttribute("conteudo", new ConteudoDTO());
             model.addAttribute("idTurma", String.valueOf(id));
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
@@ -308,10 +329,12 @@ public class turmasController {
                 arquivoService.salvar(arquivo, idConteudo);
             }
         } catch (IllegalArgumentException e) {
-            model.addAttribute("mensagemErro", e.getMessage());
-            model.addAttribute("abrirModalAdicionarConteudo", true);
+            model.addAttribute("abrirModalEditarId", idConteudo);
+            model.addAttribute("erroEditar", e.getMessage());
+            model.addAttribute("conteudo", new ConteudoDTO());
             model.addAttribute("idTurma", String.valueOf(id));
             model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
@@ -370,7 +393,7 @@ public class turmasController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            return ambienteTurma(String.valueOf(turmaDTO.getId()), model, session);
+            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
         }
 
         boolean pessoaAdicionada = turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
@@ -382,7 +405,7 @@ public class turmasController {
         }
 
         model.addAttribute("abrirModalParticipantes", true);
-        return ambienteTurma(String.valueOf(turmaDTO.getId()), model, session);
+        return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
     }
 
     @PostMapping("/excluirTurma")
@@ -469,7 +492,7 @@ public class turmasController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            return ambienteTurma(String.valueOf(turmaDTO.getId()), model, session);
+            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
         }
 
         boolean removido = turmaDAO.revomerPessoaTurma(turmaDTO.getEmailPessoa().trim(), String.valueOf(turmaDTO.getId()));
@@ -482,6 +505,19 @@ public class turmasController {
 
         model.addAttribute("abrirModalParticipantes", true);
         return "Geral/ambienteTurma";
+    }
+    private void carregarSolicitacoesDominio(Model model, HttpSession session) {
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            return;
+        }
+
+        try {
+            String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+            model.addAttribute("solicitacoesDominio",
+                    dominioService.listarPorProfessor(Long.parseLong(idProfessor)));
+        } catch (Exception e) {
+            logger.error("Erro ao carregar solicitações de domínio do professor.", e);
+        }
     }
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     public String tratarArquivoMuitoGrande(

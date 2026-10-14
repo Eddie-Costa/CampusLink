@@ -1,5 +1,29 @@
 document.addEventListener('DOMContentLoaded', function () {
     const selectModal = document.getElementById('selecionarConteudoModal');
+    let modaisAbrindo = 0;
+
+    document.addEventListener('show.bs.modal', function () {
+        modaisAbrindo++;
+    });
+
+    document.addEventListener('shown.bs.modal', function () {
+        modaisAbrindo = Math.max(0, modaisAbrindo - 1);
+    });
+
+    document.addEventListener('hidden.bs.modal', function () {
+        setTimeout(function () {
+            if (modaisAbrindo > 0 || document.querySelector('.modal.show')) {
+                return;
+            }
+
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }, 50);
+    });
 
     document.querySelectorAll('.conteudo-selecionar-item').forEach(function (button) {
         button.addEventListener('click', function () {
@@ -10,9 +34,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const selectModalInstance = bootstrap.Modal.getOrCreateInstance(selectModal);
                 const editModalInstance = bootstrap.Modal.getOrCreateInstance(editModal);
 
+                selectModal.addEventListener('hidden.bs.modal', function () {
+                    editModalInstance.show();
+                }, { once: true });
+
                 selectModalInstance.hide();
-                editModalInstance.show();
             }
+
         });
     });
 
@@ -27,10 +55,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function recarregarTurmaAoFechar(modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            const partes = window.location.pathname.match(/\/turmas\/(\d+)/);
+            if (partes) {
+                window.location.replace('/turmas/' + partes[1]);
+            }
+        }, { once: true });
+    }
+
     if (paginaTurma && paginaTurma.dataset.abrirModalConteudo === 'true') {
         const modalElement = document.getElementById('adicionarConteudoModal');
         if (modalElement) {
+            recarregarTurmaAoFechar(modalElement);
             bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        }
+    }
+
+    if (paginaTurma && paginaTurma.dataset.abrirModalEditarId) {
+        const modalEditar = document.getElementById('editarConteudoModal-' + paginaTurma.dataset.abrirModalEditarId);
+        if (modalEditar) {
+            recarregarTurmaAoFechar(modalEditar);
+            bootstrap.Modal.getOrCreateInstance(modalEditar).show();
         }
     }
 
