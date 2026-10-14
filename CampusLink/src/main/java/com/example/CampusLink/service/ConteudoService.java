@@ -142,6 +142,27 @@ public class ConteudoService {
             throw new RuntimeException("Não foi possível listar os conteúdos da turma.", e);
         }
     }
+    public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) {
+
+        String termoLimpo = (termo == null) ? null : termo.trim();
+
+        if (termoLimpo != null && termoLimpo.length() > 100) {
+            termoLimpo = termoLimpo.substring(0, 100);
+        }
+
+        String tipoLimpo = null;
+        if (tipo != null && List.of("link", "arquivo", "texto").contains(tipo.toLowerCase())) {
+            tipoLimpo = tipo.toLowerCase();
+        }
+
+        try {
+            return conteudoDAO.buscarPorTurma(idTurma, termoLimpo, tipoLimpo);
+
+        } catch (SQLException e) {
+            logger.error("Erro ao buscar conteúdos. turmaId={}", idTurma, e);
+            throw new RuntimeException("Não foi possível buscar os conteúdos da turma.", e);
+        }
+    }
 
     public List<ConteudoDTO> listarPorProfessor(Long idProfessor) {
         try {

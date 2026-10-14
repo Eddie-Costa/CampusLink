@@ -560,3 +560,42 @@ main.container > p {
         font-size: 11px;
     }
 }
+.busca-conteudos {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.busca-conteudos input[type="search"] {
+    flex: 1 1 260px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.busca-conteudos select {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    background: #fff;
+}
+
+.busca-conteudos button {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.busca-limpar {
+    color: #fff;
+    font-size: 0.85rem;
+    text-decoration: underline;
+}

@@ -115,6 +115,62 @@ public class conteudoDAO {
 
         return conteudos;
     }
+    public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) throws SQLException {
+
+        List<ConteudoDTO> conteudos = new ArrayList<>();
+
+        boolean temTermo = termo != null && !termo.isBlank();
+        boolean temTipo = tipo != null && !tipo.isBlank();
+
+        StringBuilder sql = new StringBuilder("""
+            SELECT *
+            FROM public."CONTEUDOS"
+            WHERE ? = ANY("id_turma")
+            AND "status" <> 'removido'
+            """);
+
+        if (temTermo) {
+            sql.append(" AND \"busca\" @@ (websearch_to_tsquery('portuguese', ?) || websearch_to_tsquery('english', ?)) ");
+        }
+
+        if (temTipo) {
+            sql.append(" AND \"tipo\" = ? ");
+        }
+
+        if (temTermo) {
+            sql.append(" ORDER BY ts_rank(\"busca\", websearch_to_tsquery('portuguese', ?) || websearch_to_tsquery('english', ?)) DESC, \"created_at\" DESC");
+        } else {
+            sql.append(" ORDER BY \"created_at\" DESC");
+        }
+
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            int i = 1;
+            stmt.setLong(i++, idTurma);
+
+            if (temTermo) {
+                stmt.setString(i++, termo);
+                stmt.setString(i++, termo);
+            }
+
+            if (temTipo) {
+                stmt.setString(i++, tipo);
+            }
+
+            if (temTermo) {
+                stmt.setString(i++, termo);
+                stmt.setString(i++, termo);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    conteudos.add(montarConteudo(rs, idTurma));
+                }
+            }
+        }
+
+        return conteudos;
+    }
 
     public List<ConteudoDTO> listarPorProfessor(Long idProfessor) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
