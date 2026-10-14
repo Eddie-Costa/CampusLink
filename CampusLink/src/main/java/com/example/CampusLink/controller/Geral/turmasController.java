@@ -194,6 +194,7 @@ public class turmasController {
                               BindingResult result,
                               HttpSession session,
                               Model model,
+                              TurmaDTO turmaDTO,
                               RedirectAttributes redirectAttributes) throws SQLException {
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
@@ -227,7 +228,7 @@ public class turmasController {
         if (result.hasErrors()) {
             model.addAttribute("turmaEdicao", turmaEdicao);
             model.addAttribute("abrirModalEditarTurma", true);
-            return ambienteTurma(id, model, session);
+            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
         }
 
         boolean atualizada = turmaDAO.atualizarTurmaDoProprietario(
