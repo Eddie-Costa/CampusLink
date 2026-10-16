@@ -184,6 +184,49 @@ async function carregarConteudosDaTurma(turmaId) {
     }
 }
 
+// evita enviar o mesmo cadastro mais de uma vez enquanto carrega
+function configurarEnvioEvento() {
+    const formulario = document.querySelector('.event-form:not(.disponibilidade-form)');
+
+    if (!formulario) {
+        return;
+    }
+
+    const botaoCadastrar = formulario.querySelector('button[type="submit"]');
+
+    if (!botaoCadastrar) {
+        return;
+    }
+
+    const textoOriginal = botaoCadastrar.textContent;
+    let enviando = false;
+
+    formulario.addEventListener('submit', function (evento) {
+        if (enviando) {
+            evento.preventDefault();
+            return;
+        }
+
+        if (evento.defaultPrevented) {
+            return;
+        }
+
+        enviando = true;
+        botaoCadastrar.disabled = true;
+        botaoCadastrar.textContent = 'Cadastrando...';
+        formulario.setAttribute('aria-busy', 'true');
+    });
+
+    // libera o formulario ao voltar pelo navegador
+    window.addEventListener('pageshow', function () {
+        enviando = false;
+        botaoCadastrar.disabled = false;
+        botaoCadastrar.textContent = textoOriginal;
+        formulario.removeAttribute('aria-busy');
+    });
+}
+
+configurarEnvioEvento();
 configurarBusca(buscarTurma, turmaEvento, mensagemBuscaTurma);
 configurarBusca(buscarConteudo, conteudosRelacionados, mensagemBuscaConteudo);
 

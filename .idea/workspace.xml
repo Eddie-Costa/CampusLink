@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="" />
+    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Geral/cadastrar-eventos.css" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Geral/cadastrar-eventos.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Geral/cadastrar-eventos.js" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Geral/cadastrar-eventos.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Usuarios/Admin/cadastrarEventoAdmin.js" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Usuarios/Admin/cadastrarEventoAdmin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Geral/cadastrar-eventos.html" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Geral/cadastrar-eventos.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -67,7 +73,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "local/mergeInterfaceEd-Sant-Riq",
+    "git-widget-placeholder": "Fix__Cadastrar__eventos",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "list.type.of.created.stylesheet": "CSS",
