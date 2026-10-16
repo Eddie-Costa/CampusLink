@@ -5,11 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Usuarios/Admin/cadastrarUsuarioAdmin.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Geral/cadastrar-eventos.css" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/css/Geral/cadastrar-eventos.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Geral/cadastrar-eventos.js" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Geral/cadastrar-eventos.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Usuarios/Admin/cadastrarEventoAdmin.js" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/static/js/Usuarios/Admin/cadastrarEventoAdmin.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Geral/cadastrar-eventos.html" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Geral/cadastrar-eventos.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Usuarios/Admin/cadastrarUsuarioAdmin.html" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/resources/templates/Usuarios/Admin/cadastrarUsuarioAdmin.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
