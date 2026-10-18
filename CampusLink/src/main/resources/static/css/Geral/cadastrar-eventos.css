@@ -339,10 +339,38 @@ body {
 
 .event-modal h1 {
     margin: 0 0 26px;
+    padding: 0 24px;
     color: #ffffff;
     font-size: 21px;
     font-weight: 700;
     text-align: center;
+}
+
+.close-modal {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.close-modal:hover,
+.close-modal:focus-visible {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.close-modal:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
 }
 
 .event-form {
