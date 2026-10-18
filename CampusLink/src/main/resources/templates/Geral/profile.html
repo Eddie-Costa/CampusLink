@@ -78,7 +78,7 @@
                 <h2>Exportar meus dados</h2>
                 <p class="profile-description">Receba por e-mail uma cópia das informações cadastrais exibidas acima.</p>
                 <p class="profile-note">O envio será feito somente para <strong th:text="${dados.email}"></strong>.</p>
-                <form th:action="@{/profile/exportar}" method="post">
+                <form th:action="@{/profile/exportar}" method="post" data-submit-once>
                     <button type="submit" class="btn profile-primary">Enviar dados por e-mail</button>
                 </form>
             </section>
@@ -101,12 +101,12 @@
                 </div>
                 <th:block th:unless="${possuiVinculos}">
                     <p class="profile-note">Para sua segurança, confirme a exclusão com um código enviado ao e-mail da conta.</p>
-                    <form th:action="@{/profile/excluir}" method="post">
+                    <form th:action="@{/profile/excluir}" method="post" data-submit-once>
                         <button type="submit" class="btn btn-outline-danger"
                                 th:text="${exclusaoPendente} ? 'Reenviar código de exclusão' : 'Solicitar código de exclusão'">Solicitar código de exclusão</button>
                     </form>
                     <div class="profile-confirmation" th:if="${exclusaoPendente}">
-                        <form th:action="@{/profile/excluir/confirmar}" method="post">
+                        <form th:action="@{/profile/excluir/confirmar}" method="post" data-submit-once>
                             <label for="codigoExclusao" class="form-label">Código recebido por e-mail</label>
                             <input id="codigoExclusao" name="codigo" class="form-control profile-code" type="text"
                                    inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"

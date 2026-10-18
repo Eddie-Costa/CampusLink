@@ -4,6 +4,7 @@ import com.example.CampusLink.config.SecurityConfig;
 import com.example.CampusLink.config.SessaoLogListener;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
 import com.example.CampusLink.service.TwoFactorService;
@@ -103,6 +104,23 @@ class ProfileControllerTests {
         for (String rota : new String[]{"exportar", "excluir", "excluir/confirmar", "excluir/cancelar"}) {
             mvc.perform(post("/profile/" + rota).with(csrf())).andExpect(redirectedUrl("/login"));
         }
+        verifyNoInteractions(usuarios, emails);
+    }
+
+    @Test
+    void administradorNaoAcessaPerfilNemAcoesDeDadosPessoais() throws Exception {
+        loginAdminDTO admin = new loginAdminDTO();
+        admin.setEmail("admin@example.com");
+        session.setAttribute("usuarioLogado", admin);
+        session.setAttribute("tipoUsuario", "admin");
+
+        mvc.perform(get("/profile").session(session)).andExpect(redirectedUrl("/admin/painel"));
+        mvc.perform(get("/profile/dados").session(session)).andExpect(redirectedUrl("/admin/painel"));
+        for (String rota : new String[]{"exportar", "excluir", "excluir/confirmar", "excluir/cancelar"}) {
+            mvc.perform(post("/profile/" + rota).session(session).with(csrf()))
+                    .andExpect(redirectedUrl("/admin/painel"));
+        }
+
         verifyNoInteractions(usuarios, emails);
     }
 

@@ -15,7 +15,8 @@
 
 <main>
 
-    <form th:action="@{/verificar}" method="post" class="form-verificacao form-autenticacao">
+    <form th:action="@{/verificar}" method="post" class="form-verificacao form-autenticacao"
+          data-submit-once>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
         <label id="codigoLabel" for="codigo-1" class="label_info">Código de verificação</label>

@@ -46,6 +46,9 @@ public class ProfileController {
 
     @GetMapping({"/profile", "/profile/dados"})
     public String profile(HttpSession session, Model model) throws SQLException {
+        if (ehAdministrador(session)) {
+            return "redirect:/admin/painel";
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -61,6 +64,9 @@ public class ProfileController {
 
     @PostMapping("/profile/exportar")
     public String exportar(HttpSession session, RedirectAttributes redirectAttributes) throws SQLException {
+        if (ehAdministrador(session)) {
+            return "redirect:/admin/painel";
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -90,6 +96,9 @@ public class ProfileController {
 
     @PostMapping("/profile/excluir")
     public String solicitarExclusao(HttpSession session, RedirectAttributes redirectAttributes) throws SQLException {
+        if (ehAdministrador(session)) {
+            return "redirect:/admin/painel";
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -168,6 +177,9 @@ public class ProfileController {
     public String confirmarExclusao(HttpSession session, @RequestParam(defaultValue = "") String codigo,
                                    @RequestParam(defaultValue = "false") boolean confirmar,
                                    RedirectAttributes redirectAttributes) throws SQLException {
+        if (ehAdministrador(session)) {
+            return "redirect:/admin/painel";
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -259,6 +271,9 @@ public class ProfileController {
 
     @PostMapping("/profile/excluir/cancelar")
     public String cancelarExclusao(HttpSession session) throws SQLException {
+        if (ehAdministrador(session)) {
+            return "redirect:/admin/painel";
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
@@ -279,6 +294,10 @@ public class ProfileController {
             }
         }
         return "redirect:/profile";
+    }
+
+    private boolean ehAdministrador(HttpSession session) {
+        return "admin".equals(session.getAttribute("tipoUsuario"));
     }
 
     private DadosUsuarioDTO dadosDaSessao(HttpSession session) throws SQLException {

@@ -1,4 +1,40 @@
+function configurarBuscaAutomatica(input, buscar, resultados) {
+    if (!input || !resultados) return;
+
+    let temporizadorBusca;
+    input.addEventListener('input', function () {
+        window.clearTimeout(temporizadorBusca);
+        resultados.replaceChildren();
+
+        if (!input.value.trim()) {
+            return;
+        }
+
+        temporizadorBusca = window.setTimeout(buscar, 500);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.busca-conteudos').forEach(function (form) {
+        const input = form.querySelector('input[name="q"]');
+        const filtroTipo = form.querySelector('select[name="tipo"]');
+        let temporizadorBusca;
+
+        function enviarBusca() {
+            window.clearTimeout(temporizadorBusca);
+            form.requestSubmit();
+        }
+
+        if (input) {
+            input.addEventListener('input', function () {
+                window.clearTimeout(temporizadorBusca);
+                temporizadorBusca = window.setTimeout(enviarBusca, 600);
+            });
+        }
+
+        if (filtroTipo) filtroTipo.addEventListener('change', enviarBusca);
+    });
+
     const selectModal = document.getElementById('selecionarConteudoModal');
     let modaisAbrindo = 0;
 
@@ -74,8 +110,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const urlSugestoes = campoAutocompletePessoa.dataset.sugestoesUrl;
         let temporizadorSugestoes;
         let requisicaoSugestoes;
+        let sequenciaSugestoes = 0;
 
         function fecharSugestoesPessoas() {
+            window.clearTimeout(temporizadorSugestoes);
+            temporizadorSugestoes = undefined;
+            sequenciaSugestoes++;
+            if (requisicaoSugestoes) {
+                requisicaoSugestoes.abort();
+                requisicaoSugestoes = null;
+            }
             listaSugestoesPessoas.replaceChildren();
             listaSugestoesPessoas.hidden = true;
             inputPessoa.setAttribute('aria-expanded', 'false');
@@ -124,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
         inputPessoa.addEventListener('input', function () {
             window.clearTimeout(temporizadorSugestoes);
             if (requisicaoSugestoes) requisicaoSugestoes.abort();
+            requisicaoSugestoes = null;
+            const sequenciaAtual = ++sequenciaSugestoes;
 
             const consulta = inputPessoa.value.trim();
             if (consulta.length < 2) {
@@ -132,19 +178,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             temporizadorSugestoes = window.setTimeout(async function () {
-                requisicaoSugestoes = new AbortController();
+                const controller = new AbortController();
+                requisicaoSugestoes = controller;
                 try {
                     const resposta = await fetch(`${urlSugestoes}?q=${encodeURIComponent(consulta)}`, {
                         headers: { Accept: 'application/json' },
-                        signal: requisicaoSugestoes.signal
+                        signal: controller.signal
                     });
                     if (!resposta.ok) {
-                        fecharSugestoesPessoas();
+                        if (sequenciaAtual === sequenciaSugestoes) fecharSugestoesPessoas();
                         return;
                     }
-                    mostrarSugestoesPessoas(await resposta.json());
+                    const pessoas = await resposta.json();
+                    if (sequenciaAtual === sequenciaSugestoes && !controller.signal.aborted) {
+                        mostrarSugestoesPessoas(pessoas);
+                    }
                 } catch (erro) {
-                    if (erro.name !== 'AbortError') fecharSugestoesPessoas();
+                    if (erro.name !== 'AbortError' && sequenciaAtual === sequenciaSugestoes) {
+                        fecharSugestoesPessoas();
+                    }
                 }
             }, 180);
         });
@@ -306,7 +358,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Busca de vídeos do YouTube
-    const btnBuscarYoutube = document.getElementById('btnBuscarYoutube');
     const inputBuscaYoutube = document.getElementById('buscaYoutube');
     const resultadosYoutube = document.getElementById('resultadosYoutube');
     const inputUrl = document.getElementById('url');
@@ -325,6 +376,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return resposta.json();
             })
             .then(function (videos) {
+                if (inputBuscaYoutube.value.trim() !== termo) return;
                 resultadosYoutube.innerHTML = '';
 
                 if (videos.length === 0) {
@@ -359,13 +411,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .catch(function () {
-                resultadosYoutube.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                if (inputBuscaYoutube.value.trim() === termo) {
+                    resultadosYoutube.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                }
             });
     }
 
-    if (btnBuscarYoutube) {
-        btnBuscarYoutube.addEventListener('click', buscarVideos);
-    }
+    configurarBuscaAutomatica(inputBuscaYoutube, buscarVideos, resultadosYoutube);
 
     if (inputBuscaYoutube) {
         inputBuscaYoutube.addEventListener('keydown', function (evento) {
@@ -406,7 +458,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Busca de vídeos do YouTube (Editar)
         const inputBuscaYoutubeEditar = campoYoutubeEditar.querySelector('.busca-youtube-editar');
-        const btnBuscarYoutubeEditar = campoYoutubeEditar.querySelector('.btn-buscar-youtube-editar');
         const resultadosYoutubeEditar = campoYoutubeEditar.querySelector('.resultados-youtube-editar');
 
         function buscarVideosEditar() {
@@ -421,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return resposta.json();
                 })
                 .then(function (videos) {
+                    if (inputBuscaYoutubeEditar.value.trim() !== termo) return;
                     resultadosYoutubeEditar.innerHTML = '';
 
                     if (videos.length === 0) {
@@ -449,11 +501,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 })
                 .catch(function () {
-                    resultadosYoutubeEditar.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                    if (inputBuscaYoutubeEditar.value.trim() === termo) {
+                        resultadosYoutubeEditar.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                    }
                 });
         }
 
-        if (btnBuscarYoutubeEditar) btnBuscarYoutubeEditar.addEventListener('click', buscarVideosEditar);
+        configurarBuscaAutomatica(inputBuscaYoutubeEditar, buscarVideosEditar, resultadosYoutubeEditar);
+
         if (inputBuscaYoutubeEditar) {
             inputBuscaYoutubeEditar.addEventListener('keydown', function (evento) {
                 if (evento.key === 'Enter') {
@@ -465,7 +520,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Busca de livros do Google Books (Editar)
         const inputBuscaBooksEditar = campoGoogleBooks.querySelector('.busca-google-books-editar');
-        const btnBuscarBooksEditar = campoGoogleBooks.querySelector('.btn-buscar-google-books-editar');
         const resultadosBooksEditar = campoGoogleBooks.querySelector('.resultados-google-books-editar');
 
         function buscarLivrosEditar() {
@@ -480,6 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return resposta.json();
                 })
                 .then(function (livros) {
+                    if (inputBuscaBooksEditar.value.trim() !== termo) return;
                     resultadosBooksEditar.innerHTML = '';
 
                     if (livros.length === 0) {
@@ -511,11 +566,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 })
                 .catch(function () {
-                    resultadosBooksEditar.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                    if (inputBuscaBooksEditar.value.trim() === termo) {
+                        resultadosBooksEditar.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                    }
                 });
         }
 
-        if (btnBuscarBooksEditar) btnBuscarBooksEditar.addEventListener('click', buscarLivrosEditar);
+        configurarBuscaAutomatica(inputBuscaBooksEditar, buscarLivrosEditar, resultadosBooksEditar);
+
         if (inputBuscaBooksEditar) {
             inputBuscaBooksEditar.addEventListener('keydown', function (evento) {
                 if (evento.key === 'Enter') {
@@ -527,7 +585,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Busca de livros do Google Books (modal Adicionar Conteúdo)
-    const btnBuscarBooks = document.getElementById('btnBuscarGoogleBooks');
     const inputBuscaBooks = document.getElementById('buscaGoogleBooks');
     const resultadosBooks = document.getElementById('resultadosGoogleBooks');
     const inputUrlAdicionar = document.getElementById('url');
@@ -545,6 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return resposta.json();
             })
             .then(function (livros) {
+                if (inputBuscaBooks.value.trim() !== termo) return;
                 resultadosBooks.innerHTML = '';
 
                 if (livros.length === 0) {
@@ -579,13 +637,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .catch(function () {
-                resultadosBooks.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                if (inputBuscaBooks.value.trim() === termo) {
+                    resultadosBooks.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                }
             });
     }
 
-    if (btnBuscarBooks) {
-        btnBuscarBooks.addEventListener('click', buscarLivros);
-    }
+    configurarBuscaAutomatica(inputBuscaBooks, buscarLivros, resultadosBooks);
 
     if (inputBuscaBooks) {
         inputBuscaBooks.addEventListener('keydown', function (evento) {

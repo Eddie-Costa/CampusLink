@@ -2,7 +2,7 @@
 :root {
     --azul-campus: var(--campus-navy);
     --azul-hover: var(--campus-navy-hover);
-    --branco: #ffffff;
+    --branco: var(--campus-white);
     --cinza-fundo: var(--campus-page-bg);
     --cinza-texto: var(--campus-muted);
 }
@@ -174,7 +174,7 @@ body {
     margin-top: 16px;
     padding: 14px 16px;
     border: 1px solid var(--campus-danger-border);
-    border-left: 4px solid #dc3545;
+    border-left: 4px solid var(--campus-danger);
     border-radius: 10px;
     background-color: var(--campus-danger-bg);
 }
@@ -257,17 +257,17 @@ body {
     width: 32px;
     height: 32px;
     padding: 0;
-    border: 1px solid #dc3545;
+    border: 1px solid var(--campus-danger);
     border-radius: 8px;
     background-color: var(--branco);
-    color: #dc3545;
+    color: var(--campus-danger);
     font-size: 15px;
     cursor: pointer;
     transition: 0.2s ease;
 }
 
 .botao-remover:hover {
-    background-color: #dc3545;
+    background-color: var(--campus-danger);
     color: var(--branco);
 }
 

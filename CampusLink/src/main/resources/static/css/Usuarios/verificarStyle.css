@@ -126,7 +126,7 @@
     transition: background-color 0.2s;
 }
 
-.form-autenticacao .Sendbutton:hover {
+.form-autenticacao .Sendbutton:hover:not(:disabled) {
     background-color: var(--campus-navy-hover);
 }
 

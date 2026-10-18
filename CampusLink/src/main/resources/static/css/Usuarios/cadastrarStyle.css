@@ -33,7 +33,7 @@ body{
     padding: 30px;
     width: calc(100% - 32px);
     max-width: 500px;
-    background-color: white;
+    background-color: var(--campus-white);
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
@@ -51,7 +51,7 @@ body{
     margin-top: 5px;
     padding: 5px 10px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--campus-border-strong);
 }
 
 .Sendbutton{
@@ -60,14 +60,14 @@ body{
     height: 40px;
     border: none;
     border-radius: 10px;
-    background-color: var(--campus-accent);
-    color: white;
+    background-color: var(--campus-navy);
+    color: var(--campus-white);
     font-weight: 800;
     cursor: pointer;
 }
 
 .Sendbutton:hover:not(:disabled){
-    background-color: var(--campus-link);
+    background-color: var(--campus-navy-hover);
 }
 
 .Sendbutton:disabled{
@@ -130,7 +130,7 @@ body{
 
 p[name="mensagemDeErro"]{
     margin-top: 10px;
-    color: red;
+    color: var(--campus-danger-text);
     font-size: 14px;
     text-align: center;
 }
@@ -179,11 +179,11 @@ p[name="mensagemDeErro"]{
 
 .panel-aluno{
     background-color: var(--campus-navy);
-    color: white;
+    color: var(--campus-white);
 }
 
 .panel-professor{
-    background-color: white;
+    background-color: var(--campus-white);
     color: var(--campus-navy);
 }
 
@@ -226,23 +226,23 @@ p[name="mensagemDeErro"]{
 }
 
 .choice-btn-light{
-    background-color: white;
+    background-color: var(--campus-white);
     color: var(--campus-navy);
 }
 
 .choice-btn-light:hover{
     background-color: var(--campus-navy);
-    color: white;
-    border: 1px solid white;
+    color: var(--campus-white);
+    border: 1px solid var(--campus-white);
 }
 
 .choice-btn-dark{
     background-color: var(--campus-navy);
-    color: white;
+    color: var(--campus-white);
 }
 
 .choice-btn-dark:hover{
-    background-color: white;
+    background-color: var(--campus-white);
     color: var(--campus-navy);
     border: 1px solid var(--campus-navy);
 }

@@ -1,6 +1,6 @@
 :root {
     --azul-campus: var(--campus-navy);
-    --branco: #ffffff;
+    --branco: var(--campus-white);
     --cinza-fundo: var(--campus-page-bg);
     --cinza-texto: var(--campus-muted);
 }

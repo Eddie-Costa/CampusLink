@@ -9,7 +9,7 @@
     --cinza-fora-mes: var(--campus-border);
     --cinza-texto: var(--campus-muted);
     --vermelho-evento: var(--campus-danger);
-    --amarelo-evento: #f2c94c;
+    --amarelo-evento: var(--campus-warning);
     --verde-disponibilidade: var(--campus-success);
 }
 

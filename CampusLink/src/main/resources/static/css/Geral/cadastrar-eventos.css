@@ -9,7 +9,7 @@
     --cinza-texto: var(--campus-muted);
     --azul-linha: var(--campus-accent);
     --vermelho-evento: var(--campus-danger);
-    --amarelo-evento: #f2c94c;
+    --amarelo-evento: var(--campus-warning);
 }
 
 * {

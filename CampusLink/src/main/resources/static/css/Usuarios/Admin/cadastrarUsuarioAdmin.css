@@ -1,7 +1,7 @@
 :root {
     --azul-campus: var(--campus-navy);
     --azul-hover: var(--campus-navy-hover);
-    --branco: #ffffff;
+    --branco: var(--campus-white);
     --cinza-fundo: var(--campus-page-bg);
     --cinza-texto: var(--campus-muted);
     --cinza-borda: var(--campus-border);
@@ -148,7 +148,7 @@ body {
 
 .cadastro-admin-erro {
     margin-top: 5px;
-    color: #dc3545;
+    color: var(--campus-danger);
     font-size: 13px;
 }
 

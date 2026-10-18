@@ -15,7 +15,8 @@
 <main>
     <h1 class="title">Cadastrar Aluno</h1>
 
-    <form action="/cadastrarAluno" th:object="${aluno}" method="post" class="form-cadastrarAluno">
+    <form action="/cadastrarAluno" th:object="${aluno}" method="post" class="form-cadastrarAluno"
+          data-submit-once>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <label class="label_info">RGM</label>

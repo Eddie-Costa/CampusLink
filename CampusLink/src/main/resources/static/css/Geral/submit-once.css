@@ -1,0 +1,4 @@
+.submit-once-disabled {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+}

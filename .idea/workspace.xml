@@ -24,7 +24,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="local/mergeInterfaceEd-Sant" />
+        <entry key="$PROJECT_DIR$" value="local/mergeInterfaceEd-Sant-Riq" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -67,7 +67,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "local/mergeInterfaceEd-Sant-Riq",
+    "git-widget-placeholder": "local/eddie-ajustesInterfaces",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/eddie/OneDrive/Documentos/.git/CampusLink/CampusLink/CampusLink/src/main/resources/static/css",
     "list.type.of.created.stylesheet": "CSS",
@@ -164,7 +164,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
-          <line>326</line>
+          <line>327</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>

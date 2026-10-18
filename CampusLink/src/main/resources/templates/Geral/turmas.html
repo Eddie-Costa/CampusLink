@@ -51,7 +51,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
 
-                        <form th:action="@{/criarTurma}" th:object="${turma}" method="post">
+                        <form th:action="@{/criarTurma}" th:object="${turma}" method="post" data-submit-once>
                             <div class="modal-body">
 
                                 <label for="nomeTurma" class="form-label">Nome da turma</label>
@@ -94,8 +94,15 @@
     const inputBusca = document.getElementById('buscaTurma');
     if (inputBusca) {
         const sugestoes = document.getElementById('sugestoesTurma');
+        const buscaContainer = inputBusca.closest('.busca-turma-container');
         const cartoes = Array.from(document.querySelectorAll('#listaTurmas .turma-card'));
         const normalizar = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+        function fecharSugestoes() {
+            sugestoes.replaceChildren();
+            sugestoes.hidden = true;
+            inputBusca.setAttribute('aria-expanded', 'false');
+        }
 
         inputBusca.addEventListener('input', () => {
             const termo = normalizar(inputBusca.value.trim());
@@ -130,6 +137,10 @@
             }
 
             inputBusca.setAttribute('aria-expanded', String(!sugestoes.hidden));
+        });
+
+        document.addEventListener('click', evento => {
+            if (!buscaContainer.contains(evento.target)) fecharSugestoes();
         });
     }
 </script>

@@ -94,6 +94,7 @@
                                             <form th:unless="${#strings.equalsIgnoreCase(participante.tipoUsuario, 'Professor Admin')}"
                                                   th:action="@{/removerPessoas}" method="post"
                                                   class="form-remover-participante"
+                                                  data-submit-once
                                                   th:attr="data-nome=${participante.nomePessoa}">
                                                 <input type="hidden" name="id" th:value="${turma.id}">
                                                 <input type="hidden" name="emailPessoa"
@@ -132,7 +133,8 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
-                        <form th:action="@{/adicionarPessoas}" th:object="${turma}" method="post">
+                        <form th:action="@{/adicionarPessoas}" th:object="${turma}" method="post"
+                              data-submit-once>
 
                             <div class="modal-body">
 
@@ -204,24 +206,7 @@
 
             <!-- Excluir turma continua disponível apenas para o administrador dela. -->
             <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
-                  method="post" class="form-excluir-turma">
-                <input type="hidden" th:field="*{id}"/>
-                <button type="submit" class="btn btn-danger">Excluir Turma</button>
-            </form>
-
-            <button type="button" class="acao-turma participantes-turma" data-bs-toggle="modal"
-                    data-bs-target="#participantesTurma">
-                Participantes da Turma
-            </button>
-
-            <button type="button" class="acao-turma" th:if="${isTurmaAdmin}"
-                    data-bs-toggle="modal" data-bs-target="#editarTurmaModal">
-                Editar Turma
-            </button>
-
-            <!-- Excluir turma continua disponível apenas para o administrador dela. -->
-            <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
-                  method="post" class="form-excluir-turma">
+                  method="post" class="form-excluir-turma" data-submit-once>
                 <input type="hidden" th:field="*{id}"/>
                 <button type="submit" class="btn btn-danger">Excluir Turma</button>
             </form>
@@ -238,7 +223,7 @@
                     </div>
 
                     <form th:action="@{/turmas/{id}/editar(id=${turma.id})}"
-                          th:object="${turmaEdicao}" method="post">
+                          th:object="${turmaEdicao}" method="post" data-submit-once>
                         <div class="modal-body">
                             <label for="nomeTurmaEdicao" class="form-label">Nome da turma</label>
                             <input id="nomeTurmaEdicao" type="text" class="form-control mb-3"
@@ -270,7 +255,7 @@
                     </div>
 
                     <form th:action="@{/turmas/{id}/editar(id=${turma.id})}"
-                          th:object="${turmaEdicao}" method="post">
+                          th:object="${turmaEdicao}" method="post" data-submit-once>
                         <div class="modal-body">
                             <label for="nomeTurmaEdicao" class="form-label">Nome da turma</label>
                             <input id="nomeTurmaEdicao" type="text" class="form-control mb-3"
@@ -302,8 +287,6 @@
                 <option value="arquivo" th:selected="${tipoFiltro == 'arquivo'}">Arquivo</option>
                 <option value="texto" th:selected="${tipoFiltro == 'texto'}">Somente texto</option>
             </select>
-
-            <button type="submit">Buscar</button>
 
             <a th:if="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}"
                th:href="@{/turmas/{id}(id=${idTurma})}"
@@ -493,20 +476,18 @@
 
                     <div class="campo-youtube-editar" style="display: none;">
                         <label class="form-label">Buscar vídeo no YouTube</label>
-                        <div class="input-group mb-2">
+                        <div class="mb-2">
                             <input type="text" class="form-control busca-youtube-editar"
                                    placeholder="Digite palavras-chave e busque">
-                            <button type="button" class="btn btn-secondary btn-buscar-youtube-editar">Buscar</button>
                         </div>
                         <div class="resultados-youtube-editar"></div>
                     </div>
 
                     <div class="campo-google-books-editar" style="display: none;">
                         <label class="form-label">Buscar livro no Google Books</label>
-                        <div class="input-group mb-2">
+                        <div class="mb-2">
                             <input type="text" class="form-control busca-google-books-editar"
                                    placeholder="Digite título ou autor e busque">
-                            <button type="button" class="btn btn-secondary btn-buscar-google-books-editar">Buscar</button>
                         </div>
                         <div class="resultados-google-books-editar"></div>
                     </div>
@@ -697,20 +678,18 @@
 
                     <div id="campoYoutube" style="display: none;">
                         <label class="form-label">Buscar vídeo no YouTube</label>
-                        <div class="input-group mb-2">
+                        <div class="mb-2">
                             <input type="text" id="buscaYoutube" class="form-control"
                                    placeholder="Digite palavras-chave e busque">
-                            <button type="button" class="btn btn-secondary" id="btnBuscarYoutube">Buscar</button>
                         </div>
                         <div id="resultadosYoutube"></div>
                     </div>
 
                     <div id="campoGoogleBooks" style="display: none;">
                         <label class="form-label">Buscar livro no Google Books</label>
-                        <div class="input-group mb-2">
+                        <div class="mb-2">
                             <input type="text" id="buscaGoogleBooks" class="form-control"
                                    placeholder="Digite título ou autor e busque">
-                            <button type="button" class="btn btn-secondary" id="btnBuscarGoogleBooks">Buscar</button>
                         </div>
                         <div id="resultadosGoogleBooks"></div>
                     </div>
@@ -826,7 +805,7 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Geral/ambienteTurma.js(v=20261010-13)}"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js(v=20261017-2)}"></script>
 
 </body>
 </html>

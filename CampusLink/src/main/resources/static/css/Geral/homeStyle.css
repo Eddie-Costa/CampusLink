@@ -1,7 +1,7 @@
 :root {
     --azul-campus: var(--campus-navy);
     --azul-hover: var(--campus-navy-hover);
-    --branco: #ffffff;
+    --branco: var(--campus-white);
     --cinza-fundo: var(--campus-page-bg);
     --cinza-texto: var(--campus-muted);
 }
