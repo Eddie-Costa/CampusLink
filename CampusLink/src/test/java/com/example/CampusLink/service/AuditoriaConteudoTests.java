@@ -1,6 +1,6 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.RevisaoConteudoDAO;
+import com.example.CampusLink.repository.RevisaoConteudoRepository;
 import com.example.CampusLink.dao.conteudoDAO;
 import com.example.CampusLink.dao.denunciaDAO;
 import com.example.CampusLink.dao.usuarioDAO;
@@ -46,11 +46,11 @@ class AuditoriaConteudoTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void revisaoRegistraResultadoRealDaLiberacaoEReprovacao(boolean sucesso) throws Exception {
-        RevisaoConteudoDAO dao = mock(RevisaoConteudoDAO.class);
-        RevisaoConteudoService service = new RevisaoConteudoService(dao);
+        RevisaoConteudoRepository repository = mock(RevisaoConteudoRepository.class);
+        RevisaoConteudoService service = new RevisaoConteudoService(repository);
         ReflectionTestUtils.setField(service, "usuarioDAO", usuarios);
-        when(dao.liberarConteudo(10L)).thenReturn(sucesso);
-        when(dao.reprovarConteudo(10L, "motivo")).thenReturn(sucesso);
+        when(repository.liberarConteudo(10L)).thenReturn(sucesso ? 1 : 0);
+        when(repository.reprovarConteudo(10L, "motivo")).thenReturn(sucesso ? 1 : 0);
         assertEquals(sucesso, service.liberarConteudo(10L));
         assertEquals(sucesso, service.reprovarConteudo(10L, "motivo"));
         verificarLog(sucesso ? "INFO" : "WARN", "liberarConteudo", sucesso ? "Conteúdo liberado" : "Liberação recusada");

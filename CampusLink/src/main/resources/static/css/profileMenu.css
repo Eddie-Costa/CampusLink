@@ -98,3 +98,11 @@
     height: 23px;
     flex-shrink: 0;
 }
+.alerta-flutuante {
+    position: fixed;
+    top: 90px;          /* abaixo do header, não cobre o avatar */
+    right: 16px;
+    z-index: 1055;
+    min-width: 280px;
+    max-width: 420px;
+}

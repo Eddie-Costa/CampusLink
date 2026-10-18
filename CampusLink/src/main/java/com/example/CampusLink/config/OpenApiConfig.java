@@ -21,9 +21,9 @@ public class OpenApiConfig {
                                 ### Integrações de pesquisa
                                 - **Google Books API v1:** busca informações bibliográficas em
                                   `GET https://www.googleapis.com/books/v1/volumes`.
-                                  O backend solicita até 10 resultados e retorna título, autores,
+                                  O backend solicita até 30 resultados e retorna título, autores,
                                   editora, ano, ISBN, miniatura e link do livro.
-                                - **YouTube Data API v3:** pesquisa até 10 vídeos em
+                                - **YouTube Data API v3:** pesquisa até 25 vídeos em
                                   `GET https://www.googleapis.com/youtube/v3/search` e consulta
                                   `GET https://www.googleapis.com/youtube/v3/videos` para obter a duração.
                                   O retorno contém identificador, título, canal, miniatura e duração.

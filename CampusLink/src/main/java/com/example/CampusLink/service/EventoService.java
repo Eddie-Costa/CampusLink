@@ -1,8 +1,7 @@
-
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.EventoConteudoDAO;
-import com.example.CampusLink.dao.EventoDetalhesDAO;
+
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.repository.EventoRepository;
@@ -33,7 +32,7 @@ public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final EventoConteudoDAO eventoConteudoDAO;
-    private final EventoDetalhesDAO eventoDetalhesDAO;
+
 
     // salva o evento e os conteudos escolhidos
     public Evento adicionarEvento(Evento evento, List<Long> idsConteudos) {
@@ -268,14 +267,18 @@ public class EventoService {
             return;
         }
 
-        String nomeTurma = eventoDetalhesDAO.buscarNomeTurma(evento.getIdTurma());
+        // mantem o comportamento antigo: sem id, nome nulo e lista vazia
+        String nomeTurma = null;
+        if (evento.getIdTurma() != null) {
+            nomeTurma = eventoRepository.buscarNomeTurma(evento.getIdTurma()).orElse(null);
+        }
         evento.setNomeTurma(nomeTurma);
 
-        List<String> nomesConteudos = eventoDetalhesDAO.buscarConteudosDoEvento(evento.getId());
+        List<String> nomesConteudos = List.of();
+        if (evento.getId() != null) {
+            nomesConteudos = eventoRepository.buscarConteudosDoEvento(evento.getId());
+        }
         evento.setNomesConteudos(nomesConteudos);
-
-        logger.debug("Detalhes carregados eventoId={} turma={} quantidadeConteudos={}",
-                evento.getId(), nomeTurma, nomesConteudos.size());
 
         if (logger.isDebugEnabled()) {
             try {

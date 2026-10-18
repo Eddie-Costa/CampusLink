@@ -65,7 +65,7 @@ public class YoutubeController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de até 10 vídeos. Pode retornar uma lista vazia quando não há resultados ou usuário logado.",
+                    description = "Lista de até 25 vídeos. Pode retornar uma lista vazia quando não há resultados ou usuário logado.",
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(
