@@ -1,6 +1,6 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.dominioDAO;
+import com.example.CampusLink.repository.DominioRepository;
 import com.example.CampusLink.dto.DominioDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class DominioService {
     );
 
     @Autowired
-    private dominioDAO dominioDAO;
+    private DominioRepository dominioRepository;
 
     // ---------- professor ----------
 
@@ -35,7 +35,7 @@ public class DominioService {
         justificativa = (justificativa == null || justificativa.isBlank()) ? null : justificativa.trim();
 
         try {
-            if (dominioDAO.existePendenteOuAprovado(dominio)) {
+            if (dominioRepository.existePendenteOuAprovado(dominio)) {
                 throw new IllegalArgumentException(
                         "O domínio " + dominio + " já está autorizado ou já possui uma solicitação em análise.");
             }
@@ -44,7 +44,7 @@ public class DominioService {
             dominioDTO.setJustificativa(justificativa);
             dominioDTO.setIdProfessor(idProfessor);
 
-            dominioDAO.inserir(dominioDTO);
+            dominioRepository.inserir(dominioDTO);
 
         } catch (SQLException e) {
             // 23505 = violação do índice único (duas solicitações iguais ao mesmo tempo)
@@ -59,7 +59,7 @@ public class DominioService {
 
     public List<DominioDTO> listarPorProfessor(Long idProfessor) {
         try {
-            return dominioDAO.listarPorProfessor(idProfessor);
+            return dominioRepository.listarPorProfessor(idProfessor);
         } catch (SQLException e) {
             logger.error("Erro ao listar solicitações do professor. professorId={}", idProfessor, e);
             throw new RuntimeException("Não foi possível listar as solicitações.", e);
@@ -70,7 +70,7 @@ public class DominioService {
 
     public List<DominioDTO> listarPendentes() {
         try {
-            return dominioDAO.listarPendentes();
+            return dominioRepository.listarPendentes();
         } catch (SQLException e) {
             logger.error("Erro ao listar solicitações pendentes.", e);
             throw new RuntimeException("Não foi possível listar as solicitações pendentes.", e);
@@ -79,7 +79,7 @@ public class DominioService {
 
     public List<DominioDTO> listarAprovados() {
         try {
-            return dominioDAO.listarAprovados();
+            return dominioRepository.listarAprovados();
         } catch (SQLException e) {
             logger.error("Erro ao listar domínios autorizados.", e);
             throw new RuntimeException("Não foi possível listar os domínios autorizados.", e);
@@ -99,7 +99,7 @@ public class DominioService {
         }
 
         try {
-            boolean analisado = dominioDAO.analisar(id, aprovar ? "aprovado" : "rejeitado", comentario);
+            boolean analisado = dominioRepository.analisar(id, aprovar ? "aprovado" : "rejeitado", comentario);
 
             if (!analisado) {
                 throw new IllegalArgumentException("Essa solicitação não existe ou já foi analisada.");
@@ -119,7 +119,7 @@ public class DominioService {
 
     public boolean hostAutorizado(String host) {
         try {
-            return dominioDAO.hostAutorizado(host);
+            return dominioRepository.hostAutorizado(host);
         } catch (SQLException e) {
             logger.error("Erro ao verificar domínio autorizado. host={}", host, e);
             throw new RuntimeException("Não foi possível verificar o domínio.", e);

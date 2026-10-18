@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.alunoDAO;
+import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.dao.professorDAO;
 import com.example.CampusLink.dao.turmaDAO;
 import com.example.CampusLink.dto.TurmaDTO;
@@ -42,7 +42,7 @@ public class turmasController {
     private professorDAO professorDAO;
 
     @Autowired
-    private alunoDAO alunoDAO;
+    private AlunoRepository alunoRepository;
 
     @Autowired
     private turmaDAO turmaDAO;
@@ -68,7 +68,7 @@ public class turmasController {
         //recuperar turmas que o usuario esta
         String tipoUsuario = session.getAttribute("tipoUsuario").toString();
         if ("aluno".equalsIgnoreCase(tipoUsuario)) {
-            turmas = turmaDAO.buscarTurmasDoUsuario("aluno", alunoDAO.buscarPorIDAluno(session.getAttribute("email2FA").toString()));
+            turmas = turmaDAO.buscarTurmasDoUsuario("aluno", alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString()));
         } else if ("professor".equalsIgnoreCase(tipoUsuario)) {
             turmas = turmaDAO.buscarTurmasDoUsuario("professor", professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString()));
         }

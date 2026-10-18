@@ -270,6 +270,7 @@ public class emailService {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            throw new MailPreparationException("Erro ao montar o email de verificação", e);
         } catch (MailException e) {
             logger.error("Erro ao enviar email de 2FA. operacaoId={}", operacaoId, e);
             if (logger.isErrorEnabled()) {

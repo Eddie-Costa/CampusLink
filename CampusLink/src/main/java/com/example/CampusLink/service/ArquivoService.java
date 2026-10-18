@@ -1,6 +1,6 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.ArquivoDAO;
+import com.example.CampusLink.repository.ArquivoRepository;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.dao.usuarioDAO;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class ArquivoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ArquivoService.class);
 
-    private final ArquivoDAO arquivoDAO;
+    private final ArquivoRepository arquivoRepository;
     private final SupabaseStorageService storageService;
     private final String bucket;
 
@@ -45,11 +45,11 @@ public class ArquivoService {
             Set.of("pdf", "png", "jpg", "jpeg", "doc", "docx", "ppt", "pptx");
 
     public ArquivoService(
-            ArquivoDAO arquivoDAO,
+            ArquivoRepository arquivoRepository,
             SupabaseStorageService storageService,
             @Value("${supabase.storage.bucket}") String bucket) {
 
-        this.arquivoDAO = arquivoDAO;
+        this.arquivoRepository = arquivoRepository;
         this.storageService = storageService;
         this.bucket = bucket;
     }
@@ -103,7 +103,7 @@ public class ArquivoService {
 
         try {
 
-            arquivoDAO.inserir(arquivoDTO);
+            arquivoRepository.inserir(arquivoDTO);
             logger.info("Arquivo salvo no Storage e no banco. conteudoId={} storagePath={} tamanhoBytes={}", idConteudo, storagePath, arquivo.getSize());
             if (logger.isInfoEnabled()) {
                 try {
@@ -170,7 +170,7 @@ public class ArquivoService {
 
         try {
 
-            return arquivoDAO.listarTodos();
+            return arquivoRepository.listarTodos();
 
         } catch (SQLException e) {
 
@@ -197,7 +197,7 @@ public class ArquivoService {
         try {
 
             ArquivoDTO arquivo =
-                    arquivoDAO.buscarPorId(id);
+                    arquivoRepository.buscarPorId(id);
 
             if (arquivo == null) {
 
@@ -240,7 +240,7 @@ public class ArquivoService {
 
         try {
 
-            return arquivoDAO.buscarMaisRecentePorConteudo(idConteudo);
+            return arquivoRepository.buscarMaisRecentePorConteudo(idConteudo);
 
         } catch (SQLException e) {
 
@@ -323,7 +323,7 @@ public class ArquivoService {
 
         try {
 
-            arquivoDAO.excluir(id);
+            arquivoRepository.excluir(id);
             logger.info("Arquivo excluído do Storage e do banco. arquivoId={} conteudoId={}", id, arquivo.getIdConteudo());
             if (logger.isInfoEnabled()) {
                 try {

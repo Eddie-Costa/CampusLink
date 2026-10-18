@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
 
     const formulario = document.getElementById("formCadastrarEvento");
@@ -20,7 +19,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    const botaoCadastrar = formulario.querySelector('button[type="submit"]');
+    const textoOriginalBotao = botaoCadastrar ? botaoCadastrar.textContent : "";
+    const botaoDesabilitadoInicialmente = botaoCadastrar ? botaoCadastrar.disabled : false;
+
     let numeroCarregamento = 0;
+    let enviando = false;
 
     // permite pesquisar com ou sem acentos
     function normalizarTexto(texto) {
@@ -239,6 +243,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     formulario.addEventListener("submit", function (evento) {
 
+        // bloqueia outro envio enquanto o cadastro esta carregando
+        if (enviando) {
+            evento.preventDefault();
+            return;
+        }
+
         validarDatas();
 
         if (!formulario.checkValidity()) {
@@ -250,6 +260,30 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!professorEvento.value) {
             evento.preventDefault();
             professorEvento.focus();
+            return;
+        }
+
+        if (evento.defaultPrevented) {
+            return;
+        }
+
+        enviando = true;
+        formulario.setAttribute("aria-busy", "true");
+
+        if (botaoCadastrar) {
+            botaoCadastrar.disabled = true;
+            botaoCadastrar.textContent = "Cadastrando...";
+        }
+    });
+
+    // restaura o botao ao voltar pelo navegador
+    window.addEventListener("pageshow", function () {
+        enviando = false;
+        formulario.removeAttribute("aria-busy");
+
+        if (botaoCadastrar) {
+            botaoCadastrar.disabled = botaoDesabilitadoInicialmente;
+            botaoCadastrar.textContent = textoOriginalBotao;
         }
     });
 

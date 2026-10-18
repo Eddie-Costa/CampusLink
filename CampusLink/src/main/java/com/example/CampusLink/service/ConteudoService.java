@@ -1,7 +1,7 @@
 
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.conteudoDAO;
+import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.ConteudoDTO;
 import org.slf4j.Logger;
@@ -25,11 +25,11 @@ public class ConteudoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ConteudoService.class);
 
-    private final conteudoDAO conteudoDAO;
+    private final ConteudoRepository conteudoRepository;
     private final ArquivoService arquivoService;
 
-    public ConteudoService(conteudoDAO conteudoDAO, ArquivoService arquivoService) {
-        this.conteudoDAO = conteudoDAO;
+    public ConteudoService(ConteudoRepository conteudoRepository, ArquivoService arquivoService) {
+        this.conteudoRepository = conteudoRepository;
         this.arquivoService = arquivoService;
     }
 
@@ -42,7 +42,7 @@ public class ConteudoService {
         conteudo.setTipo(definirTipo(conteudo, arquivo));
 
         try {
-            conteudoDAO.inserir(conteudo);
+            conteudoRepository.inserir(conteudo);
 
         } catch (SQLException e) {
             logger.error("Erro ao cadastrar conteúdo. turmaId={} professorId={}", conteudo.getIdTurma(), conteudo.getIdProfessor(), e);
@@ -69,7 +69,7 @@ public class ConteudoService {
 
             } catch (RuntimeException e) {
                 try {
-                    conteudoDAO.excluir(conteudo.getId());
+                    conteudoRepository.excluir(conteudo.getId());
 
                     logger.info("Conteúdo removido após falha no arquivo. conteudoId={} turmaId={}", conteudo.getId(), conteudo.getIdTurma());
 
@@ -121,7 +121,7 @@ public class ConteudoService {
 
     public List<ConteudoDTO> listarPorTurma(Long idTurma) {
         try {
-            return conteudoDAO.listarPorTurma(idTurma);
+            return conteudoRepository.listarPorTurma(idTurma);
 
         } catch (SQLException e) {
             logger.error("Erro ao listar conteúdos. turmaId={}", idTurma, e);
@@ -156,7 +156,7 @@ public class ConteudoService {
         }
 
         try {
-            return conteudoDAO.buscarPorTurma(idTurma, termoLimpo, tipoLimpo);
+            return conteudoRepository.buscarPorTurma(idTurma, termoLimpo, tipoLimpo);
 
         } catch (SQLException e) {
             logger.error("Erro ao buscar conteúdos. turmaId={}", idTurma, e);
@@ -166,7 +166,7 @@ public class ConteudoService {
 
     public List<ConteudoDTO> listarPorProfessor(Long idProfessor) {
         try {
-            return conteudoDAO.listarPorProfessor(idProfessor);
+            return conteudoRepository.listarPorProfessor(idProfessor);
 
         } catch (SQLException e) {
             logger.error("Erro ao listar conteúdos do professor. professorId={}", idProfessor, e);
@@ -189,30 +189,30 @@ public class ConteudoService {
     }
 
     public List<ConteudoDTO> listarPorProfessorPaginado(Long idProfessor, int pagina, String busca, String status) throws SQLException {
-        return conteudoDAO.listarPorProfessorPaginado(idProfessor, pagina, busca, status);
+        return conteudoRepository.listarPorProfessorPaginado(idProfessor, pagina, busca, status);
     }
 
     public int contarFiltradosPorProfessor(Long idProfessor, String busca, String status) throws SQLException {
-        return conteudoDAO.contarFiltradosPorProfessor(idProfessor, busca, status);
+        return conteudoRepository.contarFiltradosPorProfessor(idProfessor, busca, status);
     }
 
     public Map<String, Integer> contarPorProfessor(Long idProfessor) throws SQLException {
-        return conteudoDAO.contarPorProfessor(idProfessor);
+        return conteudoRepository.contarPorProfessor(idProfessor);
     }
 
     // lista dez conteudos por pagina para o administrador
     public List<ConteudoDTO> listarTodosParaAdminPaginado(int pagina, String busca, String status) throws SQLException {
-        return conteudoDAO.listarTodosParaAdminPaginado(pagina, busca, status);
+        return conteudoRepository.listarTodosParaAdminPaginado(pagina, busca, status);
     }
 
     // conta os conteudos encontrados para a paginacao do administrador
     public int contarFiltradosParaAdmin(String busca, String status) throws SQLException {
-        return conteudoDAO.contarFiltradosParaAdmin(busca, status);
+        return conteudoRepository.contarFiltradosParaAdmin(busca, status);
     }
 
     public List<ConteudoDTO> listarParaAnaliseAdmin() {
         try {
-            return conteudoDAO.listarParaAnaliseAdmin();
+            return conteudoRepository.listarParaAnaliseAdmin();
 
         } catch (SQLException e) {
             throw new RuntimeException("Não foi possível listar os conteúdos enviados para análise.", e);
@@ -221,7 +221,7 @@ public class ConteudoService {
 
     public boolean removerConteudoProfessor(Long idConteudo, Long idProfessor) {
         try {
-            boolean removido = conteudoDAO.removerConteudoProfessor(idConteudo, idProfessor);
+            boolean removido = conteudoRepository.removerConteudoProfessor(idConteudo, idProfessor);
 
             if (removido) {
                 logger.info("Conteúdo removido pelo professor. conteudoId={} professorId={}", idConteudo, idProfessor);
@@ -274,7 +274,7 @@ public class ConteudoService {
 
     public boolean solicitarRevisao(Long idConteudo, Long idProfessor) {
         try {
-            boolean solicitado = conteudoDAO.solicitarRevisao(idConteudo, idProfessor);
+            boolean solicitado = conteudoRepository.solicitarRevisao(idConteudo, idProfessor);
 
             if (solicitado) {
                 logger.info("Revisão de conteúdo solicitada. conteudoId={} professorId={}", idConteudo, idProfessor);
@@ -327,7 +327,7 @@ public class ConteudoService {
 
     public void excluir(Long id) {
         try {
-            conteudoDAO.excluir(id);
+            conteudoRepository.excluir(id);
 
             logger.info("Conteúdo excluído. conteudoId={}", id);
 
@@ -365,7 +365,7 @@ public class ConteudoService {
         conteudo.setTipo(definirTipo(conteudo, null));
 
         try {
-            conteudoDAO.atualizar(conteudo);
+            conteudoRepository.atualizar(conteudo);
 
             logger.info("Conteúdo atualizado. conteudoId={}", conteudo.getId());
 

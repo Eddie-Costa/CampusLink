@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.conteudoDAO;
+import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.service.ArquivoService;
 import com.example.CampusLink.dao.usuarioDAO;
@@ -37,14 +37,14 @@ public class ArquivoController {
     private static final Logger logger = LoggerFactory.getLogger(ArquivoController.class);
 
     private final ArquivoService arquivoService;
-    private final conteudoDAO conteudoDAO;
+    private final ConteudoRepository conteudoRepository;
 
     public ArquivoController(
             ArquivoService arquivoService,
-            conteudoDAO conteudoDAO) {
+            ConteudoRepository conteudoRepository) {
 
         this.arquivoService = arquivoService;
-        this.conteudoDAO = conteudoDAO;
+        this.conteudoRepository = conteudoRepository;
     }
 
 
@@ -172,7 +172,7 @@ public class ArquivoController {
             try {
 
                 String statusConteudo =
-                        conteudoDAO.buscarStatus(
+                        conteudoRepository.buscarStatus(
                                 arquivo.getIdConteudo()
                         );
 

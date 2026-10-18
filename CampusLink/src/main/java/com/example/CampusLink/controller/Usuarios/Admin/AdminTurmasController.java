@@ -6,7 +6,7 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import com.example.CampusLink.dao.usuarioDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.example.CampusLink.dao.AdminTurmaDAO;
+import com.example.CampusLink.repository.AdminTurmaRepository;
 import com.example.CampusLink.dto.Admin.cadastrarTurmaAdminDTO;
 import com.example.CampusLink.dto.Admin.editarTurmaAdminDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
@@ -40,10 +40,10 @@ public class AdminTurmasController {
 
     private static final String URL_LOGIN_ADMIN = "/admin/login";
 
-    private final AdminTurmaDAO adminTurmaDAO;
+    private final AdminTurmaRepository adminTurmaRepository;
 
-    public AdminTurmasController(AdminTurmaDAO adminTurmaDAO) {
-        this.adminTurmaDAO = adminTurmaDAO;
+    public AdminTurmasController(AdminTurmaRepository adminTurmaRepository) {
+        this.adminTurmaRepository = adminTurmaRepository;
     }
 
     @GetMapping("/admin/turmas")
@@ -58,7 +58,7 @@ public class AdminTurmasController {
         }
 
         try {
-            List<turmaAdminDTO> turmas = adminTurmaDAO.listarTurmas();
+            List<turmaAdminDTO> turmas = adminTurmaRepository.listarTurmas();
             model.addAttribute("turmas", turmas);
 
         } catch (SQLException e) {
@@ -93,7 +93,7 @@ public class AdminTurmasController {
         }
 
         try {
-            List<usuarioAdminDTO> professores = adminTurmaDAO.listarProfessoresAtivos();
+            List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresAtivos();
 
             model.addAttribute("turma", new cadastrarTurmaAdminDTO());
             model.addAttribute("professores", professores);
@@ -141,7 +141,7 @@ public class AdminTurmasController {
         }
 
         try {
-            adminTurmaDAO.cadastrarTurma(turma);
+            adminTurmaRepository.cadastrarTurma(turma);
             logger.info("Turma cadastrada pelo administrador. nome={} professorId={}", turma.getNomeTurma(), turma.getIdProprietario());
             if (logger.isInfoEnabled()) {
                 try {
@@ -192,7 +192,7 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
@@ -200,7 +200,7 @@ public class AdminTurmasController {
             }
 
             model.addAttribute("turma", turma);
-            model.addAttribute("professores", adminTurmaDAO.listarProfessoresAtivos());
+            model.addAttribute("professores", adminTurmaRepository.listarProfessoresAtivos());
 
             return "Usuarios/Admin/editarTurmaAdmin";
 
@@ -248,14 +248,14 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turmaExistente = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turmaExistente = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turmaExistente == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            boolean atualizado = adminTurmaDAO.atualizarTurma(turma);
+            boolean atualizado = adminTurmaRepository.atualizarTurma(turma);
 
             if (!atualizado) {
                 logger.warn("Atualização de turma não realizada. turmaId={}", idTurma);
@@ -321,15 +321,15 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            List<usuarioAdminDTO> alunos = adminTurmaDAO.listarAlunosDaTurma(idTurma);
-            List<usuarioAdminDTO> alunosDisponiveis = adminTurmaDAO.listarAlunosDisponiveis(idTurma);
+            List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(idTurma);
+            List<usuarioAdminDTO> alunosDisponiveis = adminTurmaRepository.listarAlunosDisponiveis(idTurma);
 
             model.addAttribute("turma", turma);
             model.addAttribute("alunos", alunos);
@@ -372,14 +372,14 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            boolean adicionado = adminTurmaDAO.adicionarAlunoNaTurma(idTurma, idAluno);
+            boolean adicionado = adminTurmaRepository.adicionarAlunoNaTurma(idTurma, idAluno);
 
             if (!adicionado) {
                 logger.warn("Inclusão de aluno não realizada. turmaId={} alunoId={}", idTurma, idAluno);
@@ -443,14 +443,14 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            boolean removido = adminTurmaDAO.removerAlunoDaTurma(idTurma, idAluno);
+            boolean removido = adminTurmaRepository.removerAlunoDaTurma(idTurma, idAluno);
 
             if (!removido) {
                 logger.warn("Remoção de aluno não realizada. turmaId={} alunoId={}", idTurma, idAluno);
@@ -514,15 +514,15 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            List<usuarioAdminDTO> professores = adminTurmaDAO.listarProfessoresDaTurma(idTurma);
-            List<usuarioAdminDTO> professoresDisponiveis = adminTurmaDAO.listarProfessoresDisponiveis(idTurma);
+            List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(idTurma);
+            List<usuarioAdminDTO> professoresDisponiveis = adminTurmaRepository.listarProfessoresDisponiveis(idTurma);
 
             model.addAttribute("turma", turma);
             model.addAttribute("professores", professores);
@@ -565,14 +565,14 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return "redirect:/admin/turmas";
             }
 
-            boolean adicionado = adminTurmaDAO.adicionarProfessorNaTurma(idTurma, idProfessor);
+            boolean adicionado = adminTurmaRepository.adicionarProfessorNaTurma(idTurma, idProfessor);
 
             if (!adicionado) {
                 logger.warn("Inclusão de professor não realizada. turmaId={} professorId={}", idTurma, idProfessor);
@@ -636,7 +636,7 @@ public class AdminTurmasController {
         }
 
         try {
-            editarTurmaAdminDTO turma = adminTurmaDAO.buscarTurmaPorId(idTurma);
+            editarTurmaAdminDTO turma = adminTurmaRepository.buscarTurmaPorId(idTurma);
 
             if (turma == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
@@ -662,7 +662,7 @@ public class AdminTurmasController {
                 return "redirect:/admin/turmas/" + idTurma + "/professores";
             }
 
-            boolean removido = adminTurmaDAO.removerProfessorDaTurma(idTurma, idProfessor);
+            boolean removido = adminTurmaRepository.removerProfessorDaTurma(idTurma, idProfessor);
 
             if (!removido) {
                 logger.warn("Remoção de professor não realizada. turmaId={} professorId={}", idTurma, idProfessor);
@@ -714,7 +714,7 @@ public class AdminTurmasController {
     private void carregarProfessores(Model model) {
 
         try {
-            model.addAttribute("professores", adminTurmaDAO.listarProfessoresAtivos());
+            model.addAttribute("professores", adminTurmaRepository.listarProfessoresAtivos());
 
         } catch (SQLException e) {
             logger.error("erro ao carregar professores", e);

@@ -1,12 +1,12 @@
 
-package com.example.CampusLink.dao;
+package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.ConteudoDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,10 +19,13 @@ import java.util.Locale;
 import java.util.Map;
 
 @Repository
-public class conteudoDAO {
+public class ConteudoRepository {
 
-    @Autowired
-    private DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    public ConteudoRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     private static final String SQL_FILTROS_PROFESSOR = """
             WHERE c."id_professor" = ?
@@ -60,33 +63,37 @@ public class conteudoDAO {
                 RETURNING "id", "created_at", "status"
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, conteudo.getIdTurma());
-            stmt.setLong(2, conteudo.getIdProfessor());
-            stmt.setString(3, conteudo.getTitulo());
+                stmt.setLong(1, conteudo.getIdTurma());
+                stmt.setLong(2, conteudo.getIdProfessor());
+                stmt.setString(3, conteudo.getTitulo());
 
-            String descricao = conteudo.getDescricao();
-            stmt.setString(4, descricao == null ? "" : descricao);
+                String descricao = conteudo.getDescricao();
+                stmt.setString(4, descricao == null ? "" : descricao);
 
-            stmt.setString(5, conteudo.getTipo());
-            stmt.setString(6, conteudo.getUrl());
-            stmt.setString(7, conteudo.getDuracaoEstimada());
-            stmt.setString(8, conteudo.getPrioridade());
+                stmt.setString(5, conteudo.getTipo());
+                stmt.setString(6, conteudo.getUrl());
+                stmt.setString(7, conteudo.getDuracaoEstimada());
+                stmt.setString(8, conteudo.getPrioridade());
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    conteudo.setId(rs.getLong("id"));
-                    conteudo.setStatus(rs.getString("status"));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        conteudo.setId(rs.getLong("id"));
+                        conteudo.setStatus(rs.getString("status"));
 
-                    Timestamp createdAt = rs.getTimestamp("created_at");
+                        Timestamp createdAt = rs.getTimestamp("created_at");
 
-                    if (createdAt != null) {
-                        conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+                        if (createdAt != null) {
+                            conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+                        }
                     }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -101,16 +108,20 @@ public class conteudoDAO {
                 ORDER BY "created_at" DESC
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, idTurma);
+                stmt.setLong(1, idTurma);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    conteudos.add(montarConteudo(rs, idTurma));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudos.add(montarConteudo(rs, idTurma));
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -143,30 +154,35 @@ public class conteudoDAO {
             sql.append(" ORDER BY \"created_at\" DESC");
         }
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+        try {
+            jdbcTemplate.execute(sql.toString(), (PreparedStatementCallback<Void>) stmt -> {
 
-            int i = 1;
-            stmt.setLong(i++, idTurma);
+                int i = 1;
+                stmt.setLong(i++, idTurma);
 
-            if (temTermo) {
-                stmt.setString(i++, termo);
-                stmt.setString(i++, termo);
-            }
-
-            if (temTipo) {
-                stmt.setString(i++, tipo);
-            }
-
-            if (temTermo) {
-                stmt.setString(i++, termo);
-                stmt.setString(i++, termo);
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    conteudos.add(montarConteudo(rs, idTurma));
+                if (temTermo) {
+                    stmt.setString(i++, termo);
+                    stmt.setString(i++, termo);
                 }
-            }
+
+                if (temTipo) {
+                    stmt.setString(i++, tipo);
+                }
+
+                if (temTermo) {
+                    stmt.setString(i++, termo);
+                    stmt.setString(i++, termo);
+                }
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudos.add(montarConteudo(rs, idTurma));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -187,52 +203,56 @@ public class conteudoDAO {
                 ORDER BY c."created_at" DESC
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, idProfessor);
+                stmt.setLong(1, idProfessor);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    ConteudoDTO conteudo = new ConteudoDTO();
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        ConteudoDTO conteudo = new ConteudoDTO();
 
-                    conteudo.setId(rs.getLong("id"));
+                        conteudo.setId(rs.getLong("id"));
 
-                    Long idTurma = rs.getLong("turma_id");
+                        Long idTurma = rs.getLong("turma_id");
 
-                    if (rs.wasNull()) {
-                        idTurma = null;
+                        if (rs.wasNull()) {
+                            idTurma = null;
+                        }
+
+                        conteudo.setIdTurma(idTurma);
+                        conteudo.setIdProfessor(rs.getLong("id_professor"));
+
+                        Timestamp createdAt = rs.getTimestamp("created_at");
+
+                        if (createdAt != null) {
+                            conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+                        }
+
+                        conteudo.setTitulo(rs.getString("titulo"));
+                        conteudo.setDescricao(rs.getString("descricao"));
+                        conteudo.setTipo(rs.getString("tipo"));
+                        conteudo.setUrl(rs.getString("url"));
+                        conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+                        conteudo.setPrioridade(rs.getString("prioridade"));
+                        conteudo.setStatus(rs.getString("status"));
+                        conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
+                        conteudo.setNomeTurma(rs.getString("nome_turma"));
+                        conteudo.setRevisaoSolicitada(rs.getBoolean("revisao_solicitada"));
+
+                        Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
+
+                        if (revisaoSolicitadaEm != null) {
+                            conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
+                        }
+
+                        conteudos.add(conteudo);
                     }
-
-                    conteudo.setIdTurma(idTurma);
-                    conteudo.setIdProfessor(rs.getLong("id_professor"));
-
-                    Timestamp createdAt = rs.getTimestamp("created_at");
-
-                    if (createdAt != null) {
-                        conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
-                    }
-
-                    conteudo.setTitulo(rs.getString("titulo"));
-                    conteudo.setDescricao(rs.getString("descricao"));
-                    conteudo.setTipo(rs.getString("tipo"));
-                    conteudo.setUrl(rs.getString("url"));
-                    conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
-                    conteudo.setPrioridade(rs.getString("prioridade"));
-                    conteudo.setStatus(rs.getString("status"));
-                    conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
-                    conteudo.setNomeTurma(rs.getString("nome_turma"));
-                    conteudo.setRevisaoSolicitada(rs.getBoolean("revisao_solicitada"));
-
-                    Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
-
-                    if (revisaoSolicitadaEm != null) {
-                        conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
-                    }
-
-                    conteudos.add(conteudo);
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -255,22 +275,26 @@ public class conteudoDAO {
                 LIMIT 10 OFFSET ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            preencherFiltrosProfessor(stmt, idProfessor, busca, status);
-            stmt.setLong(7, inicio);
+                preencherFiltrosProfessor(stmt, idProfessor, busca, status);
+                stmt.setLong(7, inicio);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Long idTurma = rs.getObject("turma_id", Long.class);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Long idTurma = rs.getObject("turma_id", Long.class);
 
-                    ConteudoDTO conteudo = montarConteudo(rs, idTurma);
-                    conteudo.setNomeTurma(rs.getString("nome_turma"));
+                        ConteudoDTO conteudo = montarConteudo(rs, idTurma);
+                        conteudo.setNomeTurma(rs.getString("nome_turma"));
 
-                    conteudos.add(conteudo);
+                        conteudos.add(conteudo);
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -279,15 +303,18 @@ public class conteudoDAO {
     public int contarFiltradosPorProfessor(Long idProfessor, String busca, String status) throws SQLException {
         String sql = "SELECT COUNT(*) AS quantidade FROM public.\"CONTEUDOS\" c " + SQL_FILTROS_PROFESSOR;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
-            preencherFiltrosProfessor(stmt, idProfessor, busca, status);
+                preencherFiltrosProfessor(stmt, idProfessor, busca, status);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                rs.next();
-                return rs.getInt("quantidade");
-            }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    rs.next();
+                    return rs.getInt("quantidade");
+                }
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -303,19 +330,23 @@ public class conteudoDAO {
                 WHERE "id_professor" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, idProfessor);
+                stmt.setLong(1, idProfessor);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                rs.next();
+                try (ResultSet rs = stmt.executeQuery()) {
+                    rs.next();
 
-                totais.put("totalConteudos", rs.getInt("total"));
-                totais.put("totalAtivos", rs.getInt("ativos"));
-                totais.put("totalSuspensos", rs.getInt("suspensos"));
-                totais.put("totalRemovidos", rs.getInt("removidos"));
-            }
+                    totais.put("totalConteudos", rs.getInt("total"));
+                    totais.put("totalAtivos", rs.getInt("ativos"));
+                    totais.put("totalSuspensos", rs.getInt("suspensos"));
+                    totais.put("totalRemovidos", rs.getInt("removidos"));
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return totais;
@@ -357,22 +388,26 @@ public class conteudoDAO {
                 LIMIT 10 OFFSET ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            preencherFiltrosAdmin(stmt, busca, status);
-            stmt.setLong(7, inicio);
+                preencherFiltrosAdmin(stmt, busca, status);
+                stmt.setLong(7, inicio);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Long idTurma = rs.getObject("turma_id", Long.class);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Long idTurma = rs.getObject("turma_id", Long.class);
 
-                    ConteudoDTO conteudo = montarConteudo(rs, idTurma);
-                    conteudo.setNomeProfessor(rs.getString("nome_professor"));
-                    conteudo.setNomeTurma(rs.getString("nome_turma"));
-                    conteudos.add(conteudo);
+                        ConteudoDTO conteudo = montarConteudo(rs, idTurma);
+                        conteudo.setNomeProfessor(rs.getString("nome_professor"));
+                        conteudo.setNomeTurma(rs.getString("nome_turma"));
+                        conteudos.add(conteudo);
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -387,15 +422,18 @@ public class conteudoDAO {
                 LEFT JOIN public."USUARIOS" u ON u."id" = p."id_usuario"
                 """ + SQL_FILTROS_ADMIN;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
-            preencherFiltrosAdmin(stmt, busca, status);
+                preencherFiltrosAdmin(stmt, busca, status);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                rs.next();
-                return rs.getInt("quantidade");
-            }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    rs.next();
+                    return rs.getInt("quantidade");
+                }
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -430,15 +468,20 @@ public class conteudoDAO {
                 ORDER BY c."revisao_solicitada_em" ASC, c."id" ASC
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                try (ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
-                ConteudoDTO conteudo = montarConteudo(rs, null);
-                conteudo.setNomeProfessor(rs.getString("nome_professor"));
-                conteudos.add(conteudo);
-            }
+                    while (rs.next()) {
+                        ConteudoDTO conteudo = montarConteudo(rs, null);
+                        conteudo.setNomeProfessor(rs.getString("nome_professor"));
+                        conteudos.add(conteudo);
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return conteudos;
@@ -483,19 +526,21 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Long>) stmt -> {
 
-            stmt.setLong(1, idConteudo);
+                stmt.setLong(1, idConteudo);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong("id_professor");
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getLong("id_professor");
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
-
-        return null;
     }
 
     public String buscarStatus(Long idConteudo) throws SQLException {
@@ -505,19 +550,21 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<String>) stmt -> {
 
-            stmt.setLong(1, idConteudo);
+                stmt.setLong(1, idConteudo);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("status");
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("status");
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
-
-        return null;
     }
 
     public boolean conteudoPertenceTurma(Long idConteudo, Long idTurma) throws SQLException {
@@ -529,20 +576,22 @@ public class conteudoDAO {
                 AND "status" <> 'removido'
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setLong(1, idConteudo);
-            stmt.setLong(2, idTurma);
+                stmt.setLong(1, idConteudo);
+                stmt.setLong(2, idTurma);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("quantidade") > 0;
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("quantidade") > 0;
+                    }
                 }
-            }
+                return false;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
-
-        return false;
     }
 
     public void atualizarStatus(Long idConteudo, String status) throws SQLException {
@@ -552,12 +601,16 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setString(1, status);
-            stmt.setLong(2, idConteudo);
-            stmt.executeUpdate();
+                stmt.setString(1, status);
+                stmt.setLong(2, idConteudo);
+                stmt.executeUpdate();
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -571,13 +624,16 @@ public class conteudoDAO {
                 AND "id_professor" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setLong(1, idConteudo);
-            stmt.setLong(2, idProfessor);
+                stmt.setLong(1, idConteudo);
+                stmt.setLong(2, idProfessor);
 
-            return stmt.executeUpdate() > 0;
+                return stmt.executeUpdate() > 0;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -591,13 +647,16 @@ public class conteudoDAO {
                 AND "status" = 'suspenso_denuncia'
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setLong(1, idConteudo);
-            stmt.setLong(2, idProfessor);
+                stmt.setLong(1, idConteudo);
+                stmt.setLong(2, idProfessor);
 
-            return stmt.executeUpdate() > 0;
+                return stmt.executeUpdate() > 0;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -610,11 +669,15 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
+                stmt.setLong(1, id);
+                stmt.executeUpdate();
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -629,20 +692,36 @@ public class conteudoDAO {
                 WHERE "id" = ?
                 """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setString(1, conteudo.getTitulo());
+                stmt.setString(1, conteudo.getTitulo());
 
-            String descricao = conteudo.getDescricao();
-            stmt.setString(2, descricao == null ? "" : descricao);
+                String descricao = conteudo.getDescricao();
+                stmt.setString(2, descricao == null ? "" : descricao);
 
-            stmt.setString(3, conteudo.getUrl());
-            stmt.setString(4, conteudo.getDuracaoEstimada());
-            stmt.setString(5, conteudo.getTipo());
-            stmt.setLong(6, conteudo.getId());
+                stmt.setString(3, conteudo.getUrl());
+                stmt.setString(4, conteudo.getDuracaoEstimada());
+                stmt.setString(5, conteudo.getTipo());
+                stmt.setLong(6, conteudo.getId());
 
-            stmt.executeUpdate();
+                stmt.executeUpdate();
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
+    }
+
+    // preserva o contrato de erro usado pelos consumidores
+    private SQLException converterErro(DataAccessException erro) {
+        Throwable causa = erro;
+        while (causa != null) {
+            if (causa instanceof SQLException sqlException) {
+                return sqlException;
+            }
+            causa = causa.getCause();
+        }
+        return new SQLException(erro.getMessage(), erro);
     }
 }
