@@ -44,3 +44,43 @@
 2026-10-17T22:16:39.620-03:00  WARN 10116 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
 2026-10-17T22:16:46.582-03:00  INFO 10116 --- [CampusLink] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2026-10-17T22:16:54.355-03:00  INFO 10116 --- [CampusLink] [http-nio-8080-exec-5] c.e.C.c.U.P.loginProfessorController     : Login concluído. perfil=professor email=matheussanthiago2018@gmail.com doisFatores=false
+2026-10-18T11:36:42.990-03:00  INFO 22008 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Starting CampusLinkApplication using Java 25.0.4 with PID 22008 (C:\GitHub\CampusLink\CampusLink\target\classes started by mathe in C:\GitHub\CampusLink)
+2026-10-18T11:36:42.993-03:00  INFO 22008 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-18T11:36:44.685-03:00  INFO 22008 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-18T11:36:44.686-03:00  INFO 22008 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-10-18T11:36:45.913-03:00  INFO 22008 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-18T11:36:47.523-03:00  INFO 22008 --- [CampusLink] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@daffb4f
+2026-10-18T11:36:47.525-03:00  INFO 22008 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-18T11:36:51.607-03:00  INFO 22008 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Started CampusLinkApplication in 9.0 seconds (process running for 9.464)
+2026-10-18T11:36:51.611-03:00  WARN 22008 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-18T11:36:51.611-03:00  WARN 22008 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-18T11:37:04.333-03:00  INFO 22008 --- [CampusLink] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-18T11:37:17.639-03:00  INFO 22008 --- [CampusLink] [http-nio-8080-exec-3] c.e.C.c.U.P.loginProfessorController     : Login concluído. perfil=professor email=matheussanthiago2018@gmail.com doisFatores=false
+2026-10-18T11:37:28.201-03:00  INFO 21348 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Starting CampusLinkApplication using Java 25.0.4 with PID 21348 (C:\GitHub\CampusLink\CampusLink\target\classes started by mathe in C:\GitHub\CampusLink)
+2026-10-18T11:37:28.204-03:00  INFO 21348 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-18T11:37:29.627-03:00  INFO 21348 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-18T11:37:29.628-03:00  INFO 21348 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-10-18T11:37:30.351-03:00  INFO 21348 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-18T11:37:31.868-03:00  INFO 21348 --- [CampusLink] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1b4076d
+2026-10-18T11:37:31.869-03:00  INFO 21348 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-18T11:37:35.854-03:00  INFO 21348 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Started CampusLinkApplication in 8.03 seconds (process running for 8.462)
+2026-10-18T11:37:35.863-03:00  WARN 21348 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-18T11:37:35.864-03:00  WARN 21348 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-18T11:37:35.902-03:00  INFO 21348 --- [CampusLink] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-18T11:38:15.510-03:00  INFO 21348 --- [CampusLink] [http-nio-8080-exec-5] c.e.CampusLink.service.emailService      : Email HTML de 2FA enviado com sucesso! operacaoId=bbfcbe7c-d52b-4a2f-a3cc-857d766aa233
+2026-10-18T11:40:17.500-03:00  INFO 21348 --- [CampusLink] [http-nio-8080-exec-4] c.e.CampusLink.service.emailService      : Email HTML de 2FA enviado com sucesso! operacaoId=15470e8e-0960-4fe2-9626-29eff5ae0686
+2026-10-18T11:45:56.099-03:00  INFO 3468 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Starting CampusLinkApplication using Java 25.0.4 with PID 3468 (C:\GitHub\CampusLink\CampusLink\target\classes started by mathe in C:\GitHub\CampusLink)
+2026-10-18T11:45:56.102-03:00  INFO 3468 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-18T11:45:57.468-03:00  INFO 3468 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-18T11:45:57.469-03:00  INFO 3468 --- [CampusLink] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-10-18T11:45:58.163-03:00  INFO 3468 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-18T11:45:59.723-03:00  INFO 3468 --- [CampusLink] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1b4076d
+2026-10-18T11:45:59.725-03:00  INFO 3468 --- [CampusLink] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-18T11:46:03.914-03:00  INFO 3468 --- [CampusLink] [restartedMain] c.e.CampusLink.CampusLinkApplication     : Started CampusLinkApplication in 8.182 seconds (process running for 8.602)
+2026-10-18T11:46:03.918-03:00  WARN 3468 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-18T11:46:03.918-03:00  WARN 3468 --- [CampusLink] [restartedMain] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-18T11:46:06.704-03:00  INFO 3468 --- [CampusLink] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-18T11:46:06.751-03:00  WARN 3468 --- [CampusLink] [http-nio-8080-exec-1] c.e.C.c.Geral.VerificarController        : [LOGIN] email 2FA ausente - redirecionando para /login
+2026-10-18T11:46:49.497-03:00  INFO 3468 --- [CampusLink] [http-nio-8080-exec-7] c.e.CampusLink.service.emailService      : Email HTML de 2FA enviado com sucesso! operacaoId=1a00e4b7-59e3-4d58-b4e5-8e832d675dbe
+2026-10-18T11:47:44.657-03:00  INFO 3468 --- [CampusLink] [http-nio-8080-exec-10] c.e.C.c.Geral.VerificarController        : Login concluído. perfil=professor email=matheussanthiago2018@gmail.com doisFatores=true
+2026-10-18T11:47:48.062-03:00  INFO 3468 --- [CampusLink] [http-nio-8080-exec-7] c.e.C.controller.Geral.LogoutController  : Sessão encerrada para o usuário matheussanthiago2018@gmail.com

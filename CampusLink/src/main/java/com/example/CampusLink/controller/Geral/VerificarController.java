@@ -17,9 +17,12 @@ import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
 
@@ -44,6 +47,44 @@ public class VerificarController {
 
     @Autowired
     private professorDAO professorDAO;
+
+    @ModelAttribute
+    public void carregarTempos(HttpSession session, Model model) {
+        String email = (String) session.getAttribute("email2FA");
+        long validade = twoFactorService.segundosParaExpirarCodigo(email);
+        long reenvio = twoFactorService.segundosParaReenvio(email);
+        model.addAttribute("segundosValidade", validade);
+        model.addAttribute("segundosReenvio", reenvio);
+        model.addAttribute("tempoValidade", String.format("%02d:%02d", validade / 60, validade % 60));
+        model.addAttribute("tempoReenvio", String.format("%02d:%02d", reenvio / 60, reenvio % 60));
+    }
+
+    @PostMapping("/verificar/reenviar")
+    public String reenviarCodigo(HttpSession session, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("email2FA");
+        Object fluxo = session.getAttribute("redirect");
+        if (email == null || email.isBlank()
+                || !("Login".equals(fluxo) || "Cadastro".equals(fluxo) || "ResetPassword".equals(fluxo))) {
+            return "redirect:/login";
+        }
+
+        String codigo;
+        try {
+            codigo = twoFactorService.reenviarCodigo(email);
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("erro", "Aguarde o contador de reenvio chegar a 00:00 para solicitar outro código.");
+            return "redirect:/verificar";
+        }
+
+        try {
+            emailService.enviarCodigo(email, codigo);
+            redirectAttributes.addFlashAttribute("mensagem", "Novo código enviado para seu e-mail. Use o código mais recente.");
+        } catch (MailException e) {
+            twoFactorService.invalidarCodigo(email);
+            redirectAttributes.addFlashAttribute("erro", "Não foi possível enviar o e-mail. Aguarde 2 minutos e tente novamente.");
+        }
+        return "redirect:/verificar";
+    }
 
     @GetMapping("/verificar")
     public String paginaVerificacao(HttpSession session) {
@@ -136,6 +177,10 @@ public class VerificarController {
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam String codigo, HttpSession session, Model model) throws SQLException {
 
+        if (session.getAttribute("email2FA") == null || session.getAttribute("redirect") == null) {
+            return "redirect:/login";
+        }
+
         if (session.getAttribute("redirect").equals("Login")) {
 
             String email = (String) session.getAttribute("email2FA");
@@ -189,6 +234,7 @@ public class VerificarController {
 
             if (twoFactorService.validarCodigo(email, codigo)) {
 
+                session.removeAttribute("redirect");
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     MDC.put("aluno", email);
                     MDC.put("sessionId", session.getId());
@@ -292,6 +338,7 @@ public class VerificarController {
             }
 
             if (twoFactorService.validarCodigo(email, codigo)) {
+                session.removeAttribute("redirect");
                 logger.info("O usuário com email: {} passou na validação de token para Reset de senha", email);
 
                 if (logger.isInfoEnabled()) {
@@ -375,6 +422,7 @@ public class VerificarController {
 
             if (twoFactorService.validarCodigo(email, codigo)) {
 
+                session.removeAttribute("redirect");
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     session.setAttribute("verificado", "true");
                     return "redirect:/cadastrarAlunoVerificado";

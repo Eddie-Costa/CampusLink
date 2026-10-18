@@ -31,11 +31,28 @@
             <input type="text" id="codigo-6" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 6 do código" required>
         </div>
 
-        <button type="submit" class="Sendbutton">Verificar</button>
+        <div id="contadores2fa" class="contadores-2fa" th:attr="data-validade=${segundosValidade},data-reenvio=${segundosReenvio}">
+            <div class="contador-2fa">
+                <span>O código expira em</span>
+                <strong id="tempoValidade" role="timer" th:text="${tempoValidade}">00:00</strong>
+                <progress id="barraValidade" class="barra-validade" max="300" value="0" th:value="${segundosValidade}"
+                          aria-label="Tempo restante de validade do código" aria-describedby="tempoValidade"></progress>
+            </div>
+        </div>
+        <p id="estadoCodigo" class="estado-codigo" role="status"
+           th:text="${segundosValidade > 0 ? 'O código vale por 5 minutos após a emissão.' : 'Código expirado ou indisponível. Solicite um novo código.'}"></p>
+
+        <button id="verificarCodigo" type="submit" class="Sendbutton" th:disabled="${segundosValidade == 0}">Verificar</button>
+        <button id="reenviarCodigo" type="submit" class="reenviar-button" th:formaction="@{/verificar/reenviar}"
+                formnovalidate th:disabled="${segundosReenvio > 0}" aria-describedby="ajudaReenvio"
+                th:text="${segundosReenvio > 0 ? 'Solicitar novo código (' + tempoReenvio + ')' : 'Solicitar novo código'}">Solicitar novo código</button>
+        <p id="ajudaReenvio" class="estado-codigo">Aguarde 2 minutos entre os envios. Um novo código substitui o anterior.</p>
+        <noscript><p class="estado-codigo">Atualize a página para consultar o tempo restante e liberar o reenvio.</p></noscript>
 
     </form>
 
-    <p th:if="${erro}" th:text="${erro}" class="mensagemErro"></p>
+    <p th:if="${erro}" th:text="${erro}" class="mensagemErro" role="alert"></p>
+    <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem-sucesso" role="status"></p>
 
 </main>
 
