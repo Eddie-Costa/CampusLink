@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
-import com.example.CampusLink.dao.AdminUsuarioDAO;
+import com.example.CampusLink.repository.AdminUsuarioRepository;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Admin.cadastrarUsuarioAdminDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
@@ -35,11 +35,11 @@ public class AdminUsuariosController {
 
     private static final String URL_LOGIN_ADMIN = "/admin/login";
 
-    private final AdminUsuarioDAO adminUsuarioDAO;
+    private final AdminUsuarioRepository adminUsuarioRepository;
     private final usuarioDAO usuarioDAO;
 
-    public AdminUsuariosController(AdminUsuarioDAO adminUsuarioDAO, usuarioDAO usuarioDAO) {
-        this.adminUsuarioDAO = adminUsuarioDAO;
+    public AdminUsuariosController(AdminUsuarioRepository adminUsuarioRepository, usuarioDAO usuarioDAO) {
+        this.adminUsuarioRepository = adminUsuarioRepository;
         this.usuarioDAO = usuarioDAO;
     }
 
@@ -57,9 +57,9 @@ public class AdminUsuariosController {
         }
 
         try {
-            List<usuarioAdminDTO> usuarios = adminUsuarioDAO.listarUsuarios();
+            List<usuarioAdminDTO> usuarios = adminUsuarioRepository.listarUsuarios();
             model.addAttribute("usuarios", usuarios);
-            model.addAttribute("adminLogado", adminUsuarioDAO.buscarAdministradorPorEmail((String) session.getAttribute("email2FA")));
+            model.addAttribute("adminLogado", adminUsuarioRepository.buscarAdministradorPorEmail((String) session.getAttribute("email2FA")));
 
             int totalAdministradoresAtivos = 0;
 
@@ -227,7 +227,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            usuarioAdminDTO usuario = adminUsuarioDAO.buscarUsuarioPorId(idUsuario);
+            usuarioAdminDTO usuario = adminUsuarioRepository.buscarUsuarioPorId(idUsuario);
 
             if (usuario == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
@@ -283,7 +283,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            usuarioAdminDTO usuarioAtual = adminUsuarioDAO.buscarUsuarioPorId(idUsuario);
+            usuarioAdminDTO usuarioAtual = adminUsuarioRepository.buscarUsuarioPorId(idUsuario);
 
             if (usuarioAtual == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
@@ -311,7 +311,7 @@ public class AdminUsuariosController {
                 return "Usuarios/Admin/editarUsuarioAdmin";
             }
 
-            List<String> erros = adminUsuarioDAO.validarDadosEdicao(
+            List<String> erros = adminUsuarioRepository.validarDadosEdicao(
                     idUsuario,
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
@@ -326,7 +326,7 @@ public class AdminUsuariosController {
                 return "Usuarios/Admin/editarUsuarioAdmin";
             }
 
-            boolean atualizado = adminUsuarioDAO.atualizarUsuario(usuario);
+            boolean atualizado = adminUsuarioRepository.atualizarUsuario(usuario);
 
             if (atualizado) {
                 logger.info("Usuário atualizado pelo administrador. usuarioId={}", idUsuario);
@@ -400,7 +400,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            boolean alterado = adminUsuarioDAO.atualizarStatusUsuario(idUsuario, false, (String) session.getAttribute("email2FA"));
+            boolean alterado = adminUsuarioRepository.atualizarStatusUsuario(idUsuario, false, (String) session.getAttribute("email2FA"));
 
             if (alterado) {
                 logger.info("Usuário desativado pelo administrador. usuarioId={}", idUsuario);
@@ -476,7 +476,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            boolean alterado = adminUsuarioDAO.atualizarStatusUsuario(idUsuario, true, (String) session.getAttribute("email2FA"));
+            boolean alterado = adminUsuarioRepository.atualizarStatusUsuario(idUsuario, true, (String) session.getAttribute("email2FA"));
 
             if (alterado) {
                 logger.info("Usuário ativado pelo administrador. usuarioId={}", idUsuario);
@@ -549,7 +549,7 @@ public class AdminUsuariosController {
 
         try {
             String emailAdmin = (String) session.getAttribute("email2FA");
-            boolean excluido = adminUsuarioDAO.excluirAdministrador(idUsuario, emailAdmin);
+            boolean excluido = adminUsuarioRepository.excluirAdministrador(idUsuario, emailAdmin);
 
             if (excluido) {
                 logger.info("Administrador excluído. usuarioId={} responsavel={}", idUsuario, emailAdmin);
@@ -670,7 +670,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            usuarioAdminDTO adminAtual = adminUsuarioDAO.buscarAdministradorPorEmail(admin.getEmail());
+            usuarioAdminDTO adminAtual = adminUsuarioRepository.buscarAdministradorPorEmail(admin.getEmail());
             return adminAtual != null && adminAtual.isStatus();
 
         } catch (SQLException e) {

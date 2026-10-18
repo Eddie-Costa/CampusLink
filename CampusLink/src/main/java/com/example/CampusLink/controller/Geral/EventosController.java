@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.alunoDAO;
+import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.dao.professorDAO;
 import com.example.CampusLink.dao.turmaDAO;
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -48,7 +48,7 @@ public class EventosController {
     private final EventoService eventoService;
     private final DisponibilidadeService disponibilidadeService;
     private final ConteudoService conteudoService;
-    private final alunoDAO alunoDAO;
+    private final AlunoRepository alunoRepository;
     private final professorDAO professorDAO;
     private final turmaDAO turmaDAO;
 
@@ -386,7 +386,7 @@ public class EventosController {
             return null;
         }
 
-        String idAluno = alunoDAO.buscarPorIDAluno(email.toString());
+        String idAluno = alunoRepository.buscarPorIDAluno(email.toString());
 
         if (idAluno == null || idAluno.isBlank()) {
             return null;

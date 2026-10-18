@@ -1,7 +1,7 @@
 
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.alunoDAO;
+import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.dao.professorDAO;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
@@ -40,7 +40,7 @@ public class VerificarController {
     private usuarioDAO usuarioDAO;
 
     @Autowired
-    private alunoDAO alunoDAO;
+    private AlunoRepository alunoRepository;
 
     @Autowired
     private professorDAO professorDAO;
@@ -204,7 +204,7 @@ public class VerificarController {
 
                 // busca o usuario e cria a sessao
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    loginAlunoDTO aluno = alunoDAO.buscarPorEmailAluno(email);
+                    loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
                     session.setAttribute("usuarioLogado", aluno);
 
                 } else if (session.getAttribute("tipoUsuario").equals("professor")) {
@@ -308,7 +308,7 @@ public class VerificarController {
 
                 // busca o usuario para validar o tipo
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    loginAlunoDTO aluno = alunoDAO.buscarPorEmailAluno(email);
+                    loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
 
                 } else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     loginProfessorDTO professor = professorDAO.buscarPorEmailProfessor(email);

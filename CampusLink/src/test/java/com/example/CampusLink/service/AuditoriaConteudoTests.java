@@ -1,8 +1,8 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dao.RevisaoConteudoDAO;
-import com.example.CampusLink.dao.conteudoDAO;
-import com.example.CampusLink.dao.denunciaDAO;
+import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.DenunciaRepository;
 import com.example.CampusLink.dao.usuarioDAO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,8 +17,8 @@ import static org.mockito.Mockito.*;
 
 class AuditoriaConteudoTests {
     private final usuarioDAO usuarios = mock(usuarioDAO.class);
-    private final conteudoDAO conteudos = mock(conteudoDAO.class);
-    private final denunciaDAO denuncias = mock(denunciaDAO.class);
+    private final ConteudoRepository conteudos = mock(ConteudoRepository.class);
+    private final DenunciaRepository denuncias = mock(DenunciaRepository.class);
 
     @Test
     void denunciaDuplicadaRegistraRecusaSemInserirNovaDenuncia() throws Exception {

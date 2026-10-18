@@ -1,28 +1,24 @@
+package com.example.CampusLink.repository;
 
-package com.example.CampusLink.dao;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class EventoConteudoDAO {
+public class EventoConteudoRepository {
 
-    @Autowired
-    private DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public EventoConteudoRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     // liga um conteudo ao evento
     public void associarConteudo(Long idEvento, Long idConteudo) throws SQLException {
-
         if (idEvento == null || idConteudo == null) {
             return;
         }
@@ -36,17 +32,15 @@ public class EventoConteudoDAO {
                 VALUES (?, ?)
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, idEvento);
-            stmt.setLong(2, idConteudo);
-            stmt.executeUpdate();
+        try {
+            jdbcTemplate.update(sql, idEvento, idConteudo);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
     // liga varios conteudos ao mesmo evento
     public void associarConteudos(Long idEvento, List<Long> idsConteudos) throws SQLException {
-
         if (idEvento == null || idsConteudos == null || idsConteudos.isEmpty()) {
             return;
         }
@@ -60,24 +54,24 @@ public class EventoConteudoDAO {
                 VALUES (?, ?)
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            List<Long> conteudos = idsConteudos.stream().filter(id -> id != null).distinct().toList();
-
-            for (Long idConteudo : conteudos) {
-
-                stmt.setLong(1, idEvento);
-                stmt.setLong(2, idConteudo);
-                stmt.addBatch();
-            }
-
-            stmt.executeBatch();
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                List<Long> conteudos = idsConteudos.stream().filter(id -> id != null).distinct().toList();
+                for (Long idConteudo : conteudos) {
+                    stmt.setLong(1, idEvento);
+                    stmt.setLong(2, idConteudo);
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
-    // substitui os conteudos relacionados ao evento
+    // participa da transacao de atualizacao aberta pelo service
     public void substituirConteudosDoEvento(Long idEvento, List<Long> idsConteudos) {
-
         if (idEvento == null) {
             throw new IllegalArgumentException("Informe o ID do evento");
         }
@@ -93,15 +87,12 @@ public class EventoConteudoDAO {
                 VALUES (?, ?)
                 """;
 
-        // remove as ligacoes antigas antes de salvar as novas
         jdbcTemplate.update(sqlExcluir, idEvento);
-
         if (idsConteudos == null || idsConteudos.isEmpty()) {
             return;
         }
 
         List<Long> conteudos = idsConteudos.stream().filter(id -> id != null).distinct().toList();
-
         for (Long idConteudo : conteudos) {
             jdbcTemplate.update(sqlAdicionar, idEvento, idConteudo);
         }
@@ -109,7 +100,6 @@ public class EventoConteudoDAO {
 
     // apaga as ligacoes do evento com os conteudos
     public void excluirAssociacoesDoEvento(Long idEvento) throws SQLException {
-
         if (idEvento == null) {
             return;
         }
@@ -119,12 +109,22 @@ public class EventoConteudoDAO {
                 WHERE id_evento = ?
                 """;
 
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, idEvento);
-            stmt.executeUpdate();
+        try {
+            jdbcTemplate.update(sql, idEvento);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
+    }
+
+    // preserva o contrato de erro usado pelo service
+    private SQLException converterErro(DataAccessException erro) {
+        Throwable causa = erro;
+        while (causa != null) {
+            if (causa instanceof SQLException sqlException) {
+                return sqlException;
+            }
+            causa = causa.getCause();
+        }
+        return new SQLException(erro.getMessage(), erro);
     }
 }

@@ -7,8 +7,8 @@ import com.example.CampusLink.dao.usuarioDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.example.CampusLink.dao.alunoDAO;
-import com.example.CampusLink.dao.conteudoDAO;
+import com.example.CampusLink.repository.AlunoRepository;
+import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dao.turmaDAO;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.service.DenunciaService;
@@ -31,20 +31,20 @@ public class DenunciaController {
     private static final Logger logger = LoggerFactory.getLogger(DenunciaController.class);
 
     private final DenunciaService denunciaService;
-    private final alunoDAO alunoDAO;
+    private final AlunoRepository alunoRepository;
     private final turmaDAO turmaDAO;
-    private final conteudoDAO conteudoDAO;
+    private final ConteudoRepository conteudoRepository;
 
     public DenunciaController(
             DenunciaService denunciaService,
-            alunoDAO alunoDAO,
+            AlunoRepository alunoRepository,
             turmaDAO turmaDAO,
-            conteudoDAO conteudoDAO
+            ConteudoRepository conteudoRepository
     ) {
         this.denunciaService = denunciaService;
-        this.alunoDAO = alunoDAO;
+        this.alunoRepository = alunoRepository;
         this.turmaDAO = turmaDAO;
-        this.conteudoDAO = conteudoDAO;
+        this.conteudoRepository = conteudoRepository;
     }
 
     @PostMapping("/turmas/{idTurma}/conteudos/{idConteudo}/denunciar")
@@ -83,7 +83,7 @@ public class DenunciaController {
         try {
 
             String idAlunoTexto =
-                    alunoDAO.buscarPorIDAluno(email);
+                    alunoRepository.buscarPorIDAluno(email);
 
             if (idAlunoTexto == null ||
                     idAlunoTexto.isBlank()) {
@@ -128,7 +128,7 @@ public class DenunciaController {
             }
 
             boolean conteudoPertenceTurma =
-                    conteudoDAO.conteudoPertenceTurma(
+                    conteudoRepository.conteudoPertenceTurma(
                             idConteudo,
                             idTurma
                     );

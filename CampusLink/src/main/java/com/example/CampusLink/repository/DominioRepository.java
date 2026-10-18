@@ -1,12 +1,11 @@
-package com.example.CampusLink.dao;
+package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.DominioDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -15,10 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class dominioDAO {
+public class DominioRepository {
 
-    @Autowired
-    private DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    public DominioRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     // ---------- professor ----------
 
@@ -30,23 +32,28 @@ public class dominioDAO {
                 RETURNING "id", "status", "created_at"
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setString(1, dominio.getDominio());
-            stmt.setLong(2, dominio.getIdProfessor());
-            stmt.setString(3, dominio.getJustificativa());
+                stmt.setString(1, dominio.getDominio());
+                stmt.setLong(2, dominio.getIdProfessor());
+                stmt.setString(3, dominio.getJustificativa());
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    dominio.setId(rs.getLong("id"));
-                    dominio.setStatus(rs.getString("status"));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        dominio.setId(rs.getLong("id"));
+                        dominio.setStatus(rs.getString("status"));
 
-                    Timestamp createdAt = rs.getTimestamp("created_at");
-                    if (createdAt != null) {
-                        dominio.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+                        Timestamp createdAt = rs.getTimestamp("created_at");
+                        if (createdAt != null) {
+                            dominio.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+                        }
                     }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -61,15 +68,20 @@ public class dominioDAO {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-            stmt.setLong(1, idProfessor);
+                stmt.setLong(1, idProfessor);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    dominios.add(montar(rs));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        dominios.add(montar(rs));
+                    }
                 }
-            }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return dominios;
@@ -90,15 +102,20 @@ public class dominioDAO {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                try (ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
-                DominioDTO dominio = montar(rs);
-                dominio.setNomeProfessor(rs.getString("nome_professor"));
-                dominios.add(dominio);
-            }
+                    while (rs.next()) {
+                        DominioDTO dominio = montar(rs);
+                        dominio.setNomeProfessor(rs.getString("nome_professor"));
+                        dominios.add(dominio);
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return dominios;
@@ -115,13 +132,18 @@ public class dominioDAO {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                try (ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
-                dominios.add(montar(rs));
-            }
+                    while (rs.next()) {
+                        dominios.add(montar(rs));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
 
         return dominios;
@@ -139,13 +161,17 @@ public class dominioDAO {
                 AND "status" = 'pendente'
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setString(1, novoStatus);
-            stmt.setString(2, comentarioAdmin);
-            stmt.setLong(3, id);
+                stmt.setString(1, novoStatus);
+                stmt.setString(2, comentarioAdmin);
+                stmt.setLong(3, id);
 
-            return stmt.executeUpdate() > 0;
+                return stmt.executeUpdate() > 0;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -162,13 +188,17 @@ public class dominioDAO {
                 LIMIT 1
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setString(1, dominio);
+                stmt.setString(1, dominio);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    return rs.next();
+                }
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -187,14 +217,18 @@ public class dominioDAO {
                 LIMIT 1
                 """;
 
-        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
-            stmt.setString(1, host);
-            stmt.setString(2, host);
+                stmt.setString(1, host);
+                stmt.setString(2, host);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    return rs.next();
+                }
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
         }
     }
 
@@ -225,5 +259,17 @@ public class dominioDAO {
         }
 
         return dominio;
+    }
+
+    // preserva o contrato de erro usado pelos consumidores
+    private SQLException converterErro(DataAccessException erro) {
+        Throwable causa = erro;
+        while (causa != null) {
+            if (causa instanceof SQLException sqlException) {
+                return sqlException;
+            }
+            causa = causa.getCause();
+        }
+        return new SQLException(erro.getMessage(), erro);
     }
 }

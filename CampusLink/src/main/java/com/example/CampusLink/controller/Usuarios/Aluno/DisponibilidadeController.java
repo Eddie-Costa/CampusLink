@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
-import com.example.CampusLink.dao.alunoDAO;
+import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.service.DisponibilidadeService;
 import com.example.CampusLink.service.EventoService;
 import com.example.CampusLink.dao.usuarioDAO;
@@ -33,7 +33,7 @@ public class DisponibilidadeController {
     private static final Logger logger = LoggerFactory.getLogger(DisponibilidadeController.class);
 
     // dependencias usadas pelo controller
-    private final alunoDAO alunoDAO;
+    private final AlunoRepository alunoRepository;
     private final EventoService eventoService;
     private final DisponibilidadeService disponibilidadeService;
 
@@ -231,7 +231,7 @@ public class DisponibilidadeController {
             return null;
         }
 
-        String idAluno = alunoDAO.buscarPorIDAluno(email.toString());
+        String idAluno = alunoRepository.buscarPorIDAluno(email.toString());
 
         if (idAluno == null || idAluno.isBlank()) {
             logger.warn("Nenhum ID de aluno foi encontrado.");

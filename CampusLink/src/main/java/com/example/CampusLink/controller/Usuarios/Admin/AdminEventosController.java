@@ -1,7 +1,7 @@
 
 package com.example.CampusLink.controller.Usuarios.Admin;
 
-import com.example.CampusLink.dao.AdminTurmaDAO;
+import com.example.CampusLink.repository.AdminTurmaRepository;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -35,14 +35,14 @@ public class AdminEventosController {
     private static final Logger logger = LoggerFactory.getLogger(AdminEventosController.class);
 
     private final EventoService eventoService;
-    private final AdminTurmaDAO adminTurmaDAO;
+    private final AdminTurmaRepository adminTurmaRepository;
     private final ConteudoService conteudoService;
     private final JdbcTemplate jdbcTemplate;
 
-    public AdminEventosController(EventoService eventoService, AdminTurmaDAO adminTurmaDAO,
+    public AdminEventosController(EventoService eventoService, AdminTurmaRepository adminTurmaRepository,
                                   ConteudoService conteudoService, JdbcTemplate jdbcTemplate) {
         this.eventoService = eventoService;
-        this.adminTurmaDAO = adminTurmaDAO;
+        this.adminTurmaRepository = adminTurmaRepository;
         this.conteudoService = conteudoService;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -77,7 +77,7 @@ public class AdminEventosController {
         }
 
         try {
-            model.addAttribute("turmas", adminTurmaDAO.listarTurmas());
+            model.addAttribute("turmas", adminTurmaRepository.listarTurmas());
 
         } catch (SQLException e) {
             logger.error("erro ao carregar turmas para cadastro de evento", e);
@@ -98,7 +98,7 @@ public class AdminEventosController {
         }
 
         try {
-            List<usuarioAdminDTO> professores = adminTurmaDAO.listarProfessoresDaTurma(turmaId);
+            List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(turmaId);
             List<usuarioAdminDTO> professoresAtivos = new ArrayList<>();
 
             for (usuarioAdminDTO professor : professores) {
@@ -170,7 +170,7 @@ public class AdminEventosController {
         }
 
         try {
-            if (adminTurmaDAO.buscarTurmaPorId(turmaId) == null) {
+            if (adminTurmaRepository.buscarTurmaPorId(turmaId) == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return voltarCadastro;
             }
@@ -231,7 +231,7 @@ public class AdminEventosController {
             // busca os conteudos que ja estavam selecionados
             List<Long> conteudoIdsSelecionados = jdbcTemplate.queryForList(sql, Long.class, idEvento);
 
-            List<usuarioAdminDTO> professores = adminTurmaDAO.listarProfessoresDaTurma(evento.getIdTurma());
+            List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(evento.getIdTurma());
             List<usuarioAdminDTO> professoresDisponiveis = new ArrayList<>();
 
             for (usuarioAdminDTO professor : professores) {
@@ -241,7 +241,7 @@ public class AdminEventosController {
             }
 
             model.addAttribute("evento", evento);
-            model.addAttribute("turmas", adminTurmaDAO.listarTurmas());
+            model.addAttribute("turmas", adminTurmaRepository.listarTurmas());
             model.addAttribute("professores", professoresDisponiveis);
             model.addAttribute("conteudos", conteudoService.listarPorTurma(evento.getIdTurma()));
             model.addAttribute("conteudoIdsSelecionados", conteudoIdsSelecionados);
@@ -303,7 +303,7 @@ public class AdminEventosController {
                 return "redirect:/admin/eventos";
             }
 
-            if (adminTurmaDAO.buscarTurmaPorId(turmaId) == null) {
+            if (adminTurmaRepository.buscarTurmaPorId(turmaId) == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return voltarEdicao;
             }
@@ -364,7 +364,7 @@ public class AdminEventosController {
     // verifica se o professor esta ativo e participa da turma
     private boolean professorPertenceATurma(Long turmaId, Long idProfessor) throws SQLException {
 
-        List<usuarioAdminDTO> professores = adminTurmaDAO.listarProfessoresDaTurma(turmaId);
+        List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(turmaId);
 
         for (usuarioAdminDTO professor : professores) {
             if (idProfessor.equals(professor.getIdPerfil()) && professor.isStatus()) {

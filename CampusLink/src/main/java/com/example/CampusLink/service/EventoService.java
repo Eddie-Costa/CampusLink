@@ -1,7 +1,7 @@
 
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.EventoConteudoDAO;
+import com.example.CampusLink.repository.EventoConteudoRepository;
 import com.example.CampusLink.dao.EventoDetalhesDAO;
 import com.example.CampusLink.dao.usuarioDAO;
 import com.example.CampusLink.model.Evento;
@@ -32,7 +32,7 @@ public class EventoService {
     private static final Logger logger = LoggerFactory.getLogger(EventoService.class);
 
     private final EventoRepository eventoRepository;
-    private final EventoConteudoDAO eventoConteudoDAO;
+    private final EventoConteudoRepository eventoConteudoRepository;
     private final EventoDetalhesDAO eventoDetalhesDAO;
 
     // salva o evento e os conteudos escolhidos
@@ -54,7 +54,7 @@ public class EventoService {
 
             if (idsConteudos != null && !idsConteudos.isEmpty()) {
 
-                eventoConteudoDAO.associarConteudos(eventoSalvo.getId(), idsConteudos);
+                eventoConteudoRepository.associarConteudos(eventoSalvo.getId(), idsConteudos);
                 logger.info("Conteudos associados eventoId={} conteudos={}", eventoSalvo.getId(), idsConteudos);
 
                 if (logger.isInfoEnabled()) {
@@ -186,7 +186,7 @@ public class EventoService {
             Evento eventoSalvo = eventoRepository.saveAndFlush(evento);
 
             // substitui os conteudos antigos pelos selecionados
-            eventoConteudoDAO.substituirConteudosDoEvento(idEvento, idsConteudos);
+            eventoConteudoRepository.substituirConteudosDoEvento(idEvento, idsConteudos);
 
             preencherDetalhesDoEvento(eventoSalvo);
 
@@ -227,7 +227,7 @@ public class EventoService {
                 throw new IllegalArgumentException("Evento nao encontrado");
             }
 
-            eventoConteudoDAO.excluirAssociacoesDoEvento(idEvento);
+            eventoConteudoRepository.excluirAssociacoesDoEvento(idEvento);
             eventoRepository.deleteById(idEvento);
 
             logger.info("Evento excluido eventoId={}", idEvento);
