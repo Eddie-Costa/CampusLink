@@ -33,7 +33,7 @@ public class GoogleBooksController {
                             Consulta a Google Books API por meio do endpoint
                             GET https://www.googleapis.com/books/v1/volumes.
                     
-                            O backend envia o termo q, solicita até 10 resultados
+                            O backend envia o termo q, solicita até 30 resultados
                             e utiliza a chave configurada em GOOGLE_BOOKS_API_KEY.
                     
                             Retorna informações bibliográficas para ajudar o professor
@@ -58,7 +58,7 @@ public class GoogleBooksController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de até 10 livros. Pode retornar uma lista vazia quando não há resultados úteis ou usuário logado.",
+                    description = "Lista de até 30 livros. Pode retornar uma lista vazia quando não há resultados úteis ou usuário logado.",
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(

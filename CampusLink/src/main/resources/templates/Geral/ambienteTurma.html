@@ -14,14 +14,14 @@
 
 <!--Mensagem de sucesso-->
 <div th:if="${mensagemSucesso != null}"
-     class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert">
+     class="alert alert-success alert-dismissible fade show alerta-flutuante" role="alert">
     <span th:text="${mensagemSucesso}">Mensagem de sucesso</span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
 
 <!--Mensagem de erro-->
 <div th:if="${mensagemErro != null}"
-     class="alert alert-warning alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert">
+     class="alert alert-warning alert-dismissible fade show alerta-flutuante" role="alert">
     <span th:text="${mensagemErro}">Mensagem de erro</span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
@@ -377,7 +377,7 @@
 <div class="modal fade" id="selecionarConteudoModal" tabindex="-1"
      aria-labelledby="selecionarConteudoTitulo" aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
@@ -423,7 +423,7 @@
      th:with="dados=${(abrirModalEditarId != null and abrirModalEditarId == conteudo.id) ? conteudoEditado : conteudo}"
      tabindex="-1" aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
@@ -543,7 +543,7 @@
      aria-labelledby="solicitarDominioTitulo" aria-hidden="true"
      th:if="${session.tipoUsuario == 'professor'}">
 
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
@@ -618,7 +618,7 @@
 <div class="modal fade" id="adicionarConteudoModal" tabindex="-1"
      aria-labelledby="adicionarConteudoTitulo" aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
