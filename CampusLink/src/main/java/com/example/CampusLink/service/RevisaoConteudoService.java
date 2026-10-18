@@ -1,7 +1,7 @@
 package com.example.CampusLink.service;
 
 import org.slf4j.helpers.MessageFormatter;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.repository.RevisaoConteudoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RevisaoConteudoService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RevisaoConteudoService.class);
 
@@ -41,7 +41,7 @@ public class RevisaoConteudoService {
                 logger.info("Conteúdo liberado pelo administrador. conteudoId={}", idConteudo);
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", RevisaoConteudoService.class.getName(), "liberarConteudo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", RevisaoConteudoService.class.getName(), "liberarConteudo", null,
                                 MessageFormatter.arrayFormat("Conteúdo liberado pelo administrador. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -51,7 +51,7 @@ public class RevisaoConteudoService {
                 logger.warn("Liberação recusada: conteúdo não aguarda análise. conteudoId={}", idConteudo);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "liberarConteudo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "liberarConteudo", null,
                                 MessageFormatter.arrayFormat("Liberação recusada: conteúdo não aguarda análise. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -72,7 +72,7 @@ public class RevisaoConteudoService {
             logger.warn("Reprovação recusada: motivo vazio. conteudoId={}", idConteudo);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
                             MessageFormatter.arrayFormat("Reprovação recusada: motivo vazio. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -94,7 +94,7 @@ public class RevisaoConteudoService {
                 logger.info("Conteúdo reprovado pelo administrador. conteudoId={}", idConteudo);
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
                                 MessageFormatter.arrayFormat("Conteúdo reprovado pelo administrador. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -104,7 +104,7 @@ public class RevisaoConteudoService {
                 logger.warn("Reprovação recusada: conteúdo não aguarda análise. conteudoId={}", idConteudo);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", RevisaoConteudoService.class.getName(), "reprovarConteudo", null,
                                 MessageFormatter.arrayFormat("Reprovação recusada: conteúdo não aguarda análise. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);

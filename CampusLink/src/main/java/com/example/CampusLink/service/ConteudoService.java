@@ -2,7 +2,7 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.repository.ConteudoRepository;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class ConteudoService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ConteudoService.class);
 
@@ -52,7 +52,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "criar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "criar", null,
                             MessageFormatter.arrayFormat("Erro ao cadastrar conteúdo. turmaId={} professorId={}", new Object[]{conteudo.getIdTurma(), conteudo.getIdProfessor()}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -75,7 +75,7 @@ public class ConteudoService {
 
                     if (logger.isInfoEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "criar", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "criar", null,
                                     MessageFormatter.arrayFormat("Conteúdo removido após falha no arquivo. conteudoId={} turmaId={}", new Object[]{conteudo.getId(), conteudo.getIdTurma()}).getMessage(), null, null);
 
                         } catch (Exception erroLogBD) {
@@ -91,7 +91,7 @@ public class ConteudoService {
                             StringWriter excecaoLogBD = new StringWriter();
                             erroRemocao.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                            usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "criar", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "criar", null,
                                     MessageFormatter.arrayFormat("Erro ao remover conteúdo após falha no arquivo. conteudoId={} turmaId={}", new Object[]{conteudo.getId(), conteudo.getIdTurma()}).getMessage(), null, excecaoLogBD.toString());
 
                         } catch (Exception erroLogBD) {
@@ -108,7 +108,7 @@ public class ConteudoService {
 
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "criar", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "criar", null,
                         MessageFormatter.arrayFormat("Conteúdo cadastrado. conteudoId={} turmaId={} professorId={}", new Object[]{conteudo.getId(), conteudo.getIdTurma(), conteudo.getIdProfessor()}).getMessage(), null, null);
 
             } catch (Exception erroLogBD) {
@@ -131,7 +131,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPorTurma", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPorTurma", null,
                             MessageFormatter.arrayFormat("Erro ao listar conteúdos. turmaId={}", new Object[]{idTurma}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -151,7 +151,7 @@ public class ConteudoService {
         }
 
         String tipoLimpo = null;
-        if (tipo != null && List.of("link", "arquivo", "texto").contains(tipo.toLowerCase())) {
+        if (tipo != null && List.of("link", "video", "livro", "arquivo", "texto").contains(tipo.toLowerCase())) {
             tipoLimpo = tipo.toLowerCase();
         }
 
@@ -176,7 +176,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPorProfessor", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPorProfessor", null,
                             MessageFormatter.arrayFormat("Erro ao listar conteúdos do professor. professorId={}", new Object[]{idProfessor}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -228,7 +228,7 @@ public class ConteudoService {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "removerConteudoProfessor", null,
                                 MessageFormatter.arrayFormat("Conteúdo removido pelo professor. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -241,7 +241,7 @@ public class ConteudoService {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "removerConteudoProfessor", null,
                                 MessageFormatter.arrayFormat("Remoção de conteúdo recusada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -260,7 +260,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "removerConteudoProfessor", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "removerConteudoProfessor", null,
                             MessageFormatter.arrayFormat("Erro ao remover conteúdo do professor. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -281,7 +281,7 @@ public class ConteudoService {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "solicitarRevisao", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "solicitarRevisao", null,
                                 MessageFormatter.arrayFormat("Revisão de conteúdo solicitada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -294,7 +294,7 @@ public class ConteudoService {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "solicitarRevisao", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "solicitarRevisao", null,
                                 MessageFormatter.arrayFormat("Solicitação de revisão recusada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -313,7 +313,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "solicitarRevisao", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "solicitarRevisao", null,
                             MessageFormatter.arrayFormat("Erro ao solicitar revisão. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -333,7 +333,7 @@ public class ConteudoService {
 
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Conteúdo excluído. conteudoId={}", new Object[]{id}).getMessage(), null, null);
 
                 } catch (Exception erroLogBD) {
@@ -349,7 +349,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Erro ao excluir conteúdo. conteudoId={}", new Object[]{id}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -371,7 +371,7 @@ public class ConteudoService {
 
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "atualizar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "atualizar", null,
                             MessageFormatter.arrayFormat("Conteúdo atualizado. conteudoId={}", new Object[]{conteudo.getId()}).getMessage(), null, null);
 
                 } catch (Exception erroLogBD) {
@@ -387,7 +387,7 @@ public class ConteudoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "atualizar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "atualizar", null,
                             MessageFormatter.arrayFormat("Erro ao atualizar conteúdo. conteudoId={}", new Object[]{conteudo.getId()}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {

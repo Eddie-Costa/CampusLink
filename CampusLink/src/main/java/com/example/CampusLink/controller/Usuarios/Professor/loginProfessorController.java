@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Professor;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
@@ -39,7 +39,7 @@ public class loginProfessorController {
     private emailService emailService;
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     @GetMapping("/loginProfessor")
     public String loginPage(Model model, HttpSession session) {
@@ -64,7 +64,7 @@ public class loginProfessorController {
             logger.warn("Conta bloqueada para professor {}", email);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
                             MessageFormatter.arrayFormat("Conta bloqueada para professor {}", new Object[]{email}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -78,7 +78,7 @@ public class loginProfessorController {
             logger.warn("Dados de login inválidos para professor {}", email);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
                             MessageFormatter.arrayFormat("Dados de login inválidos para professor {}", new Object[]{email}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -92,7 +92,7 @@ public class loginProfessorController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         //Requisição para o BD Buscar a senha criptografada e comparar com a senha digitada.
-        String senhaHash = usuarioDAO.QueryLoginUsuario( "professor", loginProfessorDTO.getEmail());
+        String senhaHash = UsuarioRepository.QueryLoginUsuario( "professor", loginProfessorDTO.getEmail());
 
         if(senhaHash != null && encoder.matches(loginProfessorDTO.getSenha(), senhaHash)) {
             //Sucesso de Login
@@ -112,14 +112,14 @@ public class loginProfessorController {
             session.setAttribute("email2FA", email);
             session.setAttribute("redirect", "Login");
             session.setAttribute("tipoUsuario", "professor");
-            session.setAttribute("usuarioLogado", usuarioDAO.buscarPorEmailProfessor(email));
+            session.setAttribute("usuarioLogado", UsuarioRepository.buscarPorEmailProfessor(email));
             session.setMaxInactiveInterval(900);
 
             if (session.getAttribute("usuarioLogado") != null) {
                 logger.info("Login concluído. perfil=professor email={} doisFatores=false", email);
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", loginProfessorController.class.getName(), "fazerLogin", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", loginProfessorController.class.getName(), "fazerLogin", null,
                                 MessageFormatter.arrayFormat("Login concluído. perfil=professor email={} doisFatores=false", new Object[]{email}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -134,7 +134,7 @@ public class loginProfessorController {
         logger.warn("Credenciais inválidas para professor {}. Tentativas: {}", email, loginAttemptService.getTentativas(email));
         if (logger.isWarnEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                UsuarioRepository.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
                         MessageFormatter.arrayFormat("Credenciais inválidas para professor {}. Tentativas: {}", new Object[]{email, loginAttemptService.getTentativas(email)}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -145,7 +145,7 @@ public class loginProfessorController {
             logger.warn("Conta bloqueada por excesso de tentativas para professor {}", email);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", loginProfessorController.class.getName(), "fazerLogin", null,
                             MessageFormatter.arrayFormat("Conta bloqueada por excesso de tentativas para professor {}", new Object[]{email}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

@@ -3,7 +3,7 @@ package com.example.CampusLink.controller.Geral;
 import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.service.ArquivoService;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import java.sql.SQLException;
 public class ArquivoController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ArquivoController.class);
 
@@ -60,7 +60,7 @@ public class ArquivoController {
             logger.warn("Acesso aos arquivos recusado: usuário não autenticado.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "pagina", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "pagina", null,
                             "Acesso aos arquivos recusado: usuário não autenticado.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -107,7 +107,7 @@ public class ArquivoController {
             logger.warn("Upload recusado: usuário não é professor. conteudoId={}", idConteudo);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "upload", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "upload", null,
                             MessageFormatter.arrayFormat("Upload recusado: usuário não é professor. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -153,7 +153,7 @@ public class ArquivoController {
             logger.warn("Download recusado: usuário não autenticado. arquivoId={}", id);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "download", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "download", null,
                             MessageFormatter.arrayFormat("Download recusado: usuário não autenticado. arquivoId={}", new Object[]{id}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -245,7 +245,7 @@ public class ArquivoController {
             logger.warn("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", id);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", new Object[]{id}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

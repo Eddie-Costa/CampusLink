@@ -1,6 +1,6 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -25,7 +25,7 @@ import java.io.StringWriter;
 public class emailService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(emailService.class);
 
@@ -39,7 +39,7 @@ public class emailService {
         logger.debug("Iniciando envio de email de 2FA. operacaoId={}", operacaoId);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Iniciando envio de email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -250,7 +250,7 @@ public class emailService {
             logger.info("Email HTML de 2FA enviado com sucesso! operacaoId={}", operacaoId);
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Email HTML de 2FA enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -264,7 +264,7 @@ public class emailService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao montar o email HTML de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -277,7 +277,7 @@ public class emailService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao enviar email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -293,7 +293,7 @@ public class emailService {
         logger.debug("Iniciando envio de email de exportação de dados. operacaoId={}", operacaoId);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Iniciando envio de email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -329,7 +329,7 @@ public class emailService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao enviar email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -344,7 +344,7 @@ public class emailService {
         logger.info("Email de exportação de dados enviado com sucesso! operacaoId={}", operacaoId);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Email de exportação de dados enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);

@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Professor;
 
-import com.example.CampusLink.dao.professorDAO;
+import com.example.CampusLink.repository.ProfessorRepository;
 import com.example.CampusLink.dto.DominioDTO;
 import com.example.CampusLink.service.DominioService;
 import jakarta.servlet.http.HttpSession;
@@ -24,7 +24,7 @@ public class ProfessorDominiosController {
     private DominioService dominioService;
 
     @Autowired
-    private professorDAO professorDAO;
+    private ProfessorRepository professorRepository;
 
     @PostMapping("/turmas/{idTurma}/dominios")
     public String solicitar(@PathVariable Long idTurma,
@@ -79,7 +79,7 @@ public class ProfessorDominiosController {
         }
 
         try {
-            String idTexto = professorDAO.buscarPorIDProfessor(email);
+            String idTexto = professorRepository.buscarPorIDProfessor(email);
 
             if (idTexto == null || idTexto.isBlank()) {
                 return null;

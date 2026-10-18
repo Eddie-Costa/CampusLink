@@ -15,6 +15,217 @@ function configurarBuscaAutomatica(input, buscar, resultados) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const itensLivro = Array.from(document.querySelectorAll('.conteudo-midia[data-book-id]'))
+        .filter(function (item) { return item.dataset.bookId; });
+    const itensPorLivroId = new Map();
+
+    itensLivro.forEach(function (item) {
+        const itens = itensPorLivroId.get(item.dataset.bookId) || [];
+        itens.push(item);
+        itensPorLivroId.set(item.dataset.bookId, itens);
+    });
+
+    async function carregarDetalhesLivro(volumeId) {
+        const parametros = new URLSearchParams({ id: volumeId });
+        const resposta = await fetch('/googlebooks/detalhes?' + parametros.toString(), {
+            headers: { Accept: 'application/json' }
+        });
+        if (!resposta.ok) {
+            let mensagem = 'Não foi possível carregar os dados do livro.';
+            try {
+                const erro = await resposta.json();
+                mensagem = erro.message || mensagem;
+            } catch (erroLeitura) {
+                // Usa a mensagem padrão quando a resposta de erro não contém JSON.
+            }
+            throw new Error(mensagem);
+        }
+
+        return resposta.json();
+    }
+
+    async function carregarLoteLivros(volumeIds) {
+        const resultados = await Promise.allSettled(volumeIds.map(carregarDetalhesLivro));
+
+        resultados.forEach(function (resultado, indice) {
+            const volumeId = volumeIds[indice];
+            const itens = itensPorLivroId.get(volumeId) || [];
+
+            if (resultado.status === 'rejected') {
+                console.warn('Não foi possível carregar os detalhes do livro.', resultado.reason);
+                itens.forEach(function (item) {
+                    const titulo = item.querySelector('.conteudo-midia-livro-titulo');
+                    const autor = item.querySelector('.conteudo-midia-livro-autor');
+                    if (titulo) titulo.textContent = 'Informações do livro indisponíveis.';
+                    if (autor) autor.textContent = '';
+                });
+                return;
+            }
+
+            const livro = resultado.value;
+            itens.forEach(function (item) {
+                const titulo = item.querySelector('.conteudo-midia-livro-titulo');
+                const autor = item.querySelector('.conteudo-midia-livro-autor');
+                const imagem = item.querySelector('.conteudo-midia-link img');
+                const link = item.querySelector('.conteudo-midia-link');
+
+                if (titulo) {
+                    titulo.textContent = livro.titulo || 'Livro do Google Books';
+                    titulo.title = livro.titulo || '';
+                }
+                if (autor) {
+                    autor.textContent = [livro.autores, livro.anoPublicacao]
+                        .filter(Boolean)
+                        .join(' · ');
+                }
+                if (link && livro.titulo) {
+                    link.setAttribute('aria-label', 'Abrir livro: ' + livro.titulo);
+                }
+                if (imagem && livro.thumbnailUrl) {
+                    imagem.onerror = function () {
+                        imagem.onerror = null;
+                        imagem.src = item.dataset.fallbackThumbnail;
+                    };
+                    imagem.src = livro.thumbnailUrl.replace(/^http:/i, 'https:');
+                }
+            });
+        });
+    }
+
+    const idsLivros = Array.from(itensPorLivroId.keys());
+    const tamanhoLoteLivros = 5;
+    async function carregarDetalhesLivros() {
+        for (let inicio = 0; inicio < idsLivros.length; inicio += tamanhoLoteLivros) {
+            await carregarLoteLivros(idsLivros.slice(inicio, inicio + tamanhoLoteLivros));
+        }
+    }
+
+    carregarDetalhesLivros();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.conteudo-alternar-detalhes').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            const detalhesId = botao.getAttribute('aria-controls');
+            const detalhes = detalhesId ? document.getElementById(detalhesId) : null;
+            if (!detalhes) return;
+
+            const expandido = botao.getAttribute('aria-expanded') === 'true';
+            const novoEstado = !expandido;
+            detalhes.hidden = !novoEstado;
+            botao.setAttribute('aria-expanded', String(novoEstado));
+
+            const cartao = botao.closest('.conteudo-card');
+            const nomeConteudo = cartao ? cartao.querySelector('.conteudo-nome') : null;
+            const titulo = nomeConteudo ? nomeConteudo.textContent.trim() : '';
+            const acao = novoEstado ? 'Recolher' : 'Expandir';
+            const descricaoAcao = titulo ? `${acao} detalhes de ${titulo}` : `${acao} detalhes do conteúdo`;
+            botao.setAttribute('aria-label', descricaoAcao);
+            botao.title = descricaoAcao;
+        });
+    });
+
+    const itensVideo = Array.from(document.querySelectorAll('.conteudo-midia[data-video-id]'))
+        .filter(function (item) { return item.dataset.videoId; });
+    const itensPorVideoId = new Map();
+
+    itensVideo.forEach(function (item) {
+        const itens = itensPorVideoId.get(item.dataset.videoId) || [];
+        itens.push(item);
+        itensPorVideoId.set(item.dataset.videoId, itens);
+    });
+
+    const idsVideos = Array.from(itensPorVideoId.keys());
+    const tamanhoLote = 50;
+
+    async function carregarDetalhesVideos(ids) {
+        const parametros = new URLSearchParams({ ids: ids.join(',') });
+        const resposta = await fetch('/youtube/detalhes?' + parametros.toString(), {
+            headers: { Accept: 'application/json' }
+        });
+        if (!resposta.ok) {
+            throw new Error('Falha ao carregar os detalhes dos vídeos.');
+        }
+
+        const videos = await resposta.json();
+        const videosPorId = new Map(videos.map(function (video) {
+            return [video.videoId, video];
+        }));
+
+        ids.forEach(function (videoId) {
+            const video = videosPorId.get(videoId);
+            const itens = itensPorVideoId.get(videoId) || [];
+
+            itens.forEach(function (item) {
+                const titulo = item.querySelector('.conteudo-midia-titulo');
+                const detalhes = item.querySelector('.conteudo-midia-detalhes');
+                if (!titulo || !detalhes) return;
+
+                if (!video) {
+                    titulo.textContent = 'Informações do vídeo indisponíveis.';
+                    return;
+                }
+
+                titulo.textContent = video.titulo || 'Vídeo do YouTube';
+                titulo.title = video.titulo || '';
+                detalhes.textContent = [video.canal, video.duracao].filter(Boolean).join(' · ');
+            });
+        });
+    }
+
+    for (let inicio = 0; inicio < idsVideos.length; inicio += tamanhoLote) {
+        const lote = idsVideos.slice(inicio, inicio + tamanhoLote);
+        carregarDetalhesVideos(lote).catch(function (erro) {
+            console.error('Não foi possível carregar os detalhes dos vídeos da turma.', erro);
+            lote.forEach(function (videoId) {
+                (itensPorVideoId.get(videoId) || []).forEach(function (item) {
+                    const titulo = item.querySelector('.conteudo-midia-titulo');
+                    if (titulo) titulo.textContent = 'Informações do vídeo indisponíveis.';
+                });
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const buscaParticipantes = document.getElementById('buscaParticipantesTurma');
+
+    if (buscaParticipantes) {
+        const linhasParticipantes = Array.from(
+            document.querySelectorAll('#listaParticipantesTurma tbody tr')
+        );
+        const mensagemSemResultados = document.querySelector(
+            '#participantesTurma .participantes-sem-resultados'
+        );
+
+        function normalizarBuscaParticipante(texto) {
+            return texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLocaleLowerCase('pt-BR');
+        }
+
+        buscaParticipantes.addEventListener('input', function () {
+            const consulta = normalizarBuscaParticipante(buscaParticipantes.value.trim());
+            let participantesVisiveis = 0;
+
+            linhasParticipantes.forEach(function (linha) {
+                const dadosParticipante = Array.from(linha.cells)
+                    .slice(0, 3)
+                    .map(function (celula) { return celula.textContent; })
+                    .join(' ');
+                const corresponde = normalizarBuscaParticipante(dadosParticipante).includes(consulta);
+
+                linha.hidden = !corresponde;
+                if (corresponde) participantesVisiveis++;
+            });
+
+            if (mensagemSemResultados) {
+                mensagemSemResultados.hidden = participantesVisiveis > 0;
+            }
+        });
+    }
+
     document.querySelectorAll('.busca-conteudos').forEach(function (form) {
         const input = form.querySelector('input[name="q"]');
         const filtroTipo = form.querySelector('select[name="tipo"]');
@@ -304,6 +515,60 @@ function escaparTextoResultado(valor) {
     return texto.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function mostrarPreviaConteudo(container, titulo, detalhes, thumbnailUrl, tipo) {
+    const previa = document.createElement('div');
+    previa.className = 'conteudo-selecionado-preview';
+    previa.setAttribute('role', 'status');
+
+    if (thumbnailUrl) {
+        const thumbnail = document.createElement('img');
+        thumbnail.className = 'conteudo-selecionado-thumbnail' +
+            (tipo === 'livro' ? ' conteudo-selecionado-thumbnail-livro' : '');
+        thumbnail.src = thumbnailUrl;
+        thumbnail.alt = '';
+        previa.appendChild(thumbnail);
+    } else if (tipo === 'livro') {
+        const capaVazia = document.createElement('div');
+        capaVazia.className = 'conteudo-selecionado-thumbnail conteudo-selecionado-thumbnail-livro-vazia';
+        capaVazia.setAttribute('aria-hidden', 'true');
+        previa.appendChild(capaVazia);
+    }
+
+    const textos = document.createElement('div');
+    textos.className = 'conteudo-selecionado-textos';
+
+    const tituloElemento = document.createElement('div');
+    tituloElemento.className = 'conteudo-selecionado-titulo';
+    tituloElemento.textContent = titulo;
+    tituloElemento.title = titulo;
+
+    const detalhesElemento = document.createElement('div');
+    detalhesElemento.className = 'conteudo-selecionado-detalhes';
+    detalhesElemento.textContent = detalhes;
+
+    textos.append(tituloElemento, detalhesElemento);
+    previa.appendChild(textos);
+    container.replaceChildren(previa);
+}
+
+async function lerRespostaBuscaLivros(resposta) {
+    let corpo;
+    try {
+        corpo = await resposta.json();
+    } catch (erro) {
+        if (!resposta.ok) {
+            throw new Error('Não foi possível consultar o Google Books. Tente novamente.');
+        }
+        throw erro;
+    }
+
+    if (!resposta.ok) {
+        throw new Error(corpo.message || 'Não foi possível consultar o Google Books. Tente novamente.');
+    }
+
+    return corpo;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     function ligarContador(textarea, contador) {
@@ -348,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function () {
         campoYoutube.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
         campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
         campoArquivo.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
-        campoDuracao.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+        campoDuracao.style.display = (tipo === 'YOUTUBE' || tipo === 'GOOGLE_BOOKS') ? '' : 'none';
     }
 
     if (selectTipo) {
@@ -363,38 +628,69 @@ document.addEventListener('DOMContentLoaded', function () {
     const inputUrl = document.getElementById('url');
     const inputTitulo = document.getElementById('titulo');
     const inputDuracao = document.getElementById('duracaoEstimada');
+    let nextPageTokenYoutube = null;
+    let termoYoutubeAtual = '';
+    let sequenciaBuscaYoutube = 0;
+    let carregandoVideos = false;
 
-    function buscarVideos() {
+    function buscarVideos(carregarMais) {
         const termo = inputBuscaYoutube.value.trim();
         if (!termo) return;
 
-        resultadosYoutube.innerHTML = '<p class="form-text">Buscando...</p>';
+        if (carregarMais) {
+            if (!nextPageTokenYoutube || carregandoVideos || termo !== termoYoutubeAtual) return;
+        } else {
+            termoYoutubeAtual = termo;
+            nextPageTokenYoutube = null;
+            sequenciaBuscaYoutube++;
+        }
 
-        fetch('/youtube/buscar?q=' + encodeURIComponent(termo))
+        const sequenciaAtual = sequenciaBuscaYoutube;
+        carregandoVideos = true;
+        const botaoCarregarMais = resultadosYoutube.querySelector('.carregar-mais-resultados');
+        if (carregarMais && botaoCarregarMais) {
+            botaoCarregarMais.disabled = true;
+            botaoCarregarMais.textContent = 'Carregando...';
+        } else {
+            resultadosYoutube.innerHTML = '<p class="form-text">Buscando...</p>';
+        }
+
+        const parametros = new URLSearchParams({ q: termo });
+        if (carregarMais) parametros.set('pageToken', nextPageTokenYoutube);
+
+        fetch('/youtube/buscar?' + parametros.toString())
             .then(function (resposta) {
                 if (!resposta.ok) throw new Error('Falha na busca');
-                return resposta.json();
+                return resposta.json().then(function (videos) {
+                    return {
+                        videos: videos,
+                        nextPageToken: resposta.headers.get('X-Next-Page-Token')
+                    };
+                });
             })
-            .then(function (videos) {
-                if (inputBuscaYoutube.value.trim() !== termo) return;
-                resultadosYoutube.innerHTML = '';
+            .then(function (pagina) {
+                if (sequenciaAtual !== sequenciaBuscaYoutube ||
+                    inputBuscaYoutube.value.trim() !== termo) return;
+                if (!carregarMais) resultadosYoutube.innerHTML = '';
+                else if (botaoCarregarMais) botaoCarregarMais.remove();
 
-                if (videos.length === 0) {
+                if (!pagina.videos.length && !carregarMais) {
                     resultadosYoutube.innerHTML = '<p class="form-text">Nenhum vídeo encontrado.</p>';
                     return;
                 }
 
-                videos.forEach(function (video) {
+                pagina.videos.forEach(function (video) {
                     const item = document.createElement('div');
                     item.className = 'resultado-youtube-item';
                     item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
 
                     item.innerHTML =
                         '<img src="' + escaparTextoResultado(video.thumbnailUrl) + '" style="width:80px; border-radius:4px;">' +
-                        '<div>' +
-                        '<div style="font-weight:600; font-size:14px;">' + escaparTextoResultado(video.titulo) + '</div>' +
+                        '<div class="resultado-conteudo-textos">' +
+                        '<div class="resultado-conteudo-titulo" style="font-weight:600; font-size:14px;">' + escaparTextoResultado(video.titulo) + '</div>' +
                         '<div style="font-size:12px; color:#666;">' + escaparTextoResultado(video.canal) + ' · ' + escaparTextoResultado(video.duracao) + '</div>' +
                         '</div>';
+                    item.querySelector('.resultado-conteudo-titulo').title = video.titulo;
 
                     item.addEventListener('click', function () {
                         inputUrl.value = 'https://www.youtube.com/watch?v=' + video.videoId;
@@ -404,16 +700,41 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (inputDuracao) {
                             inputDuracao.value = video.duracao;
                         }
-                        resultadosYoutube.innerHTML = '<p class="form-text">Selecionado: ' + escaparTextoResultado(video.titulo) + '</p>';
+                        mostrarPreviaConteudo(
+                            resultadosYoutube,
+                            video.titulo,
+                            [video.canal, video.duracao].filter(Boolean).join(' · '),
+                            video.thumbnailUrl,
+                            'video'
+                        );
                     });
 
                     resultadosYoutube.appendChild(item);
                 });
+
+                nextPageTokenYoutube = pagina.nextPageToken;
+                if (nextPageTokenYoutube) {
+                    const botao = document.createElement('button');
+                    botao.type = 'button';
+                    botao.className = 'carregar-mais-resultados';
+                    botao.textContent = 'Carregar mais vídeos';
+                    botao.addEventListener('click', function () { buscarVideos(true); });
+                    resultadosYoutube.appendChild(botao);
+                }
             })
             .catch(function () {
-                if (inputBuscaYoutube.value.trim() === termo) {
-                    resultadosYoutube.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                if (sequenciaAtual === sequenciaBuscaYoutube &&
+                    inputBuscaYoutube.value.trim() === termo) {
+                    if (carregarMais && botaoCarregarMais) {
+                        botaoCarregarMais.disabled = false;
+                        botaoCarregarMais.textContent = 'Tentar carregar mais vídeos';
+                    } else {
+                        resultadosYoutube.innerHTML = '<p class="erro-campo">Erro ao buscar vídeos. Tente novamente.</p>';
+                    }
                 }
+            })
+            .finally(function () {
+                if (sequenciaAtual === sequenciaBuscaYoutube) carregandoVideos = false;
             });
     }
 
@@ -423,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function () {
         inputBuscaYoutube.addEventListener('keydown', function (evento) {
             if (evento.key === 'Enter') {
                 evento.preventDefault();
-                buscarVideos();
+                buscarVideos(false);
             }
         });
     }
@@ -448,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function () {
             campoLinkEditar.style.display = (tipo === 'LINK') ? '' : 'none';
             campoYoutubeEditar.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
             campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
-            campoDuracaoEditar.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
+            campoDuracaoEditar.style.display = (tipo === 'YOUTUBE' || tipo === 'GOOGLE_BOOKS') ? '' : 'none';
             campoArquivoEditar.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
         }
 
@@ -529,10 +850,7 @@ document.addEventListener('DOMContentLoaded', function () {
             resultadosBooksEditar.innerHTML = '<p class="form-text">Buscando...</p>';
 
             fetch('/googlebooks/buscar?q=' + encodeURIComponent(termo))
-                .then(function (resposta) {
-                    if (!resposta.ok) throw new Error('Falha na busca');
-                    return resposta.json();
-                })
+                .then(lerRespostaBuscaLivros)
                 .then(function (livros) {
                     if (inputBuscaBooksEditar.value.trim() !== termo) return;
                     resultadosBooksEditar.innerHTML = '';
@@ -565,9 +883,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         resultadosBooksEditar.appendChild(item);
                     });
                 })
-                .catch(function () {
+                .catch(function (erro) {
                     if (inputBuscaBooksEditar.value.trim() === termo) {
-                        resultadosBooksEditar.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+                        resultadosBooksEditar.innerHTML =
+                            '<p class="erro-campo">' +
+                            escaparTextoResultado(erro.message || 'Erro ao buscar livros. Tente novamente.') +
+                            '</p>';
                     }
                 });
         }
@@ -589,28 +910,57 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultadosBooks = document.getElementById('resultadosGoogleBooks');
     const inputUrlAdicionar = document.getElementById('url');
     const inputTituloAdicionar = document.getElementById('titulo');
+    let nextStartIndexBooks = null;
+    let termoBooksAtual = '';
+    let sequenciaBuscaBooks = 0;
+    let carregandoLivros = false;
 
-    function buscarLivros() {
+    function buscarLivros(carregarMais) {
         const termo = inputBuscaBooks.value.trim();
         if (!termo) return;
 
-        resultadosBooks.innerHTML = '<p class="form-text">Buscando...</p>';
+        if (carregarMais) {
+            if (nextStartIndexBooks === null || carregandoLivros || termo !== termoBooksAtual) return;
+        } else {
+            termoBooksAtual = termo;
+            nextStartIndexBooks = null;
+            sequenciaBuscaBooks++;
+        }
 
-        fetch('/googlebooks/buscar?q=' + encodeURIComponent(termo))
+        const sequenciaAtual = sequenciaBuscaBooks;
+        carregandoLivros = true;
+        const botaoCarregarMais = resultadosBooks.querySelector('.carregar-mais-resultados');
+        if (carregarMais && botaoCarregarMais) {
+            botaoCarregarMais.disabled = true;
+            botaoCarregarMais.textContent = 'Carregando...';
+        } else {
+            resultadosBooks.innerHTML = '<p class="form-text">Buscando...</p>';
+        }
+
+        const parametros = new URLSearchParams({ q: termo });
+        if (carregarMais) parametros.set('startIndex', nextStartIndexBooks);
+
+        fetch('/googlebooks/buscar?' + parametros.toString())
             .then(function (resposta) {
-                if (!resposta.ok) throw new Error('Falha na busca');
-                return resposta.json();
+                return lerRespostaBuscaLivros(resposta).then(function (livros) {
+                    return {
+                        livros: livros,
+                        nextStartIndex: resposta.headers.get('X-Next-Start-Index')
+                    };
+                });
             })
-            .then(function (livros) {
-                if (inputBuscaBooks.value.trim() !== termo) return;
-                resultadosBooks.innerHTML = '';
+            .then(function (pagina) {
+                if (sequenciaAtual !== sequenciaBuscaBooks ||
+                    inputBuscaBooks.value.trim() !== termo) return;
+                if (!carregarMais) resultadosBooks.innerHTML = '';
+                else if (botaoCarregarMais) botaoCarregarMais.remove();
 
-                if (livros.length === 0) {
+                if (!pagina.livros.length && !carregarMais) {
                     resultadosBooks.innerHTML = '<p class="form-text">Nenhum livro encontrado.</p>';
                     return;
                 }
 
-                livros.forEach(function (livro) {
+                pagina.livros.forEach(function (livro) {
                     const item = document.createElement('div');
                     item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #ddd; border-radius:8px; margin-bottom:6px; cursor:pointer;';
 
@@ -620,26 +970,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     item.innerHTML =
                         capa +
-                        '<div>' +
-                        '<div style="font-weight:600; font-size:14px;">' + escaparTextoResultado(livro.titulo) + '</div>' +
+                        '<div class="resultado-conteudo-textos">' +
+                        '<div class="resultado-conteudo-titulo" style="font-weight:600; font-size:14px;">' + escaparTextoResultado(livro.titulo) + '</div>' +
                         '<div style="font-size:12px; color:#666;">' + escaparTextoResultado(livro.autores) + ' · ' + escaparTextoResultado(livro.anoPublicacao) + '</div>' +
                         '</div>';
+                    item.querySelector('.resultado-conteudo-titulo').title = livro.titulo;
 
                     item.addEventListener('click', function () {
                         inputUrlAdicionar.value = livro.linkGoogleBooks;
                         if (inputTituloAdicionar && !inputTituloAdicionar.value.trim()) {
                             inputTituloAdicionar.value = livro.titulo;
                         }
-                        resultadosBooks.innerHTML = '<p class="form-text">Selecionado: ' + escaparTextoResultado(livro.titulo) + '</p>';
+                        mostrarPreviaConteudo(
+                            resultadosBooks,
+                            livro.titulo,
+                            [livro.autores, livro.anoPublicacao].filter(Boolean).join(' · '),
+                            livro.thumbnailUrl,
+                            'livro'
+                        );
                     });
 
                     resultadosBooks.appendChild(item);
                 });
-            })
-            .catch(function () {
-                if (inputBuscaBooks.value.trim() === termo) {
-                    resultadosBooks.innerHTML = '<p class="erro-campo">Erro ao buscar livros. Tente novamente.</p>';
+
+                nextStartIndexBooks = pagina.nextStartIndex === null
+                    ? null
+                    : Number(pagina.nextStartIndex);
+                if (nextStartIndexBooks !== null && Number.isFinite(nextStartIndexBooks)) {
+                    const botao = document.createElement('button');
+                    botao.type = 'button';
+                    botao.className = 'carregar-mais-resultados';
+                    botao.textContent = 'Carregar mais livros';
+                    botao.addEventListener('click', function () { buscarLivros(true); });
+                    resultadosBooks.appendChild(botao);
                 }
+            })
+            .catch(function (erro) {
+                if (sequenciaAtual === sequenciaBuscaBooks &&
+                    inputBuscaBooks.value.trim() === termo) {
+                    if (carregarMais && botaoCarregarMais) {
+                        botaoCarregarMais.disabled = false;
+                        botaoCarregarMais.textContent = 'Tentar carregar mais livros';
+                        botaoCarregarMais.title = erro.message || 'Erro ao carregar mais livros.';
+                    } else {
+                        resultadosBooks.innerHTML =
+                            '<p class="erro-campo">' +
+                            escaparTextoResultado(erro.message || 'Erro ao buscar livros. Tente novamente.') +
+                            '</p>';
+                    }
+                }
+            })
+            .finally(function () {
+                if (sequenciaAtual === sequenciaBuscaBooks) carregandoLivros = false;
             });
     }
 
@@ -649,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', function () {
         inputBuscaBooks.addEventListener('keydown', function (evento) {
             if (evento.key === 'Enter') {
                 evento.preventDefault();
-                buscarLivros();
+                buscarLivros(false);
             }
         });
     }

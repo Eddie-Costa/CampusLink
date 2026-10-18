@@ -1,8 +1,8 @@
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.repository.AlunoRepository;
-import com.example.CampusLink.dao.professorDAO;
-import com.example.CampusLink.dao.turmaDAO;
+import com.example.CampusLink.repository.ProfessorRepository;
+import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.dto.TurmaDTO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,30 +22,35 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.SQLException;
 import java.util.List;
 import com.example.CampusLink.dto.ArquivoDTO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.helpers.MessageFormatter;
 import com.example.CampusLink.service.DominioService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 @Controller
 public class turmasController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(turmasController.class);
 
     @Autowired
-    private professorDAO professorDAO;
+    private ProfessorRepository professorRepository;
 
     @Autowired
     private AlunoRepository alunoRepository;
 
     @Autowired
-    private turmaDAO turmaDAO;
+    private TurmaRepository turmaRepository;
 
     @Autowired
     private ConteudoService conteudoService;
@@ -68,9 +73,9 @@ public class turmasController {
         //recuperar turmas que o usuario esta
         String tipoUsuario = session.getAttribute("tipoUsuario").toString();
         if ("aluno".equalsIgnoreCase(tipoUsuario)) {
-            turmas = turmaDAO.buscarTurmasDoUsuario("aluno", alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString()));
+            turmas = turmaRepository.buscarTurmasDoUsuario("aluno", alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString()));
         } else if ("professor".equalsIgnoreCase(tipoUsuario)) {
-            turmas = turmaDAO.buscarTurmasDoUsuario("professor", professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString()));
+            turmas = turmaRepository.buscarTurmasDoUsuario("professor", professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString()));
         }
 
         model.addAttribute("turmas", turmas);
@@ -88,14 +93,14 @@ public class turmasController {
         }
 
         model.addAttribute("idTurma", id);
-        TurmaDTO turma = turmaDAO.buscarTurmaPorId(id);
+        TurmaDTO turma = turmaRepository.buscarTurmaPorId(id);
         if (turma == null) {
             return "redirect:/turmas";
         }
 
         boolean isTurmaAdmin = false;
         if (session.getAttribute("tipoUsuario") != null && "professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())) {
-            String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+            String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
             isTurmaAdmin = turma.getIdProprietario() != null && turma.getIdProprietario().toString().equals(idProfessor);
 
             try {
@@ -106,7 +111,7 @@ public class turmasController {
             }
         }
 
-        List<TurmaDTO> participantesTurma = turmaDAO.buscarParticipantesDaTurma(id);
+        List<TurmaDTO> participantesTurma = turmaRepository.buscarParticipantesDaTurma(id);
         boolean isProfessorTurma = session.getAttribute("tipoUsuario") != null
                 && "professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())
                 && session.getAttribute("email2FA") != null
@@ -129,6 +134,7 @@ public class turmasController {
         }
         List<ConteudoDTO> conteudos = conteudoService.buscarPorTurma(Long.parseLong(id), q, tipo);
         model.addAttribute("conteudos", conteudos);
+        adicionarInformacoesMidia(model, conteudos);
         model.addAttribute("termoBusca", q == null ? "" : q.trim());
         model.addAttribute("tipoFiltro", tipo == null ? "" : tipo);
 
@@ -155,8 +161,8 @@ public class turmasController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        TurmaDTO turma = turmaDAO.buscarTurmaPorId(id);
-        List<TurmaDTO> participantes = turmaDAO.buscarParticipantesDaTurma(id);
+        TurmaDTO turma = turmaRepository.buscarTurmaPorId(id);
+        List<TurmaDTO> participantes = turmaRepository.buscarParticipantesDaTurma(id);
         if (!professorPodeGerenciarParticipantes(turma, participantes,
                 session.getAttribute("email2FA").toString())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -167,7 +173,7 @@ public class turmasController {
             return List.of();
         }
 
-        return turmaDAO.buscarSugestoesPessoasDaTurma(consulta, id);
+        return turmaRepository.buscarSugestoesPessoasDaTurma(consulta, id);
     }
 
     private boolean professorPodeGerenciarParticipantes(TurmaDTO turma,
@@ -175,7 +181,7 @@ public class turmasController {
                                                         String emailProfessor) throws SQLException {
         if (turma == null || emailProfessor == null) return false;
 
-        String idProfessor = professorDAO.buscarPorIDProfessor(emailProfessor);
+        String idProfessor = professorRepository.buscarPorIDProfessor(emailProfessor);
         if (turma.getIdProprietario() != null
                 && turma.getIdProprietario().toString().equals(idProfessor)) {
             return true;
@@ -211,8 +217,8 @@ public class turmasController {
             return "redirect:/login";
         }
 
-        String idProfessor = professorDAO.buscarPorIDProfessor(emailProfessor.toString());
-        TurmaDTO turmaAtual = turmaDAO.buscarTurmaPorId(id);
+        String idProfessor = professorRepository.buscarPorIDProfessor(emailProfessor.toString());
+        TurmaDTO turmaAtual = turmaRepository.buscarTurmaPorId(id);
         if (turmaAtual == null) {
             return "redirect:/turmas";
         }
@@ -231,7 +237,7 @@ public class turmasController {
             return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
         }
 
-        boolean atualizada = turmaDAO.atualizarTurmaDoProprietario(
+        boolean atualizada = turmaRepository.atualizarTurmaDoProprietario(
                 id,
                 idProfessor,
                 turmaEdicao.getNomeTurma().trim(),
@@ -262,7 +268,7 @@ public class turmasController {
             logger.warn("[criarConteudo] aluno tentou cadastrar conteúdo na turma {}.", id);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "criarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "criarConteudo", null,
                             MessageFormatter.arrayFormat("[criarConteudo] aluno tentou cadastrar conteúdo na turma {}.", new Object[]{id}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -273,11 +279,12 @@ public class turmasController {
         if (result.hasErrors()) {
             model.addAttribute("abrirModalAdicionarConteudo", true);
             model.addAttribute("idTurma", String.valueOf(id));
-            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("turma", turmaRepository.buscarTurmaPorId(String.valueOf(id)));
             carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
+            adicionarInformacoesMidia(model, conteudos);
 
             Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
             for (ConteudoDTO conteudo : conteudos) {
@@ -290,7 +297,7 @@ public class turmasController {
 
             return "Geral/ambienteTurma";
         }
-        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
 
         conteudoDTO.setIdTurma(id);
         conteudoDTO.setIdProfessor(Long.parseLong(idProfessor));
@@ -301,11 +308,12 @@ public class turmasController {
             model.addAttribute("mensagemErro", e.getMessage());
             model.addAttribute("abrirModalAdicionarConteudo", true);
             model.addAttribute("idTurma", String.valueOf(id));
-            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("turma", turmaRepository.buscarTurmaPorId(String.valueOf(id)));
             carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
+            adicionarInformacoesMidia(model, conteudos);
 
             Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
             for (ConteudoDTO conteudo : conteudos) {
@@ -334,7 +342,7 @@ public class turmasController {
             logger.warn("Criação de turma recusada: usuário é aluno.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "criarTurma", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "criarTurma", null,
                             "Criação de turma recusada: usuário é aluno.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -343,18 +351,18 @@ public class turmasController {
             return "Geral/home";
         }
 
-        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
 
         //Insere turma no banco de dados
-        professorDAO.InsertTurmasIntoBD(turmaDTO.getNomeTurma(), turmaDTO.getDescricao(), idProfessor);
+        professorRepository.InsertTurmasIntoBD(turmaDTO.getNomeTurma(), turmaDTO.getDescricao(), idProfessor);
 
         //Insere x_turma no banco de dados
-        String idTurma = turmaDAO.buscarUltimaTurmaPorProfessor(idProfessor);
-        professorDAO.InsertProfessor_TurmaIntoBD(idProfessor, idTurma);
+        String idTurma = turmaRepository.buscarUltimaTurmaPorProfessor(idProfessor);
+        professorRepository.InsertProfessor_TurmaIntoBD(idProfessor, idTurma);
         logger.info("Turma cadastrada. turmaId={} professorId={}", idTurma, idProfessor);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", turmasController.class.getName(), "criarTurma", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", turmasController.class.getName(), "criarTurma", null,
                         MessageFormatter.arrayFormat("Turma cadastrada. turmaId={} professorId={}", new Object[]{idTurma, idProfessor}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -378,7 +386,7 @@ public class turmasController {
             logger.warn("[excluirConteudo] aluno tentou excluir conteúdo {} da turma {}.", idConteudo, id);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirConteudo", null,
                             MessageFormatter.arrayFormat("[excluirConteudo] aluno tentou excluir conteúdo {} da turma {}.", new Object[]{idConteudo, id}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -408,7 +416,7 @@ public class turmasController {
             logger.warn("[editarConteudo] aluno tentou editar conteúdo {} da turma {}.", idConteudo, id);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "editarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "editarConteudo", null,
                             MessageFormatter.arrayFormat("[editarConteudo] aluno tentou editar conteúdo {} da turma {}.", new Object[]{idConteudo, id}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -422,11 +430,12 @@ public class turmasController {
             model.addAttribute("erroEditar", result.getAllErrors().get(0).getDefaultMessage());
             model.addAttribute("conteudo", new ConteudoDTO());
             model.addAttribute("idTurma", String.valueOf(id));
-            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("turma", turmaRepository.buscarTurmaPorId(String.valueOf(id)));
             carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
+            adicionarInformacoesMidia(model, conteudos);
 
             Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
             for (ConteudoDTO conteudo : conteudos) {
@@ -453,11 +462,12 @@ public class turmasController {
             model.addAttribute("erroEditar", e.getMessage());
             model.addAttribute("conteudo", new ConteudoDTO());
             model.addAttribute("idTurma", String.valueOf(id));
-            model.addAttribute("turma", turmaDAO.buscarTurmaPorId(String.valueOf(id)));
+            model.addAttribute("turma", turmaRepository.buscarTurmaPorId(String.valueOf(id)));
             carregarSolicitacoesDominio(model, session);
 
             List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(id);
             model.addAttribute("conteudos", conteudos);
+            adicionarInformacoesMidia(model, conteudos);
 
             Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
             for (ConteudoDTO conteudo : conteudos) {
@@ -466,12 +476,117 @@ public class turmasController {
                     arquivosPorConteudo.put(conteudo.getId(), arquivoExistente);
                 }
             }
+
             model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
 
             return "Geral/ambienteTurma";
         }
 
         return "redirect:/turmas/" + id;
+    }
+
+    private void adicionarInformacoesMidia(Model model, List<ConteudoDTO> conteudos) {
+        Map<Long, String> miniaturasPorConteudo = new HashMap<>();
+        Map<Long, String> tiposMidiaPorConteudo = new HashMap<>();
+        Map<Long, String> videoIdsPorConteudo = new HashMap<>();
+        Map<Long, String> livroIdsPorConteudo = new HashMap<>();
+
+        for (ConteudoDTO conteudo : conteudos) {
+            String url = conteudo.getUrl();
+            if (url == null || url.isBlank()) {
+                continue;
+            }
+
+            try {
+                URI uri = URI.create(url);
+                String host = uri.getHost();
+                if (host == null) {
+                    continue;
+                }
+
+                host = host.toLowerCase(Locale.ROOT);
+                String thumbnail = null;
+                String tipoMidia = null;
+
+                if (host.equals("youtu.be") || host.endsWith(".youtube.com") || host.equals("youtube.com")) {
+                    String videoId = extrairIdVideo(uri);
+                    if (videoId != null) {
+                        thumbnail = "https://i.ytimg.com/vi/" + videoId + "/mqdefault.jpg";
+                        tipoMidia = "Vídeo do YouTube";
+                        videoIdsPorConteudo.put(conteudo.getId(), videoId);
+                    }
+                } else if (host.equals("books.google.com") || host.equals("play.google.com")) {
+                    String idLivro = extrairParametro(uri.getRawQuery(), "id");
+                    if (idLivro == null && host.equals("books.google.com")) {
+                        String[] partes = uri.getPath() == null ? new String[0] : uri.getPath().split("/");
+                        if (partes.length > 0) {
+                            String ultimoSegmento = partes[partes.length - 1];
+                            if (ultimoSegmento.matches("[A-Za-z0-9_-]{1,128}")) {
+                                idLivro = ultimoSegmento;
+                            }
+                        }
+                    }
+                    if (idLivro != null && !idLivro.isBlank()) {
+                        thumbnail = "https://books.google.com/books/content?id="
+                                + URLEncoder.encode(idLivro, StandardCharsets.UTF_8)
+                                + "&printsec=frontcover&img=1&zoom=1";
+                        tipoMidia = "Livro do Google Books";
+                        livroIdsPorConteudo.put(conteudo.getId(), idLivro);
+                    }
+                }
+
+                if (thumbnail != null) {
+                    miniaturasPorConteudo.put(conteudo.getId(), thumbnail);
+                    tiposMidiaPorConteudo.put(conteudo.getId(), tipoMidia);
+                }
+            } catch (IllegalArgumentException e) {
+                logger.warn("URL inválida ao identificar a miniatura do conteúdo {}", conteudo.getId());
+            }
+        }
+
+        model.addAttribute("miniaturasPorConteudo", miniaturasPorConteudo);
+        model.addAttribute("tiposMidiaPorConteudo", tiposMidiaPorConteudo);
+        model.addAttribute("videoIdsPorConteudo", videoIdsPorConteudo);
+        model.addAttribute("livroIdsPorConteudo", livroIdsPorConteudo);
+    }
+
+    private String extrairIdVideo(URI uri) {
+        String host = uri.getHost().toLowerCase(Locale.ROOT);
+        String videoId = null;
+
+        if (host.equals("youtu.be")) {
+            String path = uri.getPath();
+            if (path != null && path.length() > 1) {
+                videoId = path.substring(1).split("/")[0];
+            }
+        } else {
+            videoId = extrairParametro(uri.getRawQuery(), "v");
+            if (videoId == null) {
+                String[] partes = uri.getPath() == null ? new String[0] : uri.getPath().split("/");
+                for (int i = 0; i < partes.length - 1; i++) {
+                    if ("embed".equals(partes[i]) || "shorts".equals(partes[i]) || "live".equals(partes[i])) {
+                        videoId = partes[i + 1];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return videoId != null && videoId.matches("[A-Za-z0-9_-]{11}") ? videoId : null;
+    }
+
+    private String extrairParametro(String query, String nome) {
+        if (query == null || query.isBlank()) {
+            return null;
+        }
+
+        for (String parametro : query.split("&")) {
+            String[] par = parametro.split("=", 2);
+            if (par.length == 2 && nome.equals(URLDecoder.decode(par[0], StandardCharsets.UTF_8))) {
+                return URLDecoder.decode(par[1], StandardCharsets.UTF_8);
+            }
+        }
+        return null;
     }
 
     @PostMapping("/adicionarPessoas")
@@ -482,7 +597,7 @@ public class turmasController {
             logger.warn("[adicionarPessoas] usuário não autenticado; redirecionando para login.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "adicionarPessoas", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "adicionarPessoas", null,
                             "[adicionarPessoas] usuário não autenticado; redirecionando para login.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -504,8 +619,8 @@ public class turmasController {
         Object emailProfessor = session.getAttribute("email2FA");
         if (emailProfessor == null) return "redirect:/login";
 
-        TurmaDTO turma = turmaDAO.buscarTurmaPorId(idTurma);
-        List<TurmaDTO> participantes = turmaDAO.buscarParticipantesDaTurma(idTurma);
+        TurmaDTO turma = turmaRepository.buscarTurmaPorId(idTurma);
+        List<TurmaDTO> participantes = turmaRepository.buscarParticipantesDaTurma(idTurma);
         if (!professorPodeGerenciarParticipantes(turma, participantes, emailProfessor.toString())) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Apenas professores vinculados à turma podem adicionar pessoas.");
             return "redirect:/turmas/" + idTurma;
@@ -515,7 +630,7 @@ public class turmasController {
             logger.warn("[adicionarPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "adicionarPessoas", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "adicionarPessoas", null,
                             MessageFormatter.arrayFormat("[adicionarPessoas] e-mail vazio para turma {}.", new Object[]{turmaDTO.getId()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -524,7 +639,7 @@ public class turmasController {
             return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
         }
 
-        boolean pessoaAdicionada = turmaDAO.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
+        boolean pessoaAdicionada = turmaRepository.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
 
         if (pessoaAdicionada) {
             model.addAttribute("mensagemSucesso", "Pessoa adicionada com sucesso.");
@@ -543,7 +658,7 @@ public class turmasController {
             logger.warn("[excluirTurma] usuário não autenticado; redirecionando para login.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirTurma", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirTurma", null,
                             "[excluirTurma] usuário não autenticado; redirecionando para login.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -556,7 +671,7 @@ public class turmasController {
             logger.warn("[excluirTurma] usuário tentou excluir turma sem permissão.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirTurma", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "excluirTurma", null,
                             "[excluirTurma] usuário tentou excluir turma sem permissão.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -565,12 +680,12 @@ public class turmasController {
             return "Geral/home";
         }
 
-        String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
-        turmaDAO.excluirTurma(String.valueOf(turmaDTO.getId()), idProfessor);
+        String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        turmaRepository.excluirTurma(String.valueOf(turmaDTO.getId()), idProfessor);
         logger.info("Turma excluída. turmaId={} professorId={}", turmaDTO.getId(), idProfessor);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", turmasController.class.getName(), "excluirTurma", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", turmasController.class.getName(), "excluirTurma", null,
                         MessageFormatter.arrayFormat("Turma excluída. turmaId={} professorId={}", new Object[]{turmaDTO.getId(), idProfessor}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -589,7 +704,7 @@ public class turmasController {
             logger.warn("[removerPessoas] usuário não autenticado; redirecionando para login.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
                             "[removerPessoas] usuário não autenticado; redirecionando para login.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -606,7 +721,7 @@ public class turmasController {
             logger.warn("[removerPessoas] aluno tentou remover pessoas da turma.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
                             "[removerPessoas] aluno tentou remover pessoas da turma.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -627,8 +742,8 @@ public class turmasController {
         }
 
         String idTurma = String.valueOf(turmaDTO.getId());
-        TurmaDTO turma = turmaDAO.buscarTurmaPorId(idTurma);
-        List<TurmaDTO> participantes = turmaDAO.buscarParticipantesDaTurma(idTurma);
+        TurmaDTO turma = turmaRepository.buscarTurmaPorId(idTurma);
+        List<TurmaDTO> participantes = turmaRepository.buscarParticipantesDaTurma(idTurma);
         if (!professorPodeGerenciarParticipantes(turma, participantes, emailProfessor.toString())) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Apenas professores vinculados à turma podem remover participantes.");
             return "redirect:/turmas/" + idTurma;
@@ -638,7 +753,7 @@ public class turmasController {
             logger.warn("[removerPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
                             MessageFormatter.arrayFormat("[removerPessoas] e-mail vazio para turma {}.", new Object[]{turmaDTO.getId()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -664,7 +779,7 @@ public class turmasController {
             return "redirect:/turmas/" + idTurma;
         }
 
-        boolean removido = turmaDAO.revomerPessoaTurma(emailPessoa, idTurma);
+        boolean removido = turmaRepository.revomerPessoaTurma(emailPessoa, idTurma);
 
         if (!removido) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível remover este participante.");
@@ -682,7 +797,7 @@ public class turmasController {
         }
 
         try {
-            String idProfessor = professorDAO.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+            String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
             model.addAttribute("solicitacoesDominio",
                     dominioService.listarPorProfessor(Long.parseLong(idProfessor)));
         } catch (Exception e) {

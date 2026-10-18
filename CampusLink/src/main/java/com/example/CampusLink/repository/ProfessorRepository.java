@@ -1,4 +1,4 @@
-package com.example.CampusLink.dao;
+package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class professorDAO {
+public class ProfessorRepository {
 
     @Autowired
     private DataSource dataSource;

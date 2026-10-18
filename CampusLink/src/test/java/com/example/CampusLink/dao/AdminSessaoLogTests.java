@@ -9,6 +9,7 @@ import com.example.CampusLink.controller.Usuarios.Admin.loginAdminController;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
 import com.example.CampusLink.repository.AdminUsuarioRepository;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
@@ -61,7 +62,7 @@ class AdminSessaoLogTests {
     private static final String SENHA = "SenhaTeste1!";
     @Autowired DataSource dataSource;
     private Connection conn;
-    private usuarioDAO usuarios;
+    private UsuarioRepository usuarios;
     private SessaoLogListener listener;
     private MockHttpSession session;
     private final LoginAttemptService tentativas = new LoginAttemptService();
@@ -110,7 +111,7 @@ class AdminSessaoLogTests {
                 });
         DataSource temporario = mock(DataSource.class);
         when(temporario.getConnection()).thenReturn(isolada);
-        usuarios = spy(new usuarioDAO());
+        usuarios = spy(new UsuarioRepository());
         ReflectionTestUtils.setField(usuarios, "dataSource", temporario);
         listener = new SessaoLogListener(usuarios);
         // MockHttpSession não notifica listeners; reproduzimos a notificação do servlet container.
@@ -161,7 +162,7 @@ class AdminSessaoLogTests {
         requisicao("/admin/usuarios/77/ativar", () -> controller.ativarUsuario(77L, session, new RedirectAttributesModelMap()));
 
         LogoutController logout = new LogoutController();
-        ReflectionTestUtils.setField(logout, "usuarioDAO", usuarios);
+        ReflectionTestUtils.setField(logout, "UsuarioRepository", usuarios);
         requisicao("/logout", () -> logout.logout(session));
         assertTrue(session.isInvalid());
         String historico = historicoEncerrado(sessaoId);
@@ -200,7 +201,7 @@ class AdminSessaoLogTests {
         doReturn(admin).when(usuarios).buscarPorEmailAdmin(EMAIL);
         loginAdminController login = new loginAdminController();
         emailService emails = mock(emailService.class);
-        ReflectionTestUtils.setField(login, "usuarioDAO", usuarios);
+        ReflectionTestUtils.setField(login, "UsuarioRepository", usuarios);
         ReflectionTestUtils.setField(login, "loginAttemptService", tentativas);
         ReflectionTestUtils.setField(login, "twoFactorService", new TwoFactorService());
         ReflectionTestUtils.setField(login, "emailService", emails);
@@ -212,7 +213,7 @@ class AdminSessaoLogTests {
             ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
             verify(emails).enviarCodigo(eq(EMAIL), codigo.capture());
             VerificarController verificar = new VerificarController();
-            ReflectionTestUtils.setField(verificar, "usuarioDAO", usuarios);
+            ReflectionTestUtils.setField(verificar, "UsuarioRepository", usuarios);
             ReflectionTestUtils.setField(verificar, "twoFactorService", new TwoFactorService());
             requisicao("/verificar", () -> assertEquals("redirect:/admin/painel",
                     verificar.verificarCodigo(codigo.getValue(), session, new ExtendedModelMap())));

@@ -22,6 +22,10 @@ import java.util.Map;
 public class ConteudoRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private static final String URL_VIDEO_YOUTUBE =
+            "LOWER(COALESCE(\"url\", '')) ~ '^(https?://)([[:alnum:]-]+\\.)*youtube\\.com(/|$)|^(https?://)youtu\\.be(/|$)'";
+    private static final String URL_LIVRO_GOOGLE_BOOKS =
+            "LOWER(COALESCE(\"url\", '')) ~ '^https?://(books|play)\\.google\\.com(/|$)'";
 
     public ConteudoRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -145,7 +149,13 @@ public class ConteudoRepository {
         }
 
         if (temTipo) {
-            sql.append(" AND \"tipo\" = ? ");
+            switch (tipo) {
+                case "video" -> sql.append(" AND \"tipo\" = 'link' AND ").append(URL_VIDEO_YOUTUBE);
+                case "livro" -> sql.append(" AND \"tipo\" = 'link' AND ").append(URL_LIVRO_GOOGLE_BOOKS);
+                case "link" -> sql.append(" AND \"tipo\" = ? AND NOT (")
+                        .append(URL_VIDEO_YOUTUBE).append(" OR ").append(URL_LIVRO_GOOGLE_BOOKS).append(")");
+                default -> sql.append(" AND \"tipo\" = ? ");
+            }
         }
 
         if (temTermo) {
@@ -165,7 +175,7 @@ public class ConteudoRepository {
                     stmt.setString(i++, termo);
                 }
 
-                if (temTipo) {
+                if (temTipo && !tipo.equals("video") && !tipo.equals("livro")) {
                     stmt.setString(i++, tipo);
                 }
 

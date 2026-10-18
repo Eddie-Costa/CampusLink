@@ -1,8 +1,7 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.repository.EventoConteudoRepository;
-import com.example.CampusLink.dao.EventoDetalhesDAO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.repository.EventoRepository;
 
@@ -26,13 +25,12 @@ import java.io.StringWriter;
 public class EventoService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(EventoService.class);
 
     private final EventoRepository eventoRepository;
     private final EventoConteudoRepository eventoConteudoRepository;
-    private final EventoDetalhesDAO eventoDetalhesDAO;
 
     // salva o evento e os conteudos escolhidos
     public Evento adicionarEvento(Evento evento, List<Long> idsConteudos) {
@@ -44,7 +42,7 @@ public class EventoService {
 
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "adicionarEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "adicionarEvento", null,
                             MessageFormatter.arrayFormat("Evento salvo no banco id={} professorId={} turmaId={}", new Object[]{eventoSalvo.getId(), eventoSalvo.getIdProfessor(), eventoSalvo.getIdTurma()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -58,7 +56,7 @@ public class EventoService {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "adicionarEvento", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "adicionarEvento", null,
                                 MessageFormatter.arrayFormat("Conteudos associados eventoId={} conteudos={}", new Object[]{eventoSalvo.getId(), idsConteudos}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -78,7 +76,7 @@ public class EventoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "adicionarEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "adicionarEvento", null,
                             MessageFormatter.arrayFormat("Erro ao salvar evento professorId={} turmaId={}", new Object[]{evento.getIdProfessor(), evento.getIdTurma()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -104,7 +102,7 @@ public class EventoService {
 
             if (logger.isDebugEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "DEBUG", EventoService.class.getName(), "listarEventos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "DEBUG", EventoService.class.getName(), "listarEventos", null,
                             MessageFormatter.arrayFormat("Eventos encontrados quantidade={}", new Object[]{eventos.size()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -122,7 +120,7 @@ public class EventoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "listarEventos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "listarEventos", null,
                             "Erro ao buscar eventos", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -216,7 +214,7 @@ public class EventoService {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", EventoService.class.getName(), "excluirEvento", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", EventoService.class.getName(), "excluirEvento", null,
                                 MessageFormatter.arrayFormat("Evento nao encontrado eventoId={}", new Object[]{idEvento}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -233,7 +231,7 @@ public class EventoService {
 
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "excluirEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", EventoService.class.getName(), "excluirEvento", null,
                             MessageFormatter.arrayFormat("Evento excluido eventoId={}", new Object[]{idEvento}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -249,7 +247,7 @@ public class EventoService {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "excluirEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", EventoService.class.getName(), "excluirEvento", null,
                             MessageFormatter.arrayFormat("Erro ao excluir evento eventoId={}", new Object[]{idEvento}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -282,7 +280,7 @@ public class EventoService {
 
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", EventoService.class.getName(), "preencherDetalhesDoEvento", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", EventoService.class.getName(), "preencherDetalhesDoEvento", null,
                         MessageFormatter.arrayFormat("Detalhes carregados eventoId={} turma={} quantidadeConteudos={}",
                                 new Object[]{evento.getId(), nomeTurma, nomesConteudos.size()}).getMessage(), null, null);
             } catch (Exception erroLogBD) {

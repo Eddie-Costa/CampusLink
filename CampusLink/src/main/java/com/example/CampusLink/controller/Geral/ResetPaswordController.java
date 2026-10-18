@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.redefinirSenhaDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
@@ -35,7 +35,7 @@ public class ResetPaswordController {
     private emailService emailService;
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     @GetMapping("/ResetPassword_Verification")
     public String ResetPasword_Verification() {
@@ -61,7 +61,7 @@ public class ResetPaswordController {
         logger.info("Solicitação de reset de senha para o email: {}", email);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "ResetVerification", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "ResetVerification", null,
                         MessageFormatter.arrayFormat("Solicitação de reset de senha para o email: {}", new Object[]{email}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -96,12 +96,12 @@ public class ResetPaswordController {
         //Encriptador
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
-        usuarioDAO.UpdateSenhaUsuario(encoder.encode(senha), email);
+        UsuarioRepository.UpdateSenhaUsuario(encoder.encode(senha), email);
 
         logger.info("A senha foi resetada para o email: {}", email);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "Reset", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", ResetPaswordController.class.getName(), "Reset", null,
                         MessageFormatter.arrayFormat("A senha foi resetada para o email: {}", new Object[]{email}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);

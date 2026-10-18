@@ -6,7 +6,7 @@
     <title>Meus Conteúdos</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css(v=20261018-1)}">
 </head>
 
 <body>
@@ -128,23 +128,23 @@
                                     🗑
                                 </button>
                             </form>
+
+                            <button type="button"
+                                    class="conteudo-alternar-detalhes"
+                                    aria-expanded="true"
+                                    th:aria-controls="${'detalhesMeusConteudos-' + conteudo.id}"
+                                    th:aria-label="${'Recolher detalhes de ' + conteudo.titulo}"
+                                    th:title="${'Recolher detalhes de ' + conteudo.titulo}">
+                                <svg class="conteudo-alternar-icone" xmlns="http://www.w3.org/2000/svg"
+                                     width="20" height="20" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round" stroke-linejoin="round"
+                                     aria-hidden="true" focusable="false">
+                                    <path d="m6 9 6 6 6-6"></path>
+                                </svg>
+                                <span class="visually-hidden">Alternar detalhes</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <p class="conteudo-descricao" th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}" th:text="${conteudo.descricao}">
-                        Descrição do conteúdo
-                    </p>
-
-                    <div class="comentario-admin"
-                         th:if="${conteudo.status == 'removido' and conteudo.comentarioAdmin != null and !conteudo.comentarioAdmin.isBlank()}">
-
-                        <span class="comentario-admin-titulo">
-                            Motivo da reprovação pelo administrador
-                        </span>
-
-                        <p th:text="${conteudo.comentarioAdmin}">
-                            Motivo informado pelo administrador
-                        </p>
                     </div>
 
                     <div class="conteudo-informacoes">
@@ -159,7 +159,8 @@
                         <div class="informacao">
                             <span class="informacao-titulo">Tipo</span>
 
-                            <span class="informacao-valor" th:text="${conteudo.tipo != null ? conteudo.tipo : 'Não informado'}">
+                            <span class="informacao-valor"
+                                  th:text="${tiposExibicaoPorConteudo.get(conteudo.id) != null ? tiposExibicaoPorConteudo.get(conteudo.id) : 'Não informado'}">
                                 Tipo
                             </span>
                         </div>
@@ -174,15 +175,59 @@
                         </div>
                     </div>
 
-                    <div class="conteudo-denuncias" th:if="${conteudo.alunosDenunciaram != null and !conteudo.alunosDenunciaram.isEmpty()}">
-                        <span class="denuncias-titulo">
-                            Denunciado por
-                        </span>
+                    <div class="conteudo-detalhes" th:id="${'detalhesMeusConteudos-' + conteudo.id}">
+                        <p class="conteudo-descricao"
+                           th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
+                           th:text="${conteudo.descricao}">Descrição do conteúdo</p>
 
-                        <div class="lista-denunciantes">
-                            <span class="denunciante" th:each="aluno : ${conteudo.alunosDenunciaram}" th:text="${aluno}">
-                                Nome do aluno
-                            </span>
+                        <div class="comentario-admin"
+                             th:if="${conteudo.status == 'removido' and conteudo.comentarioAdmin != null and !conteudo.comentarioAdmin.isBlank()}">
+                            <span class="comentario-admin-titulo">Motivo da reprovação pelo administrador</span>
+                            <p th:text="${conteudo.comentarioAdmin}">Motivo informado pelo administrador</p>
+                        </div>
+
+                        <div class="conteudo-midia"
+                             th:if="${miniaturasPorConteudo.get(conteudo.id) != null}"
+                             th:attr="data-video-id=${videoIdsPorConteudo.get(conteudo.id)}, data-book-id=${livroIdsPorConteudo.get(conteudo.id)}, data-fallback-thumbnail=${miniaturasPorConteudo.get(conteudo.id)}">
+                            <a th:href="${conteudo.url}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="conteudo-midia-link"
+                               th:aria-label="${'Abrir ' + tiposExibicaoPorConteudo.get(conteudo.id) + ': ' + conteudo.titulo}">
+                                <img th:src="${miniaturasPorConteudo.get(conteudo.id)}"
+                                     th:alt="${'Miniatura de ' + conteudo.titulo}"
+                                     loading="lazy"
+                                     th:classappend="${tiposMidiaPorConteudo.get(conteudo.id) == 'livro'} ? ' conteudo-midia-capa' : ' conteudo-midia-video'">
+                            </a>
+                            <div class="conteudo-midia-informacoes">
+                                <strong class="conteudo-midia-titulo"
+                                        th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'video'}">
+                                    Carregando informações do vídeo...
+                                </strong>
+                                <strong class="conteudo-midia-livro-titulo"
+                                        th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'livro'}">
+                                    Carregando informações do livro...
+                                </strong>
+                                <span class="conteudo-midia-detalhes"
+                                      th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'video'}"
+                                      th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : ''}">
+                                    Duração
+                                </span>
+                                <span class="conteudo-midia-livro-autor"
+                                      th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'livro'}">
+                                    Carregando autor...
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="conteudo-denuncias"
+                             th:if="${conteudo.alunosDenunciaram != null and !conteudo.alunosDenunciaram.isEmpty()}">
+                            <span class="denuncias-titulo">Denunciado por</span>
+                            <div class="lista-denunciantes">
+                                <span class="denunciante" th:each="aluno : ${conteudo.alunosDenunciaram}" th:text="${aluno}">
+                                    Nome do aluno
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -204,7 +249,7 @@
     </div>
 </main>
 
-<script th:src="@{/js/Usuarios/Professor/meusConteudos.js}"></script>
+<script th:src="@{/js/Usuarios/Professor/meusConteudos.js(v=20261018-1)}"></script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 

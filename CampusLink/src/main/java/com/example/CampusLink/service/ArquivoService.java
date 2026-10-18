@@ -2,7 +2,7 @@ package com.example.CampusLink.service;
 
 import com.example.CampusLink.repository.ArquivoRepository;
 import com.example.CampusLink.dto.ArquivoDTO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import java.io.StringWriter;
 public class ArquivoService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ArquivoService.class);
 
@@ -69,7 +69,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
                             MessageFormatter.arrayFormat("Erro ao enviar arquivo ao Storage. conteudoId={} tamanhoBytes={}", new Object[]{idConteudo, arquivo.getSize()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -107,7 +107,7 @@ public class ArquivoService {
             logger.info("Arquivo salvo no Storage e no banco. conteudoId={} storagePath={} tamanhoBytes={}", idConteudo, storagePath, arquivo.getSize());
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "salvar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "salvar", null,
                             MessageFormatter.arrayFormat("Arquivo salvo no Storage e no banco. conteudoId={} storagePath={} tamanhoBytes={}", new Object[]{idConteudo, storagePath, arquivo.getSize()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -120,7 +120,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
                             MessageFormatter.arrayFormat("Erro ao registrar arquivo no banco após upload. conteudoId={} storagePath={}", new Object[]{idConteudo, storagePath}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -139,7 +139,7 @@ public class ArquivoService {
                 logger.info("Arquivo removido do Storage após falha no banco. conteudoId={} storagePath={}", idConteudo, storagePath);
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "salvar", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "salvar", null,
                                 MessageFormatter.arrayFormat("Arquivo removido do Storage após falha no banco. conteudoId={} storagePath={}", new Object[]{idConteudo, storagePath}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -151,7 +151,7 @@ public class ArquivoService {
                     try {
                         StringWriter excecaoLogBD = new StringWriter();
                         erroRemocao.printStackTrace(new PrintWriter(excecaoLogBD));
-                        usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "salvar", null,
                                 MessageFormatter.arrayFormat("Erro ao remover arquivo do Storage após falha no banco. conteudoId={} storagePath={}", new Object[]{idConteudo, storagePath}).getMessage(), null, excecaoLogBD.toString());
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -179,7 +179,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "listarTodos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "listarTodos", null,
                             "Erro ao listar arquivos no banco.", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -204,7 +204,7 @@ public class ArquivoService {
                 logger.warn("Arquivo não encontrado. arquivoId={}", id);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "buscarPorId", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "buscarPorId", null,
                                 MessageFormatter.arrayFormat("Arquivo não encontrado. arquivoId={}", new Object[]{id}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -224,7 +224,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "buscarPorId", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "buscarPorId", null,
                             MessageFormatter.arrayFormat("Erro ao buscar arquivo no banco. arquivoId={}", new Object[]{id}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -249,7 +249,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "buscarMaisRecentePorConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "buscarMaisRecentePorConteudo", null,
                             MessageFormatter.arrayFormat("Erro ao buscar arquivo do conteúdo. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -272,7 +272,7 @@ public class ArquivoService {
             logger.debug("Download de arquivo concluído no servidor. arquivoId={} conteudoId={} tamanhoBytes={}", id, arquivo.getIdConteudo(), dados.length);
             if (logger.isDebugEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "DEBUG", ArquivoService.class.getName(), "download", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "DEBUG", ArquivoService.class.getName(), "download", null,
                             MessageFormatter.arrayFormat("Download de arquivo concluído no servidor. arquivoId={} conteudoId={} tamanhoBytes={}", new Object[]{id, arquivo.getIdConteudo(), dados.length}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -285,7 +285,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "download", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "download", null,
                             MessageFormatter.arrayFormat("Erro ao baixar arquivo do Storage. arquivoId={} conteudoId={}", new Object[]{id, arquivo.getIdConteudo()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -310,7 +310,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Erro ao excluir arquivo do Storage. arquivoId={} conteudoId={}", new Object[]{id, arquivo.getIdConteudo()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -327,7 +327,7 @@ public class ArquivoService {
             logger.info("Arquivo excluído do Storage e do banco. arquivoId={} conteudoId={}", id, arquivo.getIdConteudo());
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", ArquivoService.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Arquivo excluído do Storage e do banco. arquivoId={} conteudoId={}", new Object[]{id, arquivo.getIdConteudo()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -341,7 +341,7 @@ public class ArquivoService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "excluir", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ArquivoService.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Erro ao excluir registro do banco após remoção do Storage. arquivoId={} conteudoId={}", new Object[]{id, arquivo.getIdConteudo()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -365,7 +365,7 @@ public class ArquivoService {
             logger.warn("Upload recusado: arquivo ausente ou vazio.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "validarArquivo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "validarArquivo", null,
                             "Upload recusado: arquivo ausente ou vazio.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -404,7 +404,7 @@ public class ArquivoService {
             logger.warn("Upload recusado: tipo de arquivo não permitido. mimeType={}", mimeType);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "validarArquivo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoService.class.getName(), "validarArquivo", null,
                             MessageFormatter.arrayFormat("Upload recusado: tipo de arquivo não permitido. mimeType={}", new Object[]{mimeType}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

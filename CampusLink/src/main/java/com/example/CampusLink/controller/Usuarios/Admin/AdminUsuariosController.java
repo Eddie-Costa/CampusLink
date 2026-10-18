@@ -1,7 +1,7 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import com.example.CampusLink.repository.AdminUsuarioRepository;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Admin.cadastrarUsuarioAdminDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
@@ -36,11 +36,11 @@ public class AdminUsuariosController {
     private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     private final AdminUsuarioRepository adminUsuarioRepository;
-    private final usuarioDAO usuarioDAO;
+    private final UsuarioRepository UsuarioRepository;
 
-    public AdminUsuariosController(AdminUsuarioRepository adminUsuarioRepository, usuarioDAO usuarioDAO) {
+    public AdminUsuariosController(AdminUsuarioRepository adminUsuarioRepository, UsuarioRepository UsuarioRepository) {
         this.adminUsuarioRepository = adminUsuarioRepository;
-        this.usuarioDAO = usuarioDAO;
+        this.UsuarioRepository = UsuarioRepository;
     }
 
     @GetMapping("/admin/usuarios")
@@ -79,7 +79,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "listarUsuarios", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "listarUsuarios", null,
                             "erro ao carregar usuarios para o administrador", null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -147,7 +147,7 @@ public class AdminUsuariosController {
         }
 
         try {
-            List<String> erros = usuarioDAO.validarDadosDuplicados(
+            List<String> erros = UsuarioRepository.validarDadosDuplicados(
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
                     usuario.getEmail(),
@@ -162,7 +162,7 @@ public class AdminUsuariosController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
             String senhaCriptografada = encoder.encode(usuario.getSenha());
 
-            usuarioDAO.InsertCadastroUsuarioIntoBD(
+            UsuarioRepository.InsertCadastroUsuarioIntoBD(
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
                     usuario.getNome(),
@@ -176,7 +176,7 @@ public class AdminUsuariosController {
 
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarUsuario", null,
                             MessageFormatter.arrayFormat("Usuário cadastrado pelo administrador. perfil={} email={}", new Object[]{usuario.getPerfil(), usuario.getEmail()}).getMessage(), null, null);
 
                 } catch (Exception erroLogBD) {
@@ -196,7 +196,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarUsuario", null,
                             "erro ao cadastrar usuario pelo administrador", null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -251,7 +251,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "editarUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "editarUsuario", null,
                             MessageFormatter.arrayFormat("erro ao buscar usuario {} para edicao", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -333,7 +333,7 @@ public class AdminUsuariosController {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
                                 MessageFormatter.arrayFormat("Usuário atualizado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -348,7 +348,7 @@ public class AdminUsuariosController {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
                                 MessageFormatter.arrayFormat("Atualização de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -369,7 +369,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "salvarEdicaoUsuario", null,
                             MessageFormatter.arrayFormat("erro ao atualizar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -407,7 +407,7 @@ public class AdminUsuariosController {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "desativarUsuario", null,
                                 MessageFormatter.arrayFormat("Usuário desativado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -422,7 +422,7 @@ public class AdminUsuariosController {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "desativarUsuario", null,
                                 MessageFormatter.arrayFormat("Desativação de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -446,7 +446,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "desativarUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "desativarUsuario", null,
                             "erro ao desativar usuario {}", null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -483,7 +483,7 @@ public class AdminUsuariosController {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "ativarUsuario", null,
                                 MessageFormatter.arrayFormat("Usuário ativado pelo administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -498,7 +498,7 @@ public class AdminUsuariosController {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), "ativarUsuario", null,
                                 MessageFormatter.arrayFormat("Ativação de usuário não realizada. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -522,7 +522,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "ativarUsuario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "ativarUsuario", null,
                             MessageFormatter.arrayFormat("erro ao ativar usuario {}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -556,7 +556,7 @@ public class AdminUsuariosController {
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "excluirAdministrador", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", AdminUsuariosController.class.getName(), "excluirAdministrador", null,
                                 MessageFormatter.arrayFormat("Administrador excluído. usuarioId={} responsavel={}", new Object[]{idUsuario, emailAdmin}).getMessage(), null, null);
 
                     } catch (Exception erroLogBD) {
@@ -583,7 +583,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "excluirAdministrador", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "excluirAdministrador", null,
                             MessageFormatter.arrayFormat("Erro ao excluir administrador. usuarioId={}", new Object[]{idUsuario}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
@@ -600,7 +600,7 @@ public class AdminUsuariosController {
     private void registrarBloqueio(String metodo, Long idUsuario, String motivo) {
         if (logger.isWarnEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), metodo, null,
+                UsuarioRepository.InserirLogsNoBD(null, "WARN", AdminUsuariosController.class.getName(), metodo, null,
                         MessageFormatter.arrayFormat("Ação bloqueada. usuarioId={} motivo={}", new Object[]{idUsuario, motivo}).getMessage(), null, null);
 
             } catch (Exception erroLogBD) {
@@ -681,7 +681,7 @@ public class AdminUsuariosController {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "ehAdministrador", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminUsuariosController.class.getName(), "ehAdministrador", null,
                             "Erro ao verificar a conta do administrador.", null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {

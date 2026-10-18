@@ -1,4 +1,4 @@
-package com.example.CampusLink.dao;
+package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
@@ -26,9 +26,9 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Repository
-public class usuarioDAO {
+public class UsuarioRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(usuarioDAO.class);
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
 
     @Autowired
     private DataSource dataSource;
@@ -693,7 +693,7 @@ public class usuarioDAO {
                 InserirLogsNoBD(
                         null,
                         "DEBUG",
-                        usuarioDAO.class.getName(),
+                        UsuarioRepository.class.getName(),
                         "UpdateSenhaUsuario",
                         null,
                         "Atualizando senha do usuário no banco.",
@@ -715,7 +715,7 @@ public class usuarioDAO {
                 InserirLogsNoBD(
                         null,
                         "DEBUG",
-                        usuarioDAO.class.getName(),
+                        UsuarioRepository.class.getName(),
                         "UpdateSenhaUsuario",
                         null,
                         MessageFormatter.arrayFormat(

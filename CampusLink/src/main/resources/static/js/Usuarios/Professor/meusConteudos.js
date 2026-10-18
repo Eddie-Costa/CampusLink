@@ -15,6 +15,117 @@ document.addEventListener('DOMContentLoaded', function () {
     let carregando = false;
     let filtrosPendentes = false;
 
+    async function carregarDetalhesMidia(container) {
+        const itensLivro = Array.from(container.querySelectorAll('.conteudo-midia[data-book-id]'))
+            .filter(function (item) { return item.dataset.bookId && item.dataset.mediaCarregada !== 'true'; });
+        const itensVideo = Array.from(container.querySelectorAll('.conteudo-midia[data-video-id]'))
+            .filter(function (item) { return item.dataset.videoId && item.dataset.mediaCarregada !== 'true'; });
+
+        itensLivro.forEach(function (item) { item.dataset.mediaCarregada = 'true'; });
+        itensVideo.forEach(function (item) { item.dataset.mediaCarregada = 'true'; });
+
+        const itensPorLivro = new Map();
+        itensLivro.forEach(function (item) {
+            const itens = itensPorLivro.get(item.dataset.bookId) || [];
+            itens.push(item);
+            itensPorLivro.set(item.dataset.bookId, itens);
+        });
+
+        const idsLivros = Array.from(itensPorLivro.keys());
+        for (let inicio = 0; inicio < idsLivros.length; inicio += 5) {
+            const lote = idsLivros.slice(inicio, inicio + 5);
+            const resultados = await Promise.allSettled(lote.map(async function (id) {
+                const parametros = new URLSearchParams({ id: id });
+                const resposta = await fetch('/googlebooks/detalhes?' + parametros.toString(), {
+                    headers: { Accept: 'application/json' }
+                });
+                if (!resposta.ok) {
+                    throw new Error('Falha ao carregar as informações do livro (' + resposta.status + ').');
+                }
+                return resposta.json();
+            }));
+
+            resultados.forEach(function (resultado, indice) {
+                const id = lote[indice];
+                const itens = itensPorLivro.get(id) || [];
+                if (resultado.status === 'rejected') {
+                    console.warn('Não foi possível carregar os detalhes do livro.', resultado.reason);
+                    itens.forEach(function (item) {
+                        const titulo = item.querySelector('.conteudo-midia-livro-titulo');
+                        const autor = item.querySelector('.conteudo-midia-livro-autor');
+                        if (titulo) titulo.textContent = 'Informações do livro indisponíveis.';
+                        if (autor) autor.textContent = '';
+                    });
+                    return;
+                }
+
+                const livro = resultado.value;
+                itens.forEach(function (item) {
+                    const titulo = item.querySelector('.conteudo-midia-livro-titulo');
+                    const autor = item.querySelector('.conteudo-midia-livro-autor');
+                    const imagem = item.querySelector('.conteudo-midia-link img');
+                    const link = item.querySelector('.conteudo-midia-link');
+                    if (titulo) {
+                        titulo.textContent = livro.titulo || 'Livro do Google Books';
+                        titulo.title = livro.titulo || '';
+                    }
+                    if (autor) {
+                        autor.textContent = [livro.autores, livro.anoPublicacao].filter(Boolean).join(' · ');
+                    }
+                    if (link && livro.titulo) link.setAttribute('aria-label', 'Abrir livro: ' + livro.titulo);
+                    if (imagem && livro.thumbnailUrl) {
+                        imagem.onerror = function () {
+                            imagem.onerror = null;
+                            imagem.src = item.dataset.fallbackThumbnail;
+                        };
+                        imagem.src = livro.thumbnailUrl.replace(/^http:/i, 'https:');
+                    }
+                });
+            });
+        }
+
+        const idsVideos = Array.from(new Set(itensVideo.map(function (item) { return item.dataset.videoId; })));
+        for (let inicio = 0; inicio < idsVideos.length; inicio += 50) {
+            const lote = idsVideos.slice(inicio, inicio + 50);
+            try {
+                const parametros = new URLSearchParams({ ids: lote.join(',') });
+                const resposta = await fetch('/youtube/detalhes?' + parametros.toString(), {
+                    headers: { Accept: 'application/json' }
+                });
+                if (!resposta.ok) {
+                    throw new Error('Falha ao carregar as informações dos vídeos (' + resposta.status + ').');
+                }
+                const videos = await resposta.json();
+                const videosPorId = new Map(videos.map(function (video) { return [video.videoId, video]; }));
+
+                lote.forEach(function (id) {
+                    const video = videosPorId.get(id);
+                    itensVideo.filter(function (item) { return item.dataset.videoId === id; })
+                        .forEach(function (item) {
+                            const titulo = item.querySelector('.conteudo-midia-titulo');
+                            const detalhes = item.querySelector('.conteudo-midia-detalhes');
+                            if (!video) {
+                                if (titulo) titulo.textContent = 'Informações do vídeo indisponíveis.';
+                                return;
+                            }
+                            if (titulo) {
+                                titulo.textContent = video.titulo || 'Vídeo do YouTube';
+                                titulo.title = video.titulo || '';
+                            }
+                            if (detalhes) detalhes.textContent = [video.canal, video.duracao].filter(Boolean).join(' · ');
+                        });
+                });
+            } catch (erro) {
+                console.error('Não foi possível carregar os detalhes dos vídeos.', erro);
+                itensVideo.filter(function (item) { return lote.includes(item.dataset.videoId); })
+                    .forEach(function (item) {
+                        const titulo = item.querySelector('.conteudo-midia-titulo');
+                        if (titulo) titulo.textContent = 'Informações do vídeo indisponíveis.';
+                    });
+            }
+        }
+    }
+
     function atualizarBotao() {
         botaoMostrarMais.disabled = carregando;
         botaoMostrarMais.classList.toggle('d-none', blocoConteudos.dataset.temMais !== 'true' && !filtrosPendentes);
@@ -82,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 listaConteudos.innerHTML = novaLista.innerHTML;
             }
+            carregarDetalhesMidia(listaConteudos);
 
             blocoConteudos.dataset.proximaPagina = novoBloco.dataset.proximaPagina;
             blocoConteudos.dataset.temMais = novoBloco.dataset.temMais;
@@ -149,5 +261,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    listaConteudos.addEventListener('click', function (event) {
+        if (!(event.target instanceof Element)) return;
+        const botao = event.target.closest('.conteudo-alternar-detalhes');
+        if (!botao || !listaConteudos.contains(botao)) return;
+
+        const detalhesId = botao.getAttribute('aria-controls');
+        const detalhes = detalhesId ? document.getElementById(detalhesId) : null;
+        if (!detalhes) return;
+
+        const novoEstado = botao.getAttribute('aria-expanded') !== 'true';
+        detalhes.hidden = !novoEstado;
+        botao.setAttribute('aria-expanded', String(novoEstado));
+        const cartao = botao.closest('.conteudo-card');
+        const tituloElemento = cartao ? cartao.querySelector('.conteudo-titulo h2') : null;
+        const titulo = tituloElemento ? tituloElemento.textContent.trim() : '';
+        const acao = novoEstado ? 'Recolher' : 'Expandir';
+        const rotulo = titulo ? acao + ' detalhes de ' + titulo : acao + ' detalhes do conteúdo';
+        botao.setAttribute('aria-label', rotulo);
+        botao.title = rotulo;
+    });
+
+    carregarDetalhesMidia(listaConteudos);
     atualizarBotao();
 });

@@ -3,7 +3,7 @@ package com.example.CampusLink.controller.Usuarios.Aluno;
 import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.service.DisponibilidadeService;
 import com.example.CampusLink.service.EventoService;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ import java.time.LocalDate;
 public class DisponibilidadeController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DisponibilidadeController.class);
 
@@ -46,7 +46,7 @@ public class DisponibilidadeController {
             logger.warn("Acesso recusado à disponibilidade: usuário não é aluno.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirCalendario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirCalendario", null,
                             "Acesso recusado à disponibilidade: usuário não é aluno.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -62,7 +62,7 @@ public class DisponibilidadeController {
             logger.warn("Acesso à disponibilidade recusado: aluno não identificado.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirCalendario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirCalendario", null,
                             "Acesso à disponibilidade recusado: aluno não identificado.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -76,7 +76,7 @@ public class DisponibilidadeController {
         logger.debug("Calendário de disponibilidade exibido. alunoId={}", idAluno);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "exibirCalendario", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "exibirCalendario", null,
                         MessageFormatter.arrayFormat("Calendário de disponibilidade exibido. alunoId={}", new Object[]{idAluno}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -93,7 +93,7 @@ public class DisponibilidadeController {
             logger.warn("Acesso recusado ao cadastro de disponibilidade: usuário não é aluno.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirFormulario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirFormulario", null,
                             "Acesso recusado ao cadastro de disponibilidade: usuário não é aluno.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -108,7 +108,7 @@ public class DisponibilidadeController {
             logger.warn("Cadastro de disponibilidade recusado: aluno não identificado.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirFormulario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "exibirFormulario", null,
                             "Cadastro de disponibilidade recusado: aluno não identificado.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -122,7 +122,7 @@ public class DisponibilidadeController {
         logger.debug("Formulário de disponibilidade exibido. alunoId={}", idAluno);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "exibirFormulario", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "exibirFormulario", null,
                         MessageFormatter.arrayFormat("Formulário de disponibilidade exibido. alunoId={}", new Object[]{idAluno}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -150,7 +150,7 @@ public class DisponibilidadeController {
             logger.warn("Cadastro de disponibilidade recusado: usuário não é aluno.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
                             "Cadastro de disponibilidade recusado: usuário não é aluno.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -166,7 +166,7 @@ public class DisponibilidadeController {
             logger.warn("Cadastro de disponibilidade recusado: aluno não identificado.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
                             "Cadastro de disponibilidade recusado: aluno não identificado.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -184,7 +184,7 @@ public class DisponibilidadeController {
             logger.warn("Disponibilidade inválida. alunoId={} data={} horas={}", idAluno, data, horasDisponiveis);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "cadastrarDisponibilidade", null,
                             MessageFormatter.arrayFormat("Disponibilidade inválida. alunoId={} data={} horas={}", new Object[]{idAluno, data, horasDisponiveis}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -222,7 +222,7 @@ public class DisponibilidadeController {
             logger.warn("Não foi possível identificar o aluno: email2FA ausente.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
                             "Não foi possível identificar o aluno: email2FA ausente.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -237,7 +237,7 @@ public class DisponibilidadeController {
             logger.warn("Nenhum ID de aluno foi encontrado.");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
                             "Nenhum ID de aluno foi encontrado.", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -249,7 +249,7 @@ public class DisponibilidadeController {
         logger.debug("Aluno identificado. alunoId={}", idAluno);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "buscarIdAluno", null,
                         MessageFormatter.arrayFormat("Aluno identificado. alunoId={}", new Object[]{idAluno}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -265,7 +265,7 @@ public class DisponibilidadeController {
         logger.debug("Dados do calendário do aluno carregados. alunoId={}", idAluno);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "carregarDadosDoAluno", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeController.class.getName(), "carregarDadosDoAluno", null,
                         MessageFormatter.arrayFormat("Dados do calendário do aluno carregados. alunoId={}", new Object[]{idAluno}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);

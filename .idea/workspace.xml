@@ -4,23 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/DenunciaController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/DenunciaController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/EventosController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/EventosController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/VerificarController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/VerificarController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminEventosController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminEventosController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminTurmasController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminTurmasController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminUsuariosController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Admin/AdminUsuariosController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Aluno/DisponibilidadeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Usuarios/Aluno/DisponibilidadeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/AdminTurmaDAO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/AdminUsuarioDAO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/ArquivoDAO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/dao/alunoDAO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/service/ArquivoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/service/ArquivoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CampusLink/src/test/java/com/example/CampusLink/dao/AdminSessaoLogTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/CampusLink/src/test/java/com/example/CampusLink/dao/AdminSessaoLogTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
-    </list>
+    <list default="true" id="d8057591-65af-4202-bcd1-9a0dbd95f3eb" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -157,8 +141,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-34e2839f716b-intellij.indexing.shared.core-IU-262.9437.185" />
-        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.9437.185" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
@@ -181,7 +164,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/CampusLink/src/main/java/com/example/CampusLink/controller/Geral/turmasController.java</url>
-          <line>327</line>
+          <line>335</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>

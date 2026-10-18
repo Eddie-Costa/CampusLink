@@ -2,7 +2,7 @@ package com.example.CampusLink.service;
 
 import com.example.CampusLink.model.Disponibilidade;
 import com.example.CampusLink.repository.DisponibilidadeRepository;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ import java.io.StringWriter;
 public class DisponibilidadeService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     // registra as informacoes do service
     private static final Logger logger = LoggerFactory.getLogger(DisponibilidadeService.class);
@@ -33,7 +33,7 @@ public class DisponibilidadeService {
         try {logger.debug("Buscando disponibilidade existente. alunoId={} data={}", idAluno, data);
             if (logger.isDebugEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
                             MessageFormatter.arrayFormat("Buscando disponibilidade existente. alunoId={} data={}", new Object[]{idAluno, data}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -55,7 +55,7 @@ public class DisponibilidadeService {
             logger.info("Disponibilidade salva. id={} alunoId={} data={} horas={}", disponibilidadeSalva.getId(), idAluno, data, horasDisponiveis);
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
                             MessageFormatter.arrayFormat("Disponibilidade salva. id={} alunoId={} data={} horas={}", new Object[]{disponibilidadeSalva.getId(), idAluno, data, horasDisponiveis}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -69,7 +69,7 @@ public class DisponibilidadeService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DisponibilidadeService.class.getName(), "salvarDisponibilidade", null,
                             MessageFormatter.arrayFormat("Erro ao salvar disponibilidade. alunoId={} data={}", new Object[]{idAluno, data}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -87,7 +87,7 @@ public class DisponibilidadeService {
             logger.debug("Disponibilidades consultadas. alunoId={} quantidade={}", idAluno, disponibilidades.size());
             if (logger.isDebugEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "DEBUG", DisponibilidadeService.class.getName(), "listarPorAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "DEBUG", DisponibilidadeService.class.getName(), "listarPorAluno", null,
                             MessageFormatter.arrayFormat("Disponibilidades consultadas. alunoId={} quantidade={}", new Object[]{idAluno, disponibilidades.size()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -101,7 +101,7 @@ public class DisponibilidadeService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DisponibilidadeService.class.getName(), "listarPorAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DisponibilidadeService.class.getName(), "listarPorAluno", null,
                             MessageFormatter.arrayFormat("Erro ao consultar disponibilidades. alunoId={}", new Object[]{idAluno}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

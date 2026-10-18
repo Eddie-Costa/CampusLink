@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${turma.nomeTurma}">Ambiente da turma</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261010-15)}">
+    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261018-11)}">
 </head>
 
 <body th:with="abrirModalConteudo=${abrirModalAdicionarConteudo != null and abrirModalAdicionarConteudo}">
@@ -75,38 +75,48 @@
                         <div class="modal-body">
 
                             <!--Tabela de pessoas-->
-                            <div class="participantes-lista" th:unless="${#lists.isEmpty(participantesTurma)}">
-                                <table class="table table-striped table-hover align-middle mb-0">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">Nome</th>
-                                        <th scope="col">E-mail</th>
-                                        <th scope="col">Tipo de usuário</th>
-                                        <th scope="col" th:if="${isProfessorTurma}">Ações</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="participante : ${participantesTurma}">
-                                        <td th:text="${participante.nomePessoa}">Nome do participante</td>
-                                        <td th:text="${participante.emailPessoa}">email@exemplo.com</td>
-                                        <td th:text="${participante.tipoUsuario}">Professor</td>
-                                        <td th:if="${isProfessorTurma}">
-                                            <form th:unless="${#strings.equalsIgnoreCase(participante.tipoUsuario, 'Professor Admin')}"
-                                                  th:action="@{/removerPessoas}" method="post"
-                                                  class="form-remover-participante"
-                                                  data-submit-once
-                                                  th:attr="data-nome=${participante.nomePessoa}">
-                                                <input type="hidden" name="id" th:value="${turma.id}">
-                                                <input type="hidden" name="emailPessoa"
-                                                       th:value="${participante.emailPessoa}">
-                                                <input type="hidden" th:if="${_csrf != null}"
-                                                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                                <button type="submit" class="btn btn-danger btn-sm">Remover</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            <div class="participantes-container" th:unless="${#lists.isEmpty(participantesTurma)}">
+                                <label class="visually-hidden" for="buscaParticipantesTurma">Buscar participante por nome ou e-mail</label>
+                                <input type="search" class="form-control busca-participantes-turma"
+                                       id="buscaParticipantesTurma"
+                                       placeholder="Buscar por nome ou e-mail..."
+                                       aria-controls="listaParticipantesTurma">
+                                <div class="participantes-lista">
+                                    <table class="table table-striped table-hover align-middle mb-0" id="listaParticipantesTurma">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">Nome</th>
+                                            <th scope="col">E-mail</th>
+                                            <th scope="col">Tipo de usuário</th>
+                                            <th scope="col" th:if="${isProfessorTurma}">Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="participante : ${participantesTurma}">
+                                            <td th:text="${participante.nomePessoa}">Nome do participante</td>
+                                            <td th:text="${participante.emailPessoa}">email@exemplo.com</td>
+                                            <td th:text="${participante.tipoUsuario}">Professor</td>
+                                            <td th:if="${isProfessorTurma}">
+                                                <form th:unless="${#strings.equalsIgnoreCase(participante.tipoUsuario, 'Professor Admin')}"
+                                                      th:action="@{/removerPessoas}" method="post"
+                                                      class="form-remover-participante"
+                                                      data-submit-once
+                                                      th:attr="data-nome=${participante.nomePessoa}">
+                                                    <input type="hidden" name="id" th:value="${turma.id}">
+                                                    <input type="hidden" name="emailPessoa"
+                                                           th:value="${participante.emailPessoa}">
+                                                    <input type="hidden" th:if="${_csrf != null}"
+                                                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                    <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="participantes-sem-resultados" role="status" hidden>
+                                    Nenhum participante corresponde à busca.
+                                </p>
                             </div>
                         </div>
 
@@ -284,6 +294,8 @@
             <select name="tipo" aria-label="Filtrar por tipo">
                 <option value="" th:selected="${#strings.isEmpty(tipoFiltro)}">Todos os tipos</option>
                 <option value="link" th:selected="${tipoFiltro == 'link'}">Link</option>
+                <option value="video" th:selected="${tipoFiltro == 'video'}">Vídeo</option>
+                <option value="livro" th:selected="${tipoFiltro == 'livro'}">Livro</option>
                 <option value="arquivo" th:selected="${tipoFiltro == 'arquivo'}">Arquivo</option>
                 <option value="texto" th:selected="${tipoFiltro == 'texto'}">Somente texto</option>
             </select>
@@ -361,12 +373,64 @@
 
                         </form>
 
+                        <button type="button"
+                                class="conteudo-alternar-detalhes"
+                                aria-expanded="true"
+                                th:aria-controls="${'detalhesConteudo-' + conteudo.id}"
+                                th:aria-label="${'Recolher detalhes de ' + conteudo.titulo}"
+                                th:title="${'Recolher detalhes de ' + conteudo.titulo}">
+                            <svg class="conteudo-alternar-icone" xmlns="http://www.w3.org/2000/svg"
+                                 width="20" height="20" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round"
+                                 aria-hidden="true" focusable="false">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                            <span class="visually-hidden">Alternar detalhes</span>
+                        </button>
+
                     </div>
                 </div>
 
-                <p class="conteudo-descricao"
-                   th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
-                   th:text="${conteudo.descricao}">Descrição do conteúdo</p>
+                <div class="conteudo-detalhes" th:id="${'detalhesConteudo-' + conteudo.id}">
+                    <p class="conteudo-descricao"
+                       th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
+                       th:text="${conteudo.descricao}">Descrição do conteúdo</p>
+
+                    <div class="conteudo-midia"
+                         th:if="${miniaturasPorConteudo.get(conteudo.id) != null}"
+                         th:attr="data-video-id=${videoIdsPorConteudo.get(conteudo.id)}, data-book-id=${livroIdsPorConteudo.get(conteudo.id)}, data-fallback-thumbnail=${miniaturasPorConteudo.get(conteudo.id)}">
+                        <a th:href="${conteudo.url}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="conteudo-midia-link"
+                           th:aria-label="${'Abrir ' + tiposMidiaPorConteudo.get(conteudo.id) + ': ' + conteudo.titulo}">
+                            <img th:src="${miniaturasPorConteudo.get(conteudo.id)}"
+                                 th:alt="${'Miniatura de ' + conteudo.titulo}"
+                                 loading="lazy"
+                                 th:classappend="${tiposMidiaPorConteudo.get(conteudo.id) == 'Livro do Google Books'} ? ' conteudo-midia-capa' : ' conteudo-midia-video'">
+                        </a>
+                        <div class="conteudo-midia-informacoes">
+                            <strong class="conteudo-midia-titulo"
+                                    th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Vídeo do YouTube'}">
+                                Carregando informações do vídeo...
+                            </strong>
+                            <strong class="conteudo-midia-livro-titulo"
+                                    th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Livro do Google Books'}">
+                                Carregando informações do livro...
+                            </strong>
+                            <span class="conteudo-midia-detalhes"
+                                  th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Vídeo do YouTube'}"
+                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : ''}">
+                                Duração
+                            </span>
+                            <span class="conteudo-midia-livro-autor"
+                                  th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Livro do Google Books'}">
+                                Carregando autor...
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -501,7 +565,7 @@
                     </div>
 
                     <div class="campo-duracao-editar" style="display: none;">
-                        <label class="form-label">Tempo de visualização</label>
+                        <label class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input type="text" name="duracaoEstimada" class="form-control mb-3"
                                th:value="${conteudo.duracaoEstimada}">
                     </div>
@@ -705,9 +769,9 @@
                          th:errors="*{descricao}"></div>
 
                     <div id="campoDuracao" style="display: none;">
-                        <label for="duracaoEstimada" class="form-label">Tempo de visualização</label>
+                        <label for="duracaoEstimada" class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input id="duracaoEstimada" type="text" class="form-control mb-3"
-                               th:field="*{duracaoEstimada}" placeholder="Ex: 15 min">
+                               th:field="*{duracaoEstimada}" placeholder="Ex: 15 min ou 2 horas">
                     </div>
 
                     <div id="campoArquivo">
@@ -805,7 +869,7 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Geral/ambienteTurma.js(v=20261017-2)}"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js(v=20261018-13)}"></script>
 
 </body>
 </html>

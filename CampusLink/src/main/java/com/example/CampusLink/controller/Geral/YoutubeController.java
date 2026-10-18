@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -17,10 +19,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 public class YoutubeController {
 
+    private static final Pattern VIDEO_ID_PATTERN = Pattern.compile("[A-Za-z0-9_-]{11}");
+    private static final int MAX_VIDEO_IDS_POR_REQUISICAO = 50;
     private final YoutubeService youtubeService;
 
     public YoutubeController(YoutubeService youtubeService) {
@@ -46,6 +52,8 @@ public class YoutubeController {
                     
                             Retorna identificador, título, canal, miniatura e duração.
                             A duração é convertida para M:SS ou H:MM:SS.
+                            A resposta pode incluir o cabeçalho X-Next-Page-Token,
+                            que deve ser enviado como pageToken para carregar a página seguinte.
                             A busca não salva conteúdos automaticamente.
                     
                             Para consultar a API externa, a sessão deve conter usuarioLogado.
@@ -59,13 +67,18 @@ public class YoutubeController {
                             required = true,
                             description = "Termo utilizado na busca de vídeos",
                             example = "engenharia de software"
+                    ),
+                    @Parameter(
+                            name = "pageToken",
+                            in = ParameterIn.QUERY,
+                            description = "Token retornado no cabeçalho X-Next-Page-Token para carregar os próximos vídeos"
                     )
             }
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de até 25 vídeos. Pode retornar uma lista vazia quando não há resultados ou usuário logado.",
+                    description = "Lista com até 10 vídeos. O cabeçalho X-Next-Page-Token, quando presente, permite carregar a próxima página. Pode retornar uma lista vazia quando não há resultados ou usuário logado.",
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(
@@ -100,14 +113,41 @@ public class YoutubeController {
     })
     @GetMapping("/youtube/buscar")
     @ResponseBody
-    public List<YoutubeVideoDTO> buscar(
+    public ResponseEntity<List<YoutubeVideoDTO>> buscar(
             @RequestParam("q") String termo,
+            @RequestParam(value = "pageToken", required = false) String pageToken,
             HttpSession session) {
 
         if (session.getAttribute("usuarioLogado") == null) {
-            return List.of();
+            return ResponseEntity.ok(List.of());
         }
 
-        return youtubeService.buscarVideos(termo);
+        YoutubeService.PaginaVideos pagina = youtubeService.buscarVideos(termo, pageToken);
+        HttpHeaders headers = new HttpHeaders();
+        if (pagina.nextPageToken() != null && !pagina.nextPageToken().isBlank()) {
+            headers.set("X-Next-Page-Token", pagina.nextPageToken());
+        }
+        return ResponseEntity.ok().headers(headers).body(pagina.videos());
+    }
+
+    @GetMapping("/youtube/detalhes")
+    public ResponseEntity<List<YoutubeVideoDTO>> detalhes(
+            @RequestParam("ids") List<String> videoIds,
+            HttpSession session) {
+
+        if (session.getAttribute("usuarioLogado") == null) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<String> idsUnicos = videoIds.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        if (idsUnicos.isEmpty()
+                || idsUnicos.size() > MAX_VIDEO_IDS_POR_REQUISICAO
+                || idsUnicos.stream().anyMatch(id -> !VIDEO_ID_PATTERN.matcher(id).matches())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(youtubeService.buscarDetalhesVideos(idsUnicos));
     }
 }

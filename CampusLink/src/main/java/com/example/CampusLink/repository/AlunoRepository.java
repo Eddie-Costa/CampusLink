@@ -1,6 +1,6 @@
 package com.example.CampusLink.repository;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +24,15 @@ public class AlunoRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transacao;
-    private final usuarioDAO usuarioDAO;
+    private final UsuarioRepository UsuarioRepository;
 
     public AlunoRepository(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager,
-                           usuarioDAO usuarioDAO) {
+                           UsuarioRepository UsuarioRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.transacao = new TransactionTemplate(transactionManager);
         // preserva a transacao independente que cada gravacao abria no dao
         this.transacao.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.usuarioDAO = usuarioDAO;
+        this.UsuarioRepository = UsuarioRepository;
     }
 
     public loginAlunoDTO buscarPorEmailAluno(String email) throws SQLException {
@@ -66,7 +66,7 @@ public class AlunoRepository {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AlunoRepository.class.getName(), "buscarPorEmailAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AlunoRepository.class.getName(), "buscarPorEmailAluno", null,
                             "Erro ao buscar credenciais do aluno no banco.", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -112,7 +112,7 @@ public class AlunoRepository {
         logger.debug(mensagem);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", AlunoRepository.class.getName(), "buscarPorEmailAluno", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", AlunoRepository.class.getName(), "buscarPorEmailAluno", null,
                         mensagem, null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);

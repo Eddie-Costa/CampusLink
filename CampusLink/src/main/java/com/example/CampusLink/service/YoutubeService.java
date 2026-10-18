@@ -25,7 +25,10 @@ public class YoutubeService {
     }
 
     public List<YoutubeVideoDTO> buscarVideos(String termo) {
+        return buscarVideos(termo, null).videos();
+    }
 
+    public PaginaVideos buscarVideos(String termo, String pageToken) {
         SearchResponse busca = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search")
@@ -33,13 +36,14 @@ public class YoutubeService {
                         .queryParam("type", "video")
                         .queryParam("maxResults", 10)
                         .queryParam("q", termo)
+                        .queryParamIfPresent("pageToken", java.util.Optional.ofNullable(pageToken))
                         .queryParam("key", apiKey)
                         .build())
                 .retrieve()
                 .body(SearchResponse.class);
 
         if (busca == null || busca.items == null || busca.items.isEmpty()) {
-            return List.of();
+            return new PaginaVideos(List.of(), null);
         }
 
         List<String> ids = new ArrayList<>();
@@ -50,7 +54,7 @@ public class YoutubeService {
         VideosResponse detalhes = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/videos")
-                        .queryParam("part", "contentDetails")
+                        .queryParam("part", "snippet,contentDetails")
                         .queryParam("id", String.join(",", ids))
                         .queryParam("key", apiKey)
                         .build())
@@ -72,6 +76,42 @@ public class YoutubeService {
             video.setCanal(item.snippet.channelTitle);
             video.setThumbnailUrl(item.snippet.thumbnails.medium.url);
             video.setDuracao(duracaoPorId.get(item.id.videoId));
+            resultado.add(video);
+        }
+
+        return new PaginaVideos(resultado, busca.nextPageToken);
+    }
+
+    public List<YoutubeVideoDTO> buscarDetalhesVideos(List<String> videoIds) {
+        if (videoIds.isEmpty()) {
+            return List.of();
+        }
+
+        VideosResponse detalhes = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/videos")
+                        .queryParam("part", "snippet,contentDetails")
+                        .queryParam("id", String.join(",", videoIds))
+                        .queryParam("key", apiKey)
+                        .build())
+                .retrieve()
+                .body(VideosResponse.class);
+
+        if (detalhes == null || detalhes.items == null) {
+            return List.of();
+        }
+
+        List<YoutubeVideoDTO> resultado = new ArrayList<>();
+        for (VideoItem item : detalhes.items) {
+            if (item.snippet == null || item.contentDetails == null) {
+                continue;
+            }
+
+            YoutubeVideoDTO video = new YoutubeVideoDTO();
+            video.setVideoId(item.id);
+            video.setTitulo(item.snippet.title);
+            video.setCanal(item.snippet.channelTitle);
+            video.setDuracao(formatarDuracao(item.contentDetails.duration));
             resultado.add(video);
         }
 
@@ -101,6 +141,7 @@ public class YoutubeService {
 
     private static class SearchResponse {
         public List<SearchItem> items;
+        public String nextPageToken;
     }
 
     private static class SearchItem {
@@ -132,10 +173,14 @@ public class YoutubeService {
 
     private static class VideoItem {
         public String id;
+        public Snippet snippet;
         public ContentDetails contentDetails;
     }
 
     private static class ContentDetails {
         public String duration;
+    }
+
+    public record PaginaVideos(List<YoutubeVideoDTO> videos, String nextPageToken) {
     }
 }

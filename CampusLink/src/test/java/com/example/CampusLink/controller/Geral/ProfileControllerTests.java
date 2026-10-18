@@ -2,7 +2,7 @@ package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.config.SecurityConfig;
 import com.example.CampusLink.config.SessaoLogListener;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({SecurityConfig.class, TwoFactorService.class})
 class ProfileControllerTests {
     @Autowired MockMvc mvc;
-    @MockitoBean usuarioDAO usuarios;
+    @MockitoBean UsuarioRepository usuarios;
     @MockitoBean emailService emails;
     @MockitoBean SessaoLogListener sessoes;
     private MockHttpSession session;

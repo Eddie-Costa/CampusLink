@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.cadastrarAlunoDTO;
 import com.example.CampusLink.exception.SQLErrorHandler;
 import com.example.CampusLink.service.TwoFactorService;
@@ -35,12 +35,12 @@ public class cadastrarAlunoController {
     @Autowired
     private emailService emailService;
 
-    private final usuarioDAO usuarioDAO;
+    private final UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(cadastrarAlunoController.class);
 
-    public cadastrarAlunoController(usuarioDAO usuarioDAO) {
-        this.usuarioDAO = usuarioDAO;
+    public cadastrarAlunoController(UsuarioRepository UsuarioRepository) {
+        this.UsuarioRepository = UsuarioRepository;
     }
 
     @GetMapping("/cadastrarAluno")
@@ -68,7 +68,7 @@ public class cadastrarAlunoController {
                     .toList());
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "VerificacaoRegistrar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "VerificacaoRegistrar", null,
                             MessageFormatter.arrayFormat("Dados inválidos no cadastro do aluno. erros={}", new Object[]{result.getFieldErrors().stream()
                     .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
                     .toList()}).getMessage(), null, null);
@@ -128,7 +128,7 @@ public class cadastrarAlunoController {
         session.removeAttribute("Senha");
         session.removeAttribute("verificado");
 
-        List<String> erros = usuarioDAO.validarDadosDuplicados(
+        List<String> erros = UsuarioRepository.validarDadosDuplicados(
                 "Aluno",
                 aluno.getRgm(),
                 aluno.getEmail().toLowerCase(),
@@ -140,7 +140,7 @@ public class cadastrarAlunoController {
             logger.warn("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", erros);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "registrar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", new Object[]{erros}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -153,7 +153,7 @@ public class cadastrarAlunoController {
 
         try {
             //Inserção de dados no BD
-            usuarioDAO.InsertCadastroUsuarioIntoBD(
+            UsuarioRepository.InsertCadastroUsuarioIntoBD(
                     "Aluno",
                     aluno.getRgm(),
                     aluno.getNome().toLowerCase(),
@@ -166,7 +166,7 @@ public class cadastrarAlunoController {
             logger.info("Sucesso ao cadastrar novo aluno com email: {}", aluno.getEmail());
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", cadastrarAlunoController.class.getName(), "registrar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", cadastrarAlunoController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Sucesso ao cadastrar novo aluno com email: {}", new Object[]{aluno.getEmail()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -180,7 +180,7 @@ public class cadastrarAlunoController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", cadastrarAlunoController.class.getName(), "registrar", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", cadastrarAlunoController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Erro ao inserir aluno no banco com email: {}", new Object[]{aluno.getEmail()}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

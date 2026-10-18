@@ -1,7 +1,7 @@
 package com.example.CampusLink.controller.Usuarios.Professor;
 
-import com.example.CampusLink.dao.professorDAO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.ProfessorRepository;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DenunciaService;
@@ -22,7 +22,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,18 +35,18 @@ import java.util.Map;
 public class MeusConteudosController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(MeusConteudosController.class);
 
     private final ConteudoService conteudoService;
     private final DenunciaService denunciaService;
-    private final professorDAO professorDAO;
+    private final ProfessorRepository professorRepository;
 
-    public MeusConteudosController(ConteudoService conteudoService, DenunciaService denunciaService, professorDAO professorDAO) {
+    public MeusConteudosController(ConteudoService conteudoService, DenunciaService denunciaService, ProfessorRepository professorRepository) {
         this.conteudoService = conteudoService;
         this.denunciaService = denunciaService;
-        this.professorDAO = professorDAO;
+        this.professorRepository = professorRepository;
     }
 
     @GetMapping("/meus-conteudos")
@@ -76,7 +80,7 @@ public class MeusConteudosController {
         }
 
         try {
-            String idProfessorTexto = professorDAO.buscarPorIDProfessor(email);
+            String idProfessorTexto = professorRepository.buscarPorIDProfessor(email);
             if (idProfessorTexto == null || idProfessorTexto.isBlank()) {
                 return "redirect:/home";
             }
@@ -92,6 +96,7 @@ public class MeusConteudosController {
             }
 
             model.addAttribute("conteudos", conteudos);
+            adicionarInformacoesMidia(model, conteudos);
             model.addAttribute("busca", busca);
             model.addAttribute("statusSelecionado", status);
             model.addAttribute("totalFiltrados", totalFiltrados);
@@ -117,7 +122,7 @@ public class MeusConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "meusConteudos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "meusConteudos", null,
                             "Erro ao carregar conteúdos do professor.", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -130,6 +135,114 @@ public class MeusConteudosController {
 
             return "redirect:/home";
         }
+    }
+
+    private void adicionarInformacoesMidia(Model model, List<ConteudoDTO> conteudos) {
+        Map<Long, String> miniaturasPorConteudo = new HashMap<>();
+        Map<Long, String> tiposMidiaPorConteudo = new HashMap<>();
+        Map<Long, String> videoIdsPorConteudo = new HashMap<>();
+        Map<Long, String> livroIdsPorConteudo = new HashMap<>();
+        Map<Long, String> tiposExibicaoPorConteudo = new HashMap<>();
+
+        for (ConteudoDTO conteudo : conteudos) {
+            String tipo = conteudo.getTipo() == null ? "" : conteudo.getTipo().toLowerCase(Locale.ROOT);
+            String tipoExibicao = switch (tipo) {
+                case "arquivo" -> "Arquivo";
+                case "texto" -> "Texto";
+                default -> "Link";
+            };
+            String url = conteudo.getUrl();
+
+            if (url != null && !url.isBlank()) {
+                try {
+                    URI uri = URI.create(url);
+                    String host = uri.getHost();
+                    if (host != null) {
+                        host = host.toLowerCase(Locale.ROOT);
+                        if (host.equals("youtube.com") || host.endsWith(".youtube.com") || host.equals("youtu.be")) {
+                            String videoId = extrairIdVideo(uri);
+                            if (videoId != null) {
+                                miniaturasPorConteudo.put(conteudo.getId(),
+                                        "https://i.ytimg.com/vi/" + videoId + "/mqdefault.jpg");
+                                tiposMidiaPorConteudo.put(conteudo.getId(), "video");
+                                videoIdsPorConteudo.put(conteudo.getId(), videoId);
+                                tipoExibicao = "Vídeo";
+                            }
+                        } else if (host.equals("books.google.com") || host.equals("play.google.com")) {
+                            String livroId = extrairParametro(uri.getRawQuery(), "id");
+                            if (livroId == null && host.equals("books.google.com")) {
+                                String path = uri.getPath();
+                                String[] partes = path == null ? new String[0] : path.split("/");
+                                if (partes.length > 0) {
+                                    String ultimoSegmento = partes[partes.length - 1];
+                                    if (ultimoSegmento.matches("[A-Za-z0-9_-]{1,128}")) {
+                                        livroId = ultimoSegmento;
+                                    }
+                                }
+                            }
+                            if (livroId != null && livroId.matches("[A-Za-z0-9_-]{1,128}")) {
+                                miniaturasPorConteudo.put(conteudo.getId(),
+                                        "https://books.google.com/books/content?id="
+                                                + java.net.URLEncoder.encode(livroId, StandardCharsets.UTF_8)
+                                                + "&printsec=frontcover&img=1&zoom=1");
+                                tiposMidiaPorConteudo.put(conteudo.getId(), "livro");
+                                livroIdsPorConteudo.put(conteudo.getId(), livroId);
+                                tipoExibicao = "Livro";
+                            }
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    logger.warn("URL inválida ao identificar a mídia do conteúdo {}", conteudo.getId());
+                }
+            }
+
+            tiposExibicaoPorConteudo.put(conteudo.getId(), tipoExibicao);
+        }
+
+        model.addAttribute("miniaturasPorConteudo", miniaturasPorConteudo);
+        model.addAttribute("tiposMidiaPorConteudo", tiposMidiaPorConteudo);
+        model.addAttribute("videoIdsPorConteudo", videoIdsPorConteudo);
+        model.addAttribute("livroIdsPorConteudo", livroIdsPorConteudo);
+        model.addAttribute("tiposExibicaoPorConteudo", tiposExibicaoPorConteudo);
+    }
+
+    private String extrairIdVideo(URI uri) {
+        String host = uri.getHost().toLowerCase(Locale.ROOT);
+        String videoId = null;
+
+        if (host.equals("youtu.be")) {
+            String path = uri.getPath();
+            if (path != null && path.length() > 1) {
+                videoId = path.substring(1).split("/")[0];
+            }
+        } else {
+            videoId = extrairParametro(uri.getRawQuery(), "v");
+            if (videoId == null) {
+                String[] partes = uri.getPath() == null ? new String[0] : uri.getPath().split("/");
+                for (int i = 0; i < partes.length - 1; i++) {
+                    if ("embed".equals(partes[i]) || "shorts".equals(partes[i]) || "live".equals(partes[i])) {
+                        videoId = partes[i + 1];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return videoId != null && videoId.matches("[A-Za-z0-9_-]{11}") ? videoId : null;
+    }
+
+    private String extrairParametro(String query, String nome) {
+        if (query == null || query.isBlank()) {
+            return null;
+        }
+
+        for (String parametro : query.split("&")) {
+            String[] par = parametro.split("=", 2);
+            if (par.length == 2 && nome.equals(URLDecoder.decode(par[0], StandardCharsets.UTF_8))) {
+                return URLDecoder.decode(par[1], StandardCharsets.UTF_8);
+            }
+        }
+        return null;
     }
 
     @PostMapping("/meus-conteudos/{idConteudo}/remover")
@@ -152,7 +265,7 @@ public class MeusConteudosController {
         }
 
         try {
-            String idProfessorTexto = professorDAO.buscarPorIDProfessor(email);
+            String idProfessorTexto = professorRepository.buscarPorIDProfessor(email);
             if (idProfessorTexto == null || idProfessorTexto.isBlank()) {
                 return "redirect:/home";
             }
@@ -173,7 +286,7 @@ public class MeusConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "removerConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "removerConteudo", null,
                             MessageFormatter.arrayFormat("Erro ao identificar professor para remoção. conteudoId={}", new Object[]{idConteudo}).getMessage(),
                             null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
@@ -207,7 +320,7 @@ public class MeusConteudosController {
         }
 
         try {
-            String idProfessorTexto = professorDAO.buscarPorIDProfessor(email);
+            String idProfessorTexto = professorRepository.buscarPorIDProfessor(email);
             if (idProfessorTexto == null || idProfessorTexto.isBlank()) {
                 return "redirect:/home";
             }
@@ -228,7 +341,7 @@ public class MeusConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "solicitarRevisao", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "solicitarRevisao", null,
                             MessageFormatter.arrayFormat("Erro ao identificar professor para revisão. conteudoId={}", new Object[]{idConteudo}).getMessage(),
                             null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {

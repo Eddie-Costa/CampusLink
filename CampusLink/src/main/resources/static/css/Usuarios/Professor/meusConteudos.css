@@ -166,6 +166,7 @@ body {
     margin: 12px 0 0;
     color: var(--cinza-texto);
     font-size: 14px;
+    overflow-wrap: anywhere;
 }
 
 /* comentario do administrador */
@@ -297,6 +298,121 @@ body {
     color: var(--azul-campus);
     font-size: 14px;
     font-weight: bold;
+}
+
+.conteudo-alternar-detalhes {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--campus-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--azul-campus);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.conteudo-alternar-detalhes:hover {
+    background-color: var(--azul-campus);
+    color: var(--branco);
+}
+
+.conteudo-alternar-detalhes:focus-visible {
+    outline: 3px solid #5fa8d3;
+    outline-offset: 2px;
+}
+
+.conteudo-alternar-icone {
+    transition: transform 0.2s ease;
+}
+
+.conteudo-alternar-detalhes[aria-expanded="false"] .conteudo-alternar-icone {
+    transform: rotate(-90deg);
+}
+
+.conteudo-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.conteudo-detalhes[hidden] {
+    display: none;
+}
+
+.conteudo-detalhes .conteudo-descricao {
+    margin: 0;
+}
+
+.conteudo-midia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.conteudo-midia-link {
+    display: inline-flex;
+    flex: 0 0 auto;
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--campus-border);
+    border-radius: 8px;
+    background-color: var(--campus-surface-alt);
+}
+
+.conteudo-midia-link img {
+    display: block;
+    width: min(240px, 100%);
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.conteudo-midia-link img.conteudo-midia-capa {
+    width: auto;
+    max-width: min(160px, 100%);
+    height: 190px;
+    aspect-ratio: auto;
+    object-fit: contain;
+}
+
+.conteudo-midia-link img.conteudo-midia-video {
+    width: min(180px, 30vw);
+    min-width: 100px;
+    aspect-ratio: 16 / 9;
+}
+
+.conteudo-midia-informacoes {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    color: var(--cinza-texto);
+    font-size: 13px;
+}
+
+.conteudo-midia-titulo,
+.conteudo-midia-detalhes,
+.conteudo-midia-livro-titulo,
+.conteudo-midia-livro-autor {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conteudo-midia-titulo,
+.conteudo-midia-livro-titulo {
+    color: var(--azul-campus);
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .conteudo-denuncias {

@@ -1,6 +1,6 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
 import jakarta.mail.Multipart;
 import jakarta.mail.Part;
@@ -31,7 +31,7 @@ class EmailServiceTests {
         mensagem = new MimeMessage(Session.getInstance(new Properties()));
         when(remetente.createMimeMessage()).thenReturn(mensagem);
         ReflectionTestUtils.setField(emails, "mailSender", remetente);
-        ReflectionTestUtils.setField(emails, "usuarioDAO", mock(usuarioDAO.class));
+        ReflectionTestUtils.setField(emails, "UsuarioRepository", mock(UsuarioRepository.class));
         dados = new DadosUsuarioDTO();
         dados.setNome("Ana <img src=x> & Silva");
         dados.setEmail("ana@example.com");
