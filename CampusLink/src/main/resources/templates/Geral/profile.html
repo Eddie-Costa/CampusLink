@@ -27,6 +27,8 @@
             <p class="profile-email" th:text="${dados.email}"></p>
             <nav aria-label="Seções do perfil" class="profile-sections">
                 <a href="#meus-dados">Meus dados</a>
+                <a th:href="@{/meus-chamados}">Meus chamados</a>
+                <a th:href="@{/ajuda}">Canal de ajuda</a>
                 <a href="#exportar-dados">Exportar dados</a>
                 <a href="#excluir-conta">Excluir conta</a>
             </nav>
