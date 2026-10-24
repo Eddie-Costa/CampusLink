@@ -11,12 +11,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 public class ConteudoRepository {
@@ -62,8 +65,8 @@ public class ConteudoRepository {
     public void inserir(ConteudoDTO conteudo) throws SQLException {
         String sql = """
                 INSERT INTO public."CONTEUDOS"
-                ("id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade")
-                VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?)
+                ("id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade", "duracao_estimada_min")
+                VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING "id", "created_at", "status"
                 """;
 
@@ -81,6 +84,7 @@ public class ConteudoRepository {
                 stmt.setString(6, conteudo.getUrl());
                 stmt.setString(7, conteudo.getDuracaoEstimada());
                 stmt.setString(8, conteudo.getPrioridade());
+                stmt.setObject(9, conteudo.getDuracaoEstimadaMin(), Types.INTEGER);
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
@@ -244,6 +248,7 @@ public class ConteudoRepository {
                         conteudo.setTipo(rs.getString("tipo"));
                         conteudo.setUrl(rs.getString("url"));
                         conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+                        conteudo.setDuracaoEstimadaMin(rs.getObject("duracao_estimada_min", Integer.class));
                         conteudo.setPrioridade(rs.getString("prioridade"));
                         conteudo.setStatus(rs.getString("status"));
                         conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
@@ -515,6 +520,7 @@ public class ConteudoRepository {
         conteudo.setTipo(rs.getString("tipo"));
         conteudo.setUrl(rs.getString("url"));
         conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+        conteudo.setDuracaoEstimadaMin(rs.getObject("duracao_estimada_min", Integer.class));
         conteudo.setPrioridade(rs.getString("prioridade"));
         conteudo.setStatus(rs.getString("status"));
         conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
@@ -698,6 +704,7 @@ public class ConteudoRepository {
                     "descricao" = ?,
                     "url" = ?,
                     "duracao_estimada" = ?,
+                    "duracao_estimada_min" = ?,
                     "tipo" = ?
                 WHERE "id" = ?
                 """;
@@ -712,12 +719,60 @@ public class ConteudoRepository {
 
                 stmt.setString(3, conteudo.getUrl());
                 stmt.setString(4, conteudo.getDuracaoEstimada());
-                stmt.setString(5, conteudo.getTipo());
-                stmt.setLong(6, conteudo.getId());
+                stmt.setObject(5, conteudo.getDuracaoEstimadaMin(), Types.INTEGER);
+                stmt.setString(6, conteudo.getTipo());
+                stmt.setLong(7, conteudo.getId());
 
                 stmt.executeUpdate();
                 return null;
             });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // registra que o aluno concluiu o conteudo; repetir o clique nao gera erro
+    public void marcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
+        String sql = """
+                INSERT INTO public."PROGRESSO_CONTEUDO" ("id_aluno", "id_conteudo")
+                VALUES (?, ?)
+                ON CONFLICT ("id_aluno", "id_conteudo") DO NOTHING
+                """;
+
+        try {
+            jdbcTemplate.update(sql, idAluno, idConteudo);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    public void desmarcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
+        String sql = """
+                DELETE FROM public."PROGRESSO_CONTEUDO"
+                WHERE "id_aluno" = ?
+                AND "id_conteudo" = ?
+                """;
+
+        try {
+            jdbcTemplate.update(sql, idAluno, idConteudo);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // ids dos conteudos da turma que o aluno ja concluiu
+    public Set<Long> listarConcluidosDoAluno(Long idAluno, Long idTurma) throws SQLException {
+        String sql = """
+                SELECT p."id_conteudo"
+                FROM public."PROGRESSO_CONTEUDO" p
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = p."id_conteudo"
+                WHERE p."id_aluno" = ?
+                AND ? = ANY(c."id_turma")
+                """;
+
+        try {
+            return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, idAluno, idTurma));
         } catch (DataAccessException e) {
             throw converterErro(e);
         }

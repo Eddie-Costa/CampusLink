@@ -15,7 +15,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ConteudoService {
@@ -40,6 +42,7 @@ public class ConteudoService {
         }
 
         conteudo.setTipo(definirTipo(conteudo, arquivo));
+        conteudo.setDuracaoEstimadaMin(converterDuracaoEmMinutos(conteudo.getDuracaoEstimada()));
 
         try {
             conteudoRepository.inserir(conteudo);
@@ -363,6 +366,7 @@ public class ConteudoService {
 
     public ConteudoDTO atualizar(ConteudoDTO conteudo) {
         conteudo.setTipo(definirTipo(conteudo, null));
+        conteudo.setDuracaoEstimadaMin(converterDuracaoEmMinutos(conteudo.getDuracaoEstimada()));
 
         try {
             conteudoRepository.atualizar(conteudo);
@@ -399,6 +403,123 @@ public class ConteudoService {
         }
 
         return conteudo;
+    }
+
+    // marca ou desmarca o conteudo como concluido pelo aluno
+    public void alterarConclusao(Long idAluno, Long idTurma, Long idConteudo, boolean concluido) {
+        try {
+            if (!conteudoRepository.conteudoPertenceTurma(idConteudo, idTurma)) {
+                logger.warn("Conclusão recusada: conteúdo fora da turma. alunoId={} turmaId={} conteudoId={}", idAluno, idTurma, idConteudo);
+
+                if (logger.isWarnEnabled()) {
+                    try {
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "alterarConclusao", null,
+                                MessageFormatter.arrayFormat("Conclusão recusada: conteúdo fora da turma. alunoId={} turmaId={} conteudoId={}", new Object[]{idAluno, idTurma, idConteudo}).getMessage(), null, null);
+
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+
+                throw new IllegalArgumentException("Conteúdo não encontrado nesta turma.");
+            }
+
+            if (concluido) {
+                conteudoRepository.marcarConcluido(idAluno, idConteudo);
+            } else {
+                conteudoRepository.desmarcarConcluido(idAluno, idConteudo);
+            }
+
+            logger.info("Conclusão de conteúdo alterada. alunoId={} conteudoId={} concluido={}", idAluno, idConteudo, concluido);
+
+            if (logger.isInfoEnabled()) {
+                try {
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "alterarConclusao", null,
+                            MessageFormatter.arrayFormat("Conclusão de conteúdo alterada. alunoId={} conteudoId={} concluido={}", new Object[]{idAluno, idConteudo, concluido}).getMessage(), null, null);
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+        } catch (SQLException e) {
+            logger.error("Erro ao alterar conclusão do conteúdo. alunoId={} conteudoId={}", idAluno, idConteudo, e);
+
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "alterarConclusao", null,
+                            MessageFormatter.arrayFormat("Erro ao alterar conclusão do conteúdo. alunoId={} conteudoId={}", new Object[]{idAluno, idConteudo}).getMessage(), null, excecaoLogBD.toString());
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            throw new RuntimeException("Não foi possível atualizar o progresso do conteúdo.", e);
+        }
+    }
+
+    public Set<Long> listarConcluidosDoAluno(Long idAluno, Long idTurma) {
+        try {
+            return conteudoRepository.listarConcluidosDoAluno(idAluno, idTurma);
+
+        } catch (SQLException e) {
+            logger.error("Erro ao listar conteúdos concluídos. alunoId={} turmaId={}", idAluno, idTurma, e);
+
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarConcluidosDoAluno", null,
+                            MessageFormatter.arrayFormat("Erro ao listar conteúdos concluídos. alunoId={} turmaId={}", new Object[]{idAluno, idTurma}).getMessage(), null, excecaoLogBD.toString());
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            throw new RuntimeException("Não foi possível listar os conteúdos concluídos.", e);
+        }
+    }
+
+    // mesma regra da migracao do banco: numero puro = minutos, M:SS e H:MM:SS do YouTube, "N min" e "N horas"
+    private Integer converterDuracaoEmMinutos(String texto) {
+        if (texto == null || texto.isBlank()) {
+            return null;
+        }
+
+        String valor = texto.trim().toLowerCase(Locale.ROOT);
+
+        try {
+            int minutos;
+
+            if (valor.matches("\\d+")) {
+                minutos = Integer.parseInt(valor);
+            } else if (valor.matches("\\d+:\\d{2}:\\d{2}")) {
+                String[] partes = valor.split(":");
+                int segundos = Integer.parseInt(partes[0]) * 3600 + Integer.parseInt(partes[1]) * 60 + Integer.parseInt(partes[2]);
+                minutos = (int) Math.ceil(segundos / 60.0);
+            } else if (valor.matches("\\d+:\\d{2}")) {
+                String[] partes = valor.split(":");
+                int segundos = Integer.parseInt(partes[0]) * 60 + Integer.parseInt(partes[1]);
+                minutos = (int) Math.ceil(segundos / 60.0);
+            } else if (valor.matches("\\d+\\s*(h|hora|horas)")) {
+                minutos = Integer.parseInt(valor.replaceAll("\\D", "")) * 60;
+            } else if (valor.matches("\\d+\\s*(min|minuto|minutos)")) {
+                minutos = Integer.parseInt(valor.replaceAll("\\D", ""));
+            } else {
+                return null;
+            }
+
+            return minutos > 0 ? minutos : null;
+
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private String definirTipo(ConteudoDTO conteudo, MultipartFile arquivo) {
