@@ -44,7 +44,7 @@ body {
     min-height: 100vh;
     margin: 0;
     overflow: hidden;
-    border: 2px solid var(--azul-borda);
+    border: none;
     background: transparent;
 }
 
@@ -54,6 +54,13 @@ body {
     min-height: calc(100vh - 102px);
     padding: 24px 16px 50px;
     isolation: isolate;
+}
+
+#paginaCadastroEventos > .registration-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 102px);
 }
 
 .calendar {
@@ -310,7 +317,7 @@ body {
 }
 
 .registration-area::after {
-    position: absolute;
+    position: fixed;
     z-index: 5;
     inset: 0;
     background: rgba(7, 11, 31, 0.38);
@@ -335,6 +342,10 @@ body {
     border-radius: 23px 23px 0 0;
     background: rgba(17, 24, 63, 0.88);
     box-shadow: 0 18px 36px rgba(4, 7, 24, 0.32);
+}
+
+#paginaCadastroEventos[data-tipo-usuario="aluno"] .event-modal {
+    border-radius: 23px;
 }
 
 .event-modal h1 {

@@ -357,6 +357,16 @@ body {
     background: var(--azul-escuro);
 }
 
+.day-cell.dia-passado {
+    background: var(--cinza-fora-mes);
+    color: var(--cinza-texto);
+}
+
+.day-cell.dia-passado .disponibilidade-marcador {
+    background: var(--cinza-texto);
+    box-shadow: none;
+}
+
 .day-number {
     position: relative;
     z-index: 4;
@@ -453,6 +463,17 @@ body {
     color: var(--azul-escuro);
 }
 
+.evento-marcador.evento-marcador-aluno {
+    top: 50%;
+    bottom: auto;
+    z-index: 3;
+    background: #ffffff;
+    color: var(--azul-escuro);
+    font-size: 11px;
+    transform: translateY(-50%);
+    pointer-events: auto;
+}
+
 .disponibilidade-marcador {
     bottom: 7px;
     background: var(--verde-disponibilidade);
@@ -530,6 +551,25 @@ body {
     font-size: 13px;
 }
 
+.disponibilidade-risco {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--campus-navy-rgb), 0.12);
+}
+
+.disponibilidade-risco strong {
+    color: var(--azul-texto);
+    font-size: 14px;
+}
+
+.disponibilidade-risco p {
+    flex-basis: 100%;
+}
+
 .eventos-cadastrados {
     width: min(92%, 920px);
     margin: 28px auto 0;
@@ -582,6 +622,9 @@ body {
 
 .ultimo-evento-destaque {
     margin-bottom: 18px;
+}
+
+.eventos-holder {
     padding: 14px;
     border: 2px solid rgba(var(--campus-accent-rgb), 0.45);
     border-radius: 12px;
@@ -589,7 +632,8 @@ body {
     box-shadow: 0 4px 12px rgba(var(--campus-navy-rgb), 0.10);
 }
 
-.ultimo-evento-destaque[hidden] {
+.ultimo-evento-destaque[hidden],
+.eventos-lista[hidden] {
     display: none;
 }
 
@@ -898,6 +942,32 @@ body {
 .conteudos-associados ul {
     margin: 4px 0 0 18px;
     padding: 0;
+}
+
+.conteudos-associados ul[hidden] {
+    display: none;
+}
+
+.botao-alternar-conteudos {
+    margin-left: 8px;
+    padding: 3px 10px;
+    border: 1px solid var(--azul-escuro);
+    border-radius: 7px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.botao-alternar-conteudos:hover {
+    background: var(--campus-navy-hover);
+}
+
+.botao-alternar-conteudos:focus-visible {
+    outline: 2px solid var(--azul-borda);
+    outline-offset: 2px;
 }
 
 .conteudos-associados li {

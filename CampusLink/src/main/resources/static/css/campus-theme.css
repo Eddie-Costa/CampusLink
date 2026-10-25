@@ -26,6 +26,9 @@
     --campus-warning-text: #664d03;
     --campus-warning-bg: #fff3cd;
     --campus-warning-border: #ffe69c;
+    --campus-orange: #d9480f;
+    --campus-orange-text: #8a3700;
+    --campus-orange-bg: #ffe8cc;
     --campus-info-bg: #e0f2fe;
     --campus-info-text: #075985;
     --bs-primary: var(--campus-navy);
@@ -132,4 +135,60 @@ body,
 .campus-modal .form-control,
 .campus-modal .form-select {
     border-color: var(--campus-border-strong);
+}
+
+.selo-risco {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.selo-risco::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background-color: var(--selo-cor);
+}
+
+.risco-verde {
+    --selo-cor: var(--campus-success);
+    background-color: var(--campus-success-bg);
+    color: var(--campus-success-text);
+}
+
+.risco-amarelo {
+    --selo-cor: var(--campus-warning);
+    background-color: var(--campus-warning-bg);
+    color: var(--campus-warning-text);
+}
+
+.risco-laranja {
+    --selo-cor: var(--campus-orange);
+    background-color: var(--campus-orange-bg);
+    color: var(--campus-orange-text);
+}
+
+.risco-vermelho {
+    --selo-cor: var(--campus-danger);
+    background-color: var(--campus-danger-bg);
+    color: var(--campus-danger-text);
+}
+
+.risco-concluido {
+    --selo-cor: var(--campus-success);
+    background-color: var(--campus-white);
+    color: var(--campus-success-text);
+}
+
+.risco-sem_evento {
+    --selo-cor: var(--campus-muted);
+    background-color: var(--campus-surface-alt);
+    color: var(--campus-muted);
 }

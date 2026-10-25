@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const semEventosNoMes = document.getElementById('semEventosNoMes');
 
     const hoje = new Date();
+    const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
     let mesAtual = hoje.getMonth();
     let anoAtual = hoje.getFullYear();
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function criarMarcadorEvento(eventos, data) {
-        if (!usuarioEhProfessor || eventos.length === 0) {
+        if (eventos.length === 0) {
             return null;
         }
 
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function atualizarVisaoEventosDoMes() {
         atualizarResumoPrioridades();
 
-        if (!usuarioEhProfessor || !listaEventos) {
+        if (!(usuarioEhProfessor || usuarioEhAluno) || !listaEventos) {
             return;
         }
 
@@ -310,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ultimoEventoDestaque.hidden = true;
             }
 
+            listaEventos.hidden = true;
             return;
         }
 
@@ -331,6 +333,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const cartoesComunsDoMes = cartoesDoMes.filter(function (cartao) {
             return cartao !== ultimoCartaoDoMes;
         });
+
+        listaEventos.hidden = cartoesComunsDoMes.length === 0;
 
         const cartoesOrdenados = ordenarCartoes(cartoesComunsDoMes);
 
@@ -410,6 +414,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            const eventosQueComecamNoDia = usuarioEhAluno
+                ? eventosDoDia.filter(function (evento) {
+                    return evento.dataInicio === dataFormatada;
+                })
+                : [];
+
+            if (eventosQueComecamNoDia.length > 0) {
+                const marcadorEvento = criarMarcadorEvento(eventosQueComecamNoDia, dataFormatada);
+
+                marcadorEvento.classList.add('evento-marcador-aluno');
+                celula.appendChild(marcadorEvento);
+            }
+
             if (usuarioEhAluno) {
                 const disponibilidadeEncontrada = buscarDisponibilidade(dataFormatada);
                 const disponibilidade = disponibilidadeEncontrada || {
@@ -424,7 +441,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             celula.appendChild(numeroDia);
-            celula.appendChild(linkCadastro);
+
+            if (data < inicioDeHoje) {
+                celula.classList.add('dia-passado');
+            } else if (eventosQueComecamNoDia.length === 0) {
+                celula.appendChild(linkCadastro);
+            }
 
             calendario.appendChild(celula);
         }
@@ -500,6 +522,26 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setAttribute('aria-expanded', String(!estaOculto));
         });
     }
+
+    document.addEventListener('click', function (event) {
+        const botao = event.target.closest('.botao-alternar-conteudos');
+
+        if (!botao) {
+            return;
+        }
+
+        const lista = document.getElementById(botao.getAttribute('aria-controls'));
+
+        if (!lista) {
+            return;
+        }
+
+        const expandido = botao.getAttribute('aria-expanded') === 'true';
+
+        lista.hidden = expandido;
+        botao.setAttribute('aria-expanded', String(!expandido));
+        botao.textContent = expandido ? 'Mostrar conteúdos' : 'Ocultar conteúdos';
+    });
 
     if (seletorOrdenacao) {
         seletorOrdenacao.addEventListener('change', function () {

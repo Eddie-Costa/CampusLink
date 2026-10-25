@@ -114,14 +114,26 @@
         <section class="disponibilidade-resumo" th:if="${session.tipoUsuario == 'aluno'}">
             <h2>Minha disponibilidade</h2>
             <p>Cadastre no calendário quantas horas você poderá estudar em cada dia.</p>
+
+            <div class="disponibilidade-risco" th:if="${proximoEventoRisco != null}">
+                <strong th:text="${'Próximo evento: ' + proximoEventoRisco.nomeEvento + ' · ' + #temporals.format(proximoEventoRisco.dataEvento, 'dd/MM')}">
+                    Próximo evento: M1 · 18/10
+                </strong>
+                <span th:replace="~{fragments/risco :: selo(${proximoEventoRisco.nivel}, ${proximoEventoRisco.motivo})}"></span>
+                <p th:text="${proximoEventoRisco.motivo}">Faltam 9h de estudo...</p>
+            </div>
+
+            <div class="disponibilidade-risco" th:if="${proximoEventoRisco == null}">
+                <p>Nenhum evento futuro nas suas turmas.</p>
+            </div>
         </section>
 
         <section class="eventos-cadastrados"
-                 th:if="${session.tipoUsuario == 'professor' and eventos != null and !#lists.isEmpty(eventos)}">
+                 th:if="${(session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno') and eventos != null and !#lists.isEmpty(eventos)}">
 
             <div class="eventos-cabecalho-lista">
 
-                <h2>Eventos cadastrados</h2>
+                <h2 th:text="${session.tipoUsuario == 'aluno'} ? 'Eventos das suas turmas' : 'Eventos cadastrados'">Eventos cadastrados</h2>
 
                 <div class="eventos-acoes">
 
@@ -150,6 +162,8 @@
                 </div>
 
             </div>
+
+            <div class="eventos-holder">
 
             <!-- ultimo evento cadastrado -->
             <div id="ultimoEventoDestaque" class="ultimo-evento-destaque" hidden>
@@ -221,6 +235,7 @@
                             </div>
 
                             <form class="form-excluir-evento"
+                                  th:if="${session.tipoUsuario == 'professor'}"
                                   th:action="@{/eventos/excluir}"
                                   method="post">
 
@@ -292,11 +307,19 @@
                             <div th:if="${evento.possuiConteudoAssociado()}"
                                  class="conteudos-associados">
 
-                                <span class="conteudo-status">
+                                <span class="conteudo-status"
+                                      th:text="${'Sim (' + #lists.size(evento.nomesConteudos) + ')'}">
                                     Sim
                                 </span>
 
-                                <ul>
+                                <button type="button"
+                                        class="botao-alternar-conteudos"
+                                        aria-expanded="false"
+                                        th:aria-controls="${'conteudosEvento-' + evento.id}">
+                                    Mostrar conteúdos
+                                </button>
+
+                                <ul th:id="${'conteudosEvento-' + evento.id}" hidden>
                                     <li th:each="nomeConteudo : ${evento.nomesConteudos}"
                                         th:text="${nomeConteudo}">
                                         Nome do conteúdo
@@ -316,6 +339,8 @@
             <p id="semEventosNoMes" class="sem-eventos-mes" hidden>
                 Nenhum evento começa neste mês.
             </p>
+
+            </div>
 
         </section>
 

@@ -134,6 +134,38 @@ public class ConteudoRepository {
 
         return conteudos;
     }
+    public List<ConteudoDTO> listarPorEvento(Long idEvento) throws SQLException {
+        List<ConteudoDTO> conteudos = new ArrayList<>();
+
+        String sql = """
+                SELECT c.*
+                FROM public."EVENTO_CONTEUDO" ec
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = ec."id_conteudo"
+                WHERE ec."id_evento" = ?
+                AND c."status" = 'ativo'
+                ORDER BY c."created_at" ASC, c."id" ASC
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setLong(1, idEvento);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudos.add(montarConteudo(rs, null));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return conteudos;
+    }
+
     public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) throws SQLException {
 
         List<ConteudoDTO> conteudos = new ArrayList<>();
@@ -731,7 +763,6 @@ public class ConteudoRepository {
         }
     }
 
-    // registra que o aluno concluiu o conteudo; repetir o clique nao gera erro
     public void marcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
         String sql = """
                 INSERT INTO public."PROGRESSO_CONTEUDO" ("id_aluno", "id_conteudo")
@@ -760,7 +791,6 @@ public class ConteudoRepository {
         }
     }
 
-    // ids dos conteudos da turma que o aluno ja concluiu
     public Set<Long> listarConcluidosDoAluno(Long idAluno, Long idTurma) throws SQLException {
         String sql = """
                 SELECT p."id_conteudo"

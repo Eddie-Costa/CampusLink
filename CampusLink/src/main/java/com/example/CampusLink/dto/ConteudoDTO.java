@@ -37,7 +37,6 @@ public class ConteudoDTO {
 
     private String duracaoEstimada;
 
-    // preenchido pelo service a partir do texto; null quando nao da para converter
     private Integer duracaoEstimadaMin;
 
     private String prioridade;

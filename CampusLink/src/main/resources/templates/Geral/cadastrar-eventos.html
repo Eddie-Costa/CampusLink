@@ -193,7 +193,8 @@
                       method="post">
 
                     <label for="dataDisponibilidade">Data</label>
-                    <input type="date" id="dataDisponibilidade" name="data" required>
+                    <input type="date" id="dataDisponibilidade" name="data" required
+                           th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
 
                     <label for="horasDisponiveis">Quantidade de horas disponíveis</label>
                     <input type="number" id="horasDisponiveis" name="horasDisponiveis"

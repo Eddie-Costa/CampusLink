@@ -327,6 +327,38 @@ body {
     color: #ffffff;
 }
 
+.evento-score > summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.evento-score > summary::-webkit-details-marker {
+    display: none;
+}
+
+.evento-score-seta {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.evento-score[open] .evento-score-seta {
+    transform: rotate(180deg);
+}
+
+.evento-score-conteudos {
+    gap: 10px;
+    margin: 12px 0 0 32px;
+}
+
+.evento-score-item {
+    min-height: 0;
+    padding: 12px 24px;
+}
+
+.evento-score-item .conteudo-nome {
+    font-size: 16px;
+}
+
 /* ===============================
    MODAL
 ================================ */

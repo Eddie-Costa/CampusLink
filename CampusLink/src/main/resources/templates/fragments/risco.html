@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="selo(nivel, motivo)"
+      class="selo-risco"
+      th:classappend="${'risco-' + nivel}"
+      th:title="${motivo}"
+      th:switch="${nivel}">
+    <th:block th:case="'verde'">Possível com facilidade</th:block>
+    <th:block th:case="'amarelo'">Possível se bem planejado</th:block>
+    <th:block th:case="'laranja'">Exige replanejamento</th:block>
+    <th:block th:case="'vermelho'">Impossível</th:block>
+    <th:block th:case="'concluido'">Concluído</th:block>
+    <th:block th:case="*">Sem evento próximo</th:block>
+</span>
+</body>
+</html>

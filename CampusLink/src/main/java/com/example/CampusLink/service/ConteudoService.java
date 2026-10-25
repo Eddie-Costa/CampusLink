@@ -405,7 +405,6 @@ public class ConteudoService {
         return conteudo;
     }
 
-    // marca ou desmarca o conteudo como concluido pelo aluno
     public void alterarConclusao(Long idAluno, Long idTurma, Long idConteudo, boolean concluido) {
         try {
             if (!conteudoRepository.conteudoPertenceTurma(idConteudo, idTurma)) {
@@ -486,7 +485,6 @@ public class ConteudoService {
         }
     }
 
-    // mesma regra da migracao do banco: numero puro = minutos, M:SS e H:MM:SS do YouTube, "N min" e "N horas"
     private Integer converterDuracaoEmMinutos(String texto) {
         if (texto == null || texto.isBlank()) {
             return null;

@@ -410,7 +410,6 @@
                     </div>
                 </div>
 
-                <!-- conteudo concluido ja abre minimizado -->
                 <div class="conteudo-detalhes" th:id="${'detalhesConteudo-' + conteudo.id}" th:hidden="${concluido}">
                     <p class="conteudo-descricao"
                        th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
@@ -451,7 +450,6 @@
                     </div>
                 </div>
 
-                <!-- cobre o card quando o aluno ja concluiu o conteudo -->
                 <div class="conteudo-concluido-cobertura" th:if="${concluido}">
                     <span class="conteudo-concluido-icone">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
