@@ -359,6 +359,28 @@ body {
     font-size: 16px;
 }
 
+.tabela-acompanhamento {
+    table-layout: fixed;
+    width: max-content;
+    min-width: 100%;
+}
+
+.tabela-acompanhamento .coluna-aluno {
+    width: 220px;
+}
+
+.tabela-acompanhamento .coluna-conteudo {
+    width: 130px;
+}
+
+.tabela-acompanhamento .coluna-conclusao {
+    width: 110px;
+}
+
+.tabela-acompanhamento .coluna-situacao {
+    width: 230px;
+}
+
 /* ===============================
    MODAL
 ================================ */

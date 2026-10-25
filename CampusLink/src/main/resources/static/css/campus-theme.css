@@ -192,3 +192,17 @@ body,
     background-color: var(--campus-surface-alt);
     color: var(--campus-muted);
 }
+
+.ponto-risco {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--selo-cor);
+    vertical-align: middle;
+}
+
+.ponto-concluido {
+    color: var(--campus-success);
+    font-weight: 700;
+}

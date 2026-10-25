@@ -371,6 +371,7 @@ public class EventosController {
 
                 List<TurmaDTO> turmasProfessor = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor.toString());
                 model.addAttribute("turmasProfessor", turmasProfessor);
+                model.addAttribute("eventos", eventosDasTurmas(eventos, turmasProfessor));
             }
         }
 
@@ -382,15 +383,21 @@ public class EventosController {
 
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
 
-                List<Long> idsTurmasAluno = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString())
-                        .stream().map(TurmaDTO::getId).toList();
-                model.addAttribute("eventos", eventos.stream()
-                        .filter(evento -> idsTurmasAluno.contains(evento.getIdTurma())).toList());
+                model.addAttribute("eventos",
+                        eventosDasTurmas(eventos, turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString())));
 
                 model.addAttribute("proximoEventoRisco",
                         viabilidadeService.proximoEventoPendente(viabilidadeService.calcularParaAluno(idAluno)));
             }
         }
+    }
+
+
+    private List<Evento> eventosDasTurmas(List<Evento> eventos, List<TurmaDTO> turmas) {
+
+        List<Long> idsTurmas = turmas.stream().map(TurmaDTO::getId).toList();
+
+        return eventos.stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
     }
 
 
