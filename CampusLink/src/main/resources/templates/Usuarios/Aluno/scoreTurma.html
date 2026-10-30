@@ -60,7 +60,7 @@
             <div class="lista-conteudos">
                 <div class="conteudo-card" th:each="conteudo : ${conteudosSemEvento}">
                     <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo #1</span>
-                    <span th:replace="~{fragments/risco :: selo(${conteudosConcluidos.contains(conteudo.id) ? 'concluido' : 'sem_evento'}, null)}"></span>
+                    <span th:replace="~{fragments/risco :: selo(${conteudosConcluidos.contains(conteudo.id) ? 'concluido' : (atrasadosPorConteudo.containsKey(conteudo.id) ? 'atrasado' : 'sem_evento')}, ${atrasadosPorConteudo.get(conteudo.id)?.motivo})}"></span>
                 </div>
             </div>
         </th:block>

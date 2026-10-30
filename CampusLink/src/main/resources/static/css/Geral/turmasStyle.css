@@ -379,6 +379,12 @@ body {
     font-size: 16px;
 }
 
+a.conteudo-card,
+a.conteudo-card:hover {
+    gap: 16px;
+    color: #ffffff;
+}
+
 .turmas-container-larga {
     max-width: 80vw;
 }

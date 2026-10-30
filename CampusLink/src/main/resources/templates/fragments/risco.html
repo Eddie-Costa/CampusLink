@@ -11,11 +11,12 @@
     <th:block th:case="'laranja'">Exige replanejamento</th:block>
     <th:block th:case="'vermelho'">Impossível</th:block>
     <th:block th:case="'concluido'">Concluído</th:block>
+    <th:block th:case="'atrasado'">Atrasado</th:block>
     <th:block th:case="*">Sem evento próximo</th:block>
 </span>
 
 <span th:fragment="ponto(nivel)"
-      th:with="rotulo=${nivel == 'verde' ? 'Possível com facilidade' : (nivel == 'amarelo' ? 'Possível se bem planejado' : (nivel == 'laranja' ? 'Exige replanejamento' : (nivel == 'vermelho' ? 'Impossível' : (nivel == 'concluido' ? 'Concluído' : 'Sem evento próximo'))))}"
+      th:with="rotulo=${nivel == 'verde' ? 'Possível com facilidade' : (nivel == 'amarelo' ? 'Possível se bem planejado' : (nivel == 'laranja' ? 'Exige replanejamento' : (nivel == 'vermelho' ? 'Impossível' : (nivel == 'concluido' ? 'Concluído' : (nivel == 'atrasado' ? 'Atrasado' : 'Sem evento próximo')))))}"
       th:class="${nivel == 'concluido' ? 'ponto-concluido' : 'ponto-risco risco-' + nivel}"
       th:title="${rotulo}"
       th:aria-label="${rotulo}"

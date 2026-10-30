@@ -24,6 +24,31 @@
             <p>Você ainda não está em nenhuma turma.</p>
         </div>
 
+        <th:block th:unless="${#lists.isEmpty(turmas)}">
+            <h2 class="h5 fw-bold mb-3">Prioridades</h2>
+
+            <div class="sem-turmas mb-4" th:if="${#lists.isEmpty(prioridades)}">
+                <p class="m-0">Nada crítico 🎉</p>
+            </div>
+
+            <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(prioridades)}">
+                <a class="conteudo-card evento-score-item text-decoration-none" th:each="item : ${prioridades}"
+                   th:href="@{/score/turma/{id}(id=${item.idTurma})}">
+                    <div>
+                        <span class="conteudo-nome d-block" th:text="${item.tituloConteudo}">Conteúdo #1</span>
+                        <span class="conteudo-meta"
+                              th:text="${nomeTurmaPorId.get(item.idTurma) + ' · ' + item.nomeEvento + ' · ' + #temporals.format(item.dataEvento, 'dd/MM')}">
+                            Turma #1 · Prova · 18/10
+                        </span>
+                        <span class="conteudo-meta small" th:text="${item.motivo}">Motivo</span>
+                    </div>
+                    <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                </a>
+            </div>
+
+            <h2 class="h5 fw-bold mb-3">Minhas turmas</h2>
+        </th:block>
+
         <div class="lista-turmas" th:unless="${#lists.isEmpty(turmas)}">
             <a class="turma-card" th:each="turma : ${turmas}"
                th:with="evento=${proximoEventoPorTurma.get(turma.id)}"
