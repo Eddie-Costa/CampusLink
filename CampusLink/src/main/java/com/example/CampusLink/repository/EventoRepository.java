@@ -36,4 +36,10 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
             String status,
             LocalDateTime inicio
     );
+
+    List<Evento> findByIdTurmaInAndStatusAndInicioLessThanOrderByInicioDesc(
+            Collection<Long> idsTurmas,
+            String status,
+            LocalDateTime inicio
+    );
 }

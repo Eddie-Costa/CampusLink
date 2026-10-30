@@ -30,9 +30,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -115,9 +117,34 @@ public class AcompanhamentoController {
 
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
         Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = calcularParaAlunos(alunos);
+        Map<Long, List<ViabilidadeDTO>> atrasadosPorAluno =
+                viabilidadeService.listarAtrasados(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
+
+        Map<Long, String> tituloPorConteudo = new HashMap<>();
+        Map<Long, Set<Long>> alunosAtrasadosPorConteudo = new HashMap<>();
+        Map<Long, Set<Long>> alunosVermelhosPorConteudo = new HashMap<>();
+        List<Map<String, Object>> alunosComAtraso = new ArrayList<>();
 
         for (usuarioAdminDTO aluno : alunos) {
+            long atrasadosDoAluno = 0;
+            for (ViabilidadeDTO atrasado : resultadosDaTurma(atrasadosPorAluno, aluno, id)) {
+                tituloPorConteudo.put(atrasado.getIdConteudo(), atrasado.getTituloConteudo());
+                alunosAtrasadosPorConteudo.computeIfAbsent(atrasado.getIdConteudo(), idConteudo -> new HashSet<>())
+                        .add(aluno.getIdPerfil());
+                atrasadosDoAluno++;
+            }
+            if (atrasadosDoAluno > 0) {
+                alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
+            }
+
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
+                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())
+                        && !alunosAtrasadosPorConteudo.getOrDefault(resultado.getIdConteudo(), Set.of()).contains(aluno.getIdPerfil())) {
+                    tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
+                    alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
+                            .add(aluno.getIdPerfil());
+                }
+
                 if (resultado.getIdConteudo() == null) {
                     Map<String, Long> contagemEvento = contagemPorEvento.get(resultado.getIdEvento());
                     if (contagemEvento != null) {
@@ -139,6 +166,11 @@ public class AcompanhamentoController {
         model.addAttribute("conteudosPorEvento", conteudosPorEvento);
         model.addAttribute("contagemPorEvento", contagemPorEvento);
         model.addAttribute("contagemPorConteudo", contagemPorConteudo);
+        model.addAttribute("conteudosCriticos", rankingCriticos(tituloPorConteudo, alunosAtrasadosPorConteudo, alunosVermelhosPorConteudo));
+        model.addAttribute("alunosComAtraso", alunosComAtraso.stream()
+                .sorted(Comparator.comparing((Map<String, Object> item) -> -(Long) item.get("atrasados"))
+                        .thenComparing(item -> (String) item.get("nome"), String.CASE_INSENSITIVE_ORDER))
+                .toList());
 
         registrarTempo("exibirAcompanhamentoTurma", id, alunos.size(), inicio);
         return "Usuarios/Professor/acompanhamentoTurma";
@@ -222,6 +254,22 @@ public class AcompanhamentoController {
 
         registrarTempo("exibirAcompanhamentoEvento", id, alunos.size(), inicio);
         return "Usuarios/Professor/acompanhamentoEvento";
+    }
+
+    private List<Map<String, Object>> rankingCriticos(Map<Long, String> tituloPorConteudo,
+                                                      Map<Long, Set<Long>> atrasadosPorConteudo,
+                                                      Map<Long, Set<Long>> vermelhosPorConteudo) {
+        List<Map<String, Object>> ranking = new ArrayList<>();
+
+        tituloPorConteudo.forEach((idConteudo, titulo) -> {
+            long atrasados = atrasadosPorConteudo.getOrDefault(idConteudo, Set.of()).size();
+            long vermelhos = vermelhosPorConteudo.getOrDefault(idConteudo, Set.of()).size();
+            ranking.add(Map.of("titulo", titulo, "atrasados", atrasados, "vermelhos", vermelhos, "total", atrasados + vermelhos));
+        });
+
+        ranking.sort(Comparator.comparing((Map<String, Object> item) -> -(Long) item.get("total"))
+                .thenComparing(item -> (String) item.get("titulo"), String.CASE_INSENSITIVE_ORDER));
+        return ranking;
     }
 
     private void registrarTempo(String operacao, Long idTurma, int quantidadeAlunos, long inicio) {

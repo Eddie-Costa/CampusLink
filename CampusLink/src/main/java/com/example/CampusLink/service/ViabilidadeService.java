@@ -100,22 +100,83 @@ public class ViabilidadeService {
             return resultadoPorAluno;
 
         } catch (SQLException e) {
-            logger.error("Erro ao calcular viabilidade. alunos={}", idsAlunos, e);
+            registrarErro("calcularParaAlunos", "Erro ao calcular viabilidade. alunos={}", idsAlunos, e);
+            throw new RuntimeException("Não foi possível calcular a viabilidade dos alunos.", e);
+        }
+    }
 
-            if (logger.isErrorEnabled()) {
-                try {
-                    StringWriter excecaoLogBD = new StringWriter();
-                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+    public Map<Long, List<ViabilidadeDTO>> listarAtrasados(List<Long> idsAlunos) {
+        Map<Long, List<ViabilidadeDTO>> atrasadosPorAluno = new HashMap<>();
 
-                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), "calcularParaAlunos", null,
-                            MessageFormatter.arrayFormat("Erro ao calcular viabilidade. alunos={}", new Object[]{idsAlunos}).getMessage(), null, excecaoLogBD.toString());
+        if (idsAlunos.isEmpty()) {
+            return atrasadosPorAluno;
+        }
 
-                } catch (Exception erroLogBD) {
-                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+        try {
+            Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
+
+            Set<Long> idsTurmas = new HashSet<>();
+            turmasPorAluno.values().forEach(idsTurmas::addAll);
+
+            List<Evento> eventosPassados = idsTurmas.isEmpty()
+                    ? List.of()
+                    : eventoRepository.findByIdTurmaInAndStatusAndInicioLessThanOrderByInicioDesc(
+                    idsTurmas, "ATIVO", LocalDate.now(FUSO).atStartOfDay());
+
+            Map<Long, List<ConteudoDTO>> conteudosPorEvento =
+                    conteudoRepository.listarPorEventos(eventosPassados.stream().map(Evento::getId).toList());
+            Map<Long, Set<Long>> concluidosPorAluno = conteudoRepository.listarConcluidosDosAlunos(idsAlunos);
+
+            for (Long idAluno : idsAlunos) {
+                List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
+                Set<Long> concluidos = concluidosPorAluno.getOrDefault(idAluno, Set.of());
+                Set<Long> jaListados = new HashSet<>();
+                List<ViabilidadeDTO> atrasados = new ArrayList<>();
+
+                for (Evento evento : eventosPassados) {
+                    if (!turmasAluno.contains(evento.getIdTurma())) {
+                        continue;
+                    }
+                    for (ConteudoDTO conteudo : conteudosPorEvento.getOrDefault(evento.getId(), List.of())) {
+                        if (concluidos.contains(conteudo.getId()) || !jaListados.add(conteudo.getId())) {
+                            continue;
+                        }
+                        ViabilidadeDTO item = novoResultado(idAluno, evento);
+                        item.setIdConteudo(conteudo.getId());
+                        item.setTituloConteudo(conteudo.getTitulo());
+                        item.setCargaMin(duracaoDe(conteudo));
+                        item.setNivel("atrasado");
+                        item.setMotivo("O evento foi em " + evento.getInicio().format(FORMATO_DATA)
+                                + " e este conteúdo ainda não foi concluído.");
+                        atrasados.add(item);
+                    }
                 }
+
+                atrasadosPorAluno.put(idAluno, atrasados);
             }
 
-            throw new RuntimeException("Não foi possível calcular a viabilidade dos alunos.", e);
+            return atrasadosPorAluno;
+
+        } catch (SQLException e) {
+            registrarErro("listarAtrasados", "Erro ao listar conteúdos atrasados. alunos={}", idsAlunos, e);
+            throw new RuntimeException("Não foi possível listar os conteúdos atrasados.", e);
+        }
+    }
+
+    private void registrarErro(String metodo, String mensagem, List<Long> idsAlunos, SQLException e) {
+        logger.error(mensagem, idsAlunos, e);
+
+        if (logger.isErrorEnabled()) {
+            try {
+                StringWriter excecaoLogBD = new StringWriter();
+                e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), metodo, null,
+                        MessageFormatter.arrayFormat(mensagem, new Object[]{idsAlunos}).getMessage(), null, excecaoLogBD.toString());
+
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
         }
     }
 

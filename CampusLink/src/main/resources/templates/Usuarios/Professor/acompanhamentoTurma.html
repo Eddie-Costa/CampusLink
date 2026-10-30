@@ -32,6 +32,35 @@
             <span th:replace="~{fragments/risco :: selo('amarelo', null)}"></span>
             <span th:replace="~{fragments/risco :: selo('laranja', null)}"></span>
             <span th:replace="~{fragments/risco :: selo('vermelho', null)}"></span>
+            <span th:replace="~{fragments/risco :: selo('atrasado', null)}"></span>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Conteúdos críticos</h2>
+
+        <p th:if="${#lists.isEmpty(conteudosCriticos)}">Nenhum conteúdo crítico nesta turma.</p>
+
+        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(conteudosCriticos)}">
+            <div class="conteudo-card evento-score-item" th:each="item : ${conteudosCriticos}">
+                <span class="conteudo-nome" th:text="${item.titulo}">Conteúdo #1</span>
+                <span class="d-inline-flex flex-wrap gap-2">
+                    <span class="selo-risco risco-atrasado" th:if="${item.atrasados > 0}"
+                          th:text="${item.atrasados + (item.atrasados == 1 ? ' aluno atrasado' : ' alunos atrasados')}">2 alunos atrasados</span>
+                    <span class="selo-risco risco-vermelho" th:if="${item.vermelhos > 0}"
+                          th:text="${item.vermelhos + (item.vermelhos == 1 ? ' aluno sem tempo' : ' alunos sem tempo')}">1 aluno sem tempo</span>
+                </span>
+            </div>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Alunos com atraso</h2>
+
+        <p th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo atrasado.</p>
+
+        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(alunosComAtraso)}">
+            <div class="conteudo-card evento-score-item" th:each="item : ${alunosComAtraso}">
+                <span class="conteudo-nome" th:text="${item.nome}">Aluno 1</span>
+                <span class="selo-risco risco-atrasado"
+                      th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo atrasado' : ' conteúdos atrasados')}">2 conteúdos atrasados</span>
+            </div>
         </div>
 
         <h2 class="h5 fw-bold mb-3">Próximos eventos</h2>
