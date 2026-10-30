@@ -140,6 +140,20 @@ public class ViabilidadeService {
         }
     }
 
+    public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias) {
+        try {
+            return conteudoRepository.minutosConcluidosRecentes(idsAlunos, dias, DURACAO_PADRAO_MIN);
+        } catch (SQLException e) {
+            registrarErro("minutosConcluidosRecentes", "Erro ao calcular ritmo de estudos. alunos={}", idsAlunos, e);
+            throw new RuntimeException("Não foi possível calcular o ritmo de estudos.", e);
+        }
+    }
+
+    public int minutosNecessariosPorDia(ViabilidadeDTO resumoEvento) {
+        long dias = ChronoUnit.DAYS.between(LocalDate.now(FUSO), resumoEvento.getDataEvento().toLocalDate());
+        return dias <= 0 ? resumoEvento.getCargaMin() : (int) Math.ceil(resumoEvento.getCargaMin() / (double) dias);
+    }
+
     private void registrarErro(String metodo, String mensagem, List<Long> idsAlunos, SQLException e) {
         logger.error(mensagem, idsAlunos, e);
 
@@ -385,7 +399,7 @@ public class ViabilidadeService {
         return horas * 60;
     }
 
-    private int duracaoDe(ConteudoDTO conteudo) {
+    public int duracaoDe(ConteudoDTO conteudo) {
         return conteudo.getDuracaoEstimadaMin() != null ? conteudo.getDuracaoEstimadaMin() : DURACAO_PADRAO_MIN;
     }
 
