@@ -8,6 +8,7 @@ import com.example.CampusLink.controller.Usuarios.Admin.AdminUsuariosController;
 import com.example.CampusLink.controller.Usuarios.Admin.loginAdminController;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import com.example.CampusLink.repository.AdminUsuarioRepository;
 import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.service.LoginAttemptService;
@@ -211,7 +212,7 @@ class AdminSessaoLogTests {
                 login.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"), new ExtendedModelMap(), session)));
         if (doisFatores) {
             ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
-            verify(emails).enviarCodigo(eq(EMAIL), codigo.capture());
+            verify(emails).enviarCodigo(eq(EMAIL), codigo.capture(), eq(FinalidadeCodigoEmail.ACESSO));
             VerificarController verificar = new VerificarController();
             ReflectionTestUtils.setField(verificar, "UsuarioRepository", usuarios);
             ReflectionTestUtils.setField(verificar, "twoFactorService", new TwoFactorService());
