@@ -22,7 +22,33 @@ document.addEventListener('DOMContentLoaded', function () {
             dataInicio: evento.dataset.inicio || '',
             dataFim: evento.dataset.fim || '',
             nome: evento.dataset.nome || '',
-            prioridade: evento.dataset.prioridade || 'MEDIA'
+            prioridade: evento.dataset.prioridade || 'MEDIA',
+            horaInicio: evento.dataset.horaInicio || '',
+            horaFim: evento.dataset.horaFim || '',
+            idTurma: evento.dataset.idTurma || '',
+            turma: evento.dataset.turma || ''
+        };
+    });
+
+    const filtroTurma = document.getElementById('filtroTurma');
+    const filtroTurmaRotulo = document.getElementById('filtroTurmaRotulo');
+    let turmaFiltrada = '';
+
+    function eventoDaTurmaFiltrada(idTurma) {
+        return turmaFiltrada === '' || idTurma === turmaFiltrada;
+    }
+
+    const modalCronograma = document.getElementById('cronogramaDiaModal');
+    const gradeHorarios = document.getElementById('gradeHorarios');
+    const dataEventosDia = document.getElementById('dataEventosDia');
+
+    const eventosDaAgenda = eventosDados.map(function (evento) {
+        return {
+            nome: evento.nome,
+            prioridade: evento.prioridade,
+            idTurma: evento.idTurma,
+            inicio: evento.horaInicio ? new Date(`${evento.dataInicio}T${evento.horaInicio}:00`) : null,
+            fim: evento.horaFim ? new Date(`${evento.dataFim}T${evento.horaFim}:00`) : null
         };
     });
 
@@ -89,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function buscarEventosDoDia(data) {
         return eventosDados.filter(function (evento) {
-            return evento.dataInicio <= data && data <= evento.dataFim;
+            return evento.dataInicio <= data && data <= evento.dataFim && eventoDaTurmaFiltrada(evento.idTurma);
         });
     }
 
@@ -108,7 +134,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-        const marcador = document.createElement('span');
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
         marcador.classList.add('evento-marcador');
 
         const iniciouHoje = eventos.some(function (evento) {
@@ -129,19 +156,42 @@ document.addEventListener('DOMContentLoaded', function () {
             marcador.classList.add('evento-meio');
         }
 
-        if (eventos.length > 1) {
-            marcador.textContent = `${eventos.length} eventos`;
-        } else if (iniciouHoje) {
-            marcador.textContent = eventos[0].nome;
-        } else {
-            marcador.textContent = '';
-        }
+        marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
 
         marcador.title = eventos.map(function (evento) {
             return evento.nome;
         }).join(', ');
 
+        marcador.setAttribute('aria-label', `Ver cronograma do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirCronograma(data);
+        });
+
         return marcador;
+    }
+
+    function formatarDataCurta(data) {
+        const [, mes, dia] = data.split('-');
+
+        return `${dia}/${mes}`;
+    }
+
+    function abrirCronograma(data) {
+        if (!modalCronograma || typeof bootstrap === 'undefined' || typeof montarAgendaDoDia === 'undefined') {
+            return;
+        }
+
+        const eventosVisiveis = eventosDaAgenda.filter(function (evento) {
+            return eventoDaTurmaFiltrada(evento.idTurma);
+        });
+        const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
+        const corpoModal = modalCronograma.querySelector('.modal-body');
+
+        modalCronograma.addEventListener('shown.bs.modal', function () {
+            corpoModal.scrollTop = Math.max(topoPrimeiroEvento - ALTURA_HORA_AGENDA, 0);
+        }, { once: true });
+
+        bootstrap.Modal.getOrCreateInstance(modalCronograma).show();
     }
 
     function eventoComecaNoMesExibido(evento) {
@@ -159,7 +209,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const eventosDoMes = eventosDados.filter(eventoComecaNoMesExibido);
+        const eventosDoMes = eventosDados.filter(function (evento) {
+            return eventoComecaNoMesExibido(evento) && eventoDaTurmaFiltrada(evento.idTurma);
+        });
 
         let quantidadeAlta = 0;
         let quantidadeMedia = 0;
@@ -300,7 +352,9 @@ document.addEventListener('DOMContentLoaded', function () {
             listaEventos.appendChild(cartao);
         });
 
-        const cartoesDoMes = todosOsCartoesEventos.filter(cartaoComecaNoMesExibido);
+        const cartoesDoMes = todosOsCartoesEventos.filter(function (cartao) {
+            return cartaoComecaNoMesExibido(cartao) && eventoDaTurmaFiltrada(cartao.dataset.idTurma || '');
+        });
 
         if (semEventosNoMes) {
             semEventosNoMes.hidden = cartoesDoMes.length > 0;
@@ -542,6 +596,35 @@ document.addEventListener('DOMContentLoaded', function () {
         botao.setAttribute('aria-expanded', String(!expandido));
         botao.textContent = expandido ? 'Mostrar conteúdos' : 'Ocultar conteúdos';
     });
+
+    if (filtroTurma && filtroTurmaRotulo) {
+        const turmas = new Map();
+
+        eventosDados.forEach(function (evento) {
+            if (evento.idTurma && !turmas.has(evento.idTurma)) {
+                turmas.set(evento.idTurma, evento.turma || 'Turma não identificada');
+            }
+        });
+
+        Array.from(turmas.entries())
+            .sort(function (turmaA, turmaB) {
+                return turmaA[1].localeCompare(turmaB[1], 'pt-BR');
+            })
+            .forEach(function ([idTurma, nomeTurma]) {
+                const opcao = document.createElement('option');
+
+                opcao.value = idTurma;
+                opcao.textContent = nomeTurma;
+                filtroTurma.appendChild(opcao);
+            });
+
+        filtroTurmaRotulo.hidden = turmas.size < 2;
+
+        filtroTurma.addEventListener('change', function () {
+            turmaFiltrada = filtroTurma.value;
+            atualizarCalendario();
+        });
+    }
 
     if (seletorOrdenacao) {
         seletorOrdenacao.addEventListener('change', function () {

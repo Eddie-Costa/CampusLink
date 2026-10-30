@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css}">
+    <link rel="stylesheet" th:href="@{/css/Geral/agenda-dia.css}">
 </head>
 
 <body>
@@ -137,6 +138,18 @@
 
                 <div class="eventos-acoes">
 
+                    <div class="ordenacao-eventos" id="filtroTurmaRotulo" hidden>
+
+                        <label for="filtroTurma">
+                            Turma:
+                        </label>
+
+                        <select id="filtroTurma" aria-label="Filtrar eventos por turma">
+                            <option value="">Todas</option>
+                        </select>
+
+                    </div>
+
                     <button type="button"
                             id="alternarCards"
                             class="botao-alternar-cards"
@@ -181,6 +194,7 @@
                 <article class="evento-item"
                          th:each="evento : ${eventos}"
                          th:data-id="${evento.id}"
+                         th:data-id-turma="${evento.idTurma}"
                          th:data-prioridade="${evento.prioridade}"
                          th:data-inicio="${evento.inicio}">
 
@@ -352,7 +366,11 @@
                  th:data-inicio="${#temporals.format(evento.inicio, 'yyyy-MM-dd')}"
                  th:data-fim="${#temporals.format(evento.fim, 'yyyy-MM-dd')}"
                  th:data-nome="${evento.nome}"
-                 th:data-prioridade="${evento.prioridade}">
+                 th:data-prioridade="${evento.prioridade}"
+                 th:data-hora-inicio="${#temporals.format(evento.inicio, 'HH:mm')}"
+                 th:data-hora-fim="${#temporals.format(evento.fim, 'HH:mm')}"
+                 th:data-id-turma="${evento.idTurma}"
+                 th:data-turma="${evento.nomeTurma}">
             </div>
 
         </div>
@@ -371,8 +389,30 @@
 
 </div>
 
+<div class="modal fade cronograma-dia" id="cronogramaDiaModal" tabindex="-1"
+     aria-labelledby="cronogramaDiaTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="eventos-dia-cabecalho">
+                <div>
+                    <p class="eventos-dia-legenda">Agenda</p>
+                    <h2 id="cronogramaDiaTitulo">Eventos do dia</h2>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <time id="dataEventosDia"></time>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0">
+                <div id="gradeHorarios" class="grade-horarios" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script th:src="@{/js/Geral/agendaDia.js}"></script>
 <script th:src="@{/js/Geral/calendario-eventos.js}"></script>
 
 </body>
