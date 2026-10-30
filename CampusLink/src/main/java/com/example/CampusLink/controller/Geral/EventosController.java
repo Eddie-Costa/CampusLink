@@ -362,6 +362,7 @@ public class EventosController {
         model.addAttribute("disponibilidades", List.of());
         model.addAttribute("conteudos", List.of());
         model.addAttribute("turmasProfessor", List.of());
+        model.addAttribute("planoEstudo", List.of());
 
         if (usuarioEhProfessor(session)) {
 
@@ -388,6 +389,8 @@ public class EventosController {
 
                 model.addAttribute("proximoEventoRisco",
                         viabilidadeService.proximoEventoPendente(viabilidadeService.calcularParaAluno(idAluno)));
+
+                model.addAttribute("planoEstudo", viabilidadeService.gerarPlano(idAluno));
             }
         }
     }

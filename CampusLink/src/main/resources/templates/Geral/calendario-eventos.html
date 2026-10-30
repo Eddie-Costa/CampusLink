@@ -385,6 +385,21 @@
 
         </div>
 
+        <div id="planoDados" hidden>
+
+            <div class="plano-dado"
+                 th:each="sessao : ${planoEstudo}"
+                 th:data-data="${sessao.data != null ? #temporals.format(sessao.data, 'yyyy-MM-dd') : ''}"
+                 th:data-minutos="${sessao.minutos}"
+                 th:data-id-conteudo="${sessao.idConteudo}"
+                 th:data-conteudo="${sessao.tituloConteudo}"
+                 th:data-evento="${sessao.nomeEvento}"
+                 th:data-data-evento="${#temporals.format(sessao.dataEvento, 'yyyy-MM-dd')}"
+                 th:data-id-turma="${sessao.idTurma}">
+            </div>
+
+        </div>
+
     </main>
 
 </div>
@@ -404,6 +419,10 @@
                 </div>
             </div>
             <div class="modal-body p-0">
+                <section id="planoDoDia" class="plano-dia" aria-labelledby="planoDoDiaTitulo" hidden>
+                    <h3 id="planoDoDiaTitulo">Plano de estudos</h3>
+                    <ul id="listaPlanoDoDia"></ul>
+                </section>
                 <div id="gradeHorarios" class="grade-horarios" aria-live="polite"></div>
             </div>
         </div>

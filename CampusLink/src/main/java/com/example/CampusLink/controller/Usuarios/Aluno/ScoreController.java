@@ -1,6 +1,7 @@
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
 import com.example.CampusLink.dto.ConteudoDTO;
+import com.example.CampusLink.dto.SessaoEstudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.repository.AlunoRepository;
@@ -129,6 +130,20 @@ public class ScoreController {
                 .filter(atrasado -> id.equals(atrasado.getIdTurma()))
                 .forEach(atrasado -> atrasadosPorConteudo.put(atrasado.getIdConteudo(), atrasado));
 
+        Map<Long, Integer> minutosFaltandoPorEvento = new HashMap<>();
+        Map<Long, Integer> minutosFaltandoPorConteudo = new HashMap<>();
+        for (SessaoEstudoDTO sessao : viabilidadeService.gerarPlano(idAluno)) {
+            if (sessao.getData() == null && id.equals(sessao.getIdTurma())) {
+                minutosFaltandoPorEvento.merge(sessao.getIdEvento(), sessao.getMinutos(), Integer::sum);
+                minutosFaltandoPorConteudo.merge(sessao.getIdConteudo(), sessao.getMinutos(), Integer::sum);
+            }
+        }
+
+        Map<Long, String> faltaPorEvento = new HashMap<>();
+        minutosFaltandoPorEvento.forEach((idEvento, minutos) -> faltaPorEvento.put(idEvento, viabilidadeService.formatarHoras(minutos)));
+        Map<Long, String> faltaPorConteudo = new HashMap<>();
+        minutosFaltandoPorConteudo.forEach((idConteudo, minutos) -> faltaPorConteudo.put(idConteudo, viabilidadeService.formatarHoras(minutos)));
+
         model.addAttribute("turma", turma);
         model.addAttribute("eventos", resultadosTurma.stream().filter(resultado -> resultado.getIdConteudo() == null).toList());
         model.addAttribute("conteudos", conteudos);
@@ -136,6 +151,8 @@ public class ScoreController {
         model.addAttribute("conteudosSemEvento", conteudos.stream().filter(conteudo -> !conteudosComEvento.contains(conteudo.getId())).toList());
         model.addAttribute("conteudosConcluidos", concluidos);
         model.addAttribute("atrasadosPorConteudo", atrasadosPorConteudo);
+        model.addAttribute("faltaPorEvento", faltaPorEvento);
+        model.addAttribute("faltaPorConteudo", faltaPorConteudo);
         model.addAttribute("totalConcluidos", conteudos.stream().filter(conteudo -> concluidos.contains(conteudo.getId())).count());
 
         return "Usuarios/Aluno/scoreTurma";
