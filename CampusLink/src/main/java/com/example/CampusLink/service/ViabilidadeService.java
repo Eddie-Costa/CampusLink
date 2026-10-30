@@ -420,7 +420,10 @@ public class ViabilidadeService {
                 + item.getDataEvento().format(FORMATO_DATA) + ".";
 
         return switch (item.getNivel()) {
-            case "laranja" -> texto + " Cadastre mais horas de disponibilidade.";
+            case "laranja" -> texto + " Adicione "
+                    + (int) Math.ceil((item.getCargaMin() - item.getCapacidadeMin()) / 60.0)
+                    + "h de disponibilidade até " + item.getDataEvento().minusDays(1).format(FORMATO_DATA)
+                    + " para ficar amarelo.";
             case "vermelho" -> texto + " Não há tempo suficiente até o evento.";
             default -> texto;
         };
