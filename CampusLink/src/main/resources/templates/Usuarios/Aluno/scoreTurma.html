@@ -36,6 +36,10 @@
                         <span class="conteudo-nome d-block"
                               th:text="${evento.nomeEvento + ' · ' + #temporals.format(evento.dataEvento, 'dd/MM')}">Prova · 18/10</span>
                         <span class="conteudo-meta" th:text="${evento.motivo}">Faltam 9h de estudo...</span>
+                        <span class="conteudo-meta aviso-falta mt-1" th:if="${faltaPorEvento.containsKey(evento.idEvento)}"
+                              th:text="${'⚠ O plano de estudos não conseguiu encaixar ' + faltaPorEvento.get(evento.idEvento) + ' antes deste evento.'}">
+                            ⚠ O plano de estudos não conseguiu encaixar 2h antes deste evento.
+                        </span>
                     </div>
                     <span class="d-flex align-items-center gap-3">
                         <span th:replace="~{fragments/risco :: selo(${evento.nivel}, ${evento.motivo})}"></span>
@@ -48,7 +52,11 @@
 
                     <div class="conteudo-card evento-score-item" th:each="item : ${itens}">
                         <span class="conteudo-nome" th:text="${item.tituloConteudo}">Conteúdo #1</span>
-                        <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                        <span class="d-flex align-items-center gap-3">
+                            <span class="conteudo-meta aviso-falta" th:if="${faltaPorConteudo.containsKey(item.idConteudo) and item.nivel != 'concluido'}"
+                                  th:text="${'faltou ' + faltaPorConteudo.get(item.idConteudo)}">faltou 30min</span>
+                            <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                        </span>
                     </div>
                 </div>
             </details>

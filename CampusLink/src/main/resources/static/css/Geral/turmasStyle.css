@@ -379,6 +379,11 @@ body {
     font-size: 16px;
 }
 
+.aviso-falta {
+    color: #ffd8a8;
+    font-weight: 700;
+}
+
 a.conteudo-card,
 a.conteudo-card:hover {
     gap: 16px;

@@ -1,6 +1,7 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.ConteudoDTO;
+import com.example.CampusLink.dto.SessaoEstudoDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Disponibilidade;
 import com.example.CampusLink.model.Evento;
@@ -65,36 +66,12 @@ public class ViabilidadeService {
         }
 
         try {
-            Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
-
-            Set<Long> idsTurmas = new HashSet<>();
-            turmasPorAluno.values().forEach(idsTurmas::addAll);
-
             LocalDate hoje = LocalDate.now(FUSO);
-            List<Evento> eventos = idsTurmas.isEmpty()
-                    ? List.of()
-                    : eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
-                    idsTurmas, "ATIVO", hoje.atStartOfDay());
-
-            Map<Long, List<ConteudoDTO>> conteudosPorEvento =
-                    conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());
-            Map<Long, Set<Long>> concluidosPorAluno = conteudoRepository.listarConcluidosDosAlunos(idsAlunos);
-
-            Map<Long, Map<LocalDate, Integer>> horasPorAluno = new HashMap<>();
-            for (Disponibilidade disponibilidade : disponibilidadeRepository.findAllByIdAlunoIn(idsAlunos)) {
-                horasPorAluno.computeIfAbsent(disponibilidade.getIdAluno(), idAluno -> new HashMap<>())
-                        .merge(disponibilidade.getData(), disponibilidade.getHorasDisponiveis(), Integer::sum);
-            }
+            DadosAlunos dados = carregar(idsAlunos, hoje);
 
             for (Long idAluno : idsAlunos) {
-                List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
-                List<Evento> eventosAluno = eventos.stream()
-                        .filter(evento -> turmasAluno.contains(evento.getIdTurma()))
-                        .toList();
-
-                resultadoPorAluno.put(idAluno, calcular(idAluno, hoje, eventosAluno, conteudosPorEvento,
-                        concluidosPorAluno.getOrDefault(idAluno, Set.of()),
-                        horasPorAluno.getOrDefault(idAluno, Map.of())));
+                resultadoPorAluno.put(idAluno, calcular(idAluno, hoje, dados.eventosDo(idAluno), dados.conteudosPorEvento(),
+                        dados.concluidosDo(idAluno), dados.horasDo(idAluno)));
             }
 
             return resultadoPorAluno;
@@ -180,6 +157,66 @@ public class ViabilidadeService {
         }
     }
 
+    public List<SessaoEstudoDTO> gerarPlano(Long idAluno) {
+        try {
+            LocalDate hoje = LocalDate.now(FUSO);
+            DadosAlunos dados = carregar(List.of(idAluno), hoje);
+
+            return planejar(hoje, dados.eventosDo(idAluno), dados.conteudosPorEvento(),
+                    dados.concluidosDo(idAluno), dados.horasDo(idAluno));
+
+        } catch (SQLException e) {
+            registrarErro("gerarPlano", "Erro ao gerar plano de estudos. alunos={}", List.of(idAluno), e);
+            throw new RuntimeException("Não foi possível gerar o plano de estudos.", e);
+        }
+    }
+
+    List<SessaoEstudoDTO> planejar(LocalDate hoje,
+                                   List<Evento> eventos,
+                                   Map<Long, List<ConteudoDTO>> conteudosPorEvento,
+                                   Set<Long> concluidos,
+                                   Map<LocalDate, Integer> horasPorDia) {
+
+        Map<LocalDate, Integer> livrePorDia = new HashMap<>();
+        horasPorDia.forEach((dia, horas) -> {
+            if (!dia.isBefore(hoje)) {
+                livrePorDia.put(dia, horas * 60);
+            }
+        });
+
+        List<SessaoEstudoDTO> plano = new ArrayList<>();
+        Set<Long> planejados = new HashSet<>();
+
+        for (Evento evento : ordenarEventos(eventos)) {
+            LocalDate dataEvento = evento.getInicio().toLocalDate();
+
+            for (ConteudoDTO conteudo : ordenarConteudos(conteudosPorEvento.getOrDefault(evento.getId(), List.of()))) {
+                if (concluidos.contains(conteudo.getId()) || !planejados.add(conteudo.getId())) {
+                    continue;
+                }
+
+                int restante = duracaoDe(conteudo);
+                for (LocalDate dia = hoje; dia.isBefore(dataEvento) && restante > 0; dia = dia.plusDays(1)) {
+                    int livre = livrePorDia.getOrDefault(dia, 0);
+                    if (livre == 0) {
+                        continue;
+                    }
+                    int minutos = Math.min(livre, restante);
+                    livrePorDia.put(dia, livre - minutos);
+                    restante -= minutos;
+                    plano.add(novaSessao(dia, evento, conteudo, minutos));
+                }
+
+                if (restante > 0) {
+                    plano.add(novaSessao(null, evento, conteudo, restante));
+                }
+            }
+        }
+
+        plano.sort(Comparator.comparing(SessaoEstudoDTO::getData, Comparator.nullsLast(Comparator.naturalOrder())));
+        return plano;
+    }
+
     List<ViabilidadeDTO> calcular(Long idAluno,
                                   LocalDate hoje,
                                   List<Evento> eventos,
@@ -187,22 +224,16 @@ public class ViabilidadeService {
                                   Set<Long> concluidos,
                                   Map<LocalDate, Integer> horasPorDia) {
 
-        List<Evento> eventosOrdenados = eventos.stream()
-                .sorted(Comparator.comparing(Evento::getInicio)
-                        .thenComparing(evento -> pesoPrioridade(evento.getPrioridade())))
-                .toList();
-
         List<ViabilidadeDTO> resultado = new ArrayList<>();
         Map<Long, Integer> cargaAteConteudo = new HashMap<>();
         int cargaAcumulada = 0;
 
-        for (Evento evento : eventosOrdenados) {
+        for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
             int capacidade = capacidadeAte(hoje, dataEvento, horasPorDia);
             int maximo = (int) Math.max(0, ChronoUnit.DAYS.between(hoje, dataEvento)) * TETO_DIARIO_HORAS * 60;
 
-            List<ConteudoDTO> conteudos = new ArrayList<>(conteudosPorEvento.getOrDefault(evento.getId(), List.of()));
-            conteudos.sort(Comparator.comparing(conteudo -> pesoPrioridade(conteudo.getPrioridade())));
+            List<ConteudoDTO> conteudos = ordenarConteudos(conteudosPorEvento.getOrDefault(evento.getId(), List.of()));
 
             String piorNivel = "concluido";
 
@@ -261,6 +292,76 @@ public class ViabilidadeService {
         }
 
         return proximo;
+    }
+
+    private record DadosAlunos(Map<Long, List<Long>> turmasPorAluno,
+                               List<Evento> eventos,
+                               Map<Long, List<ConteudoDTO>> conteudosPorEvento,
+                               Map<Long, Set<Long>> concluidosPorAluno,
+                               Map<Long, Map<LocalDate, Integer>> horasPorAluno) {
+
+        List<Evento> eventosDo(Long idAluno) {
+            List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
+            return eventos.stream().filter(evento -> turmasAluno.contains(evento.getIdTurma())).toList();
+        }
+
+        Set<Long> concluidosDo(Long idAluno) {
+            return concluidosPorAluno.getOrDefault(idAluno, Set.of());
+        }
+
+        Map<LocalDate, Integer> horasDo(Long idAluno) {
+            return horasPorAluno.getOrDefault(idAluno, Map.of());
+        }
+    }
+
+    private DadosAlunos carregar(List<Long> idsAlunos, LocalDate hoje) throws SQLException {
+        Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
+
+        Set<Long> idsTurmas = new HashSet<>();
+        turmasPorAluno.values().forEach(idsTurmas::addAll);
+
+        List<Evento> eventos = idsTurmas.isEmpty()
+                ? List.of()
+                : eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
+                idsTurmas, "ATIVO", hoje.atStartOfDay());
+
+        Map<Long, List<ConteudoDTO>> conteudosPorEvento =
+                conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());
+        Map<Long, Set<Long>> concluidosPorAluno = conteudoRepository.listarConcluidosDosAlunos(idsAlunos);
+
+        Map<Long, Map<LocalDate, Integer>> horasPorAluno = new HashMap<>();
+        for (Disponibilidade disponibilidade : disponibilidadeRepository.findAllByIdAlunoIn(idsAlunos)) {
+            horasPorAluno.computeIfAbsent(disponibilidade.getIdAluno(), idAluno -> new HashMap<>())
+                    .merge(disponibilidade.getData(), disponibilidade.getHorasDisponiveis(), Integer::sum);
+        }
+
+        return new DadosAlunos(turmasPorAluno, eventos, conteudosPorEvento, concluidosPorAluno, horasPorAluno);
+    }
+
+    private List<Evento> ordenarEventos(List<Evento> eventos) {
+        return eventos.stream()
+                .sorted(Comparator.comparing(Evento::getInicio)
+                        .thenComparing(evento -> pesoPrioridade(evento.getPrioridade())))
+                .toList();
+    }
+
+    private List<ConteudoDTO> ordenarConteudos(List<ConteudoDTO> conteudos) {
+        return conteudos.stream()
+                .sorted(Comparator.comparing(conteudo -> pesoPrioridade(conteudo.getPrioridade())))
+                .toList();
+    }
+
+    private SessaoEstudoDTO novaSessao(LocalDate dia, Evento evento, ConteudoDTO conteudo, int minutos) {
+        SessaoEstudoDTO sessao = new SessaoEstudoDTO();
+        sessao.setData(dia);
+        sessao.setIdTurma(evento.getIdTurma());
+        sessao.setIdEvento(evento.getId());
+        sessao.setNomeEvento(evento.getNome());
+        sessao.setDataEvento(evento.getInicio());
+        sessao.setIdConteudo(conteudo.getId());
+        sessao.setTituloConteudo(conteudo.getTitulo());
+        sessao.setMinutos(minutos);
+        return sessao;
     }
 
     private String classificar(int cargaMin, int capacidadeMin, int maximoMin) {
@@ -325,7 +426,7 @@ public class ViabilidadeService {
         };
     }
 
-    private String formatarHoras(int minutos) {
+    public String formatarHoras(int minutos) {
         int horas = minutos / 60;
         int resto = minutos % 60;
 

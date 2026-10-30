@@ -59,6 +59,20 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     });
 
+    const planoDados = Array.from(document.querySelectorAll('.plano-dado')).map(function (sessao) {
+        return {
+            data: sessao.dataset.data || '',
+            minutos: Number(sessao.dataset.minutos || 0),
+            conteudo: sessao.dataset.conteudo || '',
+            evento: sessao.dataset.evento || '',
+            dataEvento: sessao.dataset.dataEvento || '',
+            idTurma: sessao.dataset.idTurma || ''
+        };
+    });
+
+    const planoDoDia = document.getElementById('planoDoDia');
+    const listaPlanoDoDia = document.getElementById('listaPlanoDoDia');
+
     const calendario = document.getElementById('calendar');
     const mesExibido = document.getElementById('mesExibido');
     const seletorMes = document.getElementById('seletorMes');
@@ -176,6 +190,71 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${dia}/${mes}`;
     }
 
+    function formatarMinutos(minutos) {
+        const horas = Math.floor(minutos / 60);
+        const resto = minutos % 60;
+
+        if (horas === 0) {
+            return `${resto}min`;
+        }
+
+        return resto === 0 ? `${horas}h` : `${horas}h${String(resto).padStart(2, '0')}`;
+    }
+
+    function buscarPlanoDoDia(data) {
+        return planoDados.filter(function (sessao) {
+            return sessao.data === data && eventoDaTurmaFiltrada(sessao.idTurma);
+        });
+    }
+
+    function criarMarcadorEstudo(sessoes, data) {
+        const totalMinutos = sessoes.reduce(function (total, sessao) {
+            return total + sessao.minutos;
+        }, 0);
+
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
+        marcador.classList.add('estudo-marcador');
+        marcador.textContent = `Estudar ${formatarMinutos(totalMinutos)}`;
+        marcador.title = sessoes.map(function (sessao) {
+            return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}`;
+        }).join('\n');
+        marcador.setAttribute('aria-label', `Ver plano de estudos do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirCronograma(data);
+        });
+
+        return marcador;
+    }
+
+    function montarPlanoDoDia(data) {
+        if (!planoDoDia || !listaPlanoDoDia) {
+            return;
+        }
+
+        const sessoes = buscarPlanoDoDia(data);
+
+        listaPlanoDoDia.innerHTML = '';
+        planoDoDia.hidden = sessoes.length === 0;
+
+        sessoes.forEach(function (sessao) {
+            const item = document.createElement('li');
+            const descricao = document.createElement('div');
+            const conteudo = document.createElement('strong');
+            const evento = document.createElement('span');
+            const tempo = document.createElement('span');
+
+            conteudo.textContent = sessao.conteudo;
+            evento.textContent = `${sessao.evento} · ${formatarDataCurta(sessao.dataEvento)}`;
+            tempo.classList.add('plano-dia-tempo');
+            tempo.textContent = formatarMinutos(sessao.minutos);
+
+            descricao.append(conteudo, evento);
+            item.append(descricao, tempo);
+            listaPlanoDoDia.appendChild(item);
+        });
+    }
+
     function abrirCronograma(data) {
         if (!modalCronograma || typeof bootstrap === 'undefined' || typeof montarAgendaDoDia === 'undefined') {
             return;
@@ -184,6 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const eventosVisiveis = eventosDaAgenda.filter(function (evento) {
             return eventoDaTurmaFiltrada(evento.idTurma);
         });
+        montarPlanoDoDia(data);
         const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
         const corpoModal = modalCronograma.querySelector('.modal-body');
 
@@ -492,6 +572,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 celula.classList.add('tem-disponibilidade');
                 celula.appendChild(marcadorDisponibilidade);
+
+                const sessoesDoDia = data < inicioDeHoje ? [] : buscarPlanoDoDia(dataFormatada);
+
+                if (sessoesDoDia.length > 0) {
+                    celula.appendChild(criarMarcadorEstudo(sessoesDoDia, dataFormatada));
+                }
             }
 
             celula.appendChild(numeroDia);
