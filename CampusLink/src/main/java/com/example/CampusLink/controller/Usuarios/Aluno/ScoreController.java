@@ -55,7 +55,12 @@ public class ScoreController {
         }
 
         List<TurmaDTO> turmas = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
-        Map<Long, ViabilidadeDTO> proximoEventoPorTurma = proximoEventoPorTurma(viabilidadeService.calcularParaAluno(idAluno));
+        List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
+        List<ViabilidadeDTO> atrasados = viabilidadeService.listarAtrasados(List.of(idAluno)).getOrDefault(idAluno, List.of());
+        Map<Long, ViabilidadeDTO> proximoEventoPorTurma = proximoEventoPorTurma(resultados);
+
+        Map<Long, String> nomeTurmaPorId = new HashMap<>();
+        turmas.forEach(turma -> nomeTurmaPorId.put(turma.getId(), turma.getNomeTurma()));
 
         Map<Long, Long> concluidosPorTurma = new HashMap<>();
         Map<Long, Integer> totalPorTurma = new HashMap<>();
@@ -71,6 +76,8 @@ public class ScoreController {
         model.addAttribute("proximoEventoPorTurma", proximoEventoPorTurma);
         model.addAttribute("concluidosPorTurma", concluidosPorTurma);
         model.addAttribute("totalPorTurma", totalPorTurma);
+        model.addAttribute("prioridades", montarPrioridades(resultados, atrasados));
+        model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
 
         return "Usuarios/Aluno/score";
     }
@@ -117,12 +124,18 @@ public class ScoreController {
         List<ConteudoDTO> conteudos = listarAtivos(id);
         Set<Long> concluidos = conteudoService.listarConcluidosDoAluno(idAluno, id);
 
+        Map<Long, ViabilidadeDTO> atrasadosPorConteudo = new HashMap<>();
+        viabilidadeService.listarAtrasados(List.of(idAluno)).getOrDefault(idAluno, List.of()).stream()
+                .filter(atrasado -> id.equals(atrasado.getIdTurma()))
+                .forEach(atrasado -> atrasadosPorConteudo.put(atrasado.getIdConteudo(), atrasado));
+
         model.addAttribute("turma", turma);
         model.addAttribute("eventos", resultadosTurma.stream().filter(resultado -> resultado.getIdConteudo() == null).toList());
         model.addAttribute("conteudos", conteudos);
         model.addAttribute("conteudosPorEvento", conteudosPorEvento);
         model.addAttribute("conteudosSemEvento", conteudos.stream().filter(conteudo -> !conteudosComEvento.contains(conteudo.getId())).toList());
         model.addAttribute("conteudosConcluidos", concluidos);
+        model.addAttribute("atrasadosPorConteudo", atrasadosPorConteudo);
         model.addAttribute("totalConcluidos", conteudos.stream().filter(conteudo -> concluidos.contains(conteudo.getId())).count());
 
         return "Usuarios/Aluno/scoreTurma";
@@ -159,6 +172,23 @@ public class ScoreController {
         return conteudoService.listarPorTurma(idTurma).stream()
                 .filter(conteudo -> "ativo".equals(conteudo.getStatus()))
                 .toList();
+    }
+
+    private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados, List<ViabilidadeDTO> atrasados) {
+        List<ViabilidadeDTO> prioridades = new ArrayList<>(atrasados);
+        Set<Long> jaListados = new HashSet<>();
+        atrasados.forEach(atrasado -> jaListados.add(atrasado.getIdConteudo()));
+
+        for (String nivel : List.of("vermelho", "laranja")) {
+            for (ViabilidadeDTO resultado : resultados) {
+                if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
+                        && jaListados.add(resultado.getIdConteudo())) {
+                    prioridades.add(resultado);
+                }
+            }
+        }
+
+        return prioridades;
     }
 
     private Map<Long, ViabilidadeDTO> proximoEventoPorTurma(List<ViabilidadeDTO> resultados) {

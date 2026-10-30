@@ -29,6 +29,9 @@
     --campus-orange: #d9480f;
     --campus-orange-text: #8a3700;
     --campus-orange-bg: #ffe8cc;
+    --campus-late: #343a40;
+    --campus-late-text: #ffffff;
+    --campus-late-bg: #495057;
     --campus-info-bg: #e0f2fe;
     --campus-info-text: #075985;
     --bs-primary: var(--campus-navy);
@@ -185,6 +188,16 @@ body,
     --selo-cor: var(--campus-success);
     background-color: var(--campus-white);
     color: var(--campus-success-text);
+}
+
+.risco-atrasado {
+    --selo-cor: var(--campus-late-text);
+    background-color: var(--campus-late-bg);
+    color: var(--campus-late-text);
+}
+
+.ponto-risco.risco-atrasado {
+    --selo-cor: var(--campus-late);
 }
 
 .risco-sem_evento {
