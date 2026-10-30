@@ -555,6 +555,12 @@ button.evento-marcador:focus-visible {
     font-weight: 700;
 }
 
+.plano-dia .plano-dia-nota {
+    margin: 10px 0 0;
+    font-size: 11px;
+    font-style: italic;
+}
+
 .day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
     bottom: 28px;
 }
