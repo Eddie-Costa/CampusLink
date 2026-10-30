@@ -478,6 +478,83 @@ button.evento-marcador:focus-visible {
     box-shadow: 0 0 8px rgba(var(--campus-success-rgb), 0.55);
 }
 
+.estudo-marcador {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    left: 30px;
+    z-index: 3;
+    min-height: 16px;
+    padding: 2px 5px;
+    overflow: hidden;
+    border: 1px solid var(--verde-disponibilidade);
+    border-radius: 3px;
+    background: var(--campus-success-bg);
+    color: var(--campus-success-text);
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.estudo-marcador:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+}
+
+.plano-dia {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--campus-border);
+    background: var(--campus-success-bg);
+    color: var(--campus-success-text);
+}
+
+.plano-dia[hidden] {
+    display: none;
+}
+
+.plano-dia h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.plano-dia ul {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plano-dia li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.plano-dia li div {
+    display: flex;
+    flex-direction: column;
+}
+
+.plano-dia li span {
+    font-size: 12px;
+}
+
+.plano-dia .plano-dia-tempo {
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
     bottom: 28px;
 }
@@ -1097,6 +1174,15 @@ button.evento-marcador:focus-visible {
 
     .day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
         bottom: 23px;
+    }
+
+    .estudo-marcador {
+        top: 4px;
+        right: 4px;
+        left: 22px;
+        min-height: 14px;
+        padding: 1px 3px;
+        font-size: 7px;
     }
 
     .day-cell.tem-disponibilidade.tem-evento .evento-marcador {
