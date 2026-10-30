@@ -13,7 +13,7 @@
 <div th:replace="~{fragments/header :: nav}"></div>
 
 <main class="turmas-page">
-    <div class="turmas-container">
+    <div class="turmas-container turmas-container-larga">
 
         <a class="voltar-turmas" th:href="@{/acompanhamento/turma/{id}(id=${turma.id})}">← Voltar à turma</a>
 
@@ -32,7 +32,8 @@
 
         <div class="bg-white rounded-4 shadow-sm p-3" th:unless="${#lists.isEmpty(alunos)}">
             <div class="table-responsive">
-                <table class="table table-sm table-hover table-bordered align-middle text-center mb-0 tabela-acompanhamento">
+                <table class="table table-sm table-hover table-bordered align-middle text-center mb-0 tabela-acompanhamento"
+                       th:style="${'width: ' + (560 + 130 * #lists.size(conteudos)) + 'px'}">
                     <colgroup>
                         <col class="coluna-aluno">
                         <col class="coluna-conteudo" th:each="conteudo : ${conteudos}">

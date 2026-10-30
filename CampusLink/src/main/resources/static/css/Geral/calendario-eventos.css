@@ -440,27 +440,24 @@ body {
 }
 
 .evento-marcador.evento-inicio,
-.evento-marcador.evento-unico {
-    background: var(--vermelho-evento);
-    color: #ffffff;
-}
-
+.evento-marcador.evento-unico,
 .evento-marcador.evento-meio,
-.evento-marcador.evento-fim {
-    background: var(--amarelo-evento);
-    color: var(--azul-escuro);
-}
-
-.day-cell.adjacent-month .evento-marcador.evento-inicio,
-.day-cell.adjacent-month .evento-marcador.evento-unico {
+.evento-marcador.evento-fim,
+.day-cell.adjacent-month .evento-marcador {
     background: var(--vermelho-evento);
     color: #ffffff;
 }
 
-.day-cell.adjacent-month .evento-marcador.evento-meio,
-.day-cell.adjacent-month .evento-marcador.evento-fim {
-    background: var(--amarelo-evento);
-    color: var(--azul-escuro);
+button.evento-marcador {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+button.evento-marcador:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
 }
 
 .evento-marcador.evento-marcador-aluno {
@@ -551,6 +548,14 @@ body {
     font-size: 13px;
 }
 
+.cronograma-dia .modal-content {
+    padding: 25px 30px 28px;
+    border: 0;
+    border-radius: 23px;
+    background: rgba(17, 24, 63, 0.95);
+    box-shadow: 0 18px 36px rgba(4, 7, 24, 0.32);
+}
+
 .disponibilidade-risco {
     display: flex;
     flex-wrap: wrap;
@@ -587,6 +592,7 @@ body {
     margin: 0;
     color: var(--azul-texto);
     font-size: 20px;
+    white-space: nowrap;
 }
 
 .eventos-acoes {
@@ -685,6 +691,16 @@ body {
     color: var(--azul-texto);
     font-size: 13px;
     font-weight: 700;
+}
+
+.ordenacao-eventos[hidden] {
+    display: none;
+}
+
+#filtroTurma {
+    width: 200px;
+    min-width: 0;
+    text-overflow: ellipsis;
 }
 
 .ordenacao-eventos select {
@@ -1129,6 +1145,10 @@ body {
 
     .ordenacao-eventos select {
         flex: 1;
+    }
+
+    #filtroTurma {
+        width: auto;
     }
 
     .evento-item {

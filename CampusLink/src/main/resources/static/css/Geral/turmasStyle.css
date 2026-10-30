@@ -251,18 +251,38 @@ body {
    VOLTAR / TÍTULO DA TURMA
 ================================ */
 
-.voltar-turmas {
-    display: inline-block;
+.voltar-turmas,
+.botao-compacto {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
     margin-bottom: 14px;
+    padding: 7px 15px;
+    border-radius: 18px;
+    background-color: var(--campus-navy);
     color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
     text-decoration: none;
-    opacity: 0.85;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.voltar-turmas:hover {
+.voltar-turmas:hover,
+.botao-compacto:hover {
+    background-color: var(--campus-navy-hover);
     color: #ffffff;
-    opacity: 1;
-    text-decoration: underline;
+    transform: translateY(-2px);
+}
+
+.voltar-turmas:focus-visible,
+.botao-compacto:focus-visible {
+    outline: 3px solid var(--campus-accent);
+    outline-offset: 3px;
+}
+
+.turmas-container > h1,
+.turmas-container > h2 {
+    color: var(--campus-navy);
 }
 
 
@@ -359,9 +379,12 @@ body {
     font-size: 16px;
 }
 
+.turmas-container-larga {
+    max-width: 80vw;
+}
+
 .tabela-acompanhamento {
     table-layout: fixed;
-    width: max-content;
     min-width: 100%;
 }
 

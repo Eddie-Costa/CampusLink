@@ -380,88 +380,10 @@ function atualizarCalendarioDeFundo() {
     }
 }
 
-function formatarDataExibicao(data) {
-    const dataFormatada = new Date(`${data}T12:00:00`);
-
-    return dataFormatada.toLocaleDateString('pt-BR', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-function obterEventosDaHora(data, hora) {
-    const inicioHora = new Date(`${data}T${String(hora).padStart(2, '0')}:00:00`);
-    const fimHora = new Date(inicioHora.getTime() + 60 * 60 * 1000);
-
-    return eventosDados.filter(function (evento) {
-        return evento.inicio &&
-            evento.fim &&
-            evento.inicio < fimHora &&
-            evento.fim > inicioHora;
-    });
-}
-
 function atualizarAgendaDoDia() {
-    if (!gradeHorarios || !dataEventosDia) {
-        return;
-    }
-
     const dataSelecionada = dataValida(queryDate) ? queryDate : obterDataHoje();
 
-    dataEventosDia.textContent = formatarDataExibicao(dataSelecionada);
-    gradeHorarios.innerHTML = '';
-
-    for (let hora = 0; hora < 24; hora++) {
-        const eventosDaHora = obterEventosDaHora(dataSelecionada, hora);
-
-        const linha = document.createElement('div');
-
-        linha.classList.add('horario-linha');
-
-        const horario = document.createElement('time');
-
-        horario.classList.add('horario-hora');
-        horario.textContent = `${String(hora).padStart(2, '0')}:00`;
-
-        const faixa = document.createElement('div');
-
-        faixa.classList.add('horario-faixa');
-
-        if (eventosDaHora.length === 0) {
-            faixa.classList.add('horario-livre');
-
-            const linhaLivre = document.createElement('span');
-
-            linhaLivre.classList.add('linha-livre');
-
-            faixa.appendChild(linhaLivre);
-        } else {
-            faixa.classList.add('horario-ocupado');
-
-            const nomes = eventosDaHora.map(function (evento) {
-                return evento.nome;
-            }).join(', ');
-
-            const eventoTexto = document.createElement('span');
-
-            eventoTexto.classList.add('nome-evento-horario');
-
-            if (eventosDaHora.length === 1) {
-                eventoTexto.textContent = nomes;
-            } else {
-                eventoTexto.textContent = `${eventosDaHora.length} eventos: ${nomes}`;
-            }
-
-            faixa.appendChild(eventoTexto);
-        }
-
-        linha.appendChild(horario);
-        linha.appendChild(faixa);
-
-        gradeHorarios.appendChild(linha);
-    }
+    montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, eventosDados);
 }
 
 const dataInicial = dataValida(queryDate) ? queryDate : obterDataHoje();

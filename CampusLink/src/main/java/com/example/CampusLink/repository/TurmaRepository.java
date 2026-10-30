@@ -13,7 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class TurmaRepository {
@@ -117,6 +119,29 @@ public class TurmaRepository {
         } else {
             return List.of();
         }
+    }
+
+    public Map<Long, List<Long>> buscarTurmasDosAlunos(List<Long> idsAlunos) throws SQLException {
+        String sql = "SELECT t.id AS id_turma, aluno.id_aluno FROM public.\"TURMAS\" t " +
+                "CROSS JOIN LATERAL unnest(t.id_alunos) AS aluno(id_aluno) " +
+                "WHERE aluno.id_aluno = ANY(?)";
+
+        Map<Long, List<Long>> turmasPorAluno = new HashMap<>();
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setArray(1, conn.createArrayOf("bigint", idsAlunos.toArray()));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    turmasPorAluno.computeIfAbsent(rs.getLong("id_aluno"), idAluno -> new ArrayList<>())
+                            .add(rs.getLong("id_turma"));
+                }
+            }
+        }
+
+        return turmasPorAluno;
     }
 
     public TurmaDTO buscarTurmaPorId(String id) throws SQLException {

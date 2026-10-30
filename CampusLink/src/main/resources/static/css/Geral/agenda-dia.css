@@ -1,0 +1,140 @@
+.eventos-dia-cabecalho {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.eventos-dia-legenda {
+    margin: 0 0 4px;
+    color: #8fa2d4;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.eventos-dia-cabecalho h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+#dataEventosDia {
+    color: #cbd5f2;
+    font-size: 11px;
+    text-align: right;
+    text-transform: capitalize;
+}
+
+.agenda-corpo {
+    position: relative;
+}
+
+.horario-linha {
+    position: absolute;
+    right: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+}
+
+.horario-linha::after {
+    content: "";
+    height: 1px;
+    margin-top: 7px;
+    background: rgba(45, 156, 229, 0.45);
+}
+
+.horario-hora {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: right;
+}
+
+.agenda-eventos {
+    position: absolute;
+    top: 7px;
+    right: 0;
+    bottom: 0;
+    left: 64px;
+}
+
+.agenda-evento {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px;
+    overflow: hidden;
+    border-left: 4px solid rgba(0, 0, 0, 0.35);
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(4, 7, 24, 0.35);
+    color: #ffffff;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.agenda-evento strong,
+.agenda-evento span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agenda-evento strong {
+    font-size: 12px;
+}
+
+.agenda-prioridade-alta {
+    background: rgba(229, 57, 53, 0.92);
+}
+
+.agenda-prioridade-media {
+    background: rgba(242, 201, 76, 0.95);
+    color: var(--campus-navy);
+}
+
+.agenda-prioridade-baixa {
+    background: rgba(45, 156, 229, 0.92);
+}
+
+@media (max-width: 700px) {
+    .eventos-dia-cabecalho {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .eventos-dia-cabecalho h2 {
+        font-size: 21px;
+    }
+
+    #dataEventosDia {
+        text-align: left;
+    }
+
+    .horario-linha {
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .horario-hora {
+        font-size: 10px;
+    }
+
+    .agenda-eventos {
+        left: 50px;
+    }
+
+    .agenda-evento {
+        padding: 3px 5px;
+        font-size: 10px;
+    }
+}

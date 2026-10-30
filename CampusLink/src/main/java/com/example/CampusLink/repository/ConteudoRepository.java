@@ -166,6 +166,43 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    public Map<Long, List<ConteudoDTO>> listarPorEventos(List<Long> idsEventos) throws SQLException {
+        Map<Long, List<ConteudoDTO>> conteudosPorEvento = new HashMap<>();
+
+        if (idsEventos.isEmpty()) {
+            return conteudosPorEvento;
+        }
+
+        String sql = """
+                SELECT c.*, ec."id_evento" AS evento_id
+                FROM public."EVENTO_CONTEUDO" ec
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = ec."id_conteudo"
+                WHERE ec."id_evento" = ANY(?)
+                AND c."status" = 'ativo'
+                ORDER BY c."created_at" ASC, c."id" ASC
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsEventos.toArray()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudosPorEvento.computeIfAbsent(rs.getLong("evento_id"), idEvento -> new ArrayList<>())
+                                .add(montarConteudo(rs, null));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return conteudosPorEvento;
+    }
+
     public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) throws SQLException {
 
         List<ConteudoDTO> conteudos = new ArrayList<>();
@@ -806,6 +843,39 @@ public class ConteudoRepository {
         } catch (DataAccessException e) {
             throw converterErro(e);
         }
+    }
+
+    public Map<Long, Set<Long>> listarConcluidosDosAlunos(List<Long> idsAlunos) throws SQLException {
+        Map<Long, Set<Long>> concluidosPorAluno = new HashMap<>();
+
+        if (idsAlunos.isEmpty()) {
+            return concluidosPorAluno;
+        }
+
+        String sql = """
+                SELECT "id_aluno", "id_conteudo"
+                FROM public."PROGRESSO_CONTEUDO"
+                WHERE "id_aluno" = ANY(?)
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        concluidosPorAluno.computeIfAbsent(rs.getLong("id_aluno"), idAluno -> new HashSet<>())
+                                .add(rs.getLong("id_conteudo"));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return concluidosPorAluno;
     }
 
     // preserva o contrato de erro usado pelos consumidores

@@ -1,11 +1,11 @@
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.ConteudoDTO;
-import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Disponibilidade;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.DisponibilidadeRepository;
 import com.example.CampusLink.repository.EventoRepository;
 import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -51,57 +51,71 @@ public class ViabilidadeService {
     private final EventoRepository eventoRepository;
     private final ConteudoRepository conteudoRepository;
     private final TurmaRepository turmaRepository;
-    private final DisponibilidadeService disponibilidadeService;
+    private final DisponibilidadeRepository disponibilidadeRepository;
 
     public List<ViabilidadeDTO> calcularParaAluno(Long idAluno) {
-        try {
-            List<Long> idsTurmas = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString())
-                    .stream()
-                    .map(TurmaDTO::getId)
-                    .toList();
+        return calcularParaAlunos(List.of(idAluno)).getOrDefault(idAluno, List.of());
+    }
 
-            if (idsTurmas.isEmpty()) {
-                return List.of();
-            }
+    public Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<Long> idsAlunos) {
+        Map<Long, List<ViabilidadeDTO>> resultadoPorAluno = new HashMap<>();
+
+        if (idsAlunos.isEmpty()) {
+            return resultadoPorAluno;
+        }
+
+        try {
+            Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
+
+            Set<Long> idsTurmas = new HashSet<>();
+            turmasPorAluno.values().forEach(idsTurmas::addAll);
 
             LocalDate hoje = LocalDate.now(FUSO);
-            List<Evento> eventos = eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
+            List<Evento> eventos = idsTurmas.isEmpty()
+                    ? List.of()
+                    : eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
                     idsTurmas, "ATIVO", hoje.atStartOfDay());
 
-            Map<Long, List<ConteudoDTO>> conteudosPorEvento = new HashMap<>();
-            for (Evento evento : eventos) {
-                conteudosPorEvento.put(evento.getId(), conteudoRepository.listarPorEvento(evento.getId()));
+            Map<Long, List<ConteudoDTO>> conteudosPorEvento =
+                    conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());
+            Map<Long, Set<Long>> concluidosPorAluno = conteudoRepository.listarConcluidosDosAlunos(idsAlunos);
+
+            Map<Long, Map<LocalDate, Integer>> horasPorAluno = new HashMap<>();
+            for (Disponibilidade disponibilidade : disponibilidadeRepository.findAllByIdAlunoIn(idsAlunos)) {
+                horasPorAluno.computeIfAbsent(disponibilidade.getIdAluno(), idAluno -> new HashMap<>())
+                        .merge(disponibilidade.getData(), disponibilidade.getHorasDisponiveis(), Integer::sum);
             }
 
-            Set<Long> concluidos = new HashSet<>();
-            for (Long idTurma : idsTurmas) {
-                concluidos.addAll(conteudoRepository.listarConcluidosDoAluno(idAluno, idTurma));
+            for (Long idAluno : idsAlunos) {
+                List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
+                List<Evento> eventosAluno = eventos.stream()
+                        .filter(evento -> turmasAluno.contains(evento.getIdTurma()))
+                        .toList();
+
+                resultadoPorAluno.put(idAluno, calcular(idAluno, hoje, eventosAluno, conteudosPorEvento,
+                        concluidosPorAluno.getOrDefault(idAluno, Set.of()),
+                        horasPorAluno.getOrDefault(idAluno, Map.of())));
             }
 
-            Map<LocalDate, Integer> horasPorDia = new HashMap<>();
-            for (Disponibilidade disponibilidade : disponibilidadeService.listarPorAluno(idAluno)) {
-                horasPorDia.merge(disponibilidade.getData(), disponibilidade.getHorasDisponiveis(), Integer::sum);
-            }
-
-            return calcular(idAluno, hoje, eventos, conteudosPorEvento, concluidos, horasPorDia);
+            return resultadoPorAluno;
 
         } catch (SQLException e) {
-            logger.error("Erro ao calcular viabilidade. alunoId={}", idAluno, e);
+            logger.error("Erro ao calcular viabilidade. alunos={}", idsAlunos, e);
 
             if (logger.isErrorEnabled()) {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
 
-                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), "calcularParaAluno", null,
-                            MessageFormatter.arrayFormat("Erro ao calcular viabilidade. alunoId={}", new Object[]{idAluno}).getMessage(), null, excecaoLogBD.toString());
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), "calcularParaAlunos", null,
+                            MessageFormatter.arrayFormat("Erro ao calcular viabilidade. alunos={}", new Object[]{idsAlunos}).getMessage(), null, excecaoLogBD.toString());
 
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
 
-            throw new RuntimeException("Não foi possível calcular a viabilidade do aluno.", e);
+            throw new RuntimeException("Não foi possível calcular a viabilidade dos alunos.", e);
         }
     }
 

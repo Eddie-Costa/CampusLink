@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -75,6 +77,8 @@ public class AcompanhamentoController {
                                             HttpSession session,
                                             RedirectAttributes redirectAttributes) throws SQLException {
 
+        long inicio = System.currentTimeMillis();
+
         String redirecionamento = verificarAcesso(session, "exibirAcompanhamentoTurma");
         if (redirecionamento != null) {
             return redirecionamento;
@@ -95,13 +99,13 @@ public class AcompanhamentoController {
         List<Evento> eventos = eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
                 List.of(id), "ATIVO", LocalDate.now(ZoneId.of("America/Sao_Paulo")).atStartOfDay());
 
-        Map<Long, List<ConteudoDTO>> conteudosPorEvento = new HashMap<>();
+        Map<Long, List<ConteudoDTO>> conteudosPorEvento =
+                conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());
         Map<Long, Map<String, Long>> contagemPorEvento = new HashMap<>();
         Map<Long, Map<Long, Map<String, Long>>> contagemPorConteudo = new HashMap<>();
 
         for (Evento evento : eventos) {
-            List<ConteudoDTO> conteudos = conteudoRepository.listarPorEvento(evento.getId());
-            conteudosPorEvento.put(evento.getId(), conteudos);
+            List<ConteudoDTO> conteudos = conteudosPorEvento.computeIfAbsent(evento.getId(), idEvento -> new ArrayList<>());
             contagemPorEvento.put(evento.getId(), novaContagem());
 
             Map<Long, Map<String, Long>> contagemConteudos = new HashMap<>();
@@ -110,9 +114,10 @@ public class AcompanhamentoController {
         }
 
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
+        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = calcularParaAlunos(alunos);
 
         for (usuarioAdminDTO aluno : alunos) {
-            for (ViabilidadeDTO resultado : resultadosDaTurma(aluno, id)) {
+            for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
                 if (resultado.getIdConteudo() == null) {
                     Map<String, Long> contagemEvento = contagemPorEvento.get(resultado.getIdEvento());
                     if (contagemEvento != null) {
@@ -135,6 +140,7 @@ public class AcompanhamentoController {
         model.addAttribute("contagemPorEvento", contagemPorEvento);
         model.addAttribute("contagemPorConteudo", contagemPorConteudo);
 
+        registrarTempo("exibirAcompanhamentoTurma", id, alunos.size(), inicio);
         return "Usuarios/Professor/acompanhamentoTurma";
     }
 
@@ -144,6 +150,8 @@ public class AcompanhamentoController {
                                              Model model,
                                              HttpSession session,
                                              RedirectAttributes redirectAttributes) throws SQLException {
+
+        long inicio = System.currentTimeMillis();
 
         String redirecionamento = verificarAcesso(session, "exibirAcompanhamentoEvento");
         if (redirecionamento != null) {
@@ -169,6 +177,7 @@ public class AcompanhamentoController {
 
         List<ConteudoDTO> conteudos = conteudoRepository.listarPorEvento(idEvento);
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
+        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = calcularParaAlunos(alunos);
 
         Map<Long, Map<Long, String>> nivelPorAlunoEConteudo = new HashMap<>();
         Map<Long, String> situacaoPorAluno = new HashMap<>();
@@ -179,7 +188,7 @@ public class AcompanhamentoController {
             String situacao = "sem_evento";
             long concluidos = 0;
 
-            for (ViabilidadeDTO resultado : resultadosDaTurma(aluno, id)) {
+            for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
                 if (!idEvento.equals(resultado.getIdEvento())) {
                     continue;
                 }
@@ -211,7 +220,23 @@ public class AcompanhamentoController {
         model.addAttribute("situacaoPorAluno", situacaoPorAluno);
         model.addAttribute("concluidosPorAluno", concluidosPorAluno);
 
+        registrarTempo("exibirAcompanhamentoEvento", id, alunos.size(), inicio);
         return "Usuarios/Professor/acompanhamentoEvento";
+    }
+
+    private void registrarTempo(String operacao, Long idTurma, int quantidadeAlunos, long inicio) {
+        long tempoMs = System.currentTimeMillis() - inicio;
+
+        logger.info("Acompanhamento carregado. operacao={} turmaId={} alunos={} tempoMs={}", operacao, idTurma, quantidadeAlunos, tempoMs);
+        if (logger.isInfoEnabled()) {
+            try {
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", AcompanhamentoController.class.getName(), operacao, null,
+                        MessageFormatter.arrayFormat("Acompanhamento carregado. operacao={} turmaId={} alunos={} tempoMs={}",
+                                new Object[]{operacao, idTurma, quantidadeAlunos, tempoMs}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
     }
 
     private TurmaDTO turmaDoProfessor(String idProfessor, Long idTurma) throws SQLException {
@@ -221,8 +246,14 @@ public class AcompanhamentoController {
                 .orElse(null);
     }
 
-    private List<ViabilidadeDTO> resultadosDaTurma(usuarioAdminDTO aluno, Long idTurma) {
-        return viabilidadeService.calcularParaAluno(aluno.getIdPerfil()).stream()
+    private Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<usuarioAdminDTO> alunos) {
+        return viabilidadeService.calcularParaAlunos(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
+    }
+
+    private List<ViabilidadeDTO> resultadosDaTurma(Map<Long, List<ViabilidadeDTO>> resultadosPorAluno,
+                                                   usuarioAdminDTO aluno,
+                                                   Long idTurma) {
+        return resultadosPorAluno.getOrDefault(aluno.getIdPerfil(), List.of()).stream()
                 .filter(resultado -> idTurma.equals(resultado.getIdTurma()))
                 .toList();
     }
