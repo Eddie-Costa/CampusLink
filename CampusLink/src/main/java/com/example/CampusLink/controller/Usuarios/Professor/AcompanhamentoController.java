@@ -252,6 +252,13 @@ public class AcompanhamentoController {
         model.addAttribute("situacaoPorAluno", situacaoPorAluno);
         model.addAttribute("concluidosPorAluno", concluidosPorAluno);
 
+        Map<Long, String> horasSemanaPorAluno = new HashMap<>();
+        Map<Long, Integer> minutosSemana = viabilidadeService.minutosConcluidosRecentes(
+                alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList(), 7);
+        alunos.forEach(aluno -> horasSemanaPorAluno.put(aluno.getIdPerfil(),
+                viabilidadeService.formatarHoras(minutosSemana.getOrDefault(aluno.getIdPerfil(), 0))));
+        model.addAttribute("horasSemanaPorAluno", horasSemanaPorAluno);
+
         registrarTempo("exibirAcompanhamentoEvento", id, alunos.size(), inicio);
         return "Usuarios/Professor/acompanhamentoEvento";
     }

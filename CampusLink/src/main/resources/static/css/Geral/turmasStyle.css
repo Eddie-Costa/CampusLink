@@ -379,6 +379,16 @@ body {
     font-size: 16px;
 }
 
+.progresso-evento {
+    max-width: 360px;
+}
+
+.progresso-evento .progress {
+    height: 8px;
+    margin-bottom: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
 .aviso-falta {
     color: #ffd8a8;
     font-weight: 700;
@@ -409,6 +419,10 @@ a.conteudo-card:hover {
 
 .tabela-acompanhamento .coluna-conclusao {
     width: 110px;
+}
+
+.tabela-acompanhamento .coluna-ritmo {
+    width: 120px;
 }
 
 .tabela-acompanhamento .coluna-situacao {

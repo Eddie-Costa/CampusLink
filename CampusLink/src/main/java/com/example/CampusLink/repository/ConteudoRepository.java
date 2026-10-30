@@ -878,6 +878,44 @@ public class ConteudoRepository {
         return concluidosPorAluno;
     }
 
+    public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias, int duracaoPadraoMin) throws SQLException {
+        Map<Long, Integer> minutosPorAluno = new HashMap<>();
+
+        if (idsAlunos.isEmpty()) {
+            return minutosPorAluno;
+        }
+
+        String sql = """
+                SELECT p."id_aluno", SUM(COALESCE(c."duracao_estimada_min", ?)) AS "minutos"
+                FROM public."PROGRESSO_CONTEUDO" p
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = p."id_conteudo"
+                WHERE p."id_aluno" = ANY(?)
+                AND p."concluido_em" >= now() - make_interval(days => ?)
+                GROUP BY p."id_aluno"
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setInt(1, duracaoPadraoMin);
+                stmt.setArray(2, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
+                stmt.setInt(3, dias);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        minutosPorAluno.put(rs.getLong("id_aluno"), rs.getInt("minutos"));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return minutosPorAluno;
+    }
+
     // preserva o contrato de erro usado pelos consumidores
     private SQLException converterErro(DataAccessException erro) {
         Throwable causa = erro;

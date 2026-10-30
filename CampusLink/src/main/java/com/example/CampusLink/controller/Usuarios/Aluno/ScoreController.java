@@ -79,6 +79,7 @@ public class ScoreController {
         model.addAttribute("totalPorTurma", totalPorTurma);
         model.addAttribute("prioridades", montarPrioridades(resultados, atrasados));
         model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
+        model.addAttribute("ritmo", montarRitmo(idAluno, resultados));
 
         return "Usuarios/Aluno/score";
     }
@@ -139,6 +140,33 @@ public class ScoreController {
             }
         }
 
+        Map<Long, Integer> duracaoPorConteudo = new HashMap<>();
+        conteudos.forEach(conteudo -> duracaoPorConteudo.put(conteudo.getId(), viabilidadeService.duracaoDe(conteudo)));
+
+        int duracaoPadrao = viabilidadeService.duracaoDe(new ConteudoDTO());
+        Map<Long, Map<String, Object>> progressoPorEvento = new HashMap<>();
+        conteudosPorEvento.forEach((idEvento, itens) -> {
+            int concluidosEvento = 0;
+            int minutosConcluidos = 0;
+            int minutosTotal = 0;
+
+            for (ViabilidadeDTO item : itens) {
+                int duracao = duracaoPorConteudo.getOrDefault(item.getIdConteudo(), duracaoPadrao);
+                minutosTotal += duracao;
+                if ("concluido".equals(item.getNivel())) {
+                    concluidosEvento++;
+                    minutosConcluidos += duracao;
+                }
+            }
+
+            progressoPorEvento.put(idEvento, Map.of(
+                    "concluidos", concluidosEvento,
+                    "total", itens.size(),
+                    "percentual", itens.isEmpty() ? 0 : concluidosEvento * 100 / itens.size(),
+                    "horasConcluidas", viabilidadeService.formatarHoras(minutosConcluidos),
+                    "horasTotal", viabilidadeService.formatarHoras(minutosTotal)));
+        });
+
         Map<Long, String> faltaPorEvento = new HashMap<>();
         minutosFaltandoPorEvento.forEach((idEvento, minutos) -> faltaPorEvento.put(idEvento, viabilidadeService.formatarHoras(minutos)));
         Map<Long, String> faltaPorConteudo = new HashMap<>();
@@ -152,6 +180,7 @@ public class ScoreController {
         model.addAttribute("conteudosConcluidos", concluidos);
         model.addAttribute("atrasadosPorConteudo", atrasadosPorConteudo);
         model.addAttribute("faltaPorEvento", faltaPorEvento);
+        model.addAttribute("progressoPorEvento", progressoPorEvento);
         model.addAttribute("faltaPorConteudo", faltaPorConteudo);
         model.addAttribute("totalConcluidos", conteudos.stream().filter(conteudo -> concluidos.contains(conteudo.getId())).count());
 
@@ -189,6 +218,25 @@ public class ScoreController {
         return conteudoService.listarPorTurma(idTurma).stream()
                 .filter(conteudo -> "ativo".equals(conteudo.getStatus()))
                 .toList();
+    }
+
+    private Map<String, Object> montarRitmo(Long idAluno, List<ViabilidadeDTO> resultados) {
+        int minutosSemana = viabilidadeService.minutosConcluidosRecentes(List.of(idAluno), 7).getOrDefault(idAluno, 0);
+        int mediaDiaria = minutosSemana / 7;
+
+        Map<String, Object> ritmo = new HashMap<>();
+        ritmo.put("horasSemana", viabilidadeService.formatarHoras(minutosSemana));
+        ritmo.put("mediaDiaria", viabilidadeService.formatarHoras(mediaDiaria));
+
+        ViabilidadeDTO proximo = viabilidadeService.proximoEventoPendente(resultados);
+        if (proximo != null && !"concluido".equals(proximo.getNivel()) && proximo.getCargaMin() > 0) {
+            int necessarioPorDia = viabilidadeService.minutosNecessariosPorDia(proximo);
+            ritmo.put("proximoEvento", proximo);
+            ritmo.put("necessarioPorDia", viabilidadeService.formatarHoras(necessarioPorDia));
+            ritmo.put("noRitmo", mediaDiaria >= necessarioPorDia);
+        }
+
+        return ritmo;
     }
 
     private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados, List<ViabilidadeDTO> atrasados) {

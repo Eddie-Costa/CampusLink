@@ -40,6 +40,18 @@
                               th:text="${'⚠ O plano de estudos não conseguiu encaixar ' + faltaPorEvento.get(evento.idEvento) + ' antes deste evento.'}">
                             ⚠ O plano de estudos não conseguiu encaixar 2h antes deste evento.
                         </span>
+                        <div class="progresso-evento mt-2" th:if="${progressoPorEvento.containsKey(evento.idEvento)}"
+                             th:with="progresso=${progressoPorEvento.get(evento.idEvento)}">
+                            <div class="progress" role="progressbar"
+                                 th:aria-valuenow="${progresso.percentual}" aria-valuemin="0" aria-valuemax="100"
+                                 th:aria-label="${'Progresso do evento: ' + progresso.percentual + '%'}">
+                                <div class="progress-bar bg-success" th:style="${'width: ' + progresso.percentual + '%'}"></div>
+                            </div>
+                            <span class="conteudo-meta small"
+                                  th:text="${progresso.concluidos + '/' + progresso.total + ' conteúdos · ' + progresso.horasConcluidas + ' de ' + progresso.horasTotal + ' concluídas'}">
+                                2/5 conteúdos · 3h de 7h concluídas
+                            </span>
+                        </div>
                     </div>
                     <span class="d-flex align-items-center gap-3">
                         <span th:replace="~{fragments/risco :: selo(${evento.nivel}, ${evento.motivo})}"></span>

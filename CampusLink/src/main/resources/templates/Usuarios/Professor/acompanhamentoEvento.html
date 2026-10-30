@@ -33,11 +33,12 @@
         <div class="bg-white rounded-4 shadow-sm p-3" th:unless="${#lists.isEmpty(alunos)}">
             <div class="table-responsive">
                 <table class="table table-sm table-hover table-bordered align-middle text-center mb-0 tabela-acompanhamento"
-                       th:style="${'width: ' + (560 + 130 * #lists.size(conteudos)) + 'px'}">
+                       th:style="${'width: ' + (680 + 130 * #lists.size(conteudos)) + 'px'}">
                     <colgroup>
                         <col class="coluna-aluno">
                         <col class="coluna-conteudo" th:each="conteudo : ${conteudos}">
                         <col class="coluna-conclusao">
+                        <col class="coluna-ritmo">
                         <col class="coluna-situacao">
                     </colgroup>
                     <thead>
@@ -47,6 +48,7 @@
                             th:text="${conteudo.titulo}" th:title="${conteudo.titulo}"
                             class="text-truncate">Conteúdo</th>
                         <th scope="col">Conclusão</th>
+                        <th scope="col" title="Horas de conteúdo concluídas nos últimos 7 dias, em todas as turmas">Concluído (7 dias)</th>
                         <th scope="col">Situação</th>
                     </tr>
                     </thead>
@@ -58,6 +60,7 @@
                             <span th:replace="~{fragments/risco :: ponto(${niveis.get(conteudo.id) ?: 'sem_evento'})}"></span>
                         </td>
                         <td th:text="${concluidosPorAluno.get(aluno.idPerfil) + '/' + #lists.size(conteudos)}">0/0</td>
+                        <td th:text="${horasSemanaPorAluno.get(aluno.idPerfil)}">0h</td>
                         <td>
                             <span th:replace="~{fragments/risco :: selo(${situacaoPorAluno.get(aluno.idPerfil)}, null)}"></span>
                         </td>

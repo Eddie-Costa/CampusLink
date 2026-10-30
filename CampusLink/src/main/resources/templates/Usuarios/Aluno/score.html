@@ -25,6 +25,24 @@
         </div>
 
         <th:block th:unless="${#lists.isEmpty(turmas)}">
+            <div class="conteudo-card mb-4">
+                <div>
+                    <span class="conteudo-nome d-block">Ritmo de estudos</span>
+                    <span class="conteudo-meta"
+                          th:text="${'Nos últimos 7 dias você concluiu ' + ritmo.horasSemana + ' de estudo (média de ' + ritmo.mediaDiaria + ' por dia).'}">
+                        Nos últimos 7 dias você concluiu 5h de estudo (média de 43min por dia).
+                    </span>
+                    <span class="conteudo-meta" th:if="${ritmo.proximoEvento != null}"
+                          th:text="${'Para ' + ritmo.proximoEvento.nomeEvento + ' · ' + #temporals.format(ritmo.proximoEvento.dataEvento, 'dd/MM') + ' você precisa de cerca de ' + ritmo.necessarioPorDia + ' por dia.'}">
+                        Para Prova · 05/11 você precisa de cerca de 1h30 por dia.
+                    </span>
+                </div>
+                <th:block th:if="${ritmo.proximoEvento != null}">
+                    <span class="selo-risco risco-verde" th:if="${ritmo.noRitmo}">No ritmo</span>
+                    <span class="selo-risco risco-laranja" th:unless="${ritmo.noRitmo}">Abaixo do ritmo</span>
+                </th:block>
+            </div>
+
             <h2 class="h5 fw-bold mb-3">Prioridades</h2>
 
             <div class="sem-turmas mb-4" th:if="${#lists.isEmpty(prioridades)}">
