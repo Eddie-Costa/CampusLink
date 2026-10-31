@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{Emails/base :: layout(~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-dados">
+        <tr th:each="campo : ${campos}">
+            <td class="email-rotulo" th:text="${campo.key}"></td>
+            <td class="email-valor" th:text="${campo.value}"></td>
+        </tr>
+    </table>
+    <p class="email-nota">Para outras solicitações sobre seus dados, consulte os Termos de Uso na plataforma.</p>
+</div>
+</body>
+</html>

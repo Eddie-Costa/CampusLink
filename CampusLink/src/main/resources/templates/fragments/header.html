@@ -83,6 +83,9 @@
                                 <li>
                                     <a th:href="@{/admin/painel}" class="nav-link px-2">Painel Administrativo</a>
                                 </li>
+                                <li>
+                                    <a th:href="@{/admin/chamados}" class="nav-link px-2">Chamados</a>
+                                </li>
                             </ul>
                         </div>
 
@@ -112,6 +115,9 @@
                                 Seus dados no CampusLink
                             </a>
                             <hr class="dropdown-divider" th:if="${session.tipoUsuario != 'admin'}">
+                            <a class="dropdown-item" th:href="@{/ajuda}">Canal de ajuda</a>
+                            <a class="dropdown-item" th:href="@{/meus-chamados}">Meus chamados</a>
+                            <hr class="dropdown-divider">
                             <a class="dropdown-item" th:href="@{/documentos/termos-v1.0.txt}"
                                data-bs-toggle="modal" data-bs-target="#modalTermos">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></svg>

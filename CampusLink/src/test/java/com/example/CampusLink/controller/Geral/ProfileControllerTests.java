@@ -7,6 +7,7 @@ import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import org.junit.jupiter.api.BeforeEach;
@@ -185,7 +186,7 @@ class ProfileControllerTests {
     void limitaTentativasEReenvios() throws Exception {
         solicitarCodigo();
         mvc.perform(post("/profile/excluir").session(session).with(csrf())).andExpect(flash().attributeExists("mensagemErro"));
-        verify(emails, times(1)).enviarCodigo(anyString(), anyString());
+        verify(emails, times(1)).enviarCodigo(anyString(), anyString(), eq(FinalidadeCodigoEmail.EXCLUSAO_CONTA));
         for (int i = 0; i < 5; i++) {
             mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                     .param("codigo", "000000").param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
@@ -235,7 +236,7 @@ class ProfileControllerTests {
         mvc.perform(post("/profile/excluir").session(session).with(csrf()))
                 .andExpect(redirectedUrl("/profile")).andExpect(flash().attributeExists("mensagemSucesso"));
         ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
-        verify(emails).enviarCodigo(eq(dados.getEmail()), codigo.capture());
+        verify(emails).enviarCodigo(eq(dados.getEmail()), codigo.capture(), eq(FinalidadeCodigoEmail.EXCLUSAO_CONTA));
         return codigo.getValue();
     }
 

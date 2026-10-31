@@ -1,0 +1,20 @@
+.email-pagina { margin: 0; padding: 0; background-color: #f4f6f9; font-family: Arial, Helvetica, sans-serif; color: #11183f; }
+.email-preheader { display: none; max-height: 0; overflow: hidden; opacity: 0; font-size: 1px; }
+.email-fundo { width: 100%; border-collapse: collapse; background-color: #f4f6f9; }
+.email-externo { padding: 28px 12px; }
+.email-cartao { width: 100%; max-width: 560px; background-color: #ffffff; border: 1px solid #e5e9ef; border-radius: 12px; }
+.email-marca { padding: 20px 24px; border-bottom: 1px solid #edf0f4; }
+.email-logo { display: block; width: 48px; height: auto; border: 0; }
+.email-nome { color: #11183f; font-size: 18px; font-weight: bold; }
+.email-conteudo { padding: 28px 24px 12px; }
+.email-titulo { margin: 0 0 12px; color: #11183f; font-size: 23px; line-height: 1.3; font-weight: bold; }
+.email-texto { margin: 0 0 20px; color: #475467; font-size: 14px; line-height: 1.65; }
+.email-codigo { margin: 24px 0; padding: 18px 12px; color: #11183f; background-color: #f4f6f9; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; }
+.email-dados { width: 100%; margin: 0 0 20px; border-collapse: collapse; table-layout: fixed; }
+.email-rotulo { width: 32%; padding: 10px 10px 10px 0; border-bottom: 1px solid #edf0f4; color: #667085; font-size: 12px; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere; }
+.email-valor { padding: 10px 0; border-bottom: 1px solid #edf0f4; color: #11183f; font-size: 13px; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
+.email-mensagem { margin: 0 0 20px; color: #475467; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.email-botao-fundo { background-color: #11183f; border-radius: 6px; }
+.email-botao { display: inline-block; padding: 12px 18px; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; }
+.email-nota { margin: 20px 0; color: #667085; font-size: 12px; line-height: 1.6; }
+.email-rodape { padding: 16px 24px; border-top: 1px solid #edf0f4; color: #667085; font-size: 11px; line-height: 1.6; }

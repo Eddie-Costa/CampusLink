@@ -5,6 +5,7 @@ import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public class loginProfessorController {
 
             if (twoFactorEnabled) {
                 String codigo = twoFactorService.gerarCodigo(email);
-                emailService.enviarCodigo(email, codigo);
+                emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
 
                 session.setAttribute("email2FA", email);
                 session.setAttribute("redirect", "Login");

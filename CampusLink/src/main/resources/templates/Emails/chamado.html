@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:replace="~{Emails/base :: layout(~{::conteudo})}">
+<body>
+<div th:fragment="conteudo">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-dados">
+        <tr><td class="email-rotulo">Protocolo</td><td class="email-valor" th:text="|#${chamado.id}|"></td></tr>
+        <tr><td class="email-rotulo">Assunto</td><td class="email-valor" th:text="${chamado.assunto}"></td></tr>
+        <tr><td class="email-rotulo" th:text="${concluido} ? 'Concluído em' : 'Aberto em'"></td><td class="email-valor" th:text="|${data} (Brasília)|"></td></tr>
+    </table>
+    <p class="email-mensagem" th:unless="${concluido}" th:text="${chamado.descricao}"></p>
+    <table role="presentation" cellspacing="0" cellpadding="0" th:if="${linkChamado != null}">
+        <tr><td class="email-botao-fundo"><a th:href="${linkChamado}" class="email-botao">Ver chamado</a></td></tr>
+    </table>
+    <p class="email-nota" th:if="${linkChamado == null}">Acompanhe em <strong>Meus chamados</strong> no CampusLink.</p>
+</div>
+</body>
+</html>
