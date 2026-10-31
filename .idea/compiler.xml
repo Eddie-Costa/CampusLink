@@ -13,6 +13,10 @@
         <module name="CampusLink" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="CampusLink.main" target="25" />
+      <module name="CampusLink.test" target="25" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

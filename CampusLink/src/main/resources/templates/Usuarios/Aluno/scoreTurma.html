@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${'Score - ' + turma.nomeTurma}">Score da turma</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Geral/turmasStyle.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="turmas-page">
+    <div class="turmas-container">
+
+        <a class="voltar-turmas" th:href="@{/score}">← Voltar ao score</a>
+
+        <div class="conteudo-card mb-4">
+            <h1 class="conteudo-nome m-0" th:text="${turma.nomeTurma}">Turma #1</h1>
+            <span class="conteudo-meta"
+                  th:text="${totalConcluidos + '/' + #lists.size(conteudos) + ' concluídos'}">0/0 concluídos</span>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Próximos eventos</h2>
+
+        <p class="mb-4" th:if="${#lists.isEmpty(eventos)}">Nenhum evento futuro nesta turma.</p>
+
+        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(eventos)}">
+            <details class="evento-score" th:each="evento : ${eventos}"
+                     th:with="itens=${conteudosPorEvento.get(evento.idEvento)}">
+
+                <summary class="conteudo-card">
+                    <div>
+                        <span class="conteudo-nome d-block"
+                              th:text="${evento.nomeEvento + ' · ' + #temporals.format(evento.dataEvento, 'dd/MM')}">Prova · 18/10</span>
+                        <span class="conteudo-meta" th:text="${evento.motivo}">Faltam 9h de estudo...</span>
+                        <span class="conteudo-meta aviso-falta mt-1" th:if="${faltaPorEvento.containsKey(evento.idEvento)}"
+                              th:text="${'⚠ O plano de estudos não conseguiu encaixar ' + faltaPorEvento.get(evento.idEvento) + ' antes deste evento.'}">
+                            ⚠ O plano de estudos não conseguiu encaixar 2h antes deste evento.
+                        </span>
+                        <div class="progresso-evento mt-2" th:if="${progressoPorEvento.containsKey(evento.idEvento)}"
+                             th:with="progresso=${progressoPorEvento.get(evento.idEvento)}">
+                            <div class="progress" role="progressbar"
+                                 th:aria-valuenow="${progresso.percentual}" aria-valuemin="0" aria-valuemax="100"
+                                 th:aria-label="${'Progresso do evento: ' + progresso.percentual + '%'}">
+                                <div class="progress-bar bg-success" th:style="${'width: ' + progresso.percentual + '%'}"></div>
+                            </div>
+                            <span class="conteudo-meta small"
+                                  th:text="${progresso.concluidos + '/' + progresso.total + ' conteúdos · ' + progresso.horasConcluidas + ' de ' + progresso.horasTotal + ' concluídas'}">
+                                2/5 conteúdos · 3h de 7h concluídas
+                            </span>
+                        </div>
+                    </div>
+                    <span class="d-flex align-items-center gap-3">
+                        <span th:replace="~{fragments/risco :: selo(${evento.nivel}, ${evento.motivo})}"></span>
+                        <span class="evento-score-seta" aria-hidden="true">▾</span>
+                    </span>
+                </summary>
+
+                <div class="lista-conteudos evento-score-conteudos">
+                    <p class="m-0" th:if="${itens == null or #lists.isEmpty(itens)}">Nenhum conteúdo associado a este evento.</p>
+
+                    <div class="conteudo-card evento-score-item" th:each="item : ${itens}">
+                        <span class="conteudo-nome" th:text="${item.tituloConteudo}">Conteúdo #1</span>
+                        <span class="d-flex align-items-center gap-3">
+                            <span class="conteudo-meta aviso-falta" th:if="${faltaPorConteudo.containsKey(item.idConteudo) and item.nivel != 'concluido'}"
+                                  th:text="${'faltou ' + faltaPorConteudo.get(item.idConteudo)}">faltou 30min</span>
+                            <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                        </span>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <th:block th:unless="${#lists.isEmpty(conteudosSemEvento)}">
+            <h2 class="h5 fw-bold mb-3">Conteúdos sem evento próximo</h2>
+
+            <div class="lista-conteudos">
+                <div class="conteudo-card" th:each="conteudo : ${conteudosSemEvento}">
+                    <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo #1</span>
+                    <span th:replace="~{fragments/risco :: selo(${conteudosConcluidos.contains(conteudo.id) ? 'concluido' : (atrasadosPorConteudo.containsKey(conteudo.id) ? 'atrasado' : 'sem_evento')}, ${atrasadosPorConteudo.get(conteudo.id)?.motivo})}"></span>
+                </div>
+            </div>
+        </th:block>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

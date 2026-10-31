@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${turma.nomeTurma}">Ambiente da turma</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261018-11)}">
+    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261024-2)}">
 </head>
 
 <body th:with="abrirModalConteudo=${abrirModalAdicionarConteudo != null and abrirModalAdicionarConteudo}">
@@ -317,7 +317,8 @@
                 </div>
 
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
-                 th:classappend="${conteudo.status == 'suspenso_denuncia'} ? 'conteudo-suspenso' : ''"
+                 th:with="concluido=${session.tipoUsuario == 'aluno' and conteudosConcluidos != null and conteudosConcluidos.contains(conteudo.id)}"
+                 th:classappend="${(conteudo.status == 'suspenso_denuncia' ? 'conteudo-suspenso' : '') + (concluido ? ' conteudo-concluido' : '')}"
                  th:if="${session.tipoUsuario == 'professor' or conteudo.status != 'removido'}"
                  th:attr="data-id=${conteudo.id}, data-titulo=${conteudo.titulo}, data-url=${conteudo.url}, data-duracao=${conteudo.duracaoEstimada}">
 
@@ -358,6 +359,23 @@
                             </svg>
                         </button>
 
+                        <form th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo' and !concluido}"
+                              th:action="@{/turmas/{id}/conteudos/{idConteudo}/concluir(id=${turma.id}, idConteudo=${conteudo.id})}"
+                              method="post"
+                              class="conteudo-excluir-form">
+
+                            <input type="hidden" th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+                            <input type="hidden" name="concluido" value="true">
+
+                            <button type="submit" class="conteudo-excluir"
+                                    title="Marcar este conteúdo como concluído">
+                                Marcar como concluído
+                            </button>
+
+                        </form>
+
                         <form th:if="${session.tipoUsuario == 'professor'}"
                               th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
                               method="post"
@@ -375,10 +393,10 @@
 
                         <button type="button"
                                 class="conteudo-alternar-detalhes"
-                                aria-expanded="true"
+                                th:aria-expanded="${!concluido}"
                                 th:aria-controls="${'detalhesConteudo-' + conteudo.id}"
-                                th:aria-label="${'Recolher detalhes de ' + conteudo.titulo}"
-                                th:title="${'Recolher detalhes de ' + conteudo.titulo}">
+                                th:aria-label="${(concluido ? 'Expandir' : 'Recolher') + ' detalhes de ' + conteudo.titulo}"
+                                th:title="${(concluido ? 'Expandir' : 'Recolher') + ' detalhes de ' + conteudo.titulo}">
                             <svg class="conteudo-alternar-icone" xmlns="http://www.w3.org/2000/svg"
                                  width="20" height="20" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2"
@@ -392,7 +410,7 @@
                     </div>
                 </div>
 
-                <div class="conteudo-detalhes" th:id="${'detalhesConteudo-' + conteudo.id}">
+                <div class="conteudo-detalhes" th:id="${'detalhesConteudo-' + conteudo.id}" th:hidden="${concluido}">
                     <p class="conteudo-descricao"
                        th:if="${conteudo.descricao != null and !conteudo.descricao.isBlank()}"
                        th:text="${conteudo.descricao}">Descrição do conteúdo</p>
@@ -430,6 +448,34 @@
                             </span>
                         </div>
                     </div>
+                </div>
+
+                <div class="conteudo-concluido-cobertura" th:if="${concluido}">
+                    <span class="conteudo-concluido-icone">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="3"
+                             stroke-linecap="round" stroke-linejoin="round"
+                             aria-hidden="true" focusable="false">
+                            <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+                        </svg>
+                        <span class="visually-hidden" th:text="${conteudo.titulo + ' concluído'}">Conteúdo concluído</span>
+                    </span>
+
+                    <form th:action="@{/turmas/{id}/conteudos/{idConteudo}/concluir(id=${turma.id}, idConteudo=${conteudo.id})}"
+                          method="post"
+                          class="conteudo-excluir-form">
+
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+                        <input type="hidden" name="concluido" value="false">
+
+                        <button type="submit" class="conteudo-excluir"
+                                th:aria-label="${'Refazer tarefa ' + conteudo.titulo}">
+                            Refazer tarefa
+                        </button>
+
+                    </form>
                 </div>
             </div>
         </section>
@@ -564,7 +610,7 @@
                         <span th:id="'contadorDescricaoEditar-' + ${conteudo.id}">0</span>/1000 caracteres
                     </div>
 
-                    <div class="campo-duracao-editar" style="display: none;">
+                    <div class="campo-duracao-editar">
                         <label class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input type="text" name="duracaoEstimada" class="form-control mb-3"
                                th:value="${conteudo.duracaoEstimada}">
@@ -768,10 +814,10 @@
                     <div class="erro-campo" th:if="${#fields.hasErrors('descricao')}"
                          th:errors="*{descricao}"></div>
 
-                    <div id="campoDuracao" style="display: none;">
+                    <div id="campoDuracao">
                         <label for="duracaoEstimada" class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input id="duracaoEstimada" type="text" class="form-control mb-3"
-                               th:field="*{duracaoEstimada}" placeholder="Ex: 15 min ou 2 horas">
+                               th:field="*{duracaoEstimada}" placeholder="Ex: 30 (minutos), 15 min, 2 horas ou 1:30:00">
                     </div>
 
                     <div id="campoArquivo">
@@ -869,7 +915,7 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Geral/ambienteTurma.js(v=20261018-13)}"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js(v=20261024-1)}"></script>
 
 </body>
 </html>

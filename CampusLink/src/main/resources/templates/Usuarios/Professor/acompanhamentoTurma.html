@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${'Acompanhamento - ' + turma.nomeTurma}">Acompanhamento da turma</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Geral/turmasStyle.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<div th:if="${mensagemErro != null}" class="alert alert-warning alert-dismissible fade show alerta-flutuante" role="alert">
+    <span th:text="${mensagemErro}">Mensagem de erro</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+</div>
+
+<main class="turmas-page">
+    <div class="turmas-container">
+
+        <a class="voltar-turmas" th:href="@{/acompanhamento}">← Voltar ao acompanhamento</a>
+
+        <div class="conteudo-card mb-4">
+            <h1 class="conteudo-nome m-0" th:text="${turma.nomeTurma}">Turma #1</h1>
+            <span class="conteudo-meta" th:text="${totalAlunos + ' alunos'}">30 alunos</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <span th:replace="~{fragments/risco :: selo('verde', null)}"></span>
+            <span th:replace="~{fragments/risco :: selo('amarelo', null)}"></span>
+            <span th:replace="~{fragments/risco :: selo('laranja', null)}"></span>
+            <span th:replace="~{fragments/risco :: selo('vermelho', null)}"></span>
+            <span th:replace="~{fragments/risco :: selo('atrasado', null)}"></span>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Conteúdos críticos</h2>
+
+        <p th:if="${#lists.isEmpty(conteudosCriticos)}">Nenhum conteúdo crítico nesta turma.</p>
+
+        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(conteudosCriticos)}">
+            <div class="conteudo-card evento-score-item" th:each="item : ${conteudosCriticos}">
+                <span class="conteudo-nome" th:text="${item.titulo}">Conteúdo #1</span>
+                <span class="d-inline-flex flex-wrap gap-2">
+                    <span class="selo-risco risco-atrasado" th:if="${item.atrasados > 0}"
+                          th:text="${item.atrasados + (item.atrasados == 1 ? ' aluno atrasado' : ' alunos atrasados')}">2 alunos atrasados</span>
+                    <span class="selo-risco risco-vermelho" th:if="${item.vermelhos > 0}"
+                          th:text="${item.vermelhos + (item.vermelhos == 1 ? ' aluno sem tempo' : ' alunos sem tempo')}">1 aluno sem tempo</span>
+                </span>
+            </div>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Alunos com atraso</h2>
+
+        <p th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo atrasado.</p>
+
+        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(alunosComAtraso)}">
+            <div class="conteudo-card evento-score-item" th:each="item : ${alunosComAtraso}">
+                <span class="conteudo-nome" th:text="${item.nome}">Aluno 1</span>
+                <span class="selo-risco risco-atrasado"
+                      th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo atrasado' : ' conteúdos atrasados')}">2 conteúdos atrasados</span>
+            </div>
+        </div>
+
+        <h2 class="h5 fw-bold mb-3">Próximos eventos</h2>
+
+        <p th:if="${#lists.isEmpty(eventos)}">Nenhum evento futuro nesta turma.</p>
+
+        <div class="lista-conteudos" th:unless="${#lists.isEmpty(eventos)}">
+            <details class="evento-score" th:each="evento : ${eventos}"
+                     th:with="conteudos=${conteudosPorEvento.get(evento.id)}">
+
+                <summary class="conteudo-card">
+                    <span class="conteudo-nome"
+                          th:text="${evento.nome + ' · ' + #temporals.format(evento.inicio, 'dd/MM')}">Prova · 18/10</span>
+                    <span class="d-flex flex-wrap align-items-center gap-3">
+                        <span th:replace="~{fragments/risco :: contadores(${contagemPorEvento.get(evento.id)})}"></span>
+                        <span class="evento-score-seta" aria-hidden="true">▾</span>
+                    </span>
+                </summary>
+
+                <div class="lista-conteudos evento-score-conteudos">
+                    <a class="botao-compacto mb-0"
+                       th:href="@{/acompanhamento/turma/{id}/evento/{idEvento}(id=${turma.id}, idEvento=${evento.id})}">
+                        Ver alunos
+                    </a>
+
+                    <p class="m-0" th:if="${#lists.isEmpty(conteudos)}">Nenhum conteúdo associado a este evento.</p>
+
+                    <div class="conteudo-card evento-score-item" th:each="conteudo : ${conteudos}">
+                        <span class="conteudo-nome" th:text="${conteudo.titulo}">Conteúdo #1</span>
+                        <span th:replace="~{fragments/risco :: contadores(${contagemPorConteudo.get(evento.id).get(conteudo.id)})}"></span>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

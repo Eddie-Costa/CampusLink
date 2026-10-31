@@ -357,6 +357,16 @@ body {
     background: var(--azul-escuro);
 }
 
+.day-cell.dia-passado {
+    background: var(--cinza-fora-mes);
+    color: var(--cinza-texto);
+}
+
+.day-cell.dia-passado .disponibilidade-marcador {
+    background: var(--cinza-texto);
+    box-shadow: none;
+}
+
 .day-number {
     position: relative;
     z-index: 4;
@@ -430,27 +440,35 @@ body {
 }
 
 .evento-marcador.evento-inicio,
-.evento-marcador.evento-unico {
-    background: var(--vermelho-evento);
-    color: #ffffff;
-}
-
+.evento-marcador.evento-unico,
 .evento-marcador.evento-meio,
-.evento-marcador.evento-fim {
-    background: var(--amarelo-evento);
-    color: var(--azul-escuro);
-}
-
-.day-cell.adjacent-month .evento-marcador.evento-inicio,
-.day-cell.adjacent-month .evento-marcador.evento-unico {
+.evento-marcador.evento-fim,
+.day-cell.adjacent-month .evento-marcador {
     background: var(--vermelho-evento);
     color: #ffffff;
 }
 
-.day-cell.adjacent-month .evento-marcador.evento-meio,
-.day-cell.adjacent-month .evento-marcador.evento-fim {
-    background: var(--amarelo-evento);
+button.evento-marcador {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+button.evento-marcador:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+}
+
+.evento-marcador.evento-marcador-aluno {
+    top: 50%;
+    bottom: auto;
+    z-index: 3;
+    background: #ffffff;
     color: var(--azul-escuro);
+    font-size: 11px;
+    transform: translateY(-50%);
+    pointer-events: auto;
 }
 
 .disponibilidade-marcador {
@@ -458,6 +476,89 @@ body {
     background: var(--verde-disponibilidade);
     color: #ffffff;
     box-shadow: 0 0 8px rgba(var(--campus-success-rgb), 0.55);
+}
+
+.estudo-marcador {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    left: 30px;
+    z-index: 3;
+    min-height: 16px;
+    padding: 2px 5px;
+    overflow: hidden;
+    border: 1px solid var(--verde-disponibilidade);
+    border-radius: 3px;
+    background: var(--campus-success-bg);
+    color: var(--campus-success-text);
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.estudo-marcador:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+}
+
+.plano-dia {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--campus-border);
+    background: var(--campus-success-bg);
+    color: var(--campus-success-text);
+}
+
+.plano-dia[hidden] {
+    display: none;
+}
+
+.plano-dia h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.plano-dia ul {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plano-dia li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.plano-dia li div {
+    display: flex;
+    flex-direction: column;
+}
+
+.plano-dia li span {
+    font-size: 12px;
+}
+
+.plano-dia .plano-dia-tempo {
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.plano-dia .plano-dia-nota {
+    margin: 10px 0 0;
+    font-size: 11px;
+    font-style: italic;
 }
 
 .day-cell.tem-disponibilidade.tem-evento .disponibilidade-marcador {
@@ -530,6 +631,33 @@ body {
     font-size: 13px;
 }
 
+.cronograma-dia .modal-content {
+    padding: 25px 30px 28px;
+    border: 0;
+    border-radius: 23px;
+    background: rgba(17, 24, 63, 0.95);
+    box-shadow: 0 18px 36px rgba(4, 7, 24, 0.32);
+}
+
+.disponibilidade-risco {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--campus-navy-rgb), 0.12);
+}
+
+.disponibilidade-risco strong {
+    color: var(--azul-texto);
+    font-size: 14px;
+}
+
+.disponibilidade-risco p {
+    flex-basis: 100%;
+}
+
 .eventos-cadastrados {
     width: min(92%, 920px);
     margin: 28px auto 0;
@@ -547,6 +675,7 @@ body {
     margin: 0;
     color: var(--azul-texto);
     font-size: 20px;
+    white-space: nowrap;
 }
 
 .eventos-acoes {
@@ -582,6 +711,9 @@ body {
 
 .ultimo-evento-destaque {
     margin-bottom: 18px;
+}
+
+.eventos-holder {
     padding: 14px;
     border: 2px solid rgba(var(--campus-accent-rgb), 0.45);
     border-radius: 12px;
@@ -589,7 +721,8 @@ body {
     box-shadow: 0 4px 12px rgba(var(--campus-navy-rgb), 0.10);
 }
 
-.ultimo-evento-destaque[hidden] {
+.ultimo-evento-destaque[hidden],
+.eventos-lista[hidden] {
     display: none;
 }
 
@@ -641,6 +774,16 @@ body {
     color: var(--azul-texto);
     font-size: 13px;
     font-weight: 700;
+}
+
+.ordenacao-eventos[hidden] {
+    display: none;
+}
+
+#filtroTurma {
+    width: 200px;
+    min-width: 0;
+    text-overflow: ellipsis;
 }
 
 .ordenacao-eventos select {
@@ -900,6 +1043,32 @@ body {
     padding: 0;
 }
 
+.conteudos-associados ul[hidden] {
+    display: none;
+}
+
+.botao-alternar-conteudos {
+    margin-left: 8px;
+    padding: 3px 10px;
+    border: 1px solid var(--azul-escuro);
+    border-radius: 7px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.botao-alternar-conteudos:hover {
+    background: var(--campus-navy-hover);
+}
+
+.botao-alternar-conteudos:focus-visible {
+    outline: 2px solid var(--azul-borda);
+    outline-offset: 2px;
+}
+
 .conteudos-associados li {
     margin: 3px 0;
 }
@@ -1013,6 +1182,15 @@ body {
         bottom: 23px;
     }
 
+    .estudo-marcador {
+        top: 4px;
+        right: 4px;
+        left: 22px;
+        min-height: 14px;
+        padding: 1px 3px;
+        font-size: 7px;
+    }
+
     .day-cell.tem-disponibilidade.tem-evento .evento-marcador {
         bottom: 4px;
     }
@@ -1059,6 +1237,10 @@ body {
 
     .ordenacao-eventos select {
         flex: 1;
+    }
+
+    #filtroTurma {
+        width: auto;
     }
 
     .evento-item {

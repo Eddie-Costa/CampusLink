@@ -22,7 +22,33 @@ document.addEventListener('DOMContentLoaded', function () {
             dataInicio: evento.dataset.inicio || '',
             dataFim: evento.dataset.fim || '',
             nome: evento.dataset.nome || '',
-            prioridade: evento.dataset.prioridade || 'MEDIA'
+            prioridade: evento.dataset.prioridade || 'MEDIA',
+            horaInicio: evento.dataset.horaInicio || '',
+            horaFim: evento.dataset.horaFim || '',
+            idTurma: evento.dataset.idTurma || '',
+            turma: evento.dataset.turma || ''
+        };
+    });
+
+    const filtroTurma = document.getElementById('filtroTurma');
+    const filtroTurmaRotulo = document.getElementById('filtroTurmaRotulo');
+    let turmaFiltrada = '';
+
+    function eventoDaTurmaFiltrada(idTurma) {
+        return turmaFiltrada === '' || idTurma === turmaFiltrada;
+    }
+
+    const modalCronograma = document.getElementById('cronogramaDiaModal');
+    const gradeHorarios = document.getElementById('gradeHorarios');
+    const dataEventosDia = document.getElementById('dataEventosDia');
+
+    const eventosDaAgenda = eventosDados.map(function (evento) {
+        return {
+            nome: evento.nome,
+            prioridade: evento.prioridade,
+            idTurma: evento.idTurma,
+            inicio: evento.horaInicio ? new Date(`${evento.dataInicio}T${evento.horaInicio}:00`) : null,
+            fim: evento.horaFim ? new Date(`${evento.dataFim}T${evento.horaFim}:00`) : null
         };
     });
 
@@ -32,6 +58,20 @@ document.addEventListener('DOMContentLoaded', function () {
             horas: Number(disponibilidade.dataset.horas || 0)
         };
     });
+
+    const planoDados = Array.from(document.querySelectorAll('.plano-dado')).map(function (sessao) {
+        return {
+            data: sessao.dataset.data || '',
+            minutos: Number(sessao.dataset.minutos || 0),
+            conteudo: sessao.dataset.conteudo || '',
+            evento: sessao.dataset.evento || '',
+            dataEvento: sessao.dataset.dataEvento || '',
+            idTurma: sessao.dataset.idTurma || ''
+        };
+    });
+
+    const planoDoDia = document.getElementById('planoDoDia');
+    const listaPlanoDoDia = document.getElementById('listaPlanoDoDia');
 
     const calendario = document.getElementById('calendar');
     const mesExibido = document.getElementById('mesExibido');
@@ -52,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const semEventosNoMes = document.getElementById('semEventosNoMes');
 
     const hoje = new Date();
+    const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
     let mesAtual = hoje.getMonth();
     let anoAtual = hoje.getFullYear();
@@ -88,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function buscarEventosDoDia(data) {
         return eventosDados.filter(function (evento) {
-            return evento.dataInicio <= data && data <= evento.dataFim;
+            return evento.dataInicio <= data && data <= evento.dataFim && eventoDaTurmaFiltrada(evento.idTurma);
         });
     }
 
@@ -103,11 +144,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function criarMarcadorEvento(eventos, data) {
-        if (!usuarioEhProfessor || eventos.length === 0) {
+        if (eventos.length === 0) {
             return null;
         }
 
-        const marcador = document.createElement('span');
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
         marcador.classList.add('evento-marcador');
 
         const iniciouHoje = eventos.some(function (evento) {
@@ -128,19 +170,108 @@ document.addEventListener('DOMContentLoaded', function () {
             marcador.classList.add('evento-meio');
         }
 
-        if (eventos.length > 1) {
-            marcador.textContent = `${eventos.length} eventos`;
-        } else if (iniciouHoje) {
-            marcador.textContent = eventos[0].nome;
-        } else {
-            marcador.textContent = '';
-        }
+        marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
 
         marcador.title = eventos.map(function (evento) {
             return evento.nome;
         }).join(', ');
 
+        marcador.setAttribute('aria-label', `Ver cronograma do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirCronograma(data);
+        });
+
         return marcador;
+    }
+
+    function formatarDataCurta(data) {
+        const [, mes, dia] = data.split('-');
+
+        return `${dia}/${mes}`;
+    }
+
+    function formatarMinutos(minutos) {
+        const horas = Math.floor(minutos / 60);
+        const resto = minutos % 60;
+
+        if (horas === 0) {
+            return `${resto}min`;
+        }
+
+        return resto === 0 ? `${horas}h` : `${horas}h${String(resto).padStart(2, '0')}`;
+    }
+
+    function buscarPlanoDoDia(data) {
+        return planoDados.filter(function (sessao) {
+            return sessao.data === data && eventoDaTurmaFiltrada(sessao.idTurma);
+        });
+    }
+
+    function criarMarcadorEstudo(sessoes, data) {
+        const totalMinutos = sessoes.reduce(function (total, sessao) {
+            return total + sessao.minutos;
+        }, 0);
+
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
+        marcador.classList.add('estudo-marcador');
+        marcador.textContent = `Estudar ${formatarMinutos(totalMinutos)}`;
+        marcador.title = sessoes.map(function (sessao) {
+            return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}`;
+        }).join('\n');
+        marcador.setAttribute('aria-label', `Ver plano de estudos do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirCronograma(data);
+        });
+
+        return marcador;
+    }
+
+    function montarPlanoDoDia(data) {
+        if (!planoDoDia || !listaPlanoDoDia) {
+            return;
+        }
+
+        const sessoes = buscarPlanoDoDia(data);
+
+        listaPlanoDoDia.innerHTML = '';
+        planoDoDia.hidden = sessoes.length === 0;
+
+        sessoes.forEach(function (sessao) {
+            const item = document.createElement('li');
+            const descricao = document.createElement('div');
+            const conteudo = document.createElement('strong');
+            const evento = document.createElement('span');
+            const tempo = document.createElement('span');
+
+            conteudo.textContent = sessao.conteudo;
+            evento.textContent = `${sessao.evento} · ${formatarDataCurta(sessao.dataEvento)}`;
+            tempo.classList.add('plano-dia-tempo');
+            tempo.textContent = formatarMinutos(sessao.minutos);
+
+            descricao.append(conteudo, evento);
+            item.append(descricao, tempo);
+            listaPlanoDoDia.appendChild(item);
+        });
+    }
+
+    function abrirCronograma(data) {
+        if (!modalCronograma || typeof bootstrap === 'undefined' || typeof montarAgendaDoDia === 'undefined') {
+            return;
+        }
+
+        const eventosVisiveis = eventosDaAgenda.filter(function (evento) {
+            return eventoDaTurmaFiltrada(evento.idTurma);
+        });
+        montarPlanoDoDia(data);
+        const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
+        const corpoModal = modalCronograma.querySelector('.modal-body');
+
+        modalCronograma.addEventListener('shown.bs.modal', function () {
+            corpoModal.scrollTop = Math.max(topoPrimeiroEvento - ALTURA_HORA_AGENDA, 0);
+        }, { once: true });
+
+        bootstrap.Modal.getOrCreateInstance(modalCronograma).show();
     }
 
     function eventoComecaNoMesExibido(evento) {
@@ -158,7 +289,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const eventosDoMes = eventosDados.filter(eventoComecaNoMesExibido);
+        const eventosDoMes = eventosDados.filter(function (evento) {
+            return eventoComecaNoMesExibido(evento) && eventoDaTurmaFiltrada(evento.idTurma);
+        });
 
         let quantidadeAlta = 0;
         let quantidadeMedia = 0;
@@ -289,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function atualizarVisaoEventosDoMes() {
         atualizarResumoPrioridades();
 
-        if (!usuarioEhProfessor || !listaEventos) {
+        if (!(usuarioEhProfessor || usuarioEhAluno) || !listaEventos) {
             return;
         }
 
@@ -299,7 +432,9 @@ document.addEventListener('DOMContentLoaded', function () {
             listaEventos.appendChild(cartao);
         });
 
-        const cartoesDoMes = todosOsCartoesEventos.filter(cartaoComecaNoMesExibido);
+        const cartoesDoMes = todosOsCartoesEventos.filter(function (cartao) {
+            return cartaoComecaNoMesExibido(cartao) && eventoDaTurmaFiltrada(cartao.dataset.idTurma || '');
+        });
 
         if (semEventosNoMes) {
             semEventosNoMes.hidden = cartoesDoMes.length > 0;
@@ -310,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ultimoEventoDestaque.hidden = true;
             }
 
+            listaEventos.hidden = true;
             return;
         }
 
@@ -331,6 +467,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const cartoesComunsDoMes = cartoesDoMes.filter(function (cartao) {
             return cartao !== ultimoCartaoDoMes;
         });
+
+        listaEventos.hidden = cartoesComunsDoMes.length === 0;
 
         const cartoesOrdenados = ordenarCartoes(cartoesComunsDoMes);
 
@@ -410,6 +548,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            const eventosQueComecamNoDia = usuarioEhAluno
+                ? eventosDoDia.filter(function (evento) {
+                    return evento.dataInicio === dataFormatada;
+                })
+                : [];
+
+            if (eventosQueComecamNoDia.length > 0) {
+                const marcadorEvento = criarMarcadorEvento(eventosQueComecamNoDia, dataFormatada);
+
+                marcadorEvento.classList.add('evento-marcador-aluno');
+                celula.appendChild(marcadorEvento);
+            }
+
             if (usuarioEhAluno) {
                 const disponibilidadeEncontrada = buscarDisponibilidade(dataFormatada);
                 const disponibilidade = disponibilidadeEncontrada || {
@@ -421,10 +572,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 celula.classList.add('tem-disponibilidade');
                 celula.appendChild(marcadorDisponibilidade);
+
+                const sessoesDoDia = data < inicioDeHoje ? [] : buscarPlanoDoDia(dataFormatada);
+
+                if (sessoesDoDia.length > 0) {
+                    celula.appendChild(criarMarcadorEstudo(sessoesDoDia, dataFormatada));
+                }
             }
 
             celula.appendChild(numeroDia);
-            celula.appendChild(linkCadastro);
+
+            if (data < inicioDeHoje) {
+                celula.classList.add('dia-passado');
+            } else if (eventosQueComecamNoDia.length === 0) {
+                celula.appendChild(linkCadastro);
+            }
 
             calendario.appendChild(celula);
         }
@@ -498,6 +660,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
             this.textContent = estaOculto ? 'Mostrar cards' : 'Ocultar cards';
             this.setAttribute('aria-expanded', String(!estaOculto));
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        const botao = event.target.closest('.botao-alternar-conteudos');
+
+        if (!botao) {
+            return;
+        }
+
+        const lista = document.getElementById(botao.getAttribute('aria-controls'));
+
+        if (!lista) {
+            return;
+        }
+
+        const expandido = botao.getAttribute('aria-expanded') === 'true';
+
+        lista.hidden = expandido;
+        botao.setAttribute('aria-expanded', String(!expandido));
+        botao.textContent = expandido ? 'Mostrar conteúdos' : 'Ocultar conteúdos';
+    });
+
+    if (filtroTurma && filtroTurmaRotulo) {
+        const turmas = new Map();
+
+        eventosDados.forEach(function (evento) {
+            if (evento.idTurma && !turmas.has(evento.idTurma)) {
+                turmas.set(evento.idTurma, evento.turma || 'Turma não identificada');
+            }
+        });
+
+        Array.from(turmas.entries())
+            .sort(function (turmaA, turmaB) {
+                return turmaA[1].localeCompare(turmaB[1], 'pt-BR');
+            })
+            .forEach(function ([idTurma, nomeTurma]) {
+                const opcao = document.createElement('option');
+
+                opcao.value = idTurma;
+                opcao.textContent = nomeTurma;
+                filtroTurma.appendChild(opcao);
+            });
+
+        filtroTurmaRotulo.hidden = turmas.size < 2;
+
+        filtroTurma.addEventListener('change', function () {
+            turmaFiltrada = filtroTurma.value;
+            atualizarCalendario();
         });
     }
 

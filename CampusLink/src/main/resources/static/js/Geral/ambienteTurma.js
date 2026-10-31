@@ -602,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const campoYoutube = document.getElementById('campoYoutube');
     const campoGoogleBooks = document.getElementById('campoGoogleBooks');
     const campoArquivo = document.getElementById('campoArquivo');
-    const campoDuracao = document.getElementById('campoDuracao');
 
     function atualizarCamposVisiveis() {
         if (!selectTipo) return;
@@ -613,7 +612,6 @@ document.addEventListener('DOMContentLoaded', function () {
         campoYoutube.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
         campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
         campoArquivo.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
-        campoDuracao.style.display = (tipo === 'YOUTUBE' || tipo === 'GOOGLE_BOOKS') ? '' : 'none';
     }
 
     if (selectTipo) {
@@ -759,7 +757,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const campoLinkEditar = modalBody.querySelector('.campo-link-editar');
         const campoYoutubeEditar = modalBody.querySelector('.campo-youtube-editar');
         const campoGoogleBooks = modalBody.querySelector('.campo-google-books-editar');
-        const campoDuracaoEditar = modalBody.querySelector('.campo-duracao-editar');
         const campoArquivoEditar = modalBody.querySelector('.campo-arquivo-editar');
         const inputUrlEditar = campoLinkEditar.querySelector('input[name="url"]');
         const inputDuracaoEditar = modalBody.querySelector('input[name="duracaoEstimada"]');
@@ -769,7 +766,6 @@ document.addEventListener('DOMContentLoaded', function () {
             campoLinkEditar.style.display = (tipo === 'LINK') ? '' : 'none';
             campoYoutubeEditar.style.display = (tipo === 'YOUTUBE') ? '' : 'none';
             campoGoogleBooks.style.display = (tipo === 'GOOGLE_BOOKS') ? '' : 'none';
-            campoDuracaoEditar.style.display = (tipo === 'YOUTUBE' || tipo === 'GOOGLE_BOOKS') ? '' : 'none';
             campoArquivoEditar.style.display = (tipo === 'ARQUIVO') ? '' : 'none';
         }
 

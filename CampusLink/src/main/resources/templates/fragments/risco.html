@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="selo(nivel, motivo)"
+      class="selo-risco"
+      th:classappend="${'risco-' + nivel}"
+      th:title="${motivo}"
+      th:switch="${nivel}">
+    <th:block th:case="'verde'">Possível com facilidade</th:block>
+    <th:block th:case="'amarelo'">Possível se bem planejado</th:block>
+    <th:block th:case="'laranja'">Exige replanejamento</th:block>
+    <th:block th:case="'vermelho'">Impossível</th:block>
+    <th:block th:case="'concluido'">Concluído</th:block>
+    <th:block th:case="'atrasado'">Atrasado</th:block>
+    <th:block th:case="*">Sem evento próximo</th:block>
+</span>
+
+<span th:fragment="ponto(nivel)"
+      th:with="rotulo=${nivel == 'verde' ? 'Possível com facilidade' : (nivel == 'amarelo' ? 'Possível se bem planejado' : (nivel == 'laranja' ? 'Exige replanejamento' : (nivel == 'vermelho' ? 'Impossível' : (nivel == 'concluido' ? 'Concluído' : (nivel == 'atrasado' ? 'Atrasado' : 'Sem evento próximo')))))}"
+      th:class="${nivel == 'concluido' ? 'ponto-concluido' : 'ponto-risco risco-' + nivel}"
+      th:title="${rotulo}"
+      th:aria-label="${rotulo}"
+      role="img"
+      th:text="${nivel == 'concluido' ? '✔' : ''}"></span>
+
+<span th:fragment="contadores(contagem)" class="d-inline-flex flex-wrap align-items-center gap-2">
+    <span class="selo-risco risco-verde" th:text="${contagem.get('verde')}"
+          th:title="${contagem.get('verde') + ' · Possível com facilidade'}"
+          th:aria-label="${contagem.get('verde') + ' alunos: possível com facilidade'}">0</span>
+    <span class="selo-risco risco-amarelo" th:text="${contagem.get('amarelo')}"
+          th:title="${contagem.get('amarelo') + ' · Possível se bem planejado'}"
+          th:aria-label="${contagem.get('amarelo') + ' alunos: possível se bem planejado'}">0</span>
+    <span class="selo-risco risco-laranja" th:text="${contagem.get('laranja')}"
+          th:title="${contagem.get('laranja') + ' · Exige replanejamento'}"
+          th:aria-label="${contagem.get('laranja') + ' alunos: exige replanejamento'}">0</span>
+    <span class="selo-risco risco-vermelho" th:text="${contagem.get('vermelho')}"
+          th:title="${contagem.get('vermelho') + ' · Impossível'}"
+          th:aria-label="${contagem.get('vermelho') + ' alunos: impossível'}">0</span>
+    <span class="selo-risco risco-concluido" th:if="${contagem.get('concluido') > 0}" th:text="${contagem.get('concluido')}"
+          th:title="${contagem.get('concluido') + ' · Concluído'}"
+          th:aria-label="${contagem.get('concluido') + ' alunos: concluído'}">0</span>
+    <span class="selo-risco risco-sem_evento" th:if="${contagem.get('sem_evento') > 0}" th:text="${contagem.get('sem_evento')}"
+          th:title="${contagem.get('sem_evento') + ' · Sem evento próximo'}"
+          th:aria-label="${contagem.get('sem_evento') + ' alunos: sem evento próximo'}">0</span>
+</span>
+</body>
+</html>
