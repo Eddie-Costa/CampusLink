@@ -135,6 +135,14 @@ public class turmasController {
         List<ConteudoDTO> conteudos = conteudoService.buscarPorTurma(Long.parseLong(id), q, tipo);
         model.addAttribute("conteudos", conteudos);
         adicionarInformacoesMidia(model, conteudos);
+
+        if ("aluno".equals(session.getAttribute("tipoUsuario")) && session.getAttribute("email2FA") != null) {
+            String idAluno = alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString());
+            if (idAluno != null && !idAluno.isBlank()) {
+                model.addAttribute("conteudosConcluidos",
+                        conteudoService.listarConcluidosDoAluno(Long.parseLong(idAluno), Long.parseLong(id)));
+            }
+        }
         model.addAttribute("termoBusca", q == null ? "" : q.trim());
         model.addAttribute("tipoFiltro", tipo == null ? "" : tipo);
 
@@ -396,6 +404,49 @@ public class turmasController {
         }
 
         conteudoService.excluir(idConteudo);
+
+        return "redirect:/turmas/" + id;
+    }
+
+    @PostMapping("/turmas/{id}/conteudos/{idConteudo}/concluir")
+    public String concluirConteudo(@PathVariable Long id,
+                                   @PathVariable Long idConteudo,
+                                   @RequestParam(defaultValue = "true") boolean concluido,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null || session.getAttribute("email2FA") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"aluno".equals(session.getAttribute("tipoUsuario"))) {
+            logger.warn("[concluirConteudo] usuário que não é aluno tentou marcar conteúdo {} da turma {}.", idConteudo, id);
+            if (logger.isWarnEnabled()) {
+                try {
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "concluirConteudo", null,
+                            MessageFormatter.arrayFormat("[concluirConteudo] usuário que não é aluno tentou marcar conteúdo {} da turma {}.", new Object[]{idConteudo, id}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+            return "redirect:/turmas/" + id;
+        }
+
+        String idAluno = alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString());
+        boolean alunoDaTurma = idAluno != null && !idAluno.isBlank()
+                && turmaRepository.buscarTurmasDoUsuario("aluno", idAluno).stream()
+                .anyMatch(turma -> id.equals(turma.getId()));
+
+        if (!alunoDaTurma) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
+            return "redirect:/turmas";
+        }
+
+        try {
+            conteudoService.alterarConclusao(Long.parseLong(idAluno), id, idConteudo, concluido);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
 
         return "redirect:/turmas/" + id;
     }

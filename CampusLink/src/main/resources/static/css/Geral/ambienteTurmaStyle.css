@@ -674,6 +674,45 @@ main.container > p {
     transform: translateY(0);
 }
 
+/* conteudo concluido pelo aluno */
+
+.conteudo-concluido {
+    position: relative;
+    overflow: hidden;
+    min-height: 96px;
+}
+
+.conteudo-concluido > :not(.conteudo-concluido-cobertura) {
+    filter: blur(2px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.conteudo-concluido-cobertura {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: inherit;
+    background-color: rgba(var(--campus-success-rgb), 0.55);
+}
+
+.conteudo-concluido-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--campus-success);
+    color: var(--campus-white);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 800px) {
     .turmas-page {
         width: calc(100% - 24px);

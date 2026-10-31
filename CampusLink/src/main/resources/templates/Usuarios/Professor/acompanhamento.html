@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Acompanhamento</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/Geral/turmasStyle.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<div th:if="${mensagemErro != null}" class="alert alert-warning alert-dismissible fade show alerta-flutuante" role="alert">
+    <span th:text="${mensagemErro}">Mensagem de erro</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+</div>
+
+<main class="turmas-page">
+    <div class="turmas-container">
+
+        <div class="busca-turma-container" th:if="${!#lists.isEmpty(turmas)}">
+            <input type="text"
+                   id="buscaTurma"
+                   class="busca-turma"
+                   placeholder="Qual turma está procurando?"
+                   role="combobox"
+                   aria-autocomplete="list"
+                   aria-controls="sugestoesTurma"
+                   aria-expanded="false">
+            <div id="sugestoesTurma" class="sugestoes-turma" role="listbox" hidden></div>
+        </div>
+
+        <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
+            <p>Você ainda não possui turmas.</p>
+        </div>
+
+        <div class="lista-turmas" id="listaTurmas" th:unless="${#lists.isEmpty(turmas)}">
+            <a class="turma-card" th:each="turma : ${turmas}"
+               th:href="@{/acompanhamento/turma/{id}(id=${turma.id})}"
+               th:attr="aria-label=${'Acompanhamento de ' + turma.nomeTurma}">
+                <div class="turma-icon">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+
+                <span class="turma-nome" th:text="${turma.nomeTurma}" th:title="${turma.nomeTurma}">Turma #1</span>
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<script th:src="@{/js/Geral/buscaTurmas.js}"></script>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

@@ -9,6 +9,7 @@ import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DisponibilidadeService;
 import com.example.CampusLink.service.EventoService;
+import com.example.CampusLink.service.ViabilidadeService;
 import com.example.CampusLink.repository.UsuarioRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Controller
@@ -51,6 +53,7 @@ public class EventosController {
     private final AlunoRepository alunoRepository;
     private final ProfessorRepository professorRepository;
     private final TurmaRepository turmaRepository;
+    private final ViabilidadeService viabilidadeService;
 
     // mostra a tela do calendário
     @GetMapping
@@ -336,6 +339,12 @@ public class EventosController {
             return "redirect:/eventos/cadastrar";
         }
 
+        if (data == null || data.isBefore(LocalDate.now(ZoneId.of("America/Sao_Paulo")))) {
+
+            redirectAttributes.addFlashAttribute("erro", "Não é possível cadastrar disponibilidade em dias que já passaram");
+            return "redirect:/eventos/cadastrar";
+        }
+
         disponibilidadeService.salvarDisponibilidade(idAluno, data, horasDisponiveis);
         redirectAttributes.addFlashAttribute("mensagem", "Disponibilidade cadastrada com sucesso!");
         return "redirect:/eventos";
@@ -347,11 +356,13 @@ public class EventosController {
     private void carregarDadosDaPagina(Model model, HttpSession session) throws SQLException {
 
         String tipoUsuario = obterTipoUsuario(session);
-        model.addAttribute("eventos", eventoService.listarEventos());
+        List<Evento> eventos = eventoService.listarEventos();
+        model.addAttribute("eventos", eventos);
         model.addAttribute("tipoUsuario", tipoUsuario);
         model.addAttribute("disponibilidades", List.of());
         model.addAttribute("conteudos", List.of());
         model.addAttribute("turmasProfessor", List.of());
+        model.addAttribute("planoEstudo", List.of());
 
         if (usuarioEhProfessor(session)) {
 
@@ -361,6 +372,7 @@ public class EventosController {
 
                 List<TurmaDTO> turmasProfessor = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor.toString());
                 model.addAttribute("turmasProfessor", turmasProfessor);
+                model.addAttribute("eventos", eventosDasTurmas(eventos, turmasProfessor));
             }
         }
 
@@ -371,8 +383,24 @@ public class EventosController {
             if (idAluno != null) {
 
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
+
+                model.addAttribute("eventos",
+                        eventosDasTurmas(eventos, turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString())));
+
+                model.addAttribute("proximoEventoRisco",
+                        viabilidadeService.proximoEventoPendente(viabilidadeService.calcularParaAluno(idAluno)));
+
+                model.addAttribute("planoEstudo", viabilidadeService.gerarPlano(idAluno));
             }
         }
+    }
+
+
+    private List<Evento> eventosDasTurmas(List<Evento> eventos, List<TurmaDTO> turmas) {
+
+        List<Long> idsTurmas = turmas.stream().map(TurmaDTO::getId).toList();
+
+        return eventos.stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
     }
 
 

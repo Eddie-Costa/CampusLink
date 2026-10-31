@@ -11,12 +11,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 public class ConteudoRepository {
@@ -62,8 +65,8 @@ public class ConteudoRepository {
     public void inserir(ConteudoDTO conteudo) throws SQLException {
         String sql = """
                 INSERT INTO public."CONTEUDOS"
-                ("id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade")
-                VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?)
+                ("id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade", "duracao_estimada_min")
+                VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING "id", "created_at", "status"
                 """;
 
@@ -81,6 +84,7 @@ public class ConteudoRepository {
                 stmt.setString(6, conteudo.getUrl());
                 stmt.setString(7, conteudo.getDuracaoEstimada());
                 stmt.setString(8, conteudo.getPrioridade());
+                stmt.setObject(9, conteudo.getDuracaoEstimadaMin(), Types.INTEGER);
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
@@ -130,6 +134,75 @@ public class ConteudoRepository {
 
         return conteudos;
     }
+    public List<ConteudoDTO> listarPorEvento(Long idEvento) throws SQLException {
+        List<ConteudoDTO> conteudos = new ArrayList<>();
+
+        String sql = """
+                SELECT c.*
+                FROM public."EVENTO_CONTEUDO" ec
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = ec."id_conteudo"
+                WHERE ec."id_evento" = ?
+                AND c."status" = 'ativo'
+                ORDER BY c."created_at" ASC, c."id" ASC
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setLong(1, idEvento);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudos.add(montarConteudo(rs, null));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return conteudos;
+    }
+
+    public Map<Long, List<ConteudoDTO>> listarPorEventos(List<Long> idsEventos) throws SQLException {
+        Map<Long, List<ConteudoDTO>> conteudosPorEvento = new HashMap<>();
+
+        if (idsEventos.isEmpty()) {
+            return conteudosPorEvento;
+        }
+
+        String sql = """
+                SELECT c.*, ec."id_evento" AS evento_id
+                FROM public."EVENTO_CONTEUDO" ec
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = ec."id_conteudo"
+                WHERE ec."id_evento" = ANY(?)
+                AND c."status" = 'ativo'
+                ORDER BY c."created_at" ASC, c."id" ASC
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsEventos.toArray()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        conteudosPorEvento.computeIfAbsent(rs.getLong("evento_id"), idEvento -> new ArrayList<>())
+                                .add(montarConteudo(rs, null));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return conteudosPorEvento;
+    }
+
     public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) throws SQLException {
 
         List<ConteudoDTO> conteudos = new ArrayList<>();
@@ -244,6 +317,7 @@ public class ConteudoRepository {
                         conteudo.setTipo(rs.getString("tipo"));
                         conteudo.setUrl(rs.getString("url"));
                         conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+                        conteudo.setDuracaoEstimadaMin(rs.getObject("duracao_estimada_min", Integer.class));
                         conteudo.setPrioridade(rs.getString("prioridade"));
                         conteudo.setStatus(rs.getString("status"));
                         conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
@@ -515,6 +589,7 @@ public class ConteudoRepository {
         conteudo.setTipo(rs.getString("tipo"));
         conteudo.setUrl(rs.getString("url"));
         conteudo.setDuracaoEstimada(rs.getString("duracao_estimada"));
+        conteudo.setDuracaoEstimadaMin(rs.getObject("duracao_estimada_min", Integer.class));
         conteudo.setPrioridade(rs.getString("prioridade"));
         conteudo.setStatus(rs.getString("status"));
         conteudo.setComentarioAdmin(rs.getString("comentario_admin"));
@@ -698,6 +773,7 @@ public class ConteudoRepository {
                     "descricao" = ?,
                     "url" = ?,
                     "duracao_estimada" = ?,
+                    "duracao_estimada_min" = ?,
                     "tipo" = ?
                 WHERE "id" = ?
                 """;
@@ -712,8 +788,9 @@ public class ConteudoRepository {
 
                 stmt.setString(3, conteudo.getUrl());
                 stmt.setString(4, conteudo.getDuracaoEstimada());
-                stmt.setString(5, conteudo.getTipo());
-                stmt.setLong(6, conteudo.getId());
+                stmt.setObject(5, conteudo.getDuracaoEstimadaMin(), Types.INTEGER);
+                stmt.setString(6, conteudo.getTipo());
+                stmt.setLong(7, conteudo.getId());
 
                 stmt.executeUpdate();
                 return null;
@@ -721,6 +798,122 @@ public class ConteudoRepository {
         } catch (DataAccessException e) {
             throw converterErro(e);
         }
+    }
+
+    public void marcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
+        String sql = """
+                INSERT INTO public."PROGRESSO_CONTEUDO" ("id_aluno", "id_conteudo")
+                VALUES (?, ?)
+                ON CONFLICT ("id_aluno", "id_conteudo") DO NOTHING
+                """;
+
+        try {
+            jdbcTemplate.update(sql, idAluno, idConteudo);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    public void desmarcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
+        String sql = """
+                DELETE FROM public."PROGRESSO_CONTEUDO"
+                WHERE "id_aluno" = ?
+                AND "id_conteudo" = ?
+                """;
+
+        try {
+            jdbcTemplate.update(sql, idAluno, idConteudo);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    public Set<Long> listarConcluidosDoAluno(Long idAluno, Long idTurma) throws SQLException {
+        String sql = """
+                SELECT p."id_conteudo"
+                FROM public."PROGRESSO_CONTEUDO" p
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = p."id_conteudo"
+                WHERE p."id_aluno" = ?
+                AND ? = ANY(c."id_turma")
+                """;
+
+        try {
+            return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, idAluno, idTurma));
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    public Map<Long, Set<Long>> listarConcluidosDosAlunos(List<Long> idsAlunos) throws SQLException {
+        Map<Long, Set<Long>> concluidosPorAluno = new HashMap<>();
+
+        if (idsAlunos.isEmpty()) {
+            return concluidosPorAluno;
+        }
+
+        String sql = """
+                SELECT "id_aluno", "id_conteudo"
+                FROM public."PROGRESSO_CONTEUDO"
+                WHERE "id_aluno" = ANY(?)
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        concluidosPorAluno.computeIfAbsent(rs.getLong("id_aluno"), idAluno -> new HashSet<>())
+                                .add(rs.getLong("id_conteudo"));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return concluidosPorAluno;
+    }
+
+    public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias, int duracaoPadraoMin) throws SQLException {
+        Map<Long, Integer> minutosPorAluno = new HashMap<>();
+
+        if (idsAlunos.isEmpty()) {
+            return minutosPorAluno;
+        }
+
+        String sql = """
+                SELECT p."id_aluno", SUM(COALESCE(c."duracao_estimada_min", ?)) AS "minutos"
+                FROM public."PROGRESSO_CONTEUDO" p
+                INNER JOIN public."CONTEUDOS" c
+                    ON c."id" = p."id_conteudo"
+                WHERE p."id_aluno" = ANY(?)
+                AND p."concluido_em" >= now() - make_interval(days => ?)
+                GROUP BY p."id_aluno"
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setInt(1, duracaoPadraoMin);
+                stmt.setArray(2, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
+                stmt.setInt(3, dias);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        minutosPorAluno.put(rs.getLong("id_aluno"), rs.getInt("minutos"));
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return minutosPorAluno;
     }
 
     // preserva o contrato de erro usado pelos consumidores

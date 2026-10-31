@@ -251,18 +251,38 @@ body {
    VOLTAR / TÍTULO DA TURMA
 ================================ */
 
-.voltar-turmas {
-    display: inline-block;
+.voltar-turmas,
+.botao-compacto {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
     margin-bottom: 14px;
+    padding: 7px 15px;
+    border-radius: 18px;
+    background-color: var(--campus-navy);
     color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
     text-decoration: none;
-    opacity: 0.85;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.voltar-turmas:hover {
+.voltar-turmas:hover,
+.botao-compacto:hover {
+    background-color: var(--campus-navy-hover);
     color: #ffffff;
-    opacity: 1;
-    text-decoration: underline;
+    transform: translateY(-2px);
+}
+
+.voltar-turmas:focus-visible,
+.botao-compacto:focus-visible {
+    outline: 3px solid var(--campus-accent);
+    outline-offset: 3px;
+}
+
+.turmas-container > h1,
+.turmas-container > h2 {
+    color: var(--campus-navy);
 }
 
 
@@ -325,6 +345,88 @@ body {
 
 .conteudo-link:hover {
     color: #ffffff;
+}
+
+.evento-score > summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.evento-score > summary::-webkit-details-marker {
+    display: none;
+}
+
+.evento-score-seta {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.evento-score[open] .evento-score-seta {
+    transform: rotate(180deg);
+}
+
+.evento-score-conteudos {
+    gap: 10px;
+    margin: 12px 0 0 32px;
+}
+
+.evento-score-item {
+    min-height: 0;
+    padding: 12px 24px;
+}
+
+.evento-score-item .conteudo-nome {
+    font-size: 16px;
+}
+
+.progresso-evento {
+    max-width: 360px;
+}
+
+.progresso-evento .progress {
+    height: 8px;
+    margin-bottom: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.aviso-falta {
+    color: #ffd8a8;
+    font-weight: 700;
+}
+
+a.conteudo-card,
+a.conteudo-card:hover {
+    gap: 16px;
+    color: #ffffff;
+}
+
+.turmas-container-larga {
+    max-width: 80vw;
+}
+
+.tabela-acompanhamento {
+    table-layout: fixed;
+    min-width: 100%;
+}
+
+.tabela-acompanhamento .coluna-aluno {
+    width: 220px;
+}
+
+.tabela-acompanhamento .coluna-conteudo {
+    width: 130px;
+}
+
+.tabela-acompanhamento .coluna-conclusao {
+    width: 110px;
+}
+
+.tabela-acompanhamento .coluna-ritmo {
+    width: 120px;
+}
+
+.tabela-acompanhamento .coluna-situacao {
+    width: 230px;
 }
 
 /* ===============================

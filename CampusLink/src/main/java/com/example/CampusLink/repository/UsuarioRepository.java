@@ -146,6 +146,11 @@ public class UsuarioRepository {
                         """, idUsuario);
 
                 executarExclusao(conn, """
+                        DELETE FROM public."PROGRESSO_CONTEUDO"
+                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                        """, idUsuario);
+
+                executarExclusao(conn, """
                         DELETE FROM public."ALUNO_TURMA"
                         WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
                         """, idUsuario);
@@ -242,6 +247,7 @@ public class UsuarioRepository {
                     executarExclusao(conn, "DELETE FROM public.\"ARQUIVOS\" WHERE id_conteudo = ?", idConteudo);
                     executarExclusao(conn, "DELETE FROM public.\"EVENTO_CONTEUDO\" WHERE id_conteudo = ?", idConteudo);
                     executarExclusao(conn, "DELETE FROM public.\"DENUNCIAS\" WHERE id_conteudo = ?", idConteudo);
+                    executarExclusao(conn, "DELETE FROM public.\"PROGRESSO_CONTEUDO\" WHERE id_conteudo = ?", idConteudo);
                     executarExclusao(conn, "DELETE FROM public.\"CONTEUDOS\" WHERE id = ?", idConteudo);
                 }
             }

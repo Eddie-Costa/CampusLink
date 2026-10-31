@@ -37,6 +37,8 @@ public class ConteudoDTO {
 
     private String duracaoEstimada;
 
+    private Integer duracaoEstimadaMin;
+
     private String prioridade;
 
     private String status;
