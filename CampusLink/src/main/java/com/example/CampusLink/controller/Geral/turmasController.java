@@ -481,7 +481,7 @@ public class turmasController {
         }
 
         model.addAttribute("abrirModalParticipantes", true);
-        return "Geral/ambienteTurma";
+        return ambienteTurma(String.valueOf(turmaDTO.getId()), model, session);
     }
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     public String tratarArquivoMuitoGrande(
