@@ -5,6 +5,7 @@ import com.example.CampusLink.dto.redefinirSenhaDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class ResetPaswordController {
         String codigo = twoFactorService.gerarCodigo(email);
 
         //Enviar codigo 2FA
-        emailService.enviarCodigo(email, codigo);
+        emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.REDEFINICAO_SENHA);
 
         logger.info("Solicitação de reset de senha para o email: {}", email);
         if (logger.isInfoEnabled()) {

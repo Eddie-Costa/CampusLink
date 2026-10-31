@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Canal de ajuda | CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Geral/chamados.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="chamados-page chamados-form-page">
+    <header class="chamados-topo">
+        <div>
+            <p class="chamados-etiqueta">Atendimento CampusLink</p>
+            <h1>Canal de ajuda</h1>
+            <p>Envie sua dúvida ou descreva um problema. Nossa equipe responderá pelo seu chamado.</p>
+        </div>
+        <a th:href="@{/meus-chamados}" class="btn btn-outline-primary">Meus chamados</a>
+    </header>
+    <section class="chamados-card" aria-labelledby="titulo-formulario">
+        <h2 id="titulo-formulario">Abrir chamado</h2>
+        <p class="text-secondary">Você receberá um e-mail com a confirmação do registro e outro quando o atendimento for concluído.</p>
+        <form th:action="@{/ajuda}" th:object="${chamado}" method="post" data-texto-envio="Registrando chamado...">
+            <div class="mb-3">
+                <label for="assunto" class="form-label">Assunto</label>
+                <input type="text" th:field="*{assunto}" class="form-control" required maxlength="150"
+                       th:classappend="${#fields.hasErrors('assunto')} ? 'is-invalid'" aria-describedby="erro-assunto">
+                <p id="erro-assunto" class="invalid-feedback" th:errors="*{assunto}"></p>
+            </div>
+            <div class="mb-4">
+                <label for="descricao" class="form-label">Como podemos ajudar?</label>
+                <textarea th:field="*{descricao}" class="form-control" rows="8" required maxlength="5000"
+                          th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'" aria-describedby="ajuda-descricao erro-descricao"></textarea>
+                <p id="ajuda-descricao" class="form-text">Descreva o que aconteceu e em qual página. Até 5.000 caracteres. Não informe senhas ou códigos de acesso.</p>
+                <p id="erro-descricao" class="invalid-feedback" th:errors="*{descricao}"></p>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar chamado</button>
+        </form>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
