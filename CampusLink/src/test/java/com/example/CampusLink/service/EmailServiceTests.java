@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.time.LocalDate;
 import java.util.Properties;
@@ -32,6 +34,13 @@ class EmailServiceTests {
         when(remetente.createMimeMessage()).thenReturn(mensagem);
         ReflectionTestUtils.setField(emails, "mailSender", remetente);
         ReflectionTestUtils.setField(emails, "UsuarioRepository", mock(UsuarioRepository.class));
+        ClassLoaderTemplateResolver resolver = new ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/");
+        resolver.setSuffix(".html");
+        resolver.setCharacterEncoding("UTF-8");
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(resolver);
+        ReflectionTestUtils.setField(emails, "emailTemplateService", new EmailTemplateService(templateEngine));
         dados = new DadosUsuarioDTO();
         dados.setNome("Ana <img src=x> & Silva");
         dados.setEmail("ana@example.com");
@@ -49,14 +58,14 @@ class EmailServiceTests {
 
         verify(remetente).send(mensagem);
         assertEquals("ana@example.com", mensagem.getAllRecipients()[0].toString());
-        assertEquals("Dados pessoais - Exportação de dados", mensagem.getSubject());
+        assertEquals("CampusLink | Seus dados pessoais", mensagem.getSubject());
         String html = conteudo(mensagem, "text/html");
         String texto = conteudo(mensagem, "text/plain");
         assertTrue(html.contains("Ana &lt;img src=x&gt; &amp; Silva"));
         assertFalse(html.contains("<img src=x>"));
         assertTrue(texto.contains(dados.getNome()));
-        for (String valor : new String[]{"ana@example.com", "11999990000", "2001-02-03",
-                "Aluno", "RGM", "123456", "2026-09-01"}) {
+        for (String valor : new String[]{"ana@example.com", "11999990000", "03/02/2001",
+                "Aluno", "RGM", "123456", "01/09/2026"}) {
             assertTrue(html.contains(valor), valor);
             assertTrue(texto.contains(valor), valor);
         }
