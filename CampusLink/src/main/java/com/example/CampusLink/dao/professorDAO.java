@@ -19,22 +19,18 @@ public class professorDAO {
     public loginProfessorDTO buscarPorEmailProfessor(String email) throws SQLException {
 
         String sql = "SELECT * FROM public.\"USUARIOS\" WHERE \"email\" = ?";
-        Connection conn = dataSource.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            loginProfessorDTO usuario = new loginProfessorDTO();
-            usuario.setEmail(rs.getString("EMAIL"));
-            usuario.setSenha(rs.getString("SENHA"));
-
-            return usuario;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    loginProfessorDTO usuario = new loginProfessorDTO();
+                    usuario.setEmail(rs.getString("EMAIL"));
+                    usuario.setSenha(rs.getString("SENHA"));
+                    return usuario;
+                }
+            }
         }
-
-        rs.close();
-        stmt.close();
-        conn.close();
         return null;
     }
 
