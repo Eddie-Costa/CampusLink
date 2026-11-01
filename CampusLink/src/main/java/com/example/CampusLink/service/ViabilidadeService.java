@@ -207,14 +207,14 @@ public class ViabilidadeService {
         });
 
         List<SessaoEstudoDTO> plano = new ArrayList<>();
-        Set<Long> planejados = new HashSet<>();
+        Set<String> planejados = new HashSet<>();
         Map<LocalDate, Integer> usadoPorDia = new HashMap<>();
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
 
             for (ConteudoDTO conteudo : ordenarConteudos(conteudosPorEvento.getOrDefault(evento.getId(), List.of()))) {
-                if (concluidos.contains(conteudo.getId()) || !planejados.add(conteudo.getId())) {
+                if (concluidos.contains(conteudo.getId()) || !planejados.add(conteudo.getId() + "@" + dataEvento)) {
                     continue;
                 }
 
@@ -298,7 +298,7 @@ public class ViabilidadeService {
                                   Map<LocalDate, Integer> horasPorDia) {
 
         List<ViabilidadeDTO> resultado = new ArrayList<>();
-        Map<Long, Integer> cargaAteConteudo = new HashMap<>();
+        Map<String, Integer> cargaAteConteudo = new HashMap<>();
         Map<LocalDate, Map<String, Integer>> cargaPorEventoNoDia = new HashMap<>();
         int cargaAcumulada = 0;
 
@@ -323,11 +323,11 @@ public class ViabilidadeService {
                     item.setNivel("concluido");
                     item.setMotivo("Conteúdo concluído.");
                 } else {
-                    if (!cargaAteConteudo.containsKey(conteudo.getId())) {
+                    if (!cargaAteConteudo.containsKey(conteudo.getId() + "@" + dataEvento)) {
                         cargaAcumulada += duracaoDe(conteudo);
-                        cargaAteConteudo.put(conteudo.getId(), cargaAcumulada);
+                        cargaAteConteudo.put(conteudo.getId() + "@" + dataEvento, cargaAcumulada);
                     }
-                    int carga = cargaAteConteudo.get(conteudo.getId());
+                    int carga = cargaAteConteudo.get(conteudo.getId() + "@" + dataEvento);
                     item.setCargaMin(carga);
                     item.setNivel(classificar(carga, capacidade, maximo));
                     item.setMotivo(montarMotivo(item, complemento));

@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const minutosSugeridos = sessoes.reduce(function (total, sessao) {
             return total + (sessao.sugestao ? sessao.minutos : 0);
         }, 0);
-        const horasSugeridas = Math.ceil(minutosSugeridos / 60) * 60;
+        const horasSugeridas = Math.ceil(minutosSugeridos / 15) * 15;
 
         const marcador = document.createElement('button');
         marcador.type = 'button';
