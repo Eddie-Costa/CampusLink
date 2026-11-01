@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -99,7 +99,7 @@ public class AcompanhamentoController {
         }
 
         List<Evento> eventos = eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
-                List.of(id), "ATIVO", LocalDate.now(ZoneId.of("America/Sao_Paulo")).atStartOfDay());
+                List.of(id), "ATIVO", LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         Map<Long, List<ConteudoDTO>> conteudosPorEvento =
                 conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());

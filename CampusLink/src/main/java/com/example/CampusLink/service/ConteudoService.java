@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -566,7 +565,7 @@ public class ConteudoService {
 
     public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos) {
         try {
-            return conteudoRepository.listarPrazosEncerrados(idsConteudos, LocalDate.now(FUSO).atStartOfDay());
+            return conteudoRepository.listarPrazosEncerrados(idsConteudos, LocalDateTime.now(FUSO));
 
         } catch (SQLException e) {
             logger.error("Erro ao listar prazos encerrados. conteudos={}", idsConteudos, e);

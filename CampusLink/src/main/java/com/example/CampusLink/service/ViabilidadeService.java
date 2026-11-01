@@ -95,11 +95,11 @@ public class ViabilidadeService {
             Set<Long> idsTurmas = new HashSet<>();
             turmasPorAluno.values().forEach(idsTurmas::addAll);
 
-            LocalDateTime inicioDeHoje = LocalDate.now(FUSO).atStartOfDay();
+            LocalDateTime agora = LocalDateTime.now(FUSO);
             List<Evento> eventosPassados = idsTurmas.isEmpty()
                     ? List.of()
                     : eventoRepository.findByIdTurmaInAndStatusAndInicioLessThanOrderByInicioDesc(
-                    idsTurmas, "ATIVO", inicioDeHoje);
+                    idsTurmas, "ATIVO", agora);
 
             Map<Long, List<ConteudoDTO>> conteudosPorEvento =
                     conteudoRepository.listarPorEventos(eventosPassados.stream().map(Evento::getId).toList());
@@ -108,7 +108,7 @@ public class ViabilidadeService {
             Set<Long> idsConteudos = new HashSet<>();
             conteudosPorEvento.values().forEach(conteudos -> conteudos.forEach(conteudo -> idsConteudos.add(conteudo.getId())));
             Map<Long, LocalDateTime> prazosEncerrados =
-                    conteudoRepository.listarPrazosEncerrados(new ArrayList<>(idsConteudos), inicioDeHoje);
+                    conteudoRepository.listarPrazosEncerrados(new ArrayList<>(idsConteudos), agora);
 
             for (Long idAluno : idsAlunos) {
                 List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
@@ -344,7 +344,7 @@ public class ViabilidadeService {
         List<Evento> eventos = idsTurmas.isEmpty()
                 ? List.of()
                 : eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
-                idsTurmas, "ATIVO", hoje.atStartOfDay());
+                idsTurmas, "ATIVO", LocalDateTime.now(FUSO));
 
         Map<Long, List<ConteudoDTO>> conteudosPorEvento =
                 conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());

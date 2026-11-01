@@ -901,7 +901,7 @@ public class ConteudoRepository {
         return concluidosPorAluno;
     }
 
-    public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos, LocalDateTime inicioDeHoje) throws SQLException {
+    public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos, LocalDateTime referencia) throws SQLException {
         Map<Long, LocalDateTime> prazoPorConteudo = new HashMap<>();
 
         if (idsConteudos.isEmpty()) {
@@ -923,8 +923,8 @@ public class ConteudoRepository {
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-                stmt.setTimestamp(1, Timestamp.valueOf(inicioDeHoje));
-                stmt.setTimestamp(2, Timestamp.valueOf(inicioDeHoje));
+                stmt.setTimestamp(1, Timestamp.valueOf(referencia));
+                stmt.setTimestamp(2, Timestamp.valueOf(referencia));
                 stmt.setArray(3, stmt.getConnection().createArrayOf("bigint", idsConteudos.toArray()));
 
                 try (ResultSet rs = stmt.executeQuery()) {
