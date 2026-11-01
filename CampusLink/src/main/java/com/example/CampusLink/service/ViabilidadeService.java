@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -298,10 +299,13 @@ public class ViabilidadeService {
 
         List<ViabilidadeDTO> resultado = new ArrayList<>();
         Map<Long, Integer> cargaAteConteudo = new HashMap<>();
+        Map<LocalDate, Map<String, Integer>> cargaPorEventoNoDia = new HashMap<>();
         int cargaAcumulada = 0;
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
+            int cargaAntesDoEvento = cargaAcumulada;
+            String complemento = descreverOutrosEventosDoDia(cargaPorEventoNoDia.getOrDefault(dataEvento, Map.of()));
             int capacidade = capacidadeAte(hoje, dataEvento, horasPorDia);
             int maximo = (int) Math.max(0, ChronoUnit.DAYS.between(hoje, dataEvento)) * TETO_DIARIO_HORAS * 60;
 
@@ -326,7 +330,7 @@ public class ViabilidadeService {
                     int carga = cargaAteConteudo.get(conteudo.getId());
                     item.setCargaMin(carga);
                     item.setNivel(classificar(carga, capacidade, maximo));
-                    item.setMotivo(montarMotivo(item));
+                    item.setMotivo(montarMotivo(item, complemento));
                 }
 
                 piorNivel = pior(piorNivel, item.getNivel());
@@ -343,9 +347,14 @@ public class ViabilidadeService {
                 resumoEvento.setNivel(piorNivel);
                 resumoEvento.setMotivo("concluido".equals(piorNivel)
                         ? "Todos os conteúdos deste evento foram concluídos."
-                        : montarMotivo(resumoEvento));
+                        : montarMotivo(resumoEvento, complemento));
             }
             resultado.add(resumoEvento);
+
+            if (cargaAcumulada > cargaAntesDoEvento) {
+                cargaPorEventoNoDia.computeIfAbsent(dataEvento, dia -> new LinkedHashMap<>())
+                        .merge(evento.getNome(), cargaAcumulada - cargaAntesDoEvento, Integer::sum);
+            }
         }
 
         return resultado;
@@ -412,8 +421,9 @@ public class ViabilidadeService {
 
     private List<Evento> ordenarEventos(List<Evento> eventos) {
         return eventos.stream()
-                .sorted(Comparator.comparing(Evento::getInicio)
-                        .thenComparing(evento -> pesoPrioridade(evento.getPrioridade())))
+                .sorted(Comparator.comparing((Evento evento) -> evento.getInicio().toLocalDate())
+                        .thenComparing(evento -> pesoPrioridade(evento.getPrioridade()))
+                        .thenComparing(Evento::getInicio))
                 .toList();
     }
 
@@ -483,8 +493,20 @@ public class ViabilidadeService {
         return item;
     }
 
-    private String montarMotivo(ViabilidadeDTO item) {
-        String texto = "Faltam " + formatarHoras(item.getCargaMin()) + " de estudo e você tem "
+    private String descreverOutrosEventosDoDia(Map<String, Integer> cargaPorEvento) {
+        if (cargaPorEvento.isEmpty()) {
+            return "";
+        }
+
+        int total = cargaPorEvento.values().stream().mapToInt(Integer::intValue).sum();
+        if (cargaPorEvento.size() == 1) {
+            return " (incluindo " + formatarHoras(total) + " de " + cargaPorEvento.keySet().iterator().next() + ", no mesmo dia)";
+        }
+        return " (incluindo " + formatarHoras(total) + " de outros " + cargaPorEvento.size() + " eventos no mesmo dia)";
+    }
+
+    private String montarMotivo(ViabilidadeDTO item, String complemento) {
+        String texto = "Faltam " + formatarHoras(item.getCargaMin()) + " de estudo" + complemento + " e você tem "
                 + formatarHoras(item.getCapacidadeMin()) + " disponíveis até "
                 + item.getDataEvento().format(FORMATO_DATA) + ".";
 
