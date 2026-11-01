@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -94,14 +95,20 @@ public class ViabilidadeService {
             Set<Long> idsTurmas = new HashSet<>();
             turmasPorAluno.values().forEach(idsTurmas::addAll);
 
+            LocalDateTime inicioDeHoje = LocalDate.now(FUSO).atStartOfDay();
             List<Evento> eventosPassados = idsTurmas.isEmpty()
                     ? List.of()
                     : eventoRepository.findByIdTurmaInAndStatusAndInicioLessThanOrderByInicioDesc(
-                    idsTurmas, "ATIVO", LocalDate.now(FUSO).atStartOfDay());
+                    idsTurmas, "ATIVO", inicioDeHoje);
 
             Map<Long, List<ConteudoDTO>> conteudosPorEvento =
                     conteudoRepository.listarPorEventos(eventosPassados.stream().map(Evento::getId).toList());
             Map<Long, Set<Long>> concluidosPorAluno = conteudoRepository.listarConcluidosDosAlunos(idsAlunos);
+
+            Set<Long> idsConteudos = new HashSet<>();
+            conteudosPorEvento.values().forEach(conteudos -> conteudos.forEach(conteudo -> idsConteudos.add(conteudo.getId())));
+            Map<Long, LocalDateTime> prazosEncerrados =
+                    conteudoRepository.listarPrazosEncerrados(new ArrayList<>(idsConteudos), inicioDeHoje);
 
             for (Long idAluno : idsAlunos) {
                 List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
@@ -114,7 +121,8 @@ public class ViabilidadeService {
                         continue;
                     }
                     for (ConteudoDTO conteudo : conteudosPorEvento.getOrDefault(evento.getId(), List.of())) {
-                        if (concluidos.contains(conteudo.getId()) || !jaListados.add(conteudo.getId())) {
+                        if (concluidos.contains(conteudo.getId()) || !prazosEncerrados.containsKey(conteudo.getId())
+                                || !jaListados.add(conteudo.getId())) {
                             continue;
                         }
                         ViabilidadeDTO item = novoResultado(idAluno, evento);
@@ -122,8 +130,8 @@ public class ViabilidadeService {
                         item.setTituloConteudo(conteudo.getTitulo());
                         item.setCargaMin(duracaoDe(conteudo));
                         item.setNivel("atrasado");
-                        item.setMotivo("O evento foi em " + evento.getInicio().format(FORMATO_DATA)
-                                + " e este conteúdo ainda não foi concluído.");
+                        item.setMotivo("O prazo terminou em " + evento.getInicio().format(FORMATO_DATA)
+                                + " e este conteúdo não foi concluído.");
                         atrasados.add(item);
                     }
                 }

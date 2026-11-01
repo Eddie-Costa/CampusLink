@@ -14,6 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,6 +30,8 @@ public class ConteudoService {
     private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ConteudoService.class);
+
+    private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
 
     private final ConteudoRepository conteudoRepository;
     private final ArquivoService arquivoService;
@@ -421,6 +427,28 @@ public class ConteudoService {
                 }
 
                 throw new IllegalArgumentException("Conteúdo não encontrado nesta turma.");
+            }
+
+            LocalDateTime prazoEncerrado = concluido
+                    ? conteudoRepository.listarPrazosEncerrados(List.of(idConteudo), LocalDate.now(FUSO).atStartOfDay()).get(idConteudo)
+                    : null;
+
+            if (prazoEncerrado != null) {
+                logger.warn("Conclusão recusada: prazo encerrado. alunoId={} conteudoId={} prazo={}", idAluno, idConteudo, prazoEncerrado);
+
+                if (logger.isWarnEnabled()) {
+                    try {
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "alterarConclusao", null,
+                                MessageFormatter.arrayFormat("Conclusão recusada: prazo encerrado. alunoId={} conteudoId={} prazo={}", new Object[]{idAluno, idConteudo, prazoEncerrado}).getMessage(), null, null);
+
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+
+                throw new IllegalArgumentException("O prazo deste conteúdo terminou em "
+                        + prazoEncerrado.format(DateTimeFormatter.ofPattern("dd/MM"))
+                        + ". Ele não pode mais ser concluído.");
             }
 
             if (concluido) {

@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -876,6 +877,53 @@ public class ConteudoRepository {
         }
 
         return concluidosPorAluno;
+    }
+
+    public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos, LocalDateTime inicioDeHoje) throws SQLException {
+        Map<Long, LocalDateTime> prazoPorConteudo = new HashMap<>();
+
+        if (idsConteudos.isEmpty()) {
+            return prazoPorConteudo;
+        }
+
+        String sql = """
+                SELECT c."id",
+                       max(e."data_hora") FILTER (WHERE e."data_hora" < ?) AS "ultimo_prazo",
+                       bool_or(e."data_hora" >= ?) AS "tem_evento_futuro",
+                       c."reaberto_em" AT TIME ZONE 'America/Sao_Paulo' AS "reaberto_em"
+                FROM public."CONTEUDOS" c
+                INNER JOIN public."EVENTO_CONTEUDO" ec ON ec."id_conteudo" = c."id"
+                INNER JOIN public."EVENTOS" e ON e."id" = ec."id_evento" AND e."status" = 'ATIVO'
+                WHERE c."id" = ANY(?)
+                GROUP BY c."id", c."reaberto_em"
+                """;
+
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setTimestamp(1, Timestamp.valueOf(inicioDeHoje));
+                stmt.setTimestamp(2, Timestamp.valueOf(inicioDeHoje));
+                stmt.setArray(3, stmt.getConnection().createArrayOf("bigint", idsConteudos.toArray()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Timestamp ultimoPrazo = rs.getTimestamp("ultimo_prazo");
+                        Timestamp reabertoEm = rs.getTimestamp("reaberto_em");
+
+                        if (ultimoPrazo == null || rs.getBoolean("tem_evento_futuro")
+                                || (reabertoEm != null && reabertoEm.after(ultimoPrazo))) {
+                            continue;
+                        }
+                        prazoPorConteudo.put(rs.getLong("id"), ultimoPrazo.toLocalDateTime());
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return prazoPorConteudo;
     }
 
     public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias, int duracaoPadraoMin) throws SQLException {
