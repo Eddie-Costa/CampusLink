@@ -102,6 +102,7 @@ public class turmasController {
         if (session.getAttribute("tipoUsuario") != null && "professor".equalsIgnoreCase(session.getAttribute("tipoUsuario").toString())) {
             String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
             isTurmaAdmin = turma.getIdProprietario() != null && turma.getIdProprietario().toString().equals(idProfessor);
+            model.addAttribute("idProfessorLogado", idProfessor == null || idProfessor.isBlank() ? null : Long.parseLong(idProfessor));
 
             try {
                 model.addAttribute("solicitacoesDominio",
@@ -141,10 +142,10 @@ public class turmasController {
             if (idAluno != null && !idAluno.isBlank()) {
                 model.addAttribute("conteudosConcluidos",
                         conteudoService.listarConcluidosDoAluno(Long.parseLong(idAluno), Long.parseLong(id)));
-                model.addAttribute("prazosEncerrados",
-                        conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList()));
             }
         }
+        model.addAttribute("prazosEncerrados",
+                conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList()));
         model.addAttribute("termoBusca", q == null ? "" : q.trim());
         model.addAttribute("tipoFiltro", tipo == null ? "" : tipo);
 
@@ -406,6 +407,30 @@ public class turmasController {
         }
 
         conteudoService.excluir(idConteudo);
+
+        return "redirect:/turmas/" + id;
+    }
+
+    @PostMapping("/turmas/{id}/conteudos/{idConteudo}/re-disponibilizar")
+    public String reDisponibilizarConteudo(@PathVariable Long id,
+                                           @PathVariable Long idConteudo,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) throws SQLException {
+
+        if (session.getAttribute("usuarioLogado") == null || session.getAttribute("email2FA") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            return "redirect:/turmas/" + id;
+        }
+
+        String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        if (idProfessor != null && !idProfessor.isBlank() && conteudoService.reabrir(idConteudo, Long.parseLong(idProfessor))) {
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
+        } else {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");
+        }
 
         return "redirect:/turmas/" + id;
     }

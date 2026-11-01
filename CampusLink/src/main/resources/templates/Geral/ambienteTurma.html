@@ -383,6 +383,30 @@
 
                         </form>
 
+                        <th:block th:if="${session.tipoUsuario == 'professor' and conteudo.status == 'ativo'
+                                         and prazosEncerrados != null and prazosEncerrados.containsKey(conteudo.id)}">
+                            <span class="selo-risco risco-atrasado"
+                                  th:text="${'Prazo encerrado em ' + #temporals.format(prazosEncerrados.get(conteudo.id), 'dd/MM')}">
+                                Prazo encerrado em 28/10
+                            </span>
+
+                            <form th:if="${idProfessorLogado != null and idProfessorLogado == conteudo.idProfessor}"
+                                  th:action="@{/turmas/{id}/conteudos/{idConteudo}/re-disponibilizar(id=${turma.id}, idConteudo=${conteudo.id})}"
+                                  method="post"
+                                  class="conteudo-excluir-form">
+
+                                <input type="hidden" th:if="${_csrf != null}"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <button type="submit" class="conteudo-excluir"
+                                        title="Permite que os alunos concluam este conteúdo novamente">
+                                    Re-disponibilizar
+                                </button>
+
+                            </form>
+                        </th:block>
+
                         <form th:if="${session.tipoUsuario == 'professor'}"
                               th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
                               method="post"
