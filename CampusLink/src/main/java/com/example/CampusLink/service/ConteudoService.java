@@ -281,6 +281,59 @@ public class ConteudoService {
         }
     }
 
+    public boolean reabrir(Long idConteudo, Long idProfessor) {
+        try {
+            boolean reaberto = conteudoRepository.reabrir(idConteudo, idProfessor);
+
+            if (reaberto) {
+                logger.info("Conteúdo re-disponibilizado. conteudoId={} professorId={}", idConteudo, idProfessor);
+
+                if (logger.isInfoEnabled()) {
+                    try {
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", ConteudoService.class.getName(), "reabrir", null,
+                                MessageFormatter.arrayFormat("Conteúdo re-disponibilizado. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+
+            } else {
+                logger.warn("Re-disponibilização recusada. conteudoId={} professorId={}", idConteudo, idProfessor);
+
+                if (logger.isWarnEnabled()) {
+                    try {
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", ConteudoService.class.getName(), "reabrir", null,
+                                MessageFormatter.arrayFormat("Re-disponibilização recusada. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, null);
+
+                    } catch (Exception erroLogBD) {
+                        logger.error("Erro ao gravar log no banco.", erroLogBD);
+                    }
+                }
+            }
+
+            return reaberto;
+
+        } catch (SQLException e) {
+            logger.error("Erro ao re-disponibilizar conteúdo. conteudoId={} professorId={}", idConteudo, idProfessor, e);
+
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "reabrir", null,
+                            MessageFormatter.arrayFormat("Erro ao re-disponibilizar conteúdo. conteudoId={} professorId={}", new Object[]{idConteudo, idProfessor}).getMessage(), null, excecaoLogBD.toString());
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            throw new RuntimeException("Não foi possível re-disponibilizar o conteúdo.", e);
+        }
+    }
+
     public boolean solicitarRevisao(Long idConteudo, Long idProfessor) {
         try {
             boolean solicitado = conteudoRepository.solicitarRevisao(idConteudo, idProfessor);

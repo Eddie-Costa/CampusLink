@@ -119,6 +119,22 @@
                                 Análise solicitada
                             </span>
 
+                            <th:block th:if="${conteudo.status == 'ativo' and prazosEncerrados != null and prazosEncerrados.containsKey(conteudo.id)}">
+                                <span class="prazo-encerrado"
+                                      th:text="${'Prazo encerrado em ' + #temporals.format(prazosEncerrados.get(conteudo.id), 'dd/MM')}">
+                                    Prazo encerrado em 28/10
+                                </span>
+
+                                <form th:action="@{/meus-conteudos/{idConteudo}/re-disponibilizar(idConteudo=${conteudo.id})}" method="post">
+                                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                    <button type="submit" class="botao-analise"
+                                            title="Permite que os alunos concluam este conteúdo novamente">
+                                        Re-disponibilizar
+                                    </button>
+                                </form>
+                            </th:block>
+
                             <form class="form-remover-conteudo" method="post" th:if="${conteudo.status != 'removido'}"
                                   th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}">
 

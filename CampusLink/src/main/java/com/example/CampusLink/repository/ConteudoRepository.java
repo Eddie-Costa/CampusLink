@@ -723,6 +723,28 @@ public class ConteudoRepository {
         }
     }
 
+    public boolean reabrir(Long idConteudo, Long idProfessor) throws SQLException {
+        String sql = """
+                UPDATE public."CONTEUDOS"
+                SET "reaberto_em" = now()
+                WHERE "id" = ?
+                AND "id_professor" = ?
+                AND "status" = 'ativo'
+                """;
+
+        try {
+            return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
+
+                stmt.setLong(1, idConteudo);
+                stmt.setLong(2, idProfessor);
+
+                return stmt.executeUpdate() > 0;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
     public boolean solicitarRevisao(Long idConteudo, Long idProfessor) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"

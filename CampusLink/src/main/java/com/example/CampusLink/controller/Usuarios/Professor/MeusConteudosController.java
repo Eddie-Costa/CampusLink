@@ -96,6 +96,8 @@ public class MeusConteudosController {
             }
 
             model.addAttribute("conteudos", conteudos);
+            model.addAttribute("prazosEncerrados",
+                    conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList()));
             adicionarInformacoesMidia(model, conteudos);
             model.addAttribute("busca", busca);
             model.addAttribute("statusSelecionado", status);
@@ -350,6 +352,58 @@ public class MeusConteudosController {
             }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível solicitar a análise.");
+        }
+
+        return "redirect:/meus-conteudos";
+    }
+
+    @PostMapping("/meus-conteudos/{idConteudo}/re-disponibilizar")
+    public String reDisponibilizar(
+            @PathVariable Long idConteudo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            return "redirect:/home";
+        }
+
+        String email = (String) session.getAttribute("email2FA");
+        if (email == null || email.isBlank()) {
+            return "redirect:/login";
+        }
+
+        try {
+            String idProfessorTexto = professorRepository.buscarPorIDProfessor(email);
+            if (idProfessorTexto == null || idProfessorTexto.isBlank()) {
+                return "redirect:/home";
+            }
+
+            if (conteudoService.reabrir(idConteudo, Long.parseLong(idProfessorTexto))) {
+                redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
+            } else {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");
+            }
+
+        } catch (SQLException | RuntimeException e) {
+            logger.error("Erro ao re-disponibilizar conteúdo. conteudoId={}", idConteudo, e);
+
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", MeusConteudosController.class.getName(), "reDisponibilizar", null,
+                            MessageFormatter.arrayFormat("Erro ao re-disponibilizar conteúdo. conteudoId={}", new Object[]{idConteudo}).getMessage(),
+                            null, excecaoLogBD.toString());
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar o conteúdo.");
         }
 
         return "redirect:/meus-conteudos";

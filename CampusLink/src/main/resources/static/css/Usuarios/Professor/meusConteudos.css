@@ -242,6 +242,18 @@ body {
     color: var(--branco);
 }
 
+.prazo-encerrado {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background-color: var(--campus-late-bg);
+    color: var(--campus-late-text);
+    font-size: 12px;
+    font-weight: bold;
+}
+
 .analise-solicitada {
     display: inline-flex;
     align-items: center;
