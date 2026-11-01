@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -31,6 +32,16 @@ public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final EventoConteudoRepository eventoConteudoRepository;
+
+    public static String validarHorario(LocalDateTime inicio, LocalDateTime fim) {
+        if (!fim.isAfter(inicio)) {
+            return "O horário de término deve ser depois do início.";
+        }
+        if (!fim.toLocalDate().equals(inicio.toLocalDate())) {
+            return "O evento deve começar e terminar no mesmo dia.";
+        }
+        return null;
+    }
 
     // salva o evento e os conteudos escolhidos
     public Evento adicionarEvento(Evento evento, List<Long> idsConteudos) {

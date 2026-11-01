@@ -164,8 +164,9 @@ public class AdminEventosController {
             return voltarCadastro;
         }
 
-        if (fim.isBefore(inicio)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "A data final não pode ser anterior à data inicial.");
+        String erroHorario = EventoService.validarHorario(inicio, fim);
+        if (erroHorario != null) {
+            redirectAttributes.addFlashAttribute("mensagemErro", erroHorario);
             return voltarCadastro;
         }
 
@@ -292,8 +293,9 @@ public class AdminEventosController {
             return voltarEdicao;
         }
 
-        if (fim.isBefore(inicio)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "A data final não pode ser anterior à data inicial.");
+        String erroHorario = EventoService.validarHorario(inicio, fim);
+        if (erroHorario != null) {
+            redirectAttributes.addFlashAttribute("mensagemErro", erroHorario);
             return voltarEdicao;
         }
 

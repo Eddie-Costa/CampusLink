@@ -174,9 +174,9 @@ public class EventosController {
             return "redirect:/eventos/cadastrar";
         }
 
-        if (fim.isBefore(inicio)) {
-
-            redirectAttributes.addFlashAttribute("erro", "A data final nao pode ser anterior a data inicial");
+        String erroHorario = EventoService.validarHorario(inicio, fim);
+        if (erroHorario != null) {
+            redirectAttributes.addFlashAttribute("erro", erroHorario);
             return "redirect:/eventos/cadastrar";
         }
 
