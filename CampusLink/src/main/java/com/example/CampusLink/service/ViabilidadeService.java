@@ -209,6 +209,7 @@ public class ViabilidadeService {
         List<SessaoEstudoDTO> plano = new ArrayList<>();
         Set<String> planejados = new HashSet<>();
         Map<LocalDate, Integer> usadoPorDia = new HashMap<>();
+        Set<LocalDate> diasDeEvento = diasComEvento(eventos);
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
@@ -220,7 +221,7 @@ public class ViabilidadeService {
 
                 int restante = duracaoDe(conteudo);
                 for (LocalDate dia = hoje; dia.isBefore(dataEvento) && restante > 0; dia = dia.plusDays(1)) {
-                    int livre = livrePorDia.getOrDefault(dia, 0);
+                    int livre = diasDeEvento.contains(dia) ? 0 : livrePorDia.getOrDefault(dia, 0);
                     if (livre == 0) {
                         continue;
                     }
@@ -232,7 +233,7 @@ public class ViabilidadeService {
                 }
 
                 if (restante > 0) {
-                    restante = sugerirHoras(hoje, evento, conteudo, restante, usadoPorDia, plano);
+                    restante = sugerirHoras(hoje, evento, conteudo, restante, usadoPorDia, diasDeEvento, plano);
                 }
 
                 if (restante > 0) {
@@ -246,12 +247,15 @@ public class ViabilidadeService {
     }
 
     private int sugerirHoras(LocalDate hoje, Evento evento, ConteudoDTO conteudo, int restante,
-                             Map<LocalDate, Integer> usadoPorDia, List<SessaoEstudoDTO> plano) {
+                             Map<LocalDate, Integer> usadoPorDia, Set<LocalDate> diasDeEvento, List<SessaoEstudoDTO> plano) {
         int teto = TETO_DIARIO_HORAS * 60;
         List<LocalDate> dias = new ArrayList<>();
         int espacoTotal = 0;
 
         for (LocalDate dia = hoje; dia.isBefore(evento.getInicio().toLocalDate()); dia = dia.plusDays(1)) {
+            if (diasDeEvento.contains(dia)) {
+                continue;
+            }
             dias.add(dia);
             espacoTotal += Math.max(0, teto - usadoPorDia.getOrDefault(dia, 0));
         }
@@ -301,13 +305,14 @@ public class ViabilidadeService {
         Map<String, Integer> cargaAteConteudo = new HashMap<>();
         Map<LocalDate, Map<String, Integer>> cargaPorEventoNoDia = new HashMap<>();
         int cargaAcumulada = 0;
+        Set<LocalDate> diasDeEvento = diasComEvento(eventos);
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
             int cargaAntesDoEvento = cargaAcumulada;
             String complemento = descreverOutrosEventosDoDia(cargaPorEventoNoDia.getOrDefault(dataEvento, Map.of()));
-            int capacidade = capacidadeAte(hoje, dataEvento, horasPorDia);
-            int maximo = (int) Math.max(0, ChronoUnit.DAYS.between(hoje, dataEvento)) * TETO_DIARIO_HORAS * 60;
+            int capacidade = capacidadeAte(hoje, dataEvento, horasPorDia, diasDeEvento);
+            int maximo = diasDeEstudoAte(hoje, dataEvento, diasDeEvento) * TETO_DIARIO_HORAS * 60;
 
             List<ConteudoDTO> conteudos = ordenarConteudos(conteudosPorEvento.getOrDefault(evento.getId(), List.of()));
 
@@ -456,12 +461,30 @@ public class ViabilidadeService {
         return "vermelho";
     }
 
-    private int capacidadeAte(LocalDate hoje, LocalDate dataEvento, Map<LocalDate, Integer> horasPorDia) {
+    private int capacidadeAte(LocalDate hoje, LocalDate dataEvento, Map<LocalDate, Integer> horasPorDia, Set<LocalDate> diasDeEvento) {
         int horas = 0;
         for (LocalDate dia = hoje; dia.isBefore(dataEvento); dia = dia.plusDays(1)) {
-            horas += horasPorDia.getOrDefault(dia, 0);
+            if (!diasDeEvento.contains(dia)) {
+                horas += horasPorDia.getOrDefault(dia, 0);
+            }
         }
         return horas * 60;
+    }
+
+    private int diasDeEstudoAte(LocalDate hoje, LocalDate dataEvento, Set<LocalDate> diasDeEvento) {
+        int dias = 0;
+        for (LocalDate dia = hoje; dia.isBefore(dataEvento); dia = dia.plusDays(1)) {
+            if (!diasDeEvento.contains(dia)) {
+                dias++;
+            }
+        }
+        return dias;
+    }
+
+    private Set<LocalDate> diasComEvento(List<Evento> eventos) {
+        Set<LocalDate> dias = new HashSet<>();
+        eventos.forEach(evento -> dias.add(evento.getInicio().toLocalDate()));
+        return dias;
     }
 
     public int duracaoDe(ConteudoDTO conteudo) {
