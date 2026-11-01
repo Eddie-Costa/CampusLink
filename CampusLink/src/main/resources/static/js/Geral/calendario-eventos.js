@@ -67,11 +67,14 @@ document.addEventListener('DOMContentLoaded', function () {
             evento: sessao.dataset.evento || '',
             dataEvento: sessao.dataset.dataEvento || '',
             idTurma: sessao.dataset.idTurma || '',
+            idConteudo: sessao.dataset.idConteudo || '',
             sugestao: sessao.dataset.sugestao === 'true'
         };
     });
 
-    const planoDoDia = document.getElementById('planoDoDia');
+    const planoEstudoModal = document.getElementById('planoEstudoModal');
+    const dataPlanoEstudo = document.getElementById('dataPlanoEstudo');
+    const turmasPlanoDoDia = document.getElementById('turmasPlanoDoDia');
     const listaPlanoDoDia = document.getElementById('listaPlanoDoDia');
 
     const calendario = document.getElementById('calendar');
@@ -231,22 +234,44 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         marcador.setAttribute('aria-label', `Ver plano de estudos do dia ${formatarDataCurta(data)}`);
         marcador.addEventListener('click', function () {
-            abrirCronograma(data);
+            abrirPlanoDoDia(data);
         });
 
         return marcador;
     }
 
-    function montarPlanoDoDia(data) {
-        if (!planoDoDia || !listaPlanoDoDia) {
+    function agruparPlanoPorConteudo(sessoes) {
+        const grupos = new Map();
+
+        sessoes.forEach(function (sessao) {
+            const chave = `${sessao.idConteudo}|${sessao.evento}|${sessao.dataEvento}`;
+            const grupo = grupos.get(chave) || Object.assign({}, sessao, { minutos: 0, sugestao: false });
+
+            grupo.minutos += sessao.minutos;
+            grupo.sugestao = grupo.sugestao || sessao.sugestao;
+            grupos.set(chave, grupo);
+        });
+
+        return Array.from(grupos.values());
+    }
+
+    function abrirPlanoDoDia(data) {
+        if (!planoEstudoModal || !listaPlanoDoDia || typeof bootstrap === 'undefined') {
             return;
         }
 
-        const sessoes = buscarPlanoDoDia(data);
+        const sessoes = agruparPlanoPorConteudo(buscarPlanoDoDia(data));
+        const nomesTurmas = new Map();
+
+        eventosDados.forEach(function (evento) {
+            nomesTurmas.set(evento.idTurma, evento.turma || 'Turma');
+        });
+
+        dataPlanoEstudo.textContent = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
+            weekday: 'long', day: '2-digit', month: 'long'
+        });
 
         listaPlanoDoDia.innerHTML = '';
-        planoDoDia.hidden = sessoes.length === 0;
-
         sessoes.forEach(function (sessao) {
             const item = document.createElement('li');
             const descricao = document.createElement('div');
@@ -268,6 +293,20 @@ document.addEventListener('DOMContentLoaded', function () {
             item.append(descricao, tempo);
             listaPlanoDoDia.appendChild(item);
         });
+
+        turmasPlanoDoDia.innerHTML = '';
+        Array.from(new Set(sessoes.map(function (sessao) {
+            return sessao.idTurma;
+        }))).forEach(function (idTurma) {
+            const link = document.createElement('a');
+
+            link.href = `/turmas/${encodeURIComponent(idTurma)}`;
+            link.classList.add('botao-ir-turma');
+            link.textContent = `Ir para ${nomesTurmas.get(idTurma) || 'a turma'}`;
+            turmasPlanoDoDia.appendChild(link);
+        });
+
+        bootstrap.Modal.getOrCreateInstance(planoEstudoModal).show();
     }
 
     function abrirCronograma(data) {
@@ -278,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const eventosVisiveis = eventosDaAgenda.filter(function (evento) {
             return eventoDaTurmaFiltrada(evento.idTurma);
         });
-        montarPlanoDoDia(data);
         const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
         const corpoModal = modalCronograma.querySelector('.modal-body');
 

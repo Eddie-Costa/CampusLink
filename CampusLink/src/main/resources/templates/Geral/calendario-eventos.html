@@ -471,13 +471,32 @@
                 </div>
             </div>
             <div class="modal-body p-0">
-                <section id="planoDoDia" class="plano-dia" aria-labelledby="planoDoDiaTitulo" hidden>
-                    <h3 id="planoDoDiaTitulo">Plano de estudos</h3>
-                    <ul id="listaPlanoDoDia"></ul>
-                    <p class="plano-dia-nota">O plano é recalculado sempre que você conclui um conteúdo ou muda sua disponibilidade.</p>
-                </section>
                 <div id="gradeHorarios" class="grade-horarios" aria-live="polite"></div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade plano-estudo-modal" id="planoEstudoModal" tabindex="-1"
+     aria-labelledby="planoEstudoTitulo" aria-hidden="true"
+     th:if="${session.tipoUsuario == 'aluno'}">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="eventos-dia-cabecalho">
+                <div>
+                    <p class="eventos-dia-legenda">Plano de estudos</p>
+                    <h2 id="planoEstudoTitulo">Estudar hoje</h2>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <time id="dataPlanoEstudo"></time>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+            <div class="modal-body plano-dia">
+                <ul id="listaPlanoDoDia"></ul>
+                <p class="plano-dia-nota">O plano é recalculado sempre que você conclui um conteúdo ou muda sua disponibilidade.</p>
+            </div>
+            <div class="modal-footer plano-dia-turmas" id="turmasPlanoDoDia"></div>
         </div>
     </div>
 </div>
