@@ -34,33 +34,45 @@
             <span th:replace="~{fragments/risco :: selo('atrasado', null)}"></span>
         </div>
 
-        <h2 class="h5 fw-bold mb-3">Conteúdos críticos</h2>
-
-        <p th:if="${#lists.isEmpty(conteudosCriticos)}">Nenhum conteúdo crítico nesta turma.</p>
-
-        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(conteudosCriticos)}">
-            <div class="conteudo-card evento-score-item" th:each="item : ${conteudosCriticos}">
-                <span class="conteudo-nome" th:text="${item.titulo}">Conteúdo #1</span>
-                <span class="d-inline-flex flex-wrap gap-2">
-                    <span class="selo-risco risco-atrasado" th:if="${item.atrasados > 0}"
-                          th:text="${item.atrasados + (item.atrasados == 1 ? ' aluno não concluiu' : ' alunos não concluíram')}">2 alunos não concluíram</span>
-                    <span class="selo-risco risco-vermelho" th:if="${item.vermelhos > 0}"
-                          th:text="${item.vermelhos + (item.vermelhos == 1 ? ' aluno sem tempo' : ' alunos sem tempo')}">1 aluno sem tempo</span>
+        <details class="evento-score mb-4">
+            <summary class="conteudo-card">
+                <span class="conteudo-nome">Conteúdos críticos</span>
+                <span class="d-flex align-items-center gap-3">
+                    <span class="selo-risco risco-vermelho" th:text="${#lists.size(conteudosCriticos)}">0</span>
+                    <span class="evento-score-seta" aria-hidden="true">▾</span>
                 </span>
+            </summary>
+
+            <div class="lista-conteudos evento-score-conteudos">
+                <p class="m-0" th:if="${#lists.isEmpty(conteudosCriticos)}">Nenhum conteúdo crítico nesta turma.</p>
+
+                <div class="conteudo-card evento-score-item" th:each="item : ${conteudosCriticos}">
+                    <span class="conteudo-nome" th:text="${item.titulo}">Conteúdo #1</span>
+                    <span class="selo-risco risco-vermelho"
+                          th:text="${item.vermelhos + (item.vermelhos == 1 ? ' aluno sem tempo' : ' alunos sem tempo')}">1 aluno sem tempo</span>
+                </div>
             </div>
-        </div>
+        </details>
 
-        <h2 class="h5 fw-bold mb-3">Alunos com conteúdos não concluídos</h2>
+        <details class="evento-score mb-4">
+            <summary class="conteudo-card">
+                <span class="conteudo-nome">Alunos com conteúdos não concluídos</span>
+                <span class="d-flex align-items-center gap-3">
+                    <span class="selo-risco risco-atrasado" th:text="${#lists.size(alunosComAtraso)}">0</span>
+                    <span class="evento-score-seta" aria-hidden="true">▾</span>
+                </span>
+            </summary>
 
-        <p th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo não concluído.</p>
+            <div class="lista-conteudos evento-score-conteudos">
+                <p class="m-0" th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo não concluído.</p>
 
-        <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(alunosComAtraso)}">
-            <div class="conteudo-card evento-score-item" th:each="item : ${alunosComAtraso}">
-                <span class="conteudo-nome" th:text="${item.nome}">Aluno 1</span>
-                <span class="selo-risco risco-atrasado"
-                      th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo não concluído' : ' conteúdos não concluídos')}">2 conteúdos não concluídos</span>
+                <div class="conteudo-card evento-score-item" th:each="item : ${alunosComAtraso}">
+                    <span class="conteudo-nome" th:text="${item.nome}">Aluno 1</span>
+                    <span class="selo-risco risco-atrasado"
+                          th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo não concluído' : ' conteúdos não concluídos')}">2 conteúdos não concluídos</span>
+                </div>
             </div>
-        </div>
+        </details>
 
         <h2 class="h5 fw-bold mb-3">Próximos eventos</h2>
 

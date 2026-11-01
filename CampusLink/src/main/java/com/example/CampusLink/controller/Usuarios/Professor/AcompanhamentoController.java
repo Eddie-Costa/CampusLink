@@ -121,25 +121,17 @@ public class AcompanhamentoController {
                 viabilidadeService.listarAtrasados(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
 
         Map<Long, String> tituloPorConteudo = new HashMap<>();
-        Map<Long, Set<Long>> alunosAtrasadosPorConteudo = new HashMap<>();
         Map<Long, Set<Long>> alunosVermelhosPorConteudo = new HashMap<>();
         List<Map<String, Object>> alunosComAtraso = new ArrayList<>();
 
         for (usuarioAdminDTO aluno : alunos) {
-            long atrasadosDoAluno = 0;
-            for (ViabilidadeDTO atrasado : resultadosDaTurma(atrasadosPorAluno, aluno, id)) {
-                tituloPorConteudo.put(atrasado.getIdConteudo(), atrasado.getTituloConteudo());
-                alunosAtrasadosPorConteudo.computeIfAbsent(atrasado.getIdConteudo(), idConteudo -> new HashSet<>())
-                        .add(aluno.getIdPerfil());
-                atrasadosDoAluno++;
-            }
+            long atrasadosDoAluno = resultadosDaTurma(atrasadosPorAluno, aluno, id).size();
             if (atrasadosDoAluno > 0) {
                 alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
             }
 
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
-                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())
-                        && !alunosAtrasadosPorConteudo.getOrDefault(resultado.getIdConteudo(), Set.of()).contains(aluno.getIdPerfil())) {
+                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())) {
                     tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
                     alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
                             .add(aluno.getIdPerfil());
@@ -166,7 +158,7 @@ public class AcompanhamentoController {
         model.addAttribute("conteudosPorEvento", conteudosPorEvento);
         model.addAttribute("contagemPorEvento", contagemPorEvento);
         model.addAttribute("contagemPorConteudo", contagemPorConteudo);
-        model.addAttribute("conteudosCriticos", rankingCriticos(tituloPorConteudo, alunosAtrasadosPorConteudo, alunosVermelhosPorConteudo));
+        model.addAttribute("conteudosCriticos", rankingCriticos(tituloPorConteudo, alunosVermelhosPorConteudo));
         model.addAttribute("alunosComAtraso", alunosComAtraso.stream()
                 .sorted(Comparator.comparing((Map<String, Object> item) -> -(Long) item.get("atrasados"))
                         .thenComparing(item -> (String) item.get("nome"), String.CASE_INSENSITIVE_ORDER))
@@ -264,17 +256,15 @@ public class AcompanhamentoController {
     }
 
     private List<Map<String, Object>> rankingCriticos(Map<Long, String> tituloPorConteudo,
-                                                      Map<Long, Set<Long>> atrasadosPorConteudo,
                                                       Map<Long, Set<Long>> vermelhosPorConteudo) {
         List<Map<String, Object>> ranking = new ArrayList<>();
 
         tituloPorConteudo.forEach((idConteudo, titulo) -> {
-            long atrasados = atrasadosPorConteudo.getOrDefault(idConteudo, Set.of()).size();
             long vermelhos = vermelhosPorConteudo.getOrDefault(idConteudo, Set.of()).size();
-            ranking.add(Map.of("titulo", titulo, "atrasados", atrasados, "vermelhos", vermelhos, "total", atrasados + vermelhos));
+            ranking.add(Map.of("titulo", titulo, "vermelhos", vermelhos));
         });
 
-        ranking.sort(Comparator.comparing((Map<String, Object> item) -> -(Long) item.get("total"))
+        ranking.sort(Comparator.comparing((Map<String, Object> item) -> -(Long) item.get("vermelhos"))
                 .thenComparing(item -> (String) item.get("titulo"), String.CASE_INSENSITIVE_ORDER));
         return ranking;
     }
