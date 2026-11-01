@@ -743,5 +743,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const confirmarRefazerModal = document.getElementById('confirmarRefazerModal');
+    const formRefazerConteudo = document.getElementById('formRefazerConteudo');
+    const tituloConteudoRefazer = document.getElementById('tituloConteudoRefazer');
+
+    document.addEventListener('click', function (event) {
+        const botao = event.target.closest('.botao-refazer');
+
+        if (!botao || !confirmarRefazerModal || !formRefazerConteudo || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        formRefazerConteudo.action = botao.dataset.acao;
+        tituloConteudoRefazer.textContent = botao.dataset.titulo || 'este conteúdo';
+        bootstrap.Modal.getOrCreateInstance(confirmarRefazerModal).show();
+    });
+
     atualizarCalendario();
 });

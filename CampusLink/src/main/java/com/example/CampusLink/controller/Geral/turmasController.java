@@ -439,8 +439,11 @@ public class turmasController {
     public String concluirConteudo(@PathVariable Long id,
                                    @PathVariable Long idConteudo,
                                    @RequestParam(defaultValue = "true") boolean concluido,
+                                   @RequestParam(required = false) String origem,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes) throws SQLException {
+
+        boolean voltarParaEventos = "eventos".equals(origem);
 
         if (session.getAttribute("usuarioLogado") == null || session.getAttribute("email2FA") == null) {
             return "redirect:/login";
@@ -471,11 +474,14 @@ public class turmasController {
 
         try {
             conteudoService.alterarConclusao(Long.parseLong(idAluno), id, idConteudo, concluido);
+            if (voltarParaEventos && !concluido) {
+                redirectAttributes.addFlashAttribute("mensagem", "O conteúdo voltou a ficar pendente.");
+            }
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+            redirectAttributes.addFlashAttribute(voltarParaEventos ? "erro" : "mensagemErro", e.getMessage());
         }
 
-        return "redirect:/turmas/" + id;
+        return voltarParaEventos ? "redirect:/eventos" : "redirect:/turmas/" + id;
     }
     @PostMapping("/turmas/{id}/conteudos/{idConteudo}/editar")
     public String editarConteudo(@PathVariable Long id,

@@ -3,6 +3,7 @@ package com.example.CampusLink.controller.Geral;
 import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.repository.ProfessorRepository;
 import com.example.CampusLink.repository.TurmaRepository;
+import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.model.Evento;
@@ -38,6 +39,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/eventos")
@@ -55,6 +57,7 @@ public class EventosController {
     private final ProfessorRepository professorRepository;
     private final TurmaRepository turmaRepository;
     private final ViabilidadeService viabilidadeService;
+    private final ConteudoRepository conteudoRepository;
 
     // mostra a tela do calendário
     @GetMapping
@@ -368,6 +371,9 @@ public class EventosController {
         model.addAttribute("conteudos", List.of());
         model.addAttribute("turmasProfessor", List.of());
         model.addAttribute("planoEstudo", List.of());
+        model.addAttribute("conteudosPorEvento", Map.of());
+        model.addAttribute("conteudosConcluidos", Set.of());
+        model.addAttribute("agora", LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         if (usuarioEhProfessor(session)) {
 
@@ -389,8 +395,13 @@ public class EventosController {
 
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
 
-                model.addAttribute("eventos",
-                        eventosDasTurmas(eventos, turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString())));
+                List<Evento> eventosDoAluno =
+                        eventosDasTurmas(eventos, turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString()));
+                model.addAttribute("eventos", eventosDoAluno);
+                model.addAttribute("conteudosPorEvento",
+                        conteudoRepository.listarPorEventos(eventosDoAluno.stream().map(Evento::getId).toList()));
+                model.addAttribute("conteudosConcluidos",
+                        conteudoRepository.listarConcluidosDosAlunos(List.of(idAluno)).getOrDefault(idAluno, Set.of()));
 
                 model.addAttribute("proximoEventoRisco",
                         viabilidadeService.proximoEventoPendente(viabilidadeService.calcularParaAluno(idAluno)));

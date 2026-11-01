@@ -27,6 +27,10 @@
           th:data-url-cadastro="@{/eventos/cadastrar}">
 
         <div class="popup-sucesso" th:if="${mensagem}" th:text="${mensagem}" role="alert"></div>
+        <div class="alert alert-danger alert-dismissible fade show alerta-flutuante" th:if="${erro}" role="alert">
+            <span th:text="${erro}">Erro</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
 
         <div class="calendar-controls">
 
@@ -333,10 +337,29 @@
                                     Mostrar conteúdos
                                 </button>
 
-                                <ul th:id="${'conteudosEvento-' + evento.id}" hidden>
+                                <ul th:id="${'conteudosEvento-' + evento.id}" hidden
+                                    th:if="${!conteudosPorEvento.containsKey(evento.id)}">
                                     <li th:each="nomeConteudo : ${evento.nomesConteudos}"
                                         th:text="${nomeConteudo}">
                                         Nome do conteúdo
+                                    </li>
+                                </ul>
+
+                                <ul th:id="${'conteudosEvento-' + evento.id}" hidden
+                                    th:if="${conteudosPorEvento.containsKey(evento.id)}"
+                                    class="lista-conteudos-evento">
+                                    <li th:each="conteudo : ${conteudosPorEvento.get(evento.id)}"
+                                        th:with="concluido=${conteudosConcluidos.contains(conteudo.id)}">
+                                        <span th:text="${conteudo.titulo}">Nome do conteúdo</span>
+
+                                        <span class="tag-concluido" th:if="${concluido}">✔ Concluído</span>
+
+                                        <button type="button" class="botao-refazer"
+                                                th:if="${concluido and evento.inicio.isAfter(agora)}"
+                                                th:data-titulo="${conteudo.titulo}"
+                                                th:data-acao="@{/turmas/{idTurma}/conteudos/{idConteudo}/concluir(idTurma=${evento.idTurma}, idConteudo=${conteudo.id})}">
+                                            Refazer
+                                        </button>
                                     </li>
                                 </ul>
 
@@ -403,6 +426,34 @@
 
     </main>
 
+</div>
+
+<div class="modal fade" id="confirmarRefazerModal" tabindex="-1"
+     aria-labelledby="tituloConfirmarRefazer" aria-hidden="true"
+     th:if="${session.tipoUsuario == 'aluno'}">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content campus-modal" id="formRefazerConteudo" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="concluido" value="false">
+            <input type="hidden" name="origem" value="eventos">
+
+            <div class="modal-header">
+                <h2 id="tituloConfirmarRefazer" class="modal-title fs-5">Refazer conteúdo</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancelar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">
+                    Ao confirmar, o conteúdo <strong id="tituloConteudoRefazer">conteúdo</strong>
+                    volta a ficar <strong>pendente</strong> e precisará ser concluído novamente.
+                </p>
+                <p class="mb-0 small">Ele volta a entrar no seu plano de estudos e no cálculo de risco do evento.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-campus">Refazer conteúdo</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="modal fade cronograma-dia" id="cronogramaDiaModal" tabindex="-1"

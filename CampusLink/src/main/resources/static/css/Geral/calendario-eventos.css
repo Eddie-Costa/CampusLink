@@ -1291,3 +1291,64 @@ button.evento-marcador:focus-visible {
     border: 1px dashed var(--verde-disponibilidade);
     border-radius: 6px;
 }
+
+.lista-conteudos-evento li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.tag-concluido {
+    padding: 1px 10px;
+    border-radius: 999px;
+    background: var(--campus-success-bg);
+    color: var(--campus-success-text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.botao-refazer {
+    padding: 2px 12px;
+    border: 1px solid var(--campus-navy);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--campus-navy);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botao-refazer:hover,
+.botao-refazer:focus-visible {
+    background: var(--campus-navy);
+    color: #ffffff;
+}
+
+#confirmarRefazerModal .modal-content {
+    border: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#confirmarRefazerModal .modal-header {
+    border: 0;
+    background: var(--campus-navy);
+    color: #ffffff;
+}
+
+#confirmarRefazerModal .modal-body {
+    color: var(--campus-navy);
+}
+
+#confirmarRefazerModal .btn-campus {
+    border: 0;
+    background: var(--campus-navy);
+    color: #ffffff;
+}
+
+#confirmarRefazerModal .btn-campus:hover {
+    background: var(--campus-navy-hover);
+    color: #ffffff;
+}
