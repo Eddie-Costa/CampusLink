@@ -57,7 +57,6 @@ public class ScoreController {
 
         List<TurmaDTO> turmas = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
         List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
-        List<ViabilidadeDTO> atrasados = viabilidadeService.listarAtrasados(List.of(idAluno)).getOrDefault(idAluno, List.of());
         Map<Long, ViabilidadeDTO> proximoEventoPorTurma = proximoEventoPorTurma(resultados);
 
         Map<Long, String> nomeTurmaPorId = new HashMap<>();
@@ -77,7 +76,7 @@ public class ScoreController {
         model.addAttribute("proximoEventoPorTurma", proximoEventoPorTurma);
         model.addAttribute("concluidosPorTurma", concluidosPorTurma);
         model.addAttribute("totalPorTurma", totalPorTurma);
-        model.addAttribute("prioridades", montarPrioridades(resultados, atrasados));
+        model.addAttribute("prioridades", montarPrioridades(resultados));
         model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
         model.addAttribute("ritmo", montarRitmo(idAluno, resultados));
 
@@ -227,6 +226,7 @@ public class ScoreController {
         Map<String, Object> ritmo = new HashMap<>();
         ritmo.put("horasSemana", viabilidadeService.formatarHoras(minutosSemana));
         ritmo.put("mediaDiaria", viabilidadeService.formatarHoras(mediaDiaria));
+        ritmo.put("proximoEvento", null);
 
         ViabilidadeDTO proximo = viabilidadeService.proximoEventoPendente(resultados);
         if (proximo != null && !"concluido".equals(proximo.getNivel()) && proximo.getCargaMin() > 0) {
@@ -239,10 +239,9 @@ public class ScoreController {
         return ritmo;
     }
 
-    private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados, List<ViabilidadeDTO> atrasados) {
-        List<ViabilidadeDTO> prioridades = new ArrayList<>(atrasados);
+    private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados) {
+        List<ViabilidadeDTO> prioridades = new ArrayList<>();
         Set<Long> jaListados = new HashSet<>();
-        atrasados.forEach(atrasado -> jaListados.add(atrasado.getIdConteudo()));
 
         for (String nivel : List.of("vermelho", "amarelo")) {
             for (ViabilidadeDTO resultado : resultados) {
