@@ -244,7 +244,7 @@ public class ScoreController {
         Set<Long> jaListados = new HashSet<>();
         atrasados.forEach(atrasado -> jaListados.add(atrasado.getIdConteudo()));
 
-        for (String nivel : List.of("vermelho", "laranja")) {
+        for (String nivel : List.of("vermelho", "amarelo")) {
             for (ViabilidadeDTO resultado : resultados) {
                 if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
                         && jaListados.add(resultado.getIdConteudo())) {

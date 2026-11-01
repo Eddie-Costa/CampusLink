@@ -41,13 +41,12 @@ public class ViabilidadeService {
 
     private static final Logger logger = LoggerFactory.getLogger(ViabilidadeService.class);
 
-    private static final double FOLGA_VERDE = 0.7;
     private static final int TETO_DIARIO_HORAS = 8;
     private static final int DURACAO_PADRAO_MIN = 60;
 
     private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM");
-    private static final List<String> ORDEM_NIVEIS = List.of("concluido", "verde", "amarelo", "laranja", "vermelho");
+    private static final List<String> ORDEM_NIVEIS = List.of("concluido", "verde", "amarelo", "vermelho");
 
     private final EventoRepository eventoRepository;
     private final ConteudoRepository conteudoRepository;
@@ -379,14 +378,11 @@ public class ViabilidadeService {
     }
 
     private String classificar(int cargaMin, int capacidadeMin, int maximoMin) {
-        if (cargaMin <= capacidadeMin * FOLGA_VERDE) {
+        if (cargaMin <= capacidadeMin) {
             return "verde";
         }
-        if (cargaMin <= capacidadeMin) {
-            return "amarelo";
-        }
         if (cargaMin <= maximoMin) {
-            return "laranja";
+            return "amarelo";
         }
         return "vermelho";
     }
@@ -434,10 +430,10 @@ public class ViabilidadeService {
                 + item.getDataEvento().format(FORMATO_DATA) + ".";
 
         return switch (item.getNivel()) {
-            case "laranja" -> texto + " Adicione "
+            case "amarelo" -> texto + " Adicione "
                     + (int) Math.ceil((item.getCargaMin() - item.getCapacidadeMin()) / 60.0)
                     + "h de disponibilidade até " + item.getDataEvento().minusDays(1).format(FORMATO_DATA)
-                    + " para ficar amarelo.";
+                    + " para ficar possível.";
             case "vermelho" -> texto + " Não há tempo suficiente até o evento.";
             default -> texto;
         };

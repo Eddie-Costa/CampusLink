@@ -172,12 +172,6 @@ body,
     color: var(--campus-warning-text);
 }
 
-.risco-laranja {
-    --selo-cor: var(--campus-orange);
-    background-color: var(--campus-orange-bg);
-    color: var(--campus-orange-text);
-}
-
 .risco-vermelho {
     --selo-cor: var(--campus-danger);
     background-color: var(--campus-danger-bg);

@@ -39,7 +39,7 @@
                 </div>
                 <th:block th:if="${ritmo.proximoEvento != null}">
                     <span class="selo-risco risco-verde" th:if="${ritmo.noRitmo}">No ritmo</span>
-                    <span class="selo-risco risco-laranja" th:unless="${ritmo.noRitmo}">Abaixo do ritmo</span>
+                    <span class="selo-risco risco-amarelo" th:unless="${ritmo.noRitmo}">Abaixo do ritmo</span>
                 </th:block>
             </div>
 

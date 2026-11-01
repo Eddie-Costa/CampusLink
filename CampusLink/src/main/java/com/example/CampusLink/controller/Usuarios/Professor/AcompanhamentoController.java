@@ -45,8 +45,8 @@ public class AcompanhamentoController {
 
     private static final Logger logger = LoggerFactory.getLogger(AcompanhamentoController.class);
 
-    private static final List<String> NIVEIS = List.of("verde", "amarelo", "laranja", "vermelho", "concluido", "sem_evento");
-    private static final List<String> GRAVIDADE = List.of("vermelho", "laranja", "amarelo", "verde", "concluido", "sem_evento");
+    private static final List<String> NIVEIS = List.of("verde", "amarelo", "vermelho", "concluido", "sem_evento");
+    private static final List<String> GRAVIDADE = List.of("vermelho", "amarelo", "verde", "concluido", "sem_evento");
 
     private final ProfessorRepository professorRepository;
     private final TurmaRepository turmaRepository;
