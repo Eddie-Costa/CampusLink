@@ -46,7 +46,7 @@ public class AcompanhamentoController {
     private static final Logger logger = LoggerFactory.getLogger(AcompanhamentoController.class);
 
     private static final List<String> NIVEIS = List.of("verde", "amarelo", "vermelho", "concluido", "sem_evento");
-    private static final List<String> GRAVIDADE = List.of("vermelho", "amarelo", "verde", "concluido", "sem_evento");
+    private static final List<String> GRAVIDADE = List.of("atrasado", "vermelho", "amarelo", "verde", "concluido", "sem_evento");
 
     private final ProfessorRepository professorRepository;
     private final TurmaRepository turmaRepository;
@@ -155,6 +155,8 @@ public class AcompanhamentoController {
         model.addAttribute("turma", turma);
         model.addAttribute("totalAlunos", alunos.size());
         model.addAttribute("eventos", eventos);
+        model.addAttribute("eventosPassados", eventoRepository.findByIdTurmaInAndStatusAndInicioLessThanOrderByInicioDesc(
+                List.of(id), "ATIVO", LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))));
         model.addAttribute("conteudosPorEvento", conteudosPorEvento);
         model.addAttribute("contagemPorEvento", contagemPorEvento);
         model.addAttribute("contagemPorConteudo", contagemPorConteudo);
@@ -201,7 +203,11 @@ public class AcompanhamentoController {
 
         List<ConteudoDTO> conteudos = conteudoRepository.listarPorEvento(idEvento);
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
-        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = calcularParaAlunos(alunos);
+        boolean eventoPassado = evento.getInicio().isBefore(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = eventoPassado ? Map.of() : calcularParaAlunos(alunos);
+        Map<Long, Set<Long>> conteudosFeitosPorAluno = eventoPassado
+                ? conteudoRepository.listarConcluidosDosAlunos(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList())
+                : Map.of();
 
         Map<Long, Map<Long, String>> nivelPorAlunoEConteudo = new HashMap<>();
         Map<Long, String> situacaoPorAluno = new HashMap<>();
@@ -211,6 +217,18 @@ public class AcompanhamentoController {
             Map<Long, String> niveis = new HashMap<>();
             String situacao = "sem_evento";
             long concluidos = 0;
+
+            if (eventoPassado) {
+                Set<Long> feitos = conteudosFeitosPorAluno.getOrDefault(aluno.getIdPerfil(), Set.of());
+                for (ConteudoDTO conteudo : conteudos) {
+                    boolean feito = feitos.contains(conteudo.getId());
+                    niveis.put(conteudo.getId(), feito ? "concluido" : "atrasado");
+                    concluidos += feito ? 1 : 0;
+                }
+                if (!conteudos.isEmpty()) {
+                    situacao = concluidos == conteudos.size() ? "concluido" : "atrasado";
+                }
+            }
 
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
                 if (!idEvento.equals(resultado.getIdEvento())) {
@@ -238,6 +256,7 @@ public class AcompanhamentoController {
 
         model.addAttribute("turma", turma);
         model.addAttribute("evento", evento);
+        model.addAttribute("eventoPassado", eventoPassado);
         model.addAttribute("conteudos", conteudos);
         model.addAttribute("alunos", alunosOrdenados);
         model.addAttribute("nivelPorAlunoEConteudo", nivelPorAlunoEConteudo);

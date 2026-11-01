@@ -571,3 +571,13 @@ a.conteudo-card:hover {
     }
 
 }
+
+.conteudo-card .botao-compacto {
+    background-color: #ffffff;
+    color: var(--campus-navy);
+}
+
+.conteudo-card .botao-compacto:hover {
+    background-color: var(--campus-surface-alt);
+    color: var(--campus-navy);
+}
