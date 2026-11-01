@@ -317,7 +317,7 @@ body {
 .registration-area::after {
     position: fixed;
     z-index: 5;
-    inset: 0;
+    inset: var(--campus-header-altura, 0px) 0 0 0;
     background: var(--campus-overlay);
     backdrop-filter: blur(var(--campus-overlay-blur));
     -webkit-backdrop-filter: blur(var(--campus-overlay-blur));

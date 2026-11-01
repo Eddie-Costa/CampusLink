@@ -9,6 +9,20 @@
 <body>
 <main>
     <div th:fragment="nav" class="nav site-header-nav">
+        <script>
+            (function () {
+                function atualizarAlturaHeader() {
+                    var header = document.querySelector('.site-header-nav');
+                    var limite = header ? Math.max(0, Math.round(header.getBoundingClientRect().bottom)) : 0;
+                    document.documentElement.style.setProperty('--campus-header-altura', limite + 'px');
+                }
+
+                document.addEventListener('DOMContentLoaded', atualizarAlturaHeader);
+                document.addEventListener('show.bs.modal', atualizarAlturaHeader);
+                window.addEventListener('resize', atualizarAlturaHeader);
+                window.addEventListener('scroll', atualizarAlturaHeader, { passive: true });
+            })();
+        </script>
         <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
         <link rel="stylesheet" th:href="@{/css/profileMenu.css}">
         <link rel="stylesheet" th:href="@{/css/Geral/submit-once.css(v=20261017-1)}">

@@ -230,3 +230,13 @@ body,
     backdrop-filter: blur(var(--campus-overlay-blur));
     -webkit-backdrop-filter: blur(var(--campus-overlay-blur));
 }
+
+.modal-backdrop {
+    top: var(--campus-header-altura, 0px);
+    height: calc(100vh - var(--campus-header-altura, 0px));
+}
+
+.modal {
+    top: var(--campus-header-altura, 0px);
+    height: calc(100% - var(--campus-header-altura, 0px));
+}
