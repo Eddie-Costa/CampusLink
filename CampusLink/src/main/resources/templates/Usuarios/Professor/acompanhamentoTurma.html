@@ -43,22 +43,22 @@
                 <span class="conteudo-nome" th:text="${item.titulo}">Conteúdo #1</span>
                 <span class="d-inline-flex flex-wrap gap-2">
                     <span class="selo-risco risco-atrasado" th:if="${item.atrasados > 0}"
-                          th:text="${item.atrasados + (item.atrasados == 1 ? ' aluno atrasado' : ' alunos atrasados')}">2 alunos atrasados</span>
+                          th:text="${item.atrasados + (item.atrasados == 1 ? ' aluno não concluiu' : ' alunos não concluíram')}">2 alunos não concluíram</span>
                     <span class="selo-risco risco-vermelho" th:if="${item.vermelhos > 0}"
                           th:text="${item.vermelhos + (item.vermelhos == 1 ? ' aluno sem tempo' : ' alunos sem tempo')}">1 aluno sem tempo</span>
                 </span>
             </div>
         </div>
 
-        <h2 class="h5 fw-bold mb-3">Alunos com atraso</h2>
+        <h2 class="h5 fw-bold mb-3">Alunos com conteúdos não concluídos</h2>
 
-        <p th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo atrasado.</p>
+        <p th:if="${#lists.isEmpty(alunosComAtraso)}">Nenhum aluno com conteúdo não concluído.</p>
 
         <div class="lista-conteudos mb-4" th:unless="${#lists.isEmpty(alunosComAtraso)}">
             <div class="conteudo-card evento-score-item" th:each="item : ${alunosComAtraso}">
                 <span class="conteudo-nome" th:text="${item.nome}">Aluno 1</span>
                 <span class="selo-risco risco-atrasado"
-                      th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo atrasado' : ' conteúdos atrasados')}">2 conteúdos atrasados</span>
+                      th:text="${item.atrasados + (item.atrasados == 1 ? ' conteúdo não concluído' : ' conteúdos não concluídos')}">2 conteúdos não concluídos</span>
             </div>
         </div>
 

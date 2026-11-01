@@ -429,9 +429,7 @@ public class ConteudoService {
                 throw new IllegalArgumentException("Conteúdo não encontrado nesta turma.");
             }
 
-            LocalDateTime prazoEncerrado = concluido
-                    ? conteudoRepository.listarPrazosEncerrados(List.of(idConteudo), LocalDate.now(FUSO).atStartOfDay()).get(idConteudo)
-                    : null;
+            LocalDateTime prazoEncerrado = concluido ? listarPrazosEncerrados(List.of(idConteudo)).get(idConteudo) : null;
 
             if (prazoEncerrado != null) {
                 logger.warn("Conclusão recusada: prazo encerrado. alunoId={} conteudoId={} prazo={}", idAluno, idConteudo, prazoEncerrado);
@@ -510,6 +508,30 @@ public class ConteudoService {
             }
 
             throw new RuntimeException("Não foi possível listar os conteúdos concluídos.", e);
+        }
+    }
+
+    public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos) {
+        try {
+            return conteudoRepository.listarPrazosEncerrados(idsConteudos, LocalDate.now(FUSO).atStartOfDay());
+
+        } catch (SQLException e) {
+            logger.error("Erro ao listar prazos encerrados. conteudos={}", idsConteudos, e);
+
+            if (logger.isErrorEnabled()) {
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "listarPrazosEncerrados", null,
+                            MessageFormatter.arrayFormat("Erro ao listar prazos encerrados. conteudos={}", new Object[]{idsConteudos}).getMessage(), null, excecaoLogBD.toString());
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            throw new RuntimeException("Não foi possível verificar os prazos dos conteúdos.", e);
         }
     }
 

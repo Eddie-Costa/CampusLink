@@ -141,6 +141,8 @@ public class turmasController {
             if (idAluno != null && !idAluno.isBlank()) {
                 model.addAttribute("conteudosConcluidos",
                         conteudoService.listarConcluidosDoAluno(Long.parseLong(idAluno), Long.parseLong(id)));
+                model.addAttribute("prazosEncerrados",
+                        conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList()));
             }
         }
         model.addAttribute("termoBusca", q == null ? "" : q.trim());

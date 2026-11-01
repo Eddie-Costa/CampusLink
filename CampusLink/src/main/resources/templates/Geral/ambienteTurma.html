@@ -359,7 +359,14 @@
                             </svg>
                         </button>
 
-                        <form th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo' and !concluido}"
+                        <span th:if="${session.tipoUsuario == 'aluno' and !concluido and prazosEncerrados != null and prazosEncerrados.containsKey(conteudo.id)}"
+                              class="selo-risco risco-atrasado"
+                              th:text="${'Não concluído · prazo encerrado em ' + #temporals.format(prazosEncerrados.get(conteudo.id), 'dd/MM')}">
+                            Não concluído · prazo encerrado em 28/10
+                        </span>
+
+                        <form th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo' and !concluido
+                                      and (prazosEncerrados == null or !prazosEncerrados.containsKey(conteudo.id))}"
                               th:action="@{/turmas/{id}/conteudos/{idConteudo}/concluir(id=${turma.id}, idConteudo=${conteudo.id})}"
                               method="post"
                               class="conteudo-excluir-form">
