@@ -235,6 +235,7 @@ public class EventosController {
         evento.setIdProfessor(idProfessor);
         evento.setIdTurma(turmaId);
         eventoService.adicionarEvento(evento, conteudoIds);
+        turmaRepository.registrarAlteracao(session.getAttribute("email2FA").toString(), turmaId);
         logger.info("Evento cadastrado idProfessor={} idTurma={}", idProfessor, turmaId);
         if (logger.isInfoEnabled()) {
             try {

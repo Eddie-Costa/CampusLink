@@ -1,6 +1,7 @@
 package com.example.CampusLink.controller.Usuarios.Professor;
 
 import com.example.CampusLink.repository.ProfessorRepository;
+import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.service.ConteudoService;
@@ -36,6 +37,9 @@ public class MeusConteudosController {
 
     @Autowired
     private UsuarioRepository UsuarioRepository;
+
+    @Autowired
+    private TurmaRepository turmaRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(MeusConteudosController.class);
 
@@ -383,6 +387,7 @@ public class MeusConteudosController {
             }
 
             if (conteudoService.reabrir(idConteudo, Long.parseLong(idProfessorTexto), null)) {
+                turmaRepository.registrarAlteracaoPorConteudo(email, idConteudo);
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
             } else {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");

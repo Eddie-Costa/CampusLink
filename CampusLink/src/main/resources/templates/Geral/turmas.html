@@ -76,6 +76,22 @@
             <p>Você ainda não está em nenhuma turma.</p>
         </div>
 
+        <th:block th:unless="${turmasRecentes == null or #lists.isEmpty(turmasRecentes)}">
+            <h2 class="h5 fw-bold mb-3">Recentes</h2>
+
+            <div class="lista-turmas mb-4">
+                <a class="turma-card" th:each="turma : ${turmasRecentes}" th:href="@{/turmas/{id}(id=${turma.id})}" th:attr="aria-label=${turma.nomeTurma}">
+                    <div class="turma-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+
+                    <span class="turma-nome" th:text="${turma.nomeTurma}" th:title="${turma.nomeTurma}">Turma #1</span>
+                </a>
+            </div>
+
+            <h2 class="h5 fw-bold mb-3">Todas as turmas</h2>
+        </th:block>
+
         <div class="lista-turmas" id="listaTurmas" th:unless="${#lists.isEmpty(turmas)}">
             <a class="turma-card" th:each="turma : ${turmas}" th:href="@{/turmas/{id}(id=${turma.id})}" th:attr="aria-label=${turma.nomeTurma}">
                 <div class="turma-icon">

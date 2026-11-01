@@ -68,7 +68,10 @@ public class AcompanhamentoController {
             return "redirect:/login";
         }
 
-        model.addAttribute("turmas", turmaRepository.buscarTurmasDoUsuario("professor", idProfessor));
+        List<TurmaDTO> turmas = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor);
+        model.addAttribute("turmas", TurmaRepository.ordenarPorNome(turmas));
+        model.addAttribute("turmasRecentes",
+                turmaRepository.recentesDentre(session.getAttribute("email2FA").toString(), turmas, 5));
 
         return "Usuarios/Professor/acompanhamento";
     }

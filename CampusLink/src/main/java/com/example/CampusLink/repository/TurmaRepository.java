@@ -121,6 +121,94 @@ public class TurmaRepository {
         }
     }
 
+    public void registrarAlteracao(String email, Long idTurma) {
+        String sql = "INSERT INTO public.\"TURMA_ATIVIDADE\" (id_usuario, id_turma) " +
+                "SELECT u.id, t.id FROM public.\"USUARIOS\" u, public.\"TURMAS\" t " +
+                "WHERE LOWER(u.email) = LOWER(?) AND t.id = ? " +
+                "ON CONFLICT (id_usuario, id_turma) DO UPDATE SET alterado_em = now()";
+
+        executarRegistroDeAlteracao(sql, email, idTurma, "registrarAlteracao");
+    }
+
+    public void registrarAlteracaoPorConteudo(String email, Long idConteudo) {
+        String sql = "INSERT INTO public.\"TURMA_ATIVIDADE\" (id_usuario, id_turma) " +
+                "SELECT u.id, turma.id_turma FROM public.\"USUARIOS\" u, public.\"CONTEUDOS\" c " +
+                "CROSS JOIN LATERAL unnest(c.id_turma) AS turma(id_turma) " +
+                "WHERE LOWER(u.email) = LOWER(?) AND c.id = ? " +
+                "AND EXISTS (SELECT 1 FROM public.\"TURMAS\" t WHERE t.id = turma.id_turma) " +
+                "ON CONFLICT (id_usuario, id_turma) DO UPDATE SET alterado_em = now()";
+
+        executarRegistroDeAlteracao(sql, email, idConteudo, "registrarAlteracaoPorConteudo");
+    }
+
+    private void executarRegistroDeAlteracao(String sql, String email, Long id, String operacao) {
+        if (email == null || id == null) {
+            return;
+        }
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setLong(2, id);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            logger.warn("Não foi possível registrar a alteração da turma. operacao={} id={}", operacao, id, e);
+            if (logger.isWarnEnabled()) {
+                try {
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), operacao, null,
+                            MessageFormatter.arrayFormat("Não foi possível registrar a alteração da turma. id={}", new Object[]{id}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+        }
+    }
+
+    public List<Long> listarTurmasRecentes(String email, int limite) throws SQLException {
+        String sql = "SELECT a.id_turma FROM public.\"TURMA_ATIVIDADE\" a " +
+                "JOIN public.\"USUARIOS\" u ON u.id = a.id_usuario " +
+                "WHERE LOWER(u.email) = LOWER(?) ORDER BY a.alterado_em DESC LIMIT ?";
+
+        List<Long> ids = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setInt(2, limite);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getLong("id_turma"));
+                }
+            }
+        }
+
+        return ids;
+    }
+
+    public List<TurmaDTO> recentesDentre(String email, List<TurmaDTO> turmasDoUsuario, int limite) throws SQLException {
+        Map<Long, TurmaDTO> turmaPorId = new HashMap<>();
+        turmasDoUsuario.forEach(turma -> turmaPorId.put(turma.getId(), turma));
+
+        return listarTurmasRecentes(email, limite * 4).stream()
+                .map(turmaPorId::get)
+                .filter(java.util.Objects::nonNull)
+                .limit(limite)
+                .toList();
+    }
+
+    public static List<TurmaDTO> ordenarPorNome(List<TurmaDTO> turmas) {
+        java.text.Collator collator = java.text.Collator.getInstance(new java.util.Locale("pt", "BR"));
+        collator.setStrength(java.text.Collator.PRIMARY);
+
+        return turmas.stream()
+                .sorted(java.util.Comparator.comparing(TurmaDTO::getNomeTurma, java.util.Comparator.nullsLast(collator)))
+                .toList();
+    }
+
     public Map<Long, List<Long>> buscarTurmasDosAlunos(List<Long> idsAlunos) throws SQLException {
         String sql = "SELECT t.id AS id_turma, aluno.id_aluno FROM public.\"TURMAS\" t " +
                 "CROSS JOIN LATERAL unnest(t.id_alunos) AS aluno(id_aluno) " +

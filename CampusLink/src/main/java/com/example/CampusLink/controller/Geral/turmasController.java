@@ -78,7 +78,9 @@ public class turmasController {
             turmas = turmaRepository.buscarTurmasDoUsuario("professor", professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString()));
         }
 
-        model.addAttribute("turmas", turmas);
+        model.addAttribute("turmas", TurmaRepository.ordenarPorNome(turmas));
+        model.addAttribute("turmasRecentes",
+                turmaRepository.recentesDentre(session.getAttribute("email2FA").toString(), turmas, 5));
 
         return "Geral/turmas";
     }
@@ -187,6 +189,13 @@ public class turmasController {
         return turmaRepository.buscarSugestoesPessoasDaTurma(consulta, id);
     }
 
+    private void registrarAlteracao(HttpSession session, Long idTurma) {
+        Object email = session.getAttribute("email2FA");
+        if (email != null) {
+            turmaRepository.registrarAlteracao(email.toString(), idTurma);
+        }
+    }
+
     private boolean professorPodeGerenciarParticipantes(TurmaDTO turma,
                                                         List<TurmaDTO> participantes,
                                                         String emailProfessor) throws SQLException {
@@ -254,6 +263,9 @@ public class turmasController {
                 turmaEdicao.getNomeTurma().trim(),
                 turmaEdicao.getDescricao()
         );
+        if (atualizada) {
+            registrarAlteracao(session, Long.valueOf(id));
+        }
 
         if (!atualizada) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível atualizar os dados da turma.");
@@ -315,6 +327,7 @@ public class turmasController {
 
         try {
             conteudoService.criar(conteudoDTO, arquivo);
+            registrarAlteracao(session, id);
         } catch (IllegalArgumentException e) {
             model.addAttribute("mensagemErro", e.getMessage());
             model.addAttribute("abrirModalAdicionarConteudo", true);
@@ -370,6 +383,7 @@ public class turmasController {
         //Insere x_turma no banco de dados
         String idTurma = turmaRepository.buscarUltimaTurmaPorProfessor(idProfessor);
         professorRepository.InsertProfessor_TurmaIntoBD(idProfessor, idTurma);
+        registrarAlteracao(session, Long.valueOf(idTurma));
         logger.info("Turma cadastrada. turmaId={} professorId={}", idTurma, idProfessor);
         if (logger.isInfoEnabled()) {
             try {
@@ -407,6 +421,7 @@ public class turmasController {
         }
 
         conteudoService.excluir(idConteudo);
+        registrarAlteracao(session, id);
 
         return "redirect:/turmas/" + id;
     }
@@ -427,6 +442,7 @@ public class turmasController {
 
         String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
         if (idProfessor != null && !idProfessor.isBlank() && conteudoService.reabrir(idConteudo, Long.parseLong(idProfessor), id)) {
+            registrarAlteracao(session, id);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
         } else {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");
@@ -474,6 +490,7 @@ public class turmasController {
 
         try {
             conteudoService.alterarConclusao(Long.parseLong(idAluno), id, idConteudo, concluido);
+            registrarAlteracao(session, id);
             if (voltarParaEventos && !concluido) {
                 redirectAttributes.addFlashAttribute("mensagem", "O conteúdo voltou a ficar pendente.");
             }
@@ -537,6 +554,7 @@ public class turmasController {
 
         try {
             conteudoService.atualizar(conteudoDTO);
+            registrarAlteracao(session, id);
 
             if (arquivo != null && !arquivo.isEmpty()) {
                 arquivoService.salvar(arquivo, idConteudo);
@@ -726,6 +744,7 @@ public class turmasController {
         boolean pessoaAdicionada = turmaRepository.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
 
         if (pessoaAdicionada) {
+            registrarAlteracao(session, Long.valueOf(idTurma));
             model.addAttribute("mensagemSucesso", "Pessoa adicionada com sucesso.");
         } else {
             model.addAttribute("mensagemErro", "Não foi possível adicionar a pessoa informada.");
@@ -869,6 +888,7 @@ public class turmasController {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível remover este participante.");
         } else {
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Participante removido com sucesso.");
+            registrarAlteracao(session, Long.valueOf(idTurma));
         }
 
         redirectAttributes.addFlashAttribute("abrirModalParticipantes", true);
