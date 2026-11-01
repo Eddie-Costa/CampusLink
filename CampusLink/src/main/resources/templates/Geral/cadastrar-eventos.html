@@ -270,6 +270,26 @@
     </main>
 </div>
 
+<div class="modal fade aviso-vencidos" id="avisoConteudosVencidos" tabindex="-1"
+     aria-labelledby="tituloAvisoVencidos" aria-hidden="true"
+     th:if="${session.tipoUsuario == 'professor'}">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tituloAvisoVencidos" class="modal-title fs-5">Conteúdos com prazo encerrado</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancelar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Ao criar este evento, os conteúdos abaixo serão <strong>re-disponibilizados automaticamente</strong> para os alunos concluírem:</p>
+                <ul id="listaConteudosVencidos" class="lista-vencidos"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="teams-cancelar" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmarCriacaoEvento" class="teams-salvar">Criar evento mesmo assim</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

@@ -171,6 +171,16 @@ async function carregarConteudosDaTurma(turmaId) {
 
             option.value = conteudo.id;
             option.textContent = conteudo.titulo;
+            option.dataset.titulo = conteudo.titulo;
+
+            if (conteudo.prazoEncerradoEm) {
+                const [ano, mes, dia] = conteudo.prazoEncerradoEm.slice(0, 10).split('-');
+
+                option.dataset.vencidoEm = `${dia}/${mes}`;
+                option.classList.add('conteudo-vencido');
+                option.textContent = `${conteudo.titulo}   ·   ⏱ Vencido em ${dia}/${mes}`;
+                option.title = `Prazo encerrado em ${dia}/${mes}/${ano}`;
+            }
 
             conteudosRelacionados.appendChild(option);
         });
@@ -257,9 +267,49 @@ function configurarEnvioEvento() {
     const conteudoOriginal = botaoSalvar ? botaoSalvar.innerHTML : '';
     let enviando = false;
 
+    const avisoVencidos = document.getElementById('avisoConteudosVencidos');
+    const listaVencidos = document.getElementById('listaConteudosVencidos');
+    const confirmarCriacao = document.getElementById('confirmarCriacaoEvento');
+    let vencidosConfirmados = false;
+
+    if (confirmarCriacao) {
+        confirmarCriacao.addEventListener('click', function () {
+            vencidosConfirmados = true;
+            bootstrap.Modal.getOrCreateInstance(avisoVencidos).hide();
+            formEvento.requestSubmit();
+        });
+    }
+
     formEvento.addEventListener('submit', function (evento) {
         if (enviando || !validarHorarioEvento()) {
             evento.preventDefault();
+            return;
+        }
+
+        const vencidosSelecionados = conteudosRelacionados
+            ? Array.from(conteudosRelacionados.selectedOptions).filter(function (opcao) {
+                return opcao.dataset.vencidoEm;
+            })
+            : [];
+
+        if (vencidosSelecionados.length > 0 && !vencidosConfirmados && avisoVencidos && typeof bootstrap !== 'undefined') {
+            evento.preventDefault();
+            listaVencidos.innerHTML = '';
+
+            vencidosSelecionados.forEach(function (opcao) {
+                const item = document.createElement('li');
+                const titulo = document.createElement('span');
+                const tag = document.createElement('span');
+
+                titulo.textContent = opcao.dataset.titulo;
+                tag.classList.add('tag-vencido');
+                tag.textContent = `Vencido em ${opcao.dataset.vencidoEm}`;
+
+                item.append(titulo, tag);
+                listaVencidos.appendChild(item);
+            });
+
+            bootstrap.Modal.getOrCreateInstance(avisoVencidos).show();
             return;
         }
 

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,8 @@ public class ConteudoDTO {
     private String prioridade;
 
     private String status;
+
+    private LocalDateTime prazoEncerradoEm;
 
     private String comentarioAdmin;
 

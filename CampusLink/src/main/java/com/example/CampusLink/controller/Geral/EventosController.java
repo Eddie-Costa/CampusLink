@@ -37,6 +37,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/eventos")
@@ -128,8 +129,12 @@ public class EventosController {
             return List.of();
         }
 
-        return conteudoService.listarPorTurma(turmaId
-        );
+        List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(turmaId);
+        Map<Long, LocalDateTime> prazosEncerrados =
+                conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList());
+        conteudos.forEach(conteudo -> conteudo.setPrazoEncerradoEm(prazosEncerrados.get(conteudo.getId())));
+
+        return conteudos;
     }
 
 

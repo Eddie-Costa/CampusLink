@@ -1027,3 +1027,78 @@ body {
     background: transparent;
     color: #8790b8;
 }
+
+.evento-teams #conteudosRelacionados option.conteudo-vencido {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: #343a40;
+    color: #e9ecef;
+}
+
+.evento-teams #conteudosRelacionados option.conteudo-vencido:checked {
+    border-color: #5b5fc7;
+    background: #5b5fc7;
+    color: #ffffff;
+}
+
+.aviso-vencidos .modal-content {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: #1d2450;
+    color: #ffffff;
+}
+
+.aviso-vencidos .modal-header,
+.aviso-vencidos .modal-footer {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.lista-vencidos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.lista-vencidos li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #141a3d;
+}
+
+.tag-vencido {
+    flex: 0 0 auto;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #495057;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.teams-cancelar {
+    padding: 8px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 6px;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.teams-cancelar:hover,
+.teams-cancelar:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.aviso-vencidos .teams-salvar {
+    margin-left: 0;
+}
