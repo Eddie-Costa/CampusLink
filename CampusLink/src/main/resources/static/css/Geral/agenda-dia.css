@@ -138,3 +138,12 @@
         font-size: 10px;
     }
 }
+
+.agenda-prioridade-rascunho {
+    z-index: 2;
+    border: 2px dashed rgba(255, 168, 166, 0.95);
+    background: rgba(232, 97, 95, 0.22);
+    color: #ffd9d8;
+    box-shadow: none;
+    font-style: italic;
+}

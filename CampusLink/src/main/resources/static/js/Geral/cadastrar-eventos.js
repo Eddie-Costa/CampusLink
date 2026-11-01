@@ -6,7 +6,17 @@ const tipoUsuario = paginaCadastroEventos ? paginaCadastroEventos.dataset.tipoUs
 const usuarioEhAluno = tipoUsuario === 'aluno';
 
 const calendarioFundo = document.getElementById('calendarioFundo');
-const startInput = document.getElementById('inicioEvento');
+const formEvento = document.getElementById('formEvento');
+const inicioEvento = document.getElementById('inicioEvento');
+const fimEvento = document.getElementById('fimEvento');
+const nomeEvento = document.getElementById('nomeEvento');
+const dataEvento = document.getElementById('dataEvento');
+const horaInicioEvento = document.getElementById('horaInicioEvento');
+const horaFimEvento = document.getElementById('horaFimEvento');
+const duracaoEvento = document.getElementById('duracaoEvento');
+const erroHorario = document.getElementById('erroHorario');
+const diaAnterior = document.getElementById('diaAnterior');
+const diaSeguinte = document.getElementById('diaSeguinte');
 const dataDisponibilidade = document.getElementById('dataDisponibilidade');
 const dataEventosDia = document.getElementById('dataEventosDia');
 const gradeHorarios = document.getElementById('gradeHorarios');
@@ -185,44 +195,95 @@ async function carregarConteudosDaTurma(turmaId) {
 }
 
 // evita enviar o mesmo cadastro mais de uma vez enquanto carrega
+function minutosDoHorario(horario) {
+    if (!/^\d{2}:\d{2}$/.test(horario || '')) {
+        return null;
+    }
+
+    const [horas, minutos] = horario.split(':').map(Number);
+
+    return horas * 60 + minutos;
+}
+
+function horarioDosMinutos(totalMinutos) {
+    const limitado = Math.max(0, Math.min(totalMinutos, 23 * 60 + 59));
+
+    return `${String(Math.floor(limitado / 60)).padStart(2, '0')}:${String(limitado % 60).padStart(2, '0')}`;
+}
+
+function validarHorarioEvento() {
+    const inicio = minutosDoHorario(horaInicioEvento.value);
+    const fim = minutosDoHorario(horaFimEvento.value);
+    let mensagem = '';
+
+    if (inicio !== null && fim !== null && fim <= inicio) {
+        mensagem = 'O horário de término deve ser depois do início, no mesmo dia.';
+    }
+
+    if (duracaoEvento) {
+        duracaoEvento.textContent = inicio !== null && fim !== null && fim > inicio
+            ? formatarDuracao(fim - inicio)
+            : '';
+    }
+
+    horaFimEvento.setCustomValidity(mensagem);
+
+    if (erroHorario) {
+        erroHorario.textContent = mensagem;
+        erroHorario.hidden = mensagem === '';
+    }
+
+    return mensagem === '';
+}
+
+function formatarDuracao(minutos) {
+    const horas = Math.floor(minutos / 60);
+    const resto = minutos % 60;
+
+    if (horas === 0) {
+        return `${resto} min`;
+    }
+
+    return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
+}
+
+// evita enviar o mesmo cadastro mais de uma vez enquanto carrega
 function configurarEnvioEvento() {
-    const formulario = document.querySelector('.event-form:not(.disponibilidade-form)');
-
-    if (!formulario) {
+    if (!formEvento) {
         return;
     }
 
-    const botaoCadastrar = formulario.querySelector('button[type="submit"]');
-
-    if (!botaoCadastrar) {
-        return;
-    }
-
-    const textoOriginal = botaoCadastrar.textContent;
+    const botaoSalvar = document.querySelector('button[type="submit"][form="formEvento"]');
+    const conteudoOriginal = botaoSalvar ? botaoSalvar.innerHTML : '';
     let enviando = false;
 
-    formulario.addEventListener('submit', function (evento) {
-        if (enviando) {
+    formEvento.addEventListener('submit', function (evento) {
+        if (enviando || !validarHorarioEvento()) {
             evento.preventDefault();
             return;
         }
 
-        if (evento.defaultPrevented) {
-            return;
-        }
+        inicioEvento.value = `${dataEvento.value}T${horaInicioEvento.value}`;
+        fimEvento.value = `${dataEvento.value}T${horaFimEvento.value}`;
 
         enviando = true;
-        botaoCadastrar.disabled = true;
-        botaoCadastrar.textContent = 'Cadastrando...';
-        formulario.setAttribute('aria-busy', 'true');
+        formEvento.setAttribute('aria-busy', 'true');
+
+        if (botaoSalvar) {
+            botaoSalvar.disabled = true;
+            botaoSalvar.textContent = 'Salvando...';
+        }
     });
 
     // libera o formulario ao voltar pelo navegador
     window.addEventListener('pageshow', function () {
         enviando = false;
-        botaoCadastrar.disabled = false;
-        botaoCadastrar.textContent = textoOriginal;
-        formulario.removeAttribute('aria-busy');
+        formEvento.removeAttribute('aria-busy');
+
+        if (botaoSalvar) {
+            botaoSalvar.disabled = false;
+            botaoSalvar.innerHTML = conteudoOriginal;
+        }
     });
 }
 
@@ -380,17 +441,124 @@ function atualizarCalendarioDeFundo() {
     }
 }
 
-function atualizarAgendaDoDia() {
-    const dataSelecionada = dataValida(queryDate) ? queryDate : obterDataHoje();
+function eventoEmEdicao() {
+    if (!dataEvento || !dataValida(dataEvento.value) || !horaInicioEvento.value || !horaFimEvento.value) {
+        return null;
+    }
 
-    montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, eventosDados);
+    const inicio = new Date(`${dataEvento.value}T${horaInicioEvento.value}:00`);
+    const fim = new Date(`${dataEvento.value}T${horaFimEvento.value}:00`);
+
+    if (fim <= inicio) {
+        return null;
+    }
+
+    return {
+        nome: 'Prévia · ' + (nomeEvento && nomeEvento.value.trim() ? nomeEvento.value.trim() : 'Novo evento'),
+        inicio: inicio,
+        fim: fim,
+        prioridade: 'rascunho'
+    };
+}
+
+function atualizarAgendaDoDia() {
+    if (!dataEvento) {
+        const dataSelecionada = dataValida(queryDate) ? queryDate : obterDataHoje();
+
+        montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, eventosDados);
+        return;
+    }
+
+    const rascunho = eventoEmEdicao();
+    const eventos = rascunho ? eventosDados.concat([rascunho]) : eventosDados;
+
+    montarAgendaDoDia(gradeHorarios, dataEventosDia, dataEvento.value, eventos);
+}
+
+function rolarAgendaParaRascunho() {
+    const inicio = minutosDoHorario(horaInicioEvento.value);
+
+    if (gradeHorarios && inicio !== null) {
+        gradeHorarios.scrollTop = Math.max(inicio / 60 * ALTURA_HORA_AGENDA - ALTURA_HORA_AGENDA, 0);
+    }
+}
+
+function definirInicio(minutos) {
+    const duracaoAtual = (minutosDoHorario(horaFimEvento.value) ?? 0) - (minutosDoHorario(horaInicioEvento.value) ?? 0);
+    const duracao = duracaoAtual > 0 ? duracaoAtual : 60;
+
+    horaInicioEvento.value = horarioDosMinutos(minutos);
+    horaFimEvento.value = horarioDosMinutos(Math.min(minutos + duracao, 23 * 60 + 59));
+}
+
+function mudarDia(deslocamento) {
+    const data = new Date(`${dataEvento.value}T12:00:00`);
+
+    data.setDate(data.getDate() + deslocamento);
+    dataEvento.value = formatarData(data);
+    validarHorarioEvento();
+    atualizarAgendaDoDia();
+}
+
+function configurarHorarioEvento() {
+    if (!dataEvento) {
+        return;
+    }
+
+    const agora = new Date();
+    const proximaMeiaHora = Math.min(Math.ceil((agora.getHours() * 60 + agora.getMinutes() + 1) / 30) * 30, 23 * 60);
+
+    dataEvento.value = dataValida(queryDate) ? queryDate : obterDataHoje();
+    definirInicio(dataValida(queryDate) ? 8 * 60 : proximaMeiaHora);
+
+    [dataEvento, horaInicioEvento, horaFimEvento].forEach(function (campo) {
+        campo.addEventListener('change', function () {
+            validarHorarioEvento();
+            atualizarAgendaDoDia();
+        });
+    });
+
+    horaInicioEvento.addEventListener('change', rolarAgendaParaRascunho);
+
+    if (nomeEvento) {
+        nomeEvento.addEventListener('input', atualizarAgendaDoDia);
+    }
+
+    if (diaAnterior) {
+        diaAnterior.addEventListener('click', function () {
+            mudarDia(-1);
+        });
+    }
+
+    if (diaSeguinte) {
+        diaSeguinte.addEventListener('click', function () {
+            mudarDia(1);
+        });
+    }
+
+    if (gradeHorarios) {
+        gradeHorarios.addEventListener('click', function (evento) {
+            const corpo = gradeHorarios.querySelector('.agenda-corpo');
+
+            if (!corpo) {
+                return;
+            }
+
+            const deslocamento = evento.clientY - corpo.getBoundingClientRect().top;
+            const minutos = Math.floor(deslocamento / ALTURA_HORA_AGENDA * 60 / 30) * 30;
+
+            definirInicio(Math.max(0, Math.min(minutos, 23 * 60)));
+            validarHorarioEvento();
+            atualizarAgendaDoDia();
+        });
+    }
+
+    validarHorarioEvento();
 }
 
 const dataInicial = dataValida(queryDate) ? queryDate : obterDataHoje();
 
-if (startInput && queryDate) {
-    startInput.value = queryDate + 'T08:00';
-}
+configurarHorarioEvento();
 
 if (dataDisponibilidade) {
     dataDisponibilidade.value = dataInicial;
@@ -402,3 +570,6 @@ if (turmaEvento && turmaEvento.value) {
 
 atualizarCalendarioDeFundo();
 atualizarAgendaDoDia();
+if (dataEvento) {
+    rolarAgendaParaRascunho();
+}

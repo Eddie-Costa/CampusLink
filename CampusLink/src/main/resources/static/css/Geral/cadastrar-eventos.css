@@ -653,3 +653,377 @@ body {
         background: rgba(17, 24, 63, 0.88);
     }
 }
+
+#paginaCadastroEventos[data-tipo-usuario="professor"] .cadastro-conteudo {
+    width: min(1180px, calc(100% - 24px));
+}
+
+.evento-teams {
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    background: #141a3d;
+    color: #ffffff;
+}
+
+.evento-teams svg {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.teams-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #1d2450;
+}
+
+.evento-teams .teams-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.teams-opcoes {
+    display: flex;
+    gap: 8px;
+}
+
+.teams-opcao select {
+    min-height: 34px;
+    padding: 4px 28px 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background-color: transparent;
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.teams-opcao select:hover,
+.teams-opcao select:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+    outline: none;
+}
+
+.teams-opcao option,
+.teams-form select option {
+    background: #1d2450;
+    color: #ffffff;
+}
+
+.teams-salvar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: #5b5fc7;
+    color: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.teams-salvar:hover:not(:disabled),
+.teams-salvar:focus-visible {
+    background: #4f52b2;
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+.teams-salvar:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.teams-fechar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 26px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.teams-fechar:hover,
+.teams-fechar:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.teams-corpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+    gap: 14px;
+    padding: 0 12px 12px;
+}
+
+.teams-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.teams-painel {
+    padding: 8px 18px 14px;
+    border-radius: 10px;
+    background: #1d2450;
+}
+
+.teams-painel-descricao {
+    flex: 1 1 auto;
+    display: flex;
+}
+
+.teams-linha {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 10px;
+    color: #c8cfee;
+}
+
+.teams-linha-topo {
+    flex: 1 1 auto;
+    align-items: flex-start;
+}
+
+.teams-campo,
+.teams-form select:not([multiple]) {
+    width: 100%;
+    min-height: 40px;
+    padding: 6px 4px;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 0;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    font-size: 14px;
+}
+
+.teams-campo::placeholder {
+    color: #aab3da;
+}
+
+.teams-campo:focus,
+.teams-form select:focus {
+    border-bottom: 2px solid #8b8ff0;
+    outline: none;
+}
+
+.teams-campo:disabled {
+    color: #8790b8;
+    cursor: not-allowed;
+}
+
+.teams-campo-titulo {
+    font-size: 20px;
+}
+
+.teams-campo-grupo {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.teams-horario {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.teams-horario .teams-campo {
+    width: auto;
+}
+
+.teams-horario input[type="date"] {
+    min-width: 150px;
+}
+
+.teams-form input[type="date"]::-webkit-calendar-picker-indicator,
+.teams-form input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+.teams-duracao {
+    color: #aab3da;
+    font-size: 12px;
+}
+
+.evento-teams #conteudosRelacionados {
+    height: 140px;
+    margin-top: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    background: #141a3d;
+    color: #ffffff;
+    scrollbar-color: #5b6aa8 transparent;
+}
+
+.evento-teams #conteudosRelacionados option {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #1d2450;
+    color: #ffffff;
+}
+
+.evento-teams #conteudosRelacionados option:checked {
+    border-color: #5b5fc7;
+    background: #5b5fc7;
+}
+
+.evento-teams #conteudosRelacionados option:disabled {
+    background: transparent;
+    color: #8790b8;
+}
+
+.evento-teams #conteudosRelacionados:disabled {
+    background: #141a3d;
+}
+
+.teams-ajuda {
+    color: #aab3da;
+    font-size: 11px;
+}
+
+.teams-ajuda[hidden] {
+    display: none;
+}
+
+.teams-descricao {
+    flex: 1 1 auto;
+    min-height: 160px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    background: #141a3d;
+    color: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.teams-descricao:focus {
+    border-color: #8b8ff0;
+    outline: none;
+}
+
+.evento-teams .form-error {
+    margin: 0;
+}
+
+.evento-teams .form-error[hidden] {
+    display: none;
+}
+
+.teams-agenda {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #1d2450;
+}
+
+.teams-agenda-navegacao {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.teams-agenda-botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.teams-agenda-botao:hover,
+.teams-agenda-botao:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    outline: none;
+}
+
+.teams-agenda #dataEventosDia {
+    margin-left: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.teams-grade {
+    max-height: 560px;
+    overflow-y: auto;
+    cursor: pointer;
+    scrollbar-width: thin;
+    scrollbar-color: #5b6aa8 transparent;
+}
+
+@media (max-width: 900px) {
+    .teams-corpo {
+        grid-template-columns: 1fr;
+    }
+
+    .teams-barra {
+        flex-wrap: wrap;
+    }
+
+    .teams-grade {
+        max-height: 360px;
+    }
+}
+
+.evento-teams #buscarConteudo {
+    min-height: 40px;
+    padding: 6px 4px;
+    color: #ffffff;
+}
+
+.evento-teams #buscarConteudo::placeholder {
+    color: #aab3da;
+}
+
+.evento-teams #buscarConteudo:disabled {
+    background: transparent;
+    color: #8790b8;
+}
