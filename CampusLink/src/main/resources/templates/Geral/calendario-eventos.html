@@ -391,6 +391,7 @@
                  th:each="sessao : ${planoEstudo}"
                  th:data-data="${sessao.data != null ? #temporals.format(sessao.data, 'yyyy-MM-dd') : ''}"
                  th:data-minutos="${sessao.minutos}"
+                 th:data-sugestao="${sessao.sugestao}"
                  th:data-id-conteudo="${sessao.idConteudo}"
                  th:data-conteudo="${sessao.tituloConteudo}"
                  th:data-evento="${sessao.nomeEvento}"

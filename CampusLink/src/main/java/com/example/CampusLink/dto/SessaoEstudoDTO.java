@@ -25,4 +25,6 @@ public class SessaoEstudoDTO {
     private String tituloConteudo;
 
     private int minutos;
+
+    private boolean sugestao;
 }

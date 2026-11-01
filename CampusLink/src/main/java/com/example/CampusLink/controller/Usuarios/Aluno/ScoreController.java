@@ -133,7 +133,7 @@ public class ScoreController {
         Map<Long, Integer> minutosFaltandoPorEvento = new HashMap<>();
         Map<Long, Integer> minutosFaltandoPorConteudo = new HashMap<>();
         for (SessaoEstudoDTO sessao : viabilidadeService.gerarPlano(idAluno)) {
-            if (sessao.getData() == null && id.equals(sessao.getIdTurma())) {
+            if ((sessao.getData() == null || sessao.isSugestao()) && id.equals(sessao.getIdTurma())) {
                 minutosFaltandoPorEvento.merge(sessao.getIdEvento(), sessao.getMinutos(), Integer::sum);
                 minutosFaltandoPorConteudo.merge(sessao.getIdConteudo(), sessao.getMinutos(), Integer::sum);
             }

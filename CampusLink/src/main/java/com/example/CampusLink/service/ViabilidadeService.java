@@ -207,6 +207,7 @@ public class ViabilidadeService {
 
         List<SessaoEstudoDTO> plano = new ArrayList<>();
         Set<Long> planejados = new HashSet<>();
+        Map<LocalDate, Integer> usadoPorDia = new HashMap<>();
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
@@ -224,8 +225,13 @@ public class ViabilidadeService {
                     }
                     int minutos = Math.min(livre, restante);
                     livrePorDia.put(dia, livre - minutos);
+                    usadoPorDia.merge(dia, minutos, Integer::sum);
                     restante -= minutos;
                     plano.add(novaSessao(dia, evento, conteudo, minutos));
+                }
+
+                if (restante > 0) {
+                    restante = sugerirHoras(hoje, evento, conteudo, restante, usadoPorDia, plano);
                 }
 
                 if (restante > 0) {
@@ -236,6 +242,51 @@ public class ViabilidadeService {
 
         plano.sort(Comparator.comparing(SessaoEstudoDTO::getData, Comparator.nullsLast(Comparator.naturalOrder())));
         return plano;
+    }
+
+    private int sugerirHoras(LocalDate hoje, Evento evento, ConteudoDTO conteudo, int restante,
+                             Map<LocalDate, Integer> usadoPorDia, List<SessaoEstudoDTO> plano) {
+        int teto = TETO_DIARIO_HORAS * 60;
+        List<LocalDate> dias = new ArrayList<>();
+        int espacoTotal = 0;
+
+        for (LocalDate dia = hoje; dia.isBefore(evento.getInicio().toLocalDate()); dia = dia.plusDays(1)) {
+            dias.add(dia);
+            espacoTotal += Math.max(0, teto - usadoPorDia.getOrDefault(dia, 0));
+        }
+
+        int sugerir = Math.min(restante, espacoTotal);
+        if (sugerir == 0) {
+            return restante;
+        }
+
+        int nivel = 0;
+        int alocado = 0;
+        while (alocado < sugerir) {
+            nivel++;
+            alocado = 0;
+            for (LocalDate dia : dias) {
+                alocado += Math.max(0, nivel - usadoPorDia.getOrDefault(dia, 0));
+            }
+        }
+
+        int excesso = alocado - sugerir;
+        for (int indice = dias.size() - 1; indice >= 0; indice--) {
+            LocalDate dia = dias.get(indice);
+            int cota = Math.max(0, nivel - usadoPorDia.getOrDefault(dia, 0));
+            int corte = Math.min(excesso, cota);
+            cota -= corte;
+            excesso -= corte;
+
+            if (cota > 0) {
+                usadoPorDia.merge(dia, cota, Integer::sum);
+                SessaoEstudoDTO sessao = novaSessao(dia, evento, conteudo, cota);
+                sessao.setSugestao(true);
+                plano.add(sessao);
+            }
+        }
+
+        return restante - sugerir;
     }
 
     List<ViabilidadeDTO> calcular(Long idAluno,

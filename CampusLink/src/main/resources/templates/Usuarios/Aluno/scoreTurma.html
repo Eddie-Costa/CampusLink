@@ -37,8 +37,8 @@
                               th:text="${evento.nomeEvento + ' · ' + #temporals.format(evento.dataEvento, 'dd/MM')}">Prova · 18/10</span>
                         <span class="conteudo-meta" th:text="${evento.motivo}">Faltam 9h de estudo...</span>
                         <span class="conteudo-meta aviso-falta mt-1" th:if="${faltaPorEvento.containsKey(evento.idEvento)}"
-                              th:text="${'⚠ O plano de estudos não conseguiu encaixar ' + faltaPorEvento.get(evento.idEvento) + ' antes deste evento.'}">
-                            ⚠ O plano de estudos não conseguiu encaixar 2h antes deste evento.
+                              th:text="${'⚠ Faltam ' + faltaPorEvento.get(evento.idEvento) + ' na sua disponibilidade antes deste evento. Veja a sugestão de estudo no calendário.'}">
+                            ⚠ Faltam 2h na sua disponibilidade antes deste evento.
                         </span>
                         <div class="progresso-evento mt-2" th:if="${progressoPorEvento.containsKey(evento.idEvento)}"
                              th:with="progresso=${progressoPorEvento.get(evento.idEvento)}">

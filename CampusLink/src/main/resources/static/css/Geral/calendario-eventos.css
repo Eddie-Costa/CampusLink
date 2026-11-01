@@ -501,6 +501,11 @@ button.evento-marcador:focus-visible {
     cursor: pointer;
 }
 
+.estudo-marcador.estudo-sugestao {
+    border-style: dashed;
+    border-width: 2px;
+}
+
 .estudo-marcador:focus-visible {
     outline: 2px solid #ffffff;
     outline-offset: 1px;
@@ -1280,4 +1285,9 @@ button.evento-marcador:focus-visible {
         left: 15px;
         text-align: center;
     }
+}
+.plano-dia li.plano-dia-sugestao {
+    padding: 4px 8px;
+    border: 1px dashed var(--verde-disponibilidade);
+    border-radius: 6px;
 }

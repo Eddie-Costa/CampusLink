@@ -66,7 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
             conteudo: sessao.dataset.conteudo || '',
             evento: sessao.dataset.evento || '',
             dataEvento: sessao.dataset.dataEvento || '',
-            idTurma: sessao.dataset.idTurma || ''
+            idTurma: sessao.dataset.idTurma || '',
+            sugestao: sessao.dataset.sugestao === 'true'
         };
     });
 
@@ -208,17 +209,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function criarMarcadorEstudo(sessoes, data) {
-        const totalMinutos = sessoes.reduce(function (total, sessao) {
-            return total + sessao.minutos;
+        const minutosPlanejados = sessoes.reduce(function (total, sessao) {
+            return total + (sessao.sugestao ? 0 : sessao.minutos);
         }, 0);
+        const minutosSugeridos = sessoes.reduce(function (total, sessao) {
+            return total + (sessao.sugestao ? sessao.minutos : 0);
+        }, 0);
+        const horasSugeridas = Math.ceil(minutosSugeridos / 60) * 60;
 
         const marcador = document.createElement('button');
         marcador.type = 'button';
         marcador.classList.add('estudo-marcador');
-        marcador.textContent = `Estudar ${formatarMinutos(totalMinutos)}`;
+        marcador.textContent = `Estudar ${formatarMinutos(minutosPlanejados + horasSugeridas)}`;
         marcador.title = sessoes.map(function (sessao) {
-            return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}`;
+            return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}${sessao.sugestao ? ' (sugestão)' : ''}`;
         }).join('\n');
+
+        if (minutosSugeridos > 0) {
+            marcador.classList.add('estudo-sugestao');
+            marcador.title += `\n\nInclui ${formatarMinutos(horasSugeridas)} sugeridas: cadastre disponibilidade neste dia.`;
+        }
         marcador.setAttribute('aria-label', `Ver plano de estudos do dia ${formatarDataCurta(data)}`);
         marcador.addEventListener('click', function () {
             abrirCronograma(data);
@@ -248,6 +258,11 @@ document.addEventListener('DOMContentLoaded', function () {
             evento.textContent = `${sessao.evento} · ${formatarDataCurta(sessao.dataEvento)}`;
             tempo.classList.add('plano-dia-tempo');
             tempo.textContent = formatarMinutos(sessao.minutos);
+
+            if (sessao.sugestao) {
+                item.classList.add('plano-dia-sugestao');
+                tempo.textContent += ' · sugestão';
+            }
 
             descricao.append(conteudo, evento);
             item.append(descricao, tempo);
