@@ -213,3 +213,20 @@ body,
     color: var(--campus-success);
     font-weight: 700;
 }
+
+:root {
+    --campus-overlay: rgba(7, 11, 31, 0.38);
+    --campus-overlay-blur: 4px;
+}
+
+.site-header-nav {
+    position: relative;
+    z-index: 1051;
+}
+
+.modal-backdrop {
+    --bs-backdrop-bg: var(--campus-overlay);
+    --bs-backdrop-opacity: 1;
+    backdrop-filter: blur(var(--campus-overlay-blur));
+    -webkit-backdrop-filter: blur(var(--campus-overlay-blur));
+}
