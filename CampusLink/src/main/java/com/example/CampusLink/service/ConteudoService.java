@@ -280,9 +280,9 @@ public class ConteudoService {
         }
     }
 
-    public boolean reabrir(Long idConteudo, Long idProfessor) {
+    public boolean reabrir(Long idConteudo, Long idProfessor, Long idTurma) {
         try {
-            boolean reaberto = conteudoRepository.reabrir(idConteudo, idProfessor);
+            boolean reaberto = conteudoRepository.reabrir(idConteudo, idProfessor, idTurma);
 
             if (reaberto) {
                 logger.info("Conteúdo re-disponibilizado. conteudoId={} professorId={}", idConteudo, idProfessor);

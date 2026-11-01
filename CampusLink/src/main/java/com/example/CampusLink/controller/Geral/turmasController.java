@@ -426,7 +426,7 @@ public class turmasController {
         }
 
         String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
-        if (idProfessor != null && !idProfessor.isBlank() && conteudoService.reabrir(idConteudo, Long.parseLong(idProfessor))) {
+        if (idProfessor != null && !idProfessor.isBlank() && conteudoService.reabrir(idConteudo, Long.parseLong(idProfessor), id)) {
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
         } else {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");

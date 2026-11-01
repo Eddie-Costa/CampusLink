@@ -382,7 +382,7 @@ public class MeusConteudosController {
                 return "redirect:/home";
             }
 
-            if (conteudoService.reabrir(idConteudo, Long.parseLong(idProfessorTexto))) {
+            if (conteudoService.reabrir(idConteudo, Long.parseLong(idProfessorTexto), null)) {
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Conteúdo disponível novamente para os alunos concluírem.");
             } else {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível re-disponibilizar este conteúdo.");

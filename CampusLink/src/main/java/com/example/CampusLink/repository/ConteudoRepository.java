@@ -723,13 +723,17 @@ public class ConteudoRepository {
         }
     }
 
-    public boolean reabrir(Long idConteudo, Long idProfessor) throws SQLException {
+    public boolean reabrir(Long idConteudo, Long idProfessor, Long idTurma) throws SQLException {
         String sql = """
-                UPDATE public."CONTEUDOS"
+                UPDATE public."CONTEUDOS" c
                 SET "reaberto_em" = now()
-                WHERE "id" = ?
-                AND "id_professor" = ?
-                AND "status" = 'ativo'
+                WHERE c."id" = ?
+                AND c."status" = 'ativo'
+                AND (c."id_professor" = ?
+                     OR EXISTS (SELECT 1 FROM public."TURMAS" t
+                                WHERE t."id" = ?
+                                AND t."id_proprietario" = ?
+                                AND t."id" = ANY(c."id_turma")))
                 """;
 
         try {
@@ -737,6 +741,8 @@ public class ConteudoRepository {
 
                 stmt.setLong(1, idConteudo);
                 stmt.setLong(2, idProfessor);
+                stmt.setObject(3, idTurma, Types.BIGINT);
+                stmt.setLong(4, idProfessor);
 
                 return stmt.executeUpdate() > 0;
             });

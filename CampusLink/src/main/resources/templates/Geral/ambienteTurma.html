@@ -390,7 +390,7 @@
                                 Prazo encerrado em 28/10
                             </span>
 
-                            <form th:if="${idProfessorLogado != null and idProfessorLogado == conteudo.idProfessor}"
+                            <form th:if="${isTurmaAdmin or (idProfessorLogado != null and idProfessorLogado == conteudo.idProfessor)}"
                                   th:action="@{/turmas/{id}/conteudos/{idConteudo}/re-disponibilizar(id=${turma.id}, idConteudo=${conteudo.id})}"
                                   method="post"
                                   class="conteudo-excluir-form">
