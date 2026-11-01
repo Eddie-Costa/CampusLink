@@ -220,8 +220,17 @@ body,
 }
 
 .site-header-nav {
-    position: relative;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
     z-index: 1051;
+    background-color: var(--campus-surface);
+    box-shadow: 0 2px 10px rgba(var(--campus-navy-rgb), 0.08);
+}
+
+body:has(.site-header-nav) {
+    padding-top: var(--campus-header-altura, 100px);
 }
 
 .modal-backdrop {

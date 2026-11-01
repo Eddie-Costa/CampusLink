@@ -100,7 +100,7 @@
 }
 .alerta-flutuante {
     position: fixed;
-    top: 90px;          /* abaixo do header, não cobre o avatar */
+    top: calc(var(--campus-header-altura, 100px) + 12px);
     right: 16px;
     z-index: 1055;
     min-width: 280px;

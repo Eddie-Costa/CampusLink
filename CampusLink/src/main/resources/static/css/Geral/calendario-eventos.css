@@ -71,7 +71,7 @@ body {
 
 .popup-sucesso {
     position: fixed;
-    top: 25px;
+    top: calc(var(--campus-header-altura, 100px) + 12px);
     right: 25px;
     z-index: 9999;
     padding: 16px 24px;

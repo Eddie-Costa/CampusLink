@@ -18,6 +18,7 @@
                 }
 
                 document.addEventListener('DOMContentLoaded', atualizarAlturaHeader);
+                window.addEventListener('load', atualizarAlturaHeader);
                 document.addEventListener('show.bs.modal', atualizarAlturaHeader);
                 window.addEventListener('resize', atualizarAlturaHeader);
                 window.addEventListener('scroll', atualizarAlturaHeader, { passive: true });
