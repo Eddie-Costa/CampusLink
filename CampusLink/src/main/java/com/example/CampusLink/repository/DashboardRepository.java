@@ -157,4 +157,88 @@ public class DashboardRepository {
                 FROM eventos WHERE situacao <> 'Passados' ORDER BY data_hora, id LIMIT 10
                 """, p);
     }
+
+    private static final String CONTEUDOS = TURMAS + """
+            , conteudos AS (
+                SELECT c.*,
+                    CASE WHEN c.status = 'ativo' THEN 'Ativos'
+                         WHEN c.status = 'suspenso_denuncia' AND c.revisao_solicitada = true THEN 'Em análise'
+                         WHEN c.status = 'suspenso_denuncia' THEN 'Suspensos sem revisão'
+                         WHEN c.status = 'removido' THEN 'Removidos' ELSE 'Outros' END AS situacao
+                FROM public."CONTEUDOS" c
+                WHERE (:tipo = 'admin' OR c.id_professor = :pessoa)
+                    AND (:turma = 0 OR EXISTS (SELECT 1 FROM turmas t WHERE t.id = ANY(c.id_turma)))
+                    AND (:inicio IS NULL OR (c.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= :inicio)
+                    AND (:inicio IS NULL OR (c.created_at AT TIME ZONE 'America/Sao_Paulo')::date < :fim)
+            )
+            """;
+
+    public Map<String, Object> resumoConteudos(MapSqlParameterSource p) {
+        return jdbc.queryForMap(CONTEUDOS + """
+                SELECT count(*) AS conteudos, count(*) FILTER (WHERE status = 'ativo') AS ativos,
+                    count(*) FILTER (WHERE status = 'suspenso_denuncia') AS suspensos,
+                    count(*) FILTER (WHERE situacao = 'Em análise') AS analise,
+                    count(*) FILTER (WHERE status = 'removido') AS removidos
+                FROM conteudos
+                """, p);
+    }
+
+    public List<Map<String, Object>> situacaoConteudos(MapSqlParameterSource p) {
+        return jdbc.queryForList(CONTEUDOS + "SELECT situacao AS nome, count(*) AS quantidade FROM conteudos GROUP BY situacao ORDER BY situacao", p);
+    }
+
+    public List<Map<String, Object>> conteudosPorTurma(MapSqlParameterSource p) {
+        return jdbc.queryForList(CONTEUDOS + """
+                SELECT t.nome_turma AS nome, count(c.id) AS quantidade
+                FROM turmas t LEFT JOIN conteudos c ON t.id = ANY(c.id_turma)
+                GROUP BY t.id, t.nome_turma ORDER BY quantidade DESC, t.nome_turma, t.id LIMIT 10
+                """, p);
+    }
+
+    public List<Map<String, Object>> listarConteudos(MapSqlParameterSource p, boolean somenteAtencao) {
+        return jdbc.queryForList(CONTEUDOS + """
+                SELECT c.id, c.titulo, c.situacao,
+                    to_char(c.created_at AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data,
+                    COALESCE(u.nome, 'Professor não disponível') AS professor,
+                    COALESCE((SELECT string_agg(t.nome_turma, ', ' ORDER BY t.nome_turma)
+                        FROM turmas t WHERE t.id = ANY(c.id_turma)), 'Sem turma no recorte') AS turmas,
+                    (SELECT count(*) FROM public."DENUNCIAS" d WHERE d.id_conteudo = c.id) AS denuncias
+                FROM conteudos c LEFT JOIN public."PROFESSORES" pr ON pr.id = c.id_professor
+                LEFT JOIN public."USUARIOS" u ON u.id = pr.id_usuario
+                WHERE (:atencao = false OR c.status = 'suspenso_denuncia'
+                    OR EXISTS (SELECT 1 FROM public."DENUNCIAS" d WHERE d.id_conteudo = c.id AND d.status = 'pendente'))
+                ORDER BY c.created_at DESC, c.id DESC LIMIT 10
+                """, p.addValue("atencao", somenteAtencao));
+    }
+
+    public Map<String, Object> resumoTurmasProfessor(MapSqlParameterSource p) {
+        return jdbc.queryForMap(TURMAS + """
+                SELECT count(*) AS turmas,
+                    count(*) FILTER (WHERE id_proprietario = :pessoa) AS gerenciadas,
+                    count(*) FILTER (WHERE id_proprietario IS DISTINCT FROM :pessoa) AS participantes,
+                    (SELECT count(DISTINCT aluno) FROM turmas t CROSS JOIN LATERAL unnest(t.id_alunos) AS aluno) AS alunos
+                FROM turmas
+                """, p);
+    }
+
+    public List<Map<String, Object>> turmasProfessor(MapSqlParameterSource p) {
+        return jdbc.queryForList(CONTEUDOS + """
+                SELECT t.id, t.nome_turma AS nome,
+                    CASE WHEN t.id_proprietario = :pessoa THEN 'Responsável' ELSE 'Participante' END AS vinculo,
+                    COALESCE(cardinality(t.id_alunos), 0) AS alunos,
+                    (SELECT count(*) FROM conteudos c WHERE t.id = ANY(c.id_turma)) AS conteudos,
+                    (SELECT count(*) FROM public."EVENTOS" e WHERE e.id_turma = t.id
+                        AND e.id_professor = :pessoa AND upper(e.status) = 'ATIVO'
+                        AND (:inicio IS NULL OR (e.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= :inicio)
+                        AND (:inicio IS NULL OR (e.created_at AT TIME ZONE 'America/Sao_Paulo')::date < :fim)) AS eventos
+                FROM turmas t ORDER BY t.nome_turma, t.id LIMIT 20
+                """, p);
+    }
+
+    public List<Map<String, Object>> eventosPorMes(MapSqlParameterSource p) {
+        return jdbc.queryForList(EVENTOS + """
+                SELECT to_char(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') AS nome,
+                    count(*) AS quantidade FROM eventos GROUP BY 1 ORDER BY 1
+                """, p);
+    }
 }

@@ -41,12 +41,12 @@ public class DashboardController {
         String autenticado = tipoAutenticado(session);
         if (autenticado == null) return "redirect:/login";
         if (!tipo.equals(autenticado)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        if (!"aluno".equals(tipo)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if ("admin".equals(tipo)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
         Long id = repository.buscarIdentidade(session.getAttribute("email2FA").toString().trim(), tipo);
         if (id == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        DashboardFiltro filtro = new DashboardFiltro(periodo, turma, prioridade, perfil);
+        DashboardFiltro filtro = new DashboardFiltro(periodo, turma, "aluno".equals(tipo) ? prioridade : "todos", "todos");
         var opcoes = repository.listarTurmas(repository.parametros(tipo, id,
                 new DashboardFiltro("todos", 0, "todos", "todos")));
         if (filtro.getTurma() != 0 && opcoes.stream().noneMatch(t -> ((Number) t.get("id")).longValue() == filtro.getTurma())) {
@@ -55,8 +55,8 @@ public class DashboardController {
         model.addAttribute("tipo", tipo);
         model.addAttribute("filtro", filtro);
         model.addAttribute("opcoesTurmas", opcoes);
-        model.addAttribute("dados", service.aluno(id, filtro));
-        return "Dashboards/aluno";
+        model.addAttribute("dados", "aluno".equals(tipo) ? service.aluno(id, filtro) : service.professor(id, filtro));
+        return "Dashboards/" + tipo;
     }
 
     private String tipoAutenticado(HttpSession session) {

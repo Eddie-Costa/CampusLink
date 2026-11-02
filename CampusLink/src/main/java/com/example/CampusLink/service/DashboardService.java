@@ -54,6 +54,48 @@ public class DashboardService {
         return dados;
     }
 
+    public Map<String, Object> professor(long id, DashboardFiltro filtro) {
+        var p = repository.parametros("professor", id, filtro);
+        var turmas = repository.resumoTurmasProfessor(p);
+        var conteudos = repository.resumoConteudos(p);
+        var eventos = repository.resumoEventos(p);
+        var porTurma = repository.conteudosPorTurma(p);
+        List<Map<String, Object>> cards = List.of(
+                card("Turmas sob responsabilidade", turmas.get("gerenciadas"), "Você é o professor responsável"),
+                card("Turmas participantes", turmas.get("participantes"), "Você participa, sem ser responsável"),
+                card("Alunos nas turmas", turmas.get("alunos"), "Alunos distintos no recorte de turmas"),
+                card("Conteúdos publicados", conteudos.get("conteudos"), "Sua autoria, incluindo removidos"),
+                card("Conteúdos ativos", conteudos.get("ativos"), "Disponíveis para os alunos"),
+                card("Suspensos por denúncias", conteudos.get("suspensos"), "Inclui os que aguardam análise"),
+                card("Aguardando análise", conteudos.get("analise"), "Suspensos com revisão solicitada"),
+                card("Eventos criados", eventos.get("eventos"), "Eventos ativos de sua autoria nas turmas"),
+                card("Eventos futuros", eventos.get("futuros"), "Ainda não iniciados"),
+                card("Eventos passados", eventos.get("passados"), "Data final já ultrapassada"));
+        var graficos = List.of(
+                grafico("Conteúdos por turma", "bar", "Suas publicações; até 10 turmas. Materiais compartilhados aparecem em cada turma.", porTurma),
+                grafico("Situação dos conteúdos", "doughnut", "Categorias separadas; em análise significa revisão solicitada.", repository.situacaoConteudos(p)),
+                grafico("Eventos criados por mês", "line", "Data de cadastro dos eventos ativos de sua autoria.", repository.eventosPorMes(p)),
+                grafico("Distribuição dos eventos", "doughnut", "Situação temporal dos eventos no recorte.", distribuicaoEventos(eventos)));
+        List<String> insights = new ArrayList<>();
+        insights.add("Você é responsável por " + turmas.get("gerenciadas") + " turmas e participa de outras " + turmas.get("participantes") + " no recorte.");
+        insights.add("Há " + eventos.get("proximos") + " eventos de sua autoria nos próximos 7 dias, conforme os filtros.");
+        insights.add("Você possui " + conteudos.get("suspensos") + " conteúdos suspensos no recorte; " + conteudos.get("analise") + " aguardam análise administrativa.");
+        if (!porTurma.isEmpty() && numero(porTurma.getFirst(), "quantidade") > 0) {
+            insights.add("A turma com mais publicações suas no recorte é " + porTurma.getFirst().get("nome") + ".");
+        }
+        Map<String, Object> dados = new LinkedHashMap<>();
+        dados.put("cards", cards); dados.put("graficos", graficos); dados.put("insights", insights);
+        dados.put("turmas", repository.turmasProfessor(p));
+        dados.put("conteudos", repository.listarConteudos(p, false));
+        dados.put("eventos", repository.proximosEventos(p));
+        return dados;
+    }
+
+    private List<Map<String, Object>> distribuicaoEventos(Map<String, Object> eventos) {
+        return List.of(ponto("Futuros", eventos.get("futuros")), ponto("Em andamento", eventos.get("andamento")),
+                ponto("Passados", eventos.get("passados")));
+    }
+
     private Map<String, Object> card(String titulo, Object valor, String detalhe) {
         return Map.of("titulo", titulo, "valor", valor, "detalhe", detalhe);
     }

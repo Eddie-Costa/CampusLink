@@ -2,6 +2,7 @@ package com.example.CampusLink.dao;
 
 import com.example.CampusLink.controller.Geral.DashboardController;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DashboardFiltro;
 import com.example.CampusLink.repository.DashboardRepository;
 import com.example.CampusLink.service.DashboardService;
@@ -54,22 +55,27 @@ class DashboardRepositoryTests {
         sql("""
                 INSERT INTO pg_temp."USUARIOS" (id,nome,email,telefone,datanasc,senha,perfil,status,created_at)
                 VALUES (1,'Aluno','aluno@example.com','11999990001','2000-01-01','hash','ALUNOS',true,'2026-11-01');
-                INSERT INTO pg_temp."ALUNOS" (id,id_usuario,rgm,created_at) VALUES (10,1,'12345678901',now());
+                INSERT INTO pg_temp."ALUNOS" (id,id_usuario,rgm,created_at) VALUES (10,1,'12345678901','2026-11-02 12:00:00-03'::timestamptz);
+                INSERT INTO pg_temp."USUARIOS" (id,nome,email,telefone,datanasc,senha,perfil,status,created_at)
+                VALUES (2,'Professor','professor@example.com','11999990002','1990-01-01','hash','PROFESSORES',true,'2026-10-01'),
+                       (3,'Outro professor','outro@example.com','11999990003','1990-01-01','hash','PROFESSORES',false,'2026-10-01');
+                INSERT INTO pg_temp."PROFESSORES" (id,id_usuario,matricula,created_at)
+                VALUES (20,2,'12345678902','2026-11-02 12:00:00-03'::timestamptz), (30,3,'12345678903','2026-11-02 12:00:00-03'::timestamptz);
                 INSERT INTO pg_temp."TURMAS" (id,nome_turma,id_alunos,id_professores,id_proprietario,created_at)
-                VALUES (100,'Turma A',ARRAY[10]::bigint[],ARRAY[20]::bigint[],20,now()),
-                       (200,'Turma B',ARRAY[10]::bigint[],ARRAY[20]::bigint[],30,now()),
-                       (300,'Turma privada',ARRAY[11]::bigint[],ARRAY[30]::bigint[],30,now());
+                VALUES (100,'Turma A',ARRAY[10]::bigint[],ARRAY[20]::bigint[],20,'2026-11-02 12:00:00-03'::timestamptz),
+                       (200,'Turma B',ARRAY[10]::bigint[],ARRAY[20]::bigint[],30,'2026-11-02 12:00:00-03'::timestamptz),
+                       (300,'Turma privada',ARRAY[11]::bigint[],ARRAY[30]::bigint[],30,'2026-11-02 12:00:00-03'::timestamptz);
                 INSERT INTO pg_temp."CONTEUDOS" (id,id_turma,id_professor,created_at,titulo,descricao,tipo,duracao_estimada,prioridade,status,revisao_solicitada)
-                VALUES (1,ARRAY[100,200]::bigint[],20,now(),'Compartilhado','Texto','texto','30','baixa','ativo',false),
-                       (2,ARRAY[100]::bigint[],20,now(),'Pendente','Texto','texto','30','baixa','ativo',false),
-                       (3,ARRAY[300]::bigint[],30,now(),'Privado','Texto','texto','30','baixa','ativo',false),
-                       (4,ARRAY[100]::bigint[],20,now(),'Suspenso','Texto','texto','30','baixa','suspenso_denuncia',true);
+                VALUES (1,ARRAY[100,200]::bigint[],20,'2026-11-02 12:00:00-03'::timestamptz,'Compartilhado','Texto','texto','30','baixa','ativo',false),
+                       (2,ARRAY[100]::bigint[],20,'2026-11-02 12:00:00-03'::timestamptz,'Pendente','Texto','texto','30','baixa','ativo',false),
+                       (3,ARRAY[300]::bigint[],30,'2026-11-02 12:00:00-03'::timestamptz,'Privado','Texto','texto','30','baixa','ativo',false),
+                       (4,ARRAY[100]::bigint[],20,'2026-11-02 12:00:00-03'::timestamptz,'Suspenso','Texto','texto','30','baixa','suspenso_denuncia',true);
                 INSERT INTO pg_temp."PROGRESSO_CONTEUDO" (id,id_aluno,id_conteudo,concluido_em)
                 VALUES (1,10,1,'2026-11-01 12:00:00-03'),(2,11,2,'2026-11-01 12:00:00-03');
                 INSERT INTO pg_temp."EVENTOS" (id,id_turma,id_professor,titulo,tipo,descricao,data_hora,data_fim,status,created_at,prioridade)
-                VALUES (1,100,20,'Próximo','prova','Teste','2026-11-03 12:00','2026-11-03 16:00-03','ATIVO',now(),'ALTA'),
-                       (2,100,20,'Passado','prova','Teste','2026-10-31 12:00','2026-10-31 16:00-03','ATIVO',now(),'BAIXA'),
-                       (3,300,30,'Privado','prova','Teste','2026-11-03 12:00',null,'ATIVO',now(),'ALTA');
+                VALUES (1,100,20,'Próximo','prova','Teste','2026-11-03 12:00','2026-11-03 16:00-03','ATIVO','2026-11-02 12:00:00-03'::timestamptz,'ALTA'),
+                       (2,100,20,'Passado','prova','Teste','2026-10-31 12:00','2026-10-31 16:00-03','ATIVO','2026-11-02 12:00:00-03'::timestamptz,'BAIXA'),
+                       (3,300,30,'Privado','prova','Teste','2026-11-03 12:00',null,'ATIVO','2026-11-02 12:00:00-03'::timestamptz,'ALTA');
                 INSERT INTO pg_temp."EVENTO_CONTEUDO" (id_evecon,id_evento,id_conteudo) VALUES (1,2,2);
                 """);
     }
@@ -125,12 +131,53 @@ class DashboardRepositoryTests {
     }
 
     @Test
+    void professorDistingueVinculosAutoriaEModeracao() throws Exception {
+        sql("""
+                INSERT INTO pg_temp."CONTEUDOS" (id,id_turma,id_professor,created_at,titulo,descricao,tipo,duracao_estimada,prioridade,status,revisao_solicitada)
+                VALUES (5,ARRAY[100]::bigint[],30,'2026-11-02 12:00:00-03'::timestamptz,'De outro professor','Texto','texto','30','baixa','ativo',false);
+                INSERT INTO pg_temp."DENUNCIAS" (id,id_conteudo,id_aluno,id_professor,motivo,status,created_at)
+                VALUES (1,4,10,20,'Teste','pendente','2026-11-02 12:00:00-03'::timestamptz);
+                """);
+        var p = repository.parametros("professor",20,filtro("todos",0,"todos"));
+        var turmas = repository.resumoTurmasProfessor(p);
+        assertEquals(1L, turmas.get("gerenciadas"));
+        assertEquals(1L, turmas.get("participantes"));
+        assertEquals(1L, turmas.get("alunos"));
+        assertEquals(3L, repository.resumoConteudos(p).get("conteudos"));
+        assertEquals(2L, repository.resumoConteudos(p).get("ativos"));
+        assertEquals(1L, repository.resumoConteudos(p).get("suspensos"));
+        assertEquals(1L, repository.resumoConteudos(p).get("analise"));
+        assertEquals(3L, repository.situacaoConteudos(p).stream().mapToLong(r -> ((Number)r.get("quantidade")).longValue()).sum());
+        assertEquals(3L, repository.conteudosPorTurma(p).getFirst().get("quantidade"));
+        assertEquals(2, repository.turmasProfessor(p).size());
+        assertEquals(2L, repository.eventosPorMes(p).getFirst().get("quantidade"));
+        assertEquals(1L, repository.listarConteudos(p,true).getFirst().get("denuncias"));
+        assertEquals(3, repository.listarConteudos(p,false).size());
+        assertNull(repository.buscarIdentidade("outro@example.com","professor"));
+        sql("UPDATE pg_temp.\"CONTEUDOS\" SET created_at='2026-10-01 12:00-03' WHERE id=1");
+        assertEquals(2L, repository.resumoConteudos(repository.parametros("professor",20,filtro("mes",0,"todos"))).get("conteudos"));
+    }
+
+    @Test
+    void renderizaProfessorComDadosEVazio() throws Exception {
+        var professor = new loginProfessorDTO(); professor.setEmail("professor@example.com");
+        var session = new MockHttpSession();
+        session.setAttribute("usuarioLogado",professor); session.setAttribute("tipoUsuario","professor");
+        session.setAttribute("email2FA",professor.getEmail());
+        String html = mvc().perform(get("/dashboard/professor").session(session)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(html.contains("Insights das Turmas"));
+        assertTrue(html.contains("Participante"));
+        assertFalse(html.contains("Turma privada"));
+        mvc().perform(get("/dashboard/professor?turma=300").session(session)).andExpect(status().isForbidden());
+        sql("UPDATE pg_temp.\"TURMAS\" SET id_professores=ARRAY[]::bigint[], id_proprietario=30");
+        sql("DELETE FROM pg_temp.\"CONTEUDOS\" WHERE id_professor=20");
+        mvc().perform(get("/dashboard/professor").session(session)).andExpect(status().isOk());
+    }
+
+    @Test
     void renderizaPaginaComDadosEVazia() throws Exception {
-        var resolver = new ThymeleafViewResolver();
-        resolver.setTemplateEngine(viewResolver.getTemplateEngine());
-        resolver.setCharacterEncoding("UTF-8");
-        var mvc = MockMvcBuilders.standaloneSetup(new DashboardController(repository, new DashboardService(repository)))
-                .setViewResolvers(resolver).build();
+        var mvc = mvc();
         var session = new MockHttpSession();
         var aluno = new loginAlunoDTO(); aluno.setEmail("aluno@example.com");
         session.setAttribute("usuarioLogado", aluno);
@@ -142,6 +189,14 @@ class DashboardRepositoryTests {
         assertFalse(html.contains("Turma privada"));
         sql("UPDATE pg_temp.\"TURMAS\" SET id_alunos=ARRAY[]::bigint[]");
         mvc.perform(get("/dashboard/aluno").session(session)).andExpect(status().isOk());
+    }
+
+    private org.springframework.test.web.servlet.MockMvc mvc() {
+        var resolver = new ThymeleafViewResolver();
+        resolver.setTemplateEngine(viewResolver.getTemplateEngine());
+        resolver.setCharacterEncoding("UTF-8");
+        return MockMvcBuilders.standaloneSetup(new DashboardController(repository, new DashboardService(repository)))
+                .setViewResolvers(resolver).build();
     }
 
     private DashboardFiltro filtro(String periodo, long turma, String prioridade) {
