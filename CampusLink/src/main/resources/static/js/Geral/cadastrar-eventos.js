@@ -102,6 +102,160 @@ function configurarBusca(campoBusca, lista, mensagem) {
     });
 }
 
+function configurarSeletorTurma() {
+    const botao = document.getElementById('turmaEventoBotao');
+    const rotulo = document.getElementById('turmaEventoRotulo');
+    const painel = document.getElementById('turmaEventoPainel');
+    const lista = document.getElementById('listaTurmasEvento');
+
+    if (!turmaEvento || !botao || !rotulo || !painel || !lista || !buscarTurma) {
+        return;
+    }
+
+    const itens = Array.from(turmaEvento.options).filter(function (opcao) {
+        return opcao.value;
+    }).map(function (opcao) {
+        const item = document.createElement('li');
+        item.id = `turmaEventoOpcao-${opcao.value}`;
+        item.className = 'seletor-turma-opcao';
+        item.setAttribute('role', 'option');
+        item.dataset.valor = opcao.value;
+        item.textContent = opcao.textContent;
+        lista.appendChild(item);
+        return item;
+    });
+
+    function visiveis() {
+        return itens.filter(function (item) {
+            return !item.hidden;
+        });
+    }
+
+    function destacar(item) {
+        itens.forEach(function (outro) {
+            outro.classList.toggle('ativa', outro === item);
+        });
+
+        if (item) {
+            buscarTurma.setAttribute('aria-activedescendant', item.id);
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            buscarTurma.removeAttribute('aria-activedescendant');
+        }
+    }
+
+    function filtrar() {
+        const pesquisa = normalizarTexto(buscarTurma.value);
+
+        itens.forEach(function (item) {
+            item.hidden = !normalizarTexto(item.textContent).includes(pesquisa);
+        });
+
+        mensagemBuscaTurma.hidden = visiveis().length > 0;
+        destacar(visiveis()[0] || null);
+    }
+
+    function atualizarRotulo() {
+        const selecionada = turmaEvento.selectedOptions[0];
+        rotulo.textContent = selecionada && selecionada.value ? selecionada.textContent : 'Selecione a turma';
+        botao.classList.toggle('vazio', !turmaEvento.value);
+
+        itens.forEach(function (item) {
+            item.setAttribute('aria-selected', String(item.dataset.valor === turmaEvento.value));
+        });
+    }
+
+    function abrir() {
+        painel.hidden = false;
+        botao.setAttribute('aria-expanded', 'true');
+        buscarTurma.value = '';
+        filtrar();
+        destacar(itens.find(function (item) {
+            return item.dataset.valor === turmaEvento.value;
+        }) || visiveis()[0] || null);
+        buscarTurma.focus();
+    }
+
+    function fechar(devolverFoco) {
+        painel.hidden = true;
+        botao.setAttribute('aria-expanded', 'false');
+
+        if (devolverFoco) {
+            botao.focus();
+        }
+    }
+
+    function escolher(item) {
+        if (turmaEvento.value !== item.dataset.valor) {
+            turmaEvento.value = item.dataset.valor;
+            turmaEvento.dispatchEvent(new Event('change'));
+        }
+
+        atualizarRotulo();
+        fechar(true);
+    }
+
+    botao.addEventListener('click', function () {
+        if (painel.hidden) {
+            abrir();
+        } else {
+            fechar(false);
+        }
+    });
+
+    buscarTurma.addEventListener('input', filtrar);
+
+    buscarTurma.addEventListener('keydown', function (evento) {
+        const opcoes = visiveis();
+        const atual = opcoes.findIndex(function (item) {
+            return item.classList.contains('ativa');
+        });
+
+        if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
+            evento.preventDefault();
+            const passo = evento.key === 'ArrowDown' ? 1 : -1;
+            destacar(opcoes[Math.min(Math.max(atual + passo, 0), opcoes.length - 1)] || null);
+        } else if (evento.key === 'Enter') {
+            evento.preventDefault();
+            if (opcoes[atual]) {
+                escolher(opcoes[atual]);
+            }
+        } else if (evento.key === 'Escape') {
+            evento.preventDefault();
+            fechar(true);
+        }
+    });
+
+    lista.addEventListener('mousedown', function (evento) {
+        evento.preventDefault();
+    });
+
+    lista.addEventListener('click', function (evento) {
+        const item = evento.target.closest('.seletor-turma-opcao');
+        if (item) {
+            escolher(item);
+        }
+    });
+
+    document.addEventListener('click', function (evento) {
+        if (!painel.hidden && !painel.contains(evento.target) && !botao.contains(evento.target)) {
+            fechar(false);
+        }
+    });
+
+    turmaEvento.addEventListener('invalid', function () {
+        botao.classList.add('invalido');
+        abrir();
+    });
+
+    turmaEvento.addEventListener('change', function () {
+        botao.classList.remove('invalido');
+        atualizarRotulo();
+    });
+
+    atualizarRotulo();
+}
+
 function mostrarMensagemConteudos(mensagem) {
     if (!conteudosRelacionados) {
         return;
@@ -338,7 +492,7 @@ function configurarEnvioEvento() {
 }
 
 configurarEnvioEvento();
-configurarBusca(buscarTurma, turmaEvento, mensagemBuscaTurma);
+configurarSeletorTurma();
 configurarBusca(buscarConteudo, conteudosRelacionados, mensagemBuscaConteudo);
 
 if (turmaEvento) {

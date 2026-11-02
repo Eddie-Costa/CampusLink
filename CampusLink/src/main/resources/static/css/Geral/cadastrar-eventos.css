@@ -912,6 +912,88 @@ body {
     font-size: 11px;
 }
 
+.seletor-turma {
+    position: relative;
+}
+
+.seletor-turma-botao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.seletor-turma-botao span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.seletor-turma-botao::after {
+    content: "▾";
+    flex: none;
+    color: #aab3da;
+}
+
+.seletor-turma-botao.vazio {
+    color: #aab3da;
+}
+
+.seletor-turma-botao.invalido {
+    border-bottom: 2px solid #ff8a8a;
+}
+
+.seletor-turma-painel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: #1d2450;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.seletor-turma-painel[hidden] {
+    display: none;
+}
+
+.seletor-turma-lista {
+    max-height: 260px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.seletor-turma-opcao {
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.seletor-turma-opcao[hidden] {
+    display: none;
+}
+
+.seletor-turma-opcao:hover,
+.seletor-turma-opcao.ativa {
+    background: rgba(139, 143, 240, 0.25);
+}
+
+.seletor-turma-opcao[aria-selected="true"] {
+    background: #5b5fc7;
+}
+
 .teams-ajuda[hidden] {
     display: none;
 }

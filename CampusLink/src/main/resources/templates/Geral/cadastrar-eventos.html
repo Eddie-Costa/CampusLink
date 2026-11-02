@@ -126,20 +126,31 @@
 
                             <div class="teams-linha">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.2 1.5 4.6 4"/></svg>
-                                <div class="teams-campo-grupo">
-                                    <label class="visually-hidden" for="buscarTurma">Pesquisar turma</label>
-                                    <input type="search" id="buscarTurma" class="teams-campo"
-                                           placeholder="Pesquisar turma..." aria-controls="turmaEvento" autocomplete="off">
+                                <div class="teams-campo-grupo seletor-turma">
                                     <label class="visually-hidden" for="turmaEvento">Turma</label>
-                                    <select id="turmaEvento" name="turmaId" class="teams-campo" required>
+                                    <select id="turmaEvento" name="turmaId" class="visually-hidden" tabindex="-1" required>
                                         <option value="">Selecione a turma</option>
                                         <option th:each="turma : ${turmasProfessor}"
                                                 th:value="${turma.id}"
                                                 th:text="${turma.nomeTurma}">Nome da turma</option>
                                     </select>
-                                    <small id="mensagemBuscaTurma" class="teams-ajuda" role="status" hidden>
-                                        Nenhuma turma encontrada para essa busca.
-                                    </small>
+
+                                    <button type="button" id="turmaEventoBotao" class="teams-campo seletor-turma-botao"
+                                            aria-haspopup="listbox" aria-expanded="false" aria-controls="turmaEventoPainel">
+                                        <span id="turmaEventoRotulo">Selecione a turma</span>
+                                    </button>
+
+                                    <div id="turmaEventoPainel" class="seletor-turma-painel" hidden>
+                                        <label class="visually-hidden" for="buscarTurma">Pesquisar turma</label>
+                                        <input type="search" id="buscarTurma" class="teams-campo"
+                                               placeholder="Pesquisar turma..." autocomplete="off"
+                                               role="combobox" aria-autocomplete="list" aria-expanded="true"
+                                               aria-controls="listaTurmasEvento">
+                                        <ul id="listaTurmasEvento" class="seletor-turma-lista" role="listbox" aria-label="Turmas"></ul>
+                                        <small id="mensagemBuscaTurma" class="teams-ajuda" role="status" hidden>
+                                            Nenhuma turma encontrada para essa busca.
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
 
