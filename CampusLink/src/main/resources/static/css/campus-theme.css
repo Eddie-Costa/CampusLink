@@ -214,6 +214,43 @@ body,
     font-weight: 700;
 }
 
+.risco-amarelo { --selo-icone: "!"; }
+.risco-vermelho { --selo-icone: "✕"; }
+.risco-concluido { --selo-icone: "✔"; }
+.risco-atrasado { --selo-icone: "⊘"; }
+.risco-sem_evento { --selo-icone: "–"; }
+
+.selo-risco:is(.risco-amarelo, .risco-vermelho, .risco-concluido, .risco-atrasado, .risco-sem_evento)::before {
+    content: var(--selo-icone);
+    width: 12px;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    color: var(--selo-cor);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+}
+
+.ponto-risco {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.ponto-risco:is(.risco-amarelo, .risco-vermelho, .risco-atrasado)::before {
+    content: var(--selo-icone);
+}
+
+.ponto-risco.risco-amarelo {
+    color: var(--campus-navy);
+}
+
 :root {
     --campus-overlay: rgba(7, 11, 31, 0.38);
     --campus-overlay-blur: 4px;
