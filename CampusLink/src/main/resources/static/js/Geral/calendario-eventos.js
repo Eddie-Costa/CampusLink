@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function atualizarResumoPrioridades() {
-        if (!usuarioEhProfessor) {
+        if (!usuarioEhProfessor && !usuarioEhAluno) {
             return;
         }
 

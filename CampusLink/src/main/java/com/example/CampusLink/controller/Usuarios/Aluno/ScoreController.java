@@ -76,7 +76,7 @@ public class ScoreController {
         model.addAttribute("proximoEventoPorTurma", proximoEventoPorTurma);
         model.addAttribute("concluidosPorTurma", concluidosPorTurma);
         model.addAttribute("totalPorTurma", totalPorTurma);
-        model.addAttribute("prioridades", montarPrioridades(resultados));
+        model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
         model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
         model.addAttribute("ritmo", montarRitmo(idAluno, resultados));
 
@@ -237,22 +237,6 @@ public class ScoreController {
         }
 
         return ritmo;
-    }
-
-    private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados) {
-        List<ViabilidadeDTO> prioridades = new ArrayList<>();
-        Set<Long> jaListados = new HashSet<>();
-
-        for (String nivel : List.of("vermelho", "amarelo")) {
-            for (ViabilidadeDTO resultado : resultados) {
-                if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
-                        && jaListados.add(resultado.getIdConteudo())) {
-                    prioridades.add(resultado);
-                }
-            }
-        }
-
-        return prioridades;
     }
 
     private Map<Long, ViabilidadeDTO> proximoEventoPorTurma(List<ViabilidadeDTO> resultados) {

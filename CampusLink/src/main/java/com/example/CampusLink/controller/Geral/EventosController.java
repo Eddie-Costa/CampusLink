@@ -6,6 +6,7 @@ import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
+import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DisponibilidadeService;
@@ -40,6 +41,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/eventos")
@@ -374,6 +376,8 @@ public class EventosController {
         model.addAttribute("planoEstudo", List.of());
         model.addAttribute("conteudosPorEvento", Map.of());
         model.addAttribute("conteudosConcluidos", Set.of());
+        model.addAttribute("prioridades", List.of());
+        model.addAttribute("nomeTurmaPorId", Map.of());
         model.addAttribute("agora", LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         if (usuarioEhProfessor(session)) {
@@ -396,16 +400,19 @@ public class EventosController {
 
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
 
-                List<Evento> eventosDoAluno =
-                        eventosDasTurmas(eventos, turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString()));
+                List<TurmaDTO> turmasAluno = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
+                List<Evento> eventosDoAluno = eventosDasTurmas(eventos, turmasAluno);
                 model.addAttribute("eventos", eventosDoAluno);
                 model.addAttribute("conteudosPorEvento",
                         conteudoRepository.listarPorEventos(eventosDoAluno.stream().map(Evento::getId).toList()));
                 model.addAttribute("conteudosConcluidos",
                         conteudoRepository.listarConcluidosDosAlunos(List.of(idAluno)).getOrDefault(idAluno, Set.of()));
 
-                model.addAttribute("proximoEventoRisco",
-                        viabilidadeService.proximoEventoPendente(viabilidadeService.calcularParaAluno(idAluno)));
+                List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
+                model.addAttribute("proximoEventoRisco", viabilidadeService.proximoEventoPendente(resultados));
+                model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
+                model.addAttribute("nomeTurmaPorId", turmasAluno.stream()
+                        .collect(Collectors.toMap(TurmaDTO::getId, TurmaDTO::getNomeTurma, (nome, repetido) -> nome)));
 
                 model.addAttribute("planoEstudo", viabilidadeService.gerarPlano(idAluno));
             }

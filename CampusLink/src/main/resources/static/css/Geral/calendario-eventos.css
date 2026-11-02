@@ -1293,3 +1293,93 @@ button.evento-marcador:focus-visible {
 .botao-voltar-agenda[hidden] {
     display: none;
 }
+
+.calendar-area:has(.prioridades-aluno) {
+    width: min(98%, 1440px);
+}
+
+.prioridades-aluno {
+    order: -1;
+    display: flex;
+    flex: 0 0 320px;
+    flex-direction: column;
+    max-height: 640px;
+}
+
+.prioridades-vazio {
+    margin: 0;
+    color: var(--azul-texto);
+    font-size: 14px;
+    text-align: center;
+}
+
+.prioridades-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0 4px 0 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.prioridade-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.prioridade-item:hover,
+.prioridade-item:focus-visible {
+    background: var(--campus-navy-hover);
+    color: #ffffff;
+    outline: none;
+}
+
+.prioridade-item-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.prioridade-item-topo strong {
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.prioridade-item-topo .selo-risco {
+    flex: none;
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+.prioridade-item-meta {
+    color: #c9cfee;
+    font-size: 12px;
+}
+
+.prioridade-item-motivo {
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+@media (max-width: 1050px) {
+    .calendar-area:has(.prioridades-aluno) {
+        width: min(92%, 920px);
+    }
+
+    .prioridades-aluno {
+        order: 0;
+        width: 100%;
+        max-height: none;
+        flex: none;
+    }
+}

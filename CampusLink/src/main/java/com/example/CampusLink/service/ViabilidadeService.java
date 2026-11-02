@@ -365,6 +365,22 @@ public class ViabilidadeService {
         return resultado;
     }
 
+    public List<ViabilidadeDTO> listarPrioridades(List<ViabilidadeDTO> resultados) {
+        List<ViabilidadeDTO> prioridades = new ArrayList<>();
+        Set<Long> jaListados = new HashSet<>();
+
+        for (String nivel : List.of("vermelho", "amarelo")) {
+            for (ViabilidadeDTO resultado : resultados) {
+                if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
+                        && jaListados.add(resultado.getIdConteudo())) {
+                    prioridades.add(resultado);
+                }
+            }
+        }
+
+        return prioridades;
+    }
+
     public ViabilidadeDTO proximoEventoPendente(List<ViabilidadeDTO> resultados) {
         ViabilidadeDTO proximo = null;
 

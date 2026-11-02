@@ -63,7 +63,7 @@
             <section id="calendar" class="calendar" aria-label="Calendário" role="grid"></section>
 
             <aside class="prioridades-resumo"
-                   th:if="${session.tipoUsuario == 'professor'}"
+                   th:if="${session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno'}"
                    aria-label="Resumo de eventos por prioridade">
 
                 <h2>Resumo dos eventos</h2>
@@ -90,21 +90,47 @@
 
                 <div class="resumo-legenda">
 
-                    <span class="legenda-instrução">
+                    <span class="legenda-instrução" th:if="${session.tipoUsuario == 'professor'}">
                         Selecione o símbolo <strong>+</strong> para cadastrar um evento.
+                    </span>
+
+                    <span class="legenda-instrução" th:if="${session.tipoUsuario == 'aluno'}">
+                        Selecione o símbolo <strong>+</strong> para cadastrar sua disponibilidade.
                     </span>
 
                 </div>
 
             </aside>
 
+            <aside class="prioridades-resumo prioridades-aluno"
+                   th:if="${session.tipoUsuario == 'aluno'}"
+                   aria-labelledby="tituloPrioridadesAluno">
+
+                <h2 id="tituloPrioridadesAluno">Prioridades</h2>
+
+                <p class="prioridades-vazio" th:if="${#lists.isEmpty(prioridades)}">Nada crítico 🎉</p>
+
+                <ul class="prioridades-lista" th:unless="${#lists.isEmpty(prioridades)}">
+                    <li th:each="item : ${prioridades}">
+                        <a class="prioridade-item" th:href="@{/score/turma/{id}(id=${item.idTurma})}">
+                            <span class="prioridade-item-topo">
+                                <strong th:text="${item.tituloConteudo}">Conteúdo #1</strong>
+                                <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                            </span>
+                            <span class="prioridade-item-meta"
+                                  th:text="${nomeTurmaPorId.get(item.idTurma) + ' · ' + item.nomeEvento + ' · ' + #temporals.format(item.dataEvento, 'dd/MM')}">
+                                Turma #1 · Prova · 18/10
+                            </span>
+                            <span class="prioridade-item-motivo" th:text="${item.motivo}">Motivo</span>
+                        </a>
+                    </li>
+                </ul>
+
+            </aside>
+
         </div>
 
         <div class="calendar-legend" th:if="${session.tipoUsuario == 'aluno'}">
-
-            <span class="legenda-instrução">
-                Selecione o símbolo <strong>+</strong> para cadastrar sua disponibilidade.
-            </span>
 
             <span class="legenda-item">
                 <span class="legenda-cor legenda-verde"></span>
