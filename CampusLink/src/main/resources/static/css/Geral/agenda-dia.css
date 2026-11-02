@@ -92,6 +92,24 @@
     font-size: 12px;
 }
 
+.agenda-evento.agenda-evento-curto {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.agenda-evento-curto strong {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.agenda-evento-curto span {
+    flex: none;
+    opacity: 0.85;
+}
+
 .agenda-prioridade-alta {
     background: rgba(229, 57, 53, 0.92);
 }

@@ -90,10 +90,12 @@ function criarCardEvento(segmento) {
     const nome = document.createElement('strong');
     const horario = document.createElement('span');
     const largura = 100 / segmento.totalColunas;
+    const altura = Math.max((segmento.fim - segmento.inicio) / 60 * ALTURA_HORA_AGENDA, 24);
 
     card.classList.add('agenda-evento', `agenda-prioridade-${(evento.prioridade || 'MEDIA').toLowerCase()}`);
+    card.classList.toggle('agenda-evento-curto', altura < 38);
     card.style.top = `${segmento.inicio / 60 * ALTURA_HORA_AGENDA}px`;
-    card.style.height = `${Math.max((segmento.fim - segmento.inicio) / 60 * ALTURA_HORA_AGENDA, 24)}px`;
+    card.style.height = `${altura}px`;
     card.style.left = `calc(${segmento.coluna * largura}% + 2px)`;
     card.style.width = `calc(${largura}% - 4px)`;
 
