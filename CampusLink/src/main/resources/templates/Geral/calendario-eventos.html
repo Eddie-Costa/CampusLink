@@ -49,6 +49,13 @@
                 <input type="month" id="seletorMes">
             </label>
 
+            <div class="ordenacao-eventos" id="filtroTurmaRotulo" hidden>
+                <label for="filtroTurma">Turma:</label>
+                <select id="filtroTurma" aria-label="Filtrar eventos por turma">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
         </div>
 
         <div class="calendar-area">
@@ -133,67 +140,8 @@
             </div>
         </section>
 
-        <section class="eventos-cadastrados"
-                 th:if="${(session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno') and eventos != null and !#lists.isEmpty(eventos)}">
-
-            <div class="eventos-cabecalho-lista">
-
-                <h2 th:text="${session.tipoUsuario == 'aluno'} ? 'Eventos das suas turmas' : 'Eventos cadastrados'">Eventos cadastrados</h2>
-
-                <div class="eventos-acoes">
-
-                    <div class="ordenacao-eventos" id="filtroTurmaRotulo" hidden>
-
-                        <label for="filtroTurma">
-                            Turma:
-                        </label>
-
-                        <select id="filtroTurma" aria-label="Filtrar eventos por turma">
-                            <option value="">Todas</option>
-                        </select>
-
-                    </div>
-
-                    <button type="button"
-                            id="alternarCards"
-                            class="botao-alternar-cards"
-                            aria-expanded="true"
-                            aria-controls="listaEventos">
-                        Ocultar cards
-                    </button>
-
-                    <div class="ordenacao-eventos">
-
-                        <label for="ordenarEventos">
-                            Ordenar por:
-                        </label>
-
-                        <select id="ordenarEventos" aria-label="Ordenar eventos">
-                            <option value="original">Ordem original</option>
-                            <option value="prioridade">Prioridade</option>
-                            <option value="inicio">Data de início</option>
-                        </select>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="eventos-holder">
-
-            <!-- ultimo evento cadastrado -->
-            <div id="ultimoEventoDestaque" class="ultimo-evento-destaque" hidden>
-
-                <div class="ultimo-evento-titulo">
-                    Último evento cadastrado
-                </div>
-
-                <div id="ultimoEventoContainer" class="ultimo-evento-container"></div>
-
-            </div>
-
-            <div id="listaEventos" class="eventos-lista">
+        <div id="cartoesEventos" hidden
+             th:if="${(session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno') and eventos != null and !#lists.isEmpty(eventos)}">
 
                 <article class="evento-item"
                          th:each="evento : ${eventos}"
@@ -371,21 +319,14 @@
 
                 </article>
 
-            </div>
-
-            <p id="semEventosNoMes" class="sem-eventos-mes" hidden>
-                Nenhum evento começa neste mês.
-            </p>
-
-            </div>
-
-        </section>
+        </div>
 
         <!-- dados usados pelo javascript -->
         <div id="eventosDados" hidden>
 
             <div class="evento-dado"
                  th:each="evento : ${eventos}"
+                 th:data-id="${evento.id}"
                  th:data-inicio="${#temporals.format(evento.inicio, 'yyyy-MM-dd')}"
                  th:data-fim="${#temporals.format(evento.fim, 'yyyy-MM-dd')}"
                  th:data-nome="${evento.nome}"
@@ -472,6 +413,25 @@
             </div>
             <div class="modal-body p-0">
                 <div id="gradeHorarios" class="grade-horarios" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade cronograma-dia detalhe-evento" id="detalheEventoModal" tabindex="-1"
+     aria-labelledby="detalheEventoTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="eventos-dia-cabecalho">
+                <div>
+                    <p class="eventos-dia-legenda">Evento</p>
+                    <h2 id="detalheEventoTitulo">Detalhes do evento</h2>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-0" id="detalheEventoCorpo"></div>
+            <div class="modal-footer detalhe-evento-rodape">
+                <button type="button" class="botao-voltar-agenda" id="voltarAgendaDia">‹ Voltar à agenda do dia</button>
             </div>
         </div>
     </div>

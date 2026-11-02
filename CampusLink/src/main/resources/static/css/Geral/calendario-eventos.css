@@ -663,115 +663,6 @@ button.evento-marcador:focus-visible {
     flex-basis: 100%;
 }
 
-.eventos-cadastrados {
-    width: min(92%, 920px);
-    margin: 28px auto 0;
-}
-
-.eventos-cabecalho-lista {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 12px;
-}
-
-.eventos-cabecalho-lista h2 {
-    margin: 0;
-    color: var(--azul-texto);
-    font-size: 20px;
-    white-space: nowrap;
-}
-
-.eventos-acoes {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.botao-alternar-cards {
-    padding: 8px 14px;
-    border: 1px solid var(--azul-escuro);
-    border-radius: 7px;
-    background: var(--azul-escuro);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.botao-alternar-cards:hover {
-    background: var(--campus-navy-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(var(--campus-navy-rgb), 0.18);
-}
-
-.botao-alternar-cards:focus-visible {
-    outline: 2px solid var(--azul-borda);
-    outline-offset: 2px;
-}
-
-.ultimo-evento-destaque {
-    margin-bottom: 18px;
-}
-
-.eventos-holder {
-    padding: 14px;
-    border: 2px solid rgba(var(--campus-accent-rgb), 0.45);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.62);
-    box-shadow: 0 4px 12px rgba(var(--campus-navy-rgb), 0.10);
-}
-
-.ultimo-evento-destaque[hidden],
-.eventos-lista[hidden] {
-    display: none;
-}
-
-.ultimo-evento-titulo {
-    margin-bottom: 10px;
-    color: var(--azul-texto);
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.ultimo-evento-container {
-    width: 100%;
-}
-
-.ultimo-evento-container .evento-item {
-    margin-bottom: 0;
-}
-
-.evento-item-fixo::before {
-    content: none;
-}
-
-/* mantem o ultimo evento visivel ao ocultar os outros */
-.eventos-lista.cards-ocultos {
-    display: none;
-}
-
-.sem-eventos-mes {
-    margin: 18px 0 0;
-    padding: 16px;
-    border: 1px dashed rgba(var(--campus-navy-rgb), 0.28);
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.58);
-    color: var(--azul-texto);
-    font-size: 13px;
-    text-align: center;
-}
-
-.sem-eventos-mes[hidden] {
-    display: none;
-}
-
 .ordenacao-eventos {
     display: flex;
     align-items: center;
@@ -870,22 +761,6 @@ button.evento-marcador:focus-visible {
     gap: 9px;
     min-width: 0;
     flex-wrap: wrap;
-}
-
-.evento-badge-novo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: var(--azul-escuro);
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    box-shadow: 0 2px 6px rgba(var(--campus-navy-rgb), 0.18);
 }
 
 .evento-item h3 {
@@ -1226,16 +1101,6 @@ button.evento-marcador:focus-visible {
         font-size: 12px;
     }
 
-    .eventos-cadastrados {
-        width: 100%;
-        padding-right: 4px;
-    }
-
-    .eventos-cabecalho-lista {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
     .ordenacao-eventos {
         justify-content: space-between;
     }
@@ -1395,4 +1260,40 @@ button.evento-marcador:focus-visible {
 .botao-ir-turma:focus-visible {
     background: var(--campus-surface-alt);
     color: var(--campus-navy);
+}
+
+.detalhe-evento .evento-item {
+    margin: 18px 0 0;
+    background: #ffffff;
+}
+
+.detalhe-evento .evento-item:hover {
+    transform: none;
+}
+
+.detalhe-evento-rodape {
+    justify-content: flex-start;
+    padding: 16px 0 0;
+    border-top: 0;
+}
+
+.botao-voltar-agenda {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botao-voltar-agenda:hover,
+.botao-voltar-agenda:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    outline: none;
+}
+
+.botao-voltar-agenda[hidden] {
+    display: none;
 }

@@ -92,6 +92,20 @@
     font-size: 12px;
 }
 
+.agenda-evento-clicavel {
+    cursor: pointer;
+    transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.agenda-evento-clicavel:hover {
+    filter: brightness(1.12);
+}
+
+.agenda-evento-clicavel:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+}
+
 .agenda-evento.agenda-evento-curto {
     flex-direction: row;
     align-items: center;

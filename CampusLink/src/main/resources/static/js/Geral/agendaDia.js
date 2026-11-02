@@ -103,6 +103,14 @@ function criarCardEvento(segmento) {
     horario.textContent = descreverHorarioAgenda(evento);
     card.title = `${evento.nome} · ${horario.textContent}`;
 
+    if (evento.id) {
+        card.classList.add('agenda-evento-clicavel');
+        card.dataset.idEvento = evento.id;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Ver detalhes de ${evento.nome}, ${horario.textContent}`);
+    }
+
     card.append(nome, horario);
 
     return card;

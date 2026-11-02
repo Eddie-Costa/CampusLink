@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const eventosDados = Array.from(document.querySelectorAll('.evento-dado')).map(function (evento) {
         return {
+            id: evento.dataset.id || '',
             dataInicio: evento.dataset.inicio || '',
             dataFim: evento.dataset.fim || '',
             nome: evento.dataset.nome || '',
@@ -44,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const eventosDaAgenda = eventosDados.map(function (evento) {
         return {
+            id: evento.id,
             nome: evento.nome,
             prioridade: evento.prioridade,
             idTurma: evento.idTurma,
@@ -88,12 +90,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const quantidadePrioridadeBaixa = document.getElementById('quantidadePrioridadeBaixa');
     const quantidadeEventosTotal = document.getElementById('quantidadeEventosTotal');
 
-    const listaEventos = document.getElementById('listaEventos');
-    const seletorOrdenacao = document.getElementById('ordenarEventos');
-    const botaoAlternarCards = document.getElementById('alternarCards');
-    const ultimoEventoDestaque = document.getElementById('ultimoEventoDestaque');
-    const ultimoEventoContainer = document.getElementById('ultimoEventoContainer');
-    const semEventosNoMes = document.getElementById('semEventosNoMes');
+    const cartoesEventos = document.getElementById('cartoesEventos');
+    const detalheEventoModal = document.getElementById('detalheEventoModal');
+    const detalheEventoCorpo = document.getElementById('detalheEventoCorpo');
+    const voltarAgendaDia = document.getElementById('voltarAgendaDia');
+    let dataAgendaAberta = null;
 
     const hoje = new Date();
     const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
@@ -101,21 +102,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let mesAtual = hoje.getMonth();
     let anoAtual = hoje.getFullYear();
 
-    const todosOsCartoesEventos = listaEventos
-        ? Array.from(listaEventos.querySelectorAll('.evento-item'))
-        : [];
-
-    const ordemOriginalEventos = new Map();
-
-    todosOsCartoesEventos.forEach(function (cartao, indice) {
-        ordemOriginalEventos.set(cartao, indice);
-    });
-
-    const pesoPrioridade = {
-        ALTA: 1,
-        MEDIA: 2,
-        BAIXA: 3
-    };
 
     function formatarData(data) {
         const ano = data.getFullYear();
@@ -319,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
         const corpoModal = modalCronograma.querySelector('.modal-body');
+        dataAgendaAberta = data;
 
         modalCronograma.addEventListener('shown.bs.modal', function () {
             corpoModal.scrollTop = Math.max(topoPrimeiroEvento - ALTURA_HORA_AGENDA, 0);
@@ -379,156 +366,56 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function cartaoComecaNoMesExibido(cartao) {
-        if (!cartao) {
-            return false;
-        }
-
-        const inicio = cartao.dataset.inicio || '';
-        const mesEsperado = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
-
-        return inicio.startsWith(mesEsperado);
-    }
-
-    function obterPrioridade(cartao) {
-        const prioridade = (cartao.dataset.prioridade || 'MEDIA').toUpperCase();
-
-        return pesoPrioridade[prioridade] || 2;
-    }
-
-    function obterDataInicio(cartao) {
-        const data = Date.parse(cartao.dataset.inicio || '');
-
-        return Number.isNaN(data) ? Number.MAX_SAFE_INTEGER : data;
-    }
-
-    function removerBadgeNovo(cartao) {
-        if (!cartao) {
+    function devolverCartaoAberto() {
+        if (!detalheEventoCorpo || !cartoesEventos) {
             return;
         }
 
-        cartao.classList.remove('evento-item-fixo');
+        Array.from(detalheEventoCorpo.querySelectorAll('.evento-item')).forEach(function (cartao) {
+            cartoesEventos.appendChild(cartao);
+        });
+    }
 
-        const badge = cartao.querySelector('.evento-badge-novo');
+    function recolherConteudos(cartao) {
+        const botao = cartao.querySelector('.botao-alternar-conteudos');
+        const lista = botao ? document.getElementById(botao.getAttribute('aria-controls')) : null;
 
-        if (badge) {
-            badge.remove();
+        if (botao && lista) {
+            lista.hidden = true;
+            botao.setAttribute('aria-expanded', 'false');
+            botao.textContent = 'Mostrar conteúdos';
         }
     }
 
-    function adicionarBadgeNovo(cartao) {
+    function abrirDetalheEvento(idEvento) {
+        if (!detalheEventoModal || !detalheEventoCorpo || !cartoesEventos || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        const cartao = cartoesEventos.querySelector(`.evento-item[data-id="${CSS.escape(idEvento)}"]`);
+
         if (!cartao) {
             return;
         }
 
-        cartao.classList.add('evento-item-fixo');
+        devolverCartaoAberto();
+        recolherConteudos(cartao);
+        detalheEventoCorpo.appendChild(cartao);
 
-        const identificacao = cartao.querySelector('.evento-identificacao');
-
-        if (identificacao && !identificacao.querySelector('.evento-badge-novo')) {
-            const badgeNovo = document.createElement('span');
-
-            badgeNovo.classList.add('evento-badge-novo');
-            badgeNovo.textContent = 'Novo';
-
-            identificacao.appendChild(badgeNovo);
-        }
-    }
-
-    function ordenarCartoes(cartoes) {
-        const cartoesOrdenados = cartoes.slice();
-        const tipoOrdenacao = seletorOrdenacao ? seletorOrdenacao.value : 'original';
-
-        if (tipoOrdenacao === 'prioridade') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                const diferenca = obterPrioridade(cartaoA) - obterPrioridade(cartaoB);
-
-                if (diferenca !== 0) {
-                    return diferenca;
-                }
-
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
+        if (voltarAgendaDia) {
+            voltarAgendaDia.hidden = !dataAgendaAberta;
         }
 
-        if (tipoOrdenacao === 'inicio') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                const diferenca = obterDataInicio(cartaoA) - obterDataInicio(cartaoB);
+        const mostrarDetalhe = function () {
+            bootstrap.Modal.getOrCreateInstance(detalheEventoModal).show();
+        };
 
-                if (diferenca !== 0) {
-                    return diferenca;
-                }
-
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
+        if (modalCronograma && modalCronograma.classList.contains('show')) {
+            modalCronograma.addEventListener('hidden.bs.modal', mostrarDetalhe, { once: true });
+            bootstrap.Modal.getInstance(modalCronograma).hide();
+        } else {
+            mostrarDetalhe();
         }
-
-        if (tipoOrdenacao === 'original') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
-        }
-
-        return cartoesOrdenados;
-    }
-
-    function atualizarVisaoEventosDoMes() {
-        atualizarResumoPrioridades();
-
-        if (!(usuarioEhProfessor || usuarioEhAluno) || !listaEventos) {
-            return;
-        }
-
-        todosOsCartoesEventos.forEach(function (cartao) {
-            removerBadgeNovo(cartao);
-            cartao.hidden = true;
-            listaEventos.appendChild(cartao);
-        });
-
-        const cartoesDoMes = todosOsCartoesEventos.filter(function (cartao) {
-            return cartaoComecaNoMesExibido(cartao) && eventoDaTurmaFiltrada(cartao.dataset.idTurma || '');
-        });
-
-        if (semEventosNoMes) {
-            semEventosNoMes.hidden = cartoesDoMes.length > 0;
-        }
-
-        if (cartoesDoMes.length === 0) {
-            if (ultimoEventoDestaque) {
-                ultimoEventoDestaque.hidden = true;
-            }
-
-            listaEventos.hidden = true;
-            return;
-        }
-
-        const ultimoCartaoDoMes = cartoesDoMes.reduce(function (maisNovo, cartaoAtual) {
-            const idMaisNovo = Number(maisNovo.dataset.id || 0);
-            const idAtual = Number(cartaoAtual.dataset.id || 0);
-
-            return idAtual > idMaisNovo ? cartaoAtual : maisNovo;
-        });
-
-        adicionarBadgeNovo(ultimoCartaoDoMes);
-        ultimoCartaoDoMes.hidden = false;
-
-        if (ultimoEventoContainer && ultimoEventoDestaque) {
-            ultimoEventoContainer.appendChild(ultimoCartaoDoMes);
-            ultimoEventoDestaque.hidden = false;
-        }
-
-        const cartoesComunsDoMes = cartoesDoMes.filter(function (cartao) {
-            return cartao !== ultimoCartaoDoMes;
-        });
-
-        listaEventos.hidden = cartoesComunsDoMes.length === 0;
-
-        const cartoesOrdenados = ordenarCartoes(cartoesComunsDoMes);
-
-        cartoesOrdenados.forEach(function (cartao) {
-            cartao.hidden = false;
-            listaEventos.appendChild(cartao);
-        });
     }
 
     function atualizarCalendario() {
@@ -644,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function () {
             calendario.appendChild(celula);
         }
 
-        atualizarVisaoEventosDoMes();
+        atualizarResumoPrioridades();
     }
 
     if (mesAnterior) {
@@ -707,15 +594,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3500);
     }
 
-    if (listaEventos && botaoAlternarCards) {
-        botaoAlternarCards.addEventListener('click', function () {
-            const estaOculto = listaEventos.classList.toggle('cards-ocultos');
-
-            this.textContent = estaOculto ? 'Mostrar cards' : 'Ocultar cards';
-            this.setAttribute('aria-expanded', String(!estaOculto));
-        });
-    }
-
     document.addEventListener('click', function (event) {
         const botao = event.target.closest('.botao-alternar-conteudos');
 
@@ -765,9 +643,40 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (seletorOrdenacao) {
-        seletorOrdenacao.addEventListener('change', function () {
-            atualizarVisaoEventosDoMes();
+    if (gradeHorarios) {
+        gradeHorarios.addEventListener('click', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card) {
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+
+        gradeHorarios.addEventListener('keydown', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+    }
+
+    if (detalheEventoModal) {
+        detalheEventoModal.addEventListener('hidden.bs.modal', devolverCartaoAberto);
+    }
+
+    if (voltarAgendaDia) {
+        voltarAgendaDia.addEventListener('click', function () {
+            if (!dataAgendaAberta || !detalheEventoModal) {
+                return;
+            }
+
+            const data = dataAgendaAberta;
+            detalheEventoModal.addEventListener('hidden.bs.modal', function () {
+                abrirCronograma(data);
+            }, { once: true });
+            bootstrap.Modal.getInstance(detalheEventoModal).hide();
         });
     }
 
@@ -794,7 +703,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         formRefazerConteudo.action = botao.dataset.acao;
         tituloConteudoRefazer.textContent = botao.dataset.titulo || 'este conteúdo';
-        bootstrap.Modal.getOrCreateInstance(confirmarRefazerModal).show();
+
+        const mostrarConfirmacao = function () {
+            bootstrap.Modal.getOrCreateInstance(confirmarRefazerModal).show();
+        };
+
+        if (detalheEventoModal && detalheEventoModal.classList.contains('show')) {
+            detalheEventoModal.addEventListener('hidden.bs.modal', mostrarConfirmacao, { once: true });
+            bootstrap.Modal.getInstance(detalheEventoModal).hide();
+        } else {
+            mostrarConfirmacao();
+        }
     });
 
     atualizarCalendario();
