@@ -2,10 +2,12 @@ package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.SessaoEstudoDTO;
+import com.example.CampusLink.dto.SessaoEstudoDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Disponibilidade;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.DisponibilidadeRepository;
 import com.example.CampusLink.repository.DisponibilidadeRepository;
 import com.example.CampusLink.repository.EventoRepository;
 import com.example.CampusLink.repository.TurmaRepository;
@@ -169,10 +171,21 @@ public class ViabilidadeService {
             try {
                 StringWriter excecaoLogBD = new StringWriter();
                 e.printStackTrace(new PrintWriter(excecaoLogBD));
+        if (logger.isErrorEnabled()) {
+            try {
+                StringWriter excecaoLogBD = new StringWriter();
+                e.printStackTrace(new PrintWriter(excecaoLogBD));
 
                 UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), metodo, null,
                         MessageFormatter.arrayFormat(mensagem, new Object[]{idsAlunos}).getMessage(), null, excecaoLogBD.toString());
+                UsuarioRepository.InserirLogsNoBD(null, "ERROR", ViabilidadeService.class.getName(), metodo, null,
+                        MessageFormatter.arrayFormat(mensagem, new Object[]{idsAlunos}).getMessage(), null, excecaoLogBD.toString());
 
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
+    }
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }

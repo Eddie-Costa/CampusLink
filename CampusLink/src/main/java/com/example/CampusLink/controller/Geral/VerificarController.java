@@ -9,6 +9,7 @@ import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,12 @@ public class VerificarController {
         }
 
         try {
-            emailService.enviarCodigo(email, codigo);
+            FinalidadeCodigoEmail finalidade = switch (fluxo.toString()) {
+                case "Cadastro" -> FinalidadeCodigoEmail.CADASTRO;
+                case "ResetPassword" -> FinalidadeCodigoEmail.REDEFINICAO_SENHA;
+                default -> FinalidadeCodigoEmail.ACESSO;
+            };
+            emailService.enviarCodigo(email, codigo, finalidade);
             redirectAttributes.addFlashAttribute("mensagem", "Novo código enviado para seu e-mail. Use o código mais recente.");
         } catch (MailException e) {
             twoFactorService.invalidarCodigo(email);

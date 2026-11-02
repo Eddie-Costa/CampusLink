@@ -2,6 +2,7 @@ package com.example.CampusLink.controller.Usuarios.Aluno;
 
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.SessaoEstudoDTO;
+import com.example.CampusLink.dto.SessaoEstudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.repository.AlunoRepository;
@@ -57,6 +58,7 @@ public class ScoreController {
 
         List<TurmaDTO> turmas = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
         List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
+        List<ViabilidadeDTO> atrasados = viabilidadeService.listarAtrasados(List.of(idAluno)).getOrDefault(idAluno, List.of());
         Map<Long, ViabilidadeDTO> proximoEventoPorTurma = proximoEventoPorTurma(resultados);
 
         Map<Long, String> nomeTurmaPorId = new HashMap<>();
@@ -76,7 +78,7 @@ public class ScoreController {
         model.addAttribute("proximoEventoPorTurma", proximoEventoPorTurma);
         model.addAttribute("concluidosPorTurma", concluidosPorTurma);
         model.addAttribute("totalPorTurma", totalPorTurma);
-        model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
+        model.addAttribute("prioridades", montarPrioridades(resultados, atrasados));
         model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
         model.addAttribute("ritmo", montarRitmo(idAluno, resultados));
 
@@ -226,7 +228,6 @@ public class ScoreController {
         Map<String, Object> ritmo = new HashMap<>();
         ritmo.put("horasSemana", viabilidadeService.formatarHoras(minutosSemana));
         ritmo.put("mediaDiaria", viabilidadeService.formatarHoras(mediaDiaria));
-        ritmo.put("proximoEvento", null);
 
         ViabilidadeDTO proximo = viabilidadeService.proximoEventoPendente(resultados);
         if (proximo != null && !"concluido".equals(proximo.getNivel()) && proximo.getCargaMin() > 0) {
@@ -237,6 +238,23 @@ public class ScoreController {
         }
 
         return ritmo;
+    }
+
+    private List<ViabilidadeDTO> montarPrioridades(List<ViabilidadeDTO> resultados, List<ViabilidadeDTO> atrasados) {
+        List<ViabilidadeDTO> prioridades = new ArrayList<>(atrasados);
+        Set<Long> jaListados = new HashSet<>();
+        atrasados.forEach(atrasado -> jaListados.add(atrasado.getIdConteudo()));
+
+        for (String nivel : List.of("vermelho", "laranja")) {
+            for (ViabilidadeDTO resultado : resultados) {
+                if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
+                        && jaListados.add(resultado.getIdConteudo())) {
+                    prioridades.add(resultado);
+                }
+            }
+        }
+
+        return prioridades;
     }
 
     private Map<Long, ViabilidadeDTO> proximoEventoPorTurma(List<ViabilidadeDTO> resultados) {

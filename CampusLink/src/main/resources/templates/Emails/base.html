@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(conteudo)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo + ' | CampusLink'}"></title>
+</head>
+<body class="email-pagina">
+<div class="email-preheader" th:text="${descricao}"></div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-fundo">
+    <tr><td align="center" class="email-externo">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-cartao">
+            <tr><td class="email-marca">
+                <table role="presentation" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="60"><img src="cid:campuslink-logo" width="48" alt="Logo CampusLink" class="email-logo"></td>
+                        <td class="email-nome">CampusLink</td>
+                    </tr>
+                </table>
+            </td></tr>
+            <tr><td class="email-conteudo">
+                <h1 class="email-titulo" th:text="${titulo}"></h1>
+                <p class="email-texto" th:text="${descricao}"></p>
+                <div th:replace="${conteudo}"></div>
+            </td></tr>
+            <tr><td class="email-rodape">CampusLink · Mensagem automática. Não responda a este e-mail.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

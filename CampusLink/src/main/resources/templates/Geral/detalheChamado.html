@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|Conversa #${chamado.id} - CampusLink|">Conversa | CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Geral/chamados.css}">
+    <script th:src="@{/js/Geral/chamado-chat.js}" defer></script>
+</head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="chamados-page chat-page" id="chamado-chat" th:attr="data-admin=${administrador},data-conversa-url=${administrador ? '/admin/chamados/' + chamado.id + '/conversa' : '/meus-chamados/' + chamado.id + '/conversa'}">
+    <a th:href="${administrador} ? @{/admin/chamados} : @{/meus-chamados}" class="chat-voltar">← Voltar aos chamados</a>
+    <div class="alert alert-success" role="status" th:if="${mensagemSucesso}" th:text="${mensagemSucesso}"></div>
+    <div class="alert alert-warning" role="status" th:if="${mensagemAviso}" th:text="${mensagemAviso}"></div>
+    <div class="alert alert-danger" role="alert" th:if="${mensagemErro}" th:text="${mensagemErro}"></div>
+    <div class="chat-layout">
+        <section class="chat-janela" aria-labelledby="titulo-conversa">
+            <header class="chat-cabecalho">
+                <div class="chat-avatar" aria-hidden="true" th:text="${administrador} ? 'U' : 'CL'">CL</div>
+                <div class="chat-contato">
+                    <p class="chat-etiqueta">CANAL DE AJUDA</p>
+                    <h1 id="titulo-conversa" th:text="${administrador ? chamado.nomeUsuario : 'Equipe CampusLink'}"></h1>
+                    <p id="chat-sincronizacao" role="status">Converse por aqui e acompanhe seu atendimento</p>
+                </div>
+                <span id="chat-status" class="chamados-status" th:classappend="${chamado.status}" th:text="${chamado.statusDescricao}"></span>
+            </header>
+            <div class="chat-assunto"><span th:text="|#${chamado.id}|"></span><strong th:text="${chamado.assunto}"></strong></div>
+            <div id="chat-mensagens" class="chat-mensagens" role="log" aria-label="Mensagens da conversa" aria-live="polite" aria-relevant="additions" tabindex="0">
+                <p class="chat-inicio">Início do atendimento · <span th:text="${#temporals.format(chamado.createdAt, 'dd/MM/yyyy')}"></span></p>
+                <article class="chat-mensagem" th:classappend="${administrador} ? 'chat-recebida' : 'chat-enviada'" data-mensagem-id="0">
+                    <div class="chat-balao">
+                        <p class="chat-autor" th:text="${chamado.nomeUsuario}"></p>
+                        <p class="chat-texto" th:text="${chamado.descricao}"></p>
+                        <time class="chat-hora" th:datetime="${chamado.createdAt}" th:text="${#temporals.format(chamado.createdAt, 'dd/MM/yyyy HH:mm')}"></time>
+                    </div>
+                </article>
+                <article class="chat-mensagem" th:each="item : ${chamado.respostas}" th:attr="data-mensagem-id=${item.id}"
+                         th:classappend="${item.tipoAutor == (administrador ? 'admin' : 'usuario')} ? 'chat-enviada' : 'chat-recebida'">
+                    <div class="chat-balao">
+                        <p class="chat-autor"><span th:text="${item.nomeAutor}"></span><span th:if="${item.tipoAutor == 'admin'}" class="chat-equipe">Equipe</span></p>
+                        <p class="chat-texto" th:text="${item.resposta}"></p>
+                        <time class="chat-hora" th:datetime="${item.createdAt}" th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}"></time>
+                    </div>
+                </article>
+            </div>
+            <p id="chat-aviso" class="chat-aviso" role="status" hidden></p>
+            <div id="chat-encerrado" class="chat-encerrado" th:hidden="${chamado.status != 'concluido'}">
+                <strong>Atendimento concluído</strong>
+                <p>Esta conversa fica disponível para consulta. Se precisar, abra um novo chamado.</p>
+            </div>
+            <form id="chat-formulario" class="chat-compositor" th:object="${resposta}" method="post"
+                  th:action="${administrador} ? @{/admin/chamados/{id}/responder(id=${chamado.id})} : @{/meus-chamados/{id}/responder(id=${chamado.id})}"
+                  th:attr="data-envio-url=${administrador ? '/admin/chamados/' + chamado.id + '/mensagens' : '/meus-chamados/' + chamado.id + '/mensagens'}"
+                  th:hidden="${chamado.status == 'concluido'}">
+                <label for="resposta" class="visually-hidden">Sua mensagem</label>
+                <div class="chat-campo">
+                    <textarea th:field="*{resposta}" rows="2" maxlength="5000" required placeholder="Escreva sua mensagem..."
+                              th:disabled="${chamado.status == 'concluido'}" aria-describedby="chat-limite erro-resposta"></textarea>
+                    <p id="erro-resposta" class="text-danger" th:errors="*{resposta}"></p>
+                    <span id="chat-limite">Até 5.000 caracteres · Ctrl + Enter para enviar</span>
+                </div>
+                <button id="chat-enviar" type="submit" class="btn btn-primary" th:disabled="${chamado.status == 'concluido'}">Enviar <span aria-hidden="true">↗</span></button>
+            </form>
+        </section>
+        <aside class="chat-resumo" aria-labelledby="titulo-resumo">
+            <p class="chamados-etiqueta">SEU ATENDIMENTO</p>
+            <h2 id="titulo-resumo" th:text="|Chamado #${chamado.id}|"></h2>
+            <p class="chat-resumo-assunto" th:text="${chamado.assunto}"></p>
+            <dl>
+                <dt>Solicitante</dt><dd th:text="${chamado.nomeUsuario}"></dd>
+                <dt th:if="${administrador}">E-mail</dt><dd th:if="${administrador}" th:text="${chamado.emailUsuario}"></dd>
+                <dt>Aberto em</dt><dd th:text="${#temporals.format(chamado.createdAt, 'dd/MM/yyyy HH:mm')}"></dd>
+                <dt id="chat-conclusao-rotulo" th:hidden="${chamado.concluidoEm == null}">Concluído em</dt>
+                <dd id="chat-conclusao-data" th:hidden="${chamado.concluidoEm == null}" th:text="${chamado.concluidoEm == null ? '' : #temporals.format(chamado.concluidoEm, 'dd/MM/yyyy HH:mm')}"></dd>
+            </dl>
+            <div id="chat-acoes-admin" th:if="${administrador}" th:hidden="${chamado.status == 'concluido'}">
+                <hr>
+                <h3>Problema resolvido?</h3>
+                <p>Conclua o chamado após orientar o usuário. Ele receberá o histórico da conversa em um PDF anexado ao e-mail.</p>
+                <form th:action="@{/admin/chamados/{id}/concluir(id=${chamado.id})}" method="post" data-texto-envio="Concluindo...">
+                    <button id="chat-concluir" type="submit" class="btn btn-success w-100" th:disabled="${!chamado.possuiRespostaAdmin}">Concluir atendimento</button>
+                </form>
+                <p id="chat-orientacao-conclusao" class="form-text" th:hidden="${chamado.possuiRespostaAdmin}">Envie uma resposta antes de concluir.</p>
+            </div>
+            <a th:unless="${administrador}" th:href="@{/ajuda}" class="btn btn-outline-primary w-100">Abrir novo chamado</a>
+            <p class="chat-nota">Datas e horários de Brasília.</p>
+        </aside>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
