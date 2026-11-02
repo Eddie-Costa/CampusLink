@@ -650,9 +650,40 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (seletorOrdenacao) {
-        seletorOrdenacao.addEventListener('change', function () {
-            atualizarVisaoEventosDoMes();
+    if (gradeHorarios) {
+        gradeHorarios.addEventListener('click', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card) {
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+
+        gradeHorarios.addEventListener('keydown', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+    }
+
+    if (detalheEventoModal) {
+        detalheEventoModal.addEventListener('hidden.bs.modal', devolverCartaoAberto);
+    }
+
+    if (voltarAgendaDia) {
+        voltarAgendaDia.addEventListener('click', function () {
+            if (!dataAgendaAberta || !detalheEventoModal) {
+                return;
+            }
+
+            const data = dataAgendaAberta;
+            detalheEventoModal.addEventListener('hidden.bs.modal', function () {
+                abrirCronograma(data);
+            }, { once: true });
+            bootstrap.Modal.getInstance(detalheEventoModal).hide();
         });
     }
 
