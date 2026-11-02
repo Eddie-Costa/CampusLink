@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,15 +28,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Set;
 
 @Controller
@@ -128,25 +124,17 @@ public class AcompanhamentoController {
                 viabilidadeService.listarAtrasados(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
 
         Map<Long, String> tituloPorConteudo = new HashMap<>();
-        Map<Long, Set<Long>> alunosAtrasadosPorConteudo = new HashMap<>();
         Map<Long, Set<Long>> alunosVermelhosPorConteudo = new HashMap<>();
         List<Map<String, Object>> alunosComAtraso = new ArrayList<>();
 
         for (usuarioAdminDTO aluno : alunos) {
-            long atrasadosDoAluno = 0;
-            for (ViabilidadeDTO atrasado : resultadosDaTurma(atrasadosPorAluno, aluno, id)) {
-                tituloPorConteudo.put(atrasado.getIdConteudo(), atrasado.getTituloConteudo());
-                alunosAtrasadosPorConteudo.computeIfAbsent(atrasado.getIdConteudo(), idConteudo -> new HashSet<>())
-                        .add(aluno.getIdPerfil());
-                atrasadosDoAluno++;
-            }
+            long atrasadosDoAluno = resultadosDaTurma(atrasadosPorAluno, aluno, id).size();
             if (atrasadosDoAluno > 0) {
                 alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
             }
 
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
-                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())
-                        && !alunosAtrasadosPorConteudo.getOrDefault(resultado.getIdConteudo(), Set.of()).contains(aluno.getIdPerfil())) {
+                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())) {
                     tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
                     alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
                             .add(aluno.getIdPerfil());
