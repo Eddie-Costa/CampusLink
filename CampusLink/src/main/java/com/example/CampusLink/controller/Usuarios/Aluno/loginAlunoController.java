@@ -5,6 +5,7 @@ import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +100,7 @@ public class loginAlunoController {
 
             if (twoFactorEnabled) {
                 String codigo = twoFactorService.gerarCodigo(email);
-                emailService.enviarCodigo(email, codigo);
+                emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
 
                 session.setAttribute("email2FA", email);
                 session.setAttribute("redirect", "Login");

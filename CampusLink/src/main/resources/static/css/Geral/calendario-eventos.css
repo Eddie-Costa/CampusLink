@@ -439,7 +439,11 @@ body {
     color: #ffffff;
 }
 
-.evento-marcador.evento-prioridade-alta {
+.evento-marcador.evento-inicio,
+.evento-marcador.evento-unico,
+.evento-marcador.evento-meio,
+.evento-marcador.evento-fim,
+.day-cell.adjacent-month .evento-marcador {
     background: var(--vermelho-evento);
     color: #ffffff;
 }
@@ -657,6 +661,78 @@ button.evento-marcador:focus-visible {
 
 .disponibilidade-risco p {
     flex-basis: 100%;
+}
+
+.ordenacao-eventos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--azul-texto);
+    font-size: 20px;
+    white-space: nowrap;
+}
+
+.eventos-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.botao-alternar-cards {
+    padding: 8px 14px;
+    border: 1px solid var(--azul-escuro);
+    border-radius: 7px;
+    background: var(--azul-escuro);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ordenacao-eventos[hidden] {
+    display: none;
+}
+
+.ultimo-evento-titulo {
+    margin-bottom: 10px;
+    color: var(--azul-texto);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.ultimo-evento-container {
+    width: 100%;
+}
+
+.ultimo-evento-container .evento-item {
+    margin-bottom: 0;
+}
+
+.evento-item-fixo::before {
+    content: none;
+}
+
+/* mantem o ultimo evento visivel ao ocultar os outros */
+.eventos-lista.cards-ocultos {
+    display: none;
+}
+
+.sem-eventos-mes {
+    margin: 18px 0 0;
+    padding: 16px;
+    border: 1px dashed rgba(var(--campus-navy-rgb), 0.28);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.58);
+    color: var(--azul-texto);
+    font-size: 13px;
+    text-align: center;
+}
+
+.sem-eventos-mes[hidden] {
+    display: none;
 }
 
 .ordenacao-eventos {

@@ -5,6 +5,7 @@ import com.example.CampusLink.dto.Professor.cadastrarProfessorDTO;
 import com.example.CampusLink.exception.SQLErrorHandler;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class cadastrarProfessorController {
 
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(professor.getEmail().toLowerCase());
-            emailService.enviarCodigo(professor.getEmail().toLowerCase(), codigo);
+            emailService.enviarCodigo(professor.getEmail().toLowerCase(), codigo, FinalidadeCodigoEmail.CADASTRO);
 
             return "redirect:/verificarProfessor";
         } else {
