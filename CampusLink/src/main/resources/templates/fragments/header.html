@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,16 +8,34 @@
 </head>
 <body>
 <main>
-    <div th:fragment="nav" class="nav">
+    <div th:fragment="nav" class="nav site-header-nav">
+        <script>
+            (function () {
+                function atualizarAlturaHeader() {
+                    var header = document.querySelector('.site-header-nav');
+                    var limite = header ? Math.max(0, Math.round(header.getBoundingClientRect().bottom)) : 0;
+                    document.documentElement.style.setProperty('--campus-header-altura', limite + 'px');
+                }
+
+                document.addEventListener('DOMContentLoaded', atualizarAlturaHeader);
+                window.addEventListener('load', atualizarAlturaHeader);
+                document.addEventListener('show.bs.modal', atualizarAlturaHeader);
+                window.addEventListener('resize', atualizarAlturaHeader);
+                window.addEventListener('scroll', atualizarAlturaHeader, { passive: true });
+            })();
+        </script>
+        <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
         <link rel="stylesheet" th:href="@{/css/profileMenu.css}">
+        <link rel="stylesheet" th:href="@{/css/Geral/submit-once.css(v=20261017-1)}">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <script th:src="@{/js/Geral/envioUnico.js}" defer></script>
 
         <div class="container px-4">
             <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-0 border-bottom">
 
                 <div class="col-md-3 mb-2 mb-md-0">
                     <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
-                        <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height=auto alt="CampusLink logo">
+                        <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height="auto" alt="CampusLink logo">
                     </a>
                 </div>
 
@@ -73,17 +92,29 @@
                             </ul>
                         </div>
 
+                        <!-- link para administrador -->
+                        <div th:if="${session.tipoUsuario == 'admin'}">
+                            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                                <li>
+                                    <a th:href="@{/admin/painel}" class="nav-link px-2">Painel Administrativo</a>
+                                </li>
+                                <li>
+                                    <a th:href="@{/admin/chamados}" class="nav-link px-2">Chamados</a>
+                                </li>
+                            </ul>
+                        </div>
+
                     </div>
                 </div>
 
                 <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
                     <div class="dropdown account-menu">
-                        <button class="account-avatar" type="button" id="menuConta" data-bs-toggle="dropdown"
+                        <button class="account-avatar" type="button" id="menuConta"
                                 aria-expanded="false" aria-label="Abrir menu da conta">
                             <span th:text="${#strings.toUpperCase(#strings.substring(session.usuarioLogado.email, 0, 1))}">U</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end account-dropdown" aria-labelledby="menuConta">
-                            <div class="account-summary">
+                            <div class="account-summary" th:if="${session.tipoUsuario != 'admin'}">
                                 <span class="account-avatar account-avatar-static" aria-hidden="true"
                                       th:text="${#strings.toUpperCase(#strings.substring(session.usuarioLogado.email, 0, 1))}">U</span>
                                 <div>
@@ -92,11 +123,16 @@
                                     <a th:href="@{/profile}">Acessar meu perfil</a>
                                 </div>
                             </div>
-                            <hr class="dropdown-divider">
-                            <a class="dropdown-item" th:href="@{/profile#meus-dados}">
+                            <hr class="dropdown-divider" th:if="${session.tipoUsuario != 'admin'}">
+                            <a class="dropdown-item" th:href="@{/profile#meus-dados}"
+                               th:if="${session.tipoUsuario != 'admin'}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M5 17c0-4 8-4 8 0m2-8h4m-4 4h4"/></svg>
                                 Seus dados no CampusLink
                             </a>
+                            <hr class="dropdown-divider" th:if="${session.tipoUsuario != 'admin'}">
+                            <a class="dropdown-item" th:href="@{/ajuda}">Canal de ajuda</a>
+                            <a class="dropdown-item" th:href="@{/meus-chamados}">Meus chamados</a>
+                            <hr class="dropdown-divider">
                             <a class="dropdown-item" th:href="@{/documentos/termos-v1.0.txt}"
                                data-bs-toggle="modal" data-bs-target="#modalTermos">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></svg>
@@ -119,6 +155,62 @@
 
             </header>
         </div>
+        <script>
+            (() => {
+                const menu = document.querySelector('.account-menu');
+                const botao = document.getElementById('menuConta');
+                const opcoes = document.querySelector('.account-dropdown');
+                if (!menu || !botao || !opcoes) return;
+
+                const fecharMenu = () => {
+                    botao.setAttribute('aria-expanded', 'false');
+                    opcoes.classList.remove('show');
+                    opcoes.style.removeProperty('top');
+                    opcoes.style.removeProperty('left');
+                };
+
+                const posicionarMenu = () => {
+                    if (!opcoes.classList.contains('show')) return;
+
+                    const margem = 12;
+                    const avatar = botao.getBoundingClientRect();
+                    const largura = Math.min(opcoes.offsetWidth, window.innerWidth - margem * 2);
+                    const esquerda = Math.max(margem, Math.min(avatar.right - largura, window.innerWidth - largura - margem));
+                    const altura = opcoes.offsetHeight;
+                    let topo = avatar.bottom + 8;
+
+                    if (topo + altura > window.innerHeight - margem) {
+                        topo = Math.max(margem, avatar.top - altura - 8);
+                    }
+
+                    opcoes.style.left = `${esquerda}px`;
+                    opcoes.style.top = `${topo}px`;
+                };
+
+                botao.addEventListener('click', () => {
+                    const abrir = botao.getAttribute('aria-expanded') !== 'true';
+                    botao.setAttribute('aria-expanded', String(abrir));
+                    opcoes.classList.toggle('show', abrir);
+                    if (abrir) requestAnimationFrame(posicionarMenu);
+                });
+
+                window.addEventListener('resize', posicionarMenu);
+                window.addEventListener('scroll', posicionarMenu, true);
+
+                document.addEventListener('click', event => {
+                    if (!menu.contains(event.target) || event.target.closest('.dropdown-item')) {
+                        fecharMenu();
+                    }
+                });
+
+                document.addEventListener('keydown', event => {
+                    if (event.key === 'Escape' && botao.getAttribute('aria-expanded') === 'true') {
+                        fecharMenu();
+                        botao.focus();
+                    }
+                });
+            })();
+        </script>
     </div>
 </main>
 </body>

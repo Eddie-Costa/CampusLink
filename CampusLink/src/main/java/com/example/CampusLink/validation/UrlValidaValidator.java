@@ -7,8 +7,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.example.CampusLink.service.DominioService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class UrlValidaValidator implements ConstraintValidator<UrlValida, String> {
+
+    @Autowired
+    private DominioService dominioService;
 
     private static final int TAMANHO_MAXIMO = 2048;
 
@@ -73,7 +78,17 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
         if (HOST_BLOQUEADO.matcher(host).matches()) {
             return falhar(context, "Esse endereço não é permitido.");
         }
+        boolean autorizado;
+        try {
+            autorizado = dominioService.hostAutorizado(host);
+        } catch (RuntimeException e) {
+            return falhar(context, "Não foi possível verificar o domínio agora. Tente novamente.");
+        }
 
+        if (!autorizado) {
+            return falhar(context, "O domínio " + host.toLowerCase()
+                    + " não está autorizado. Feche e use o botão \"Solicitar Domínio\" para pedir a liberação.");
+        }
         return true;
     }
 
@@ -83,4 +98,5 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
                 .addConstraintViolation();
         return false;
     }
+
 }

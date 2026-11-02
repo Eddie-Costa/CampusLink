@@ -1,6 +1,6 @@
 package com.example.CampusLink.config;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
@@ -20,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessaoLogListener implements HttpSessionListener {
 
     private static final Logger logger = LoggerFactory.getLogger(SessaoLogListener.class);
-    private final usuarioDAO usuarioDAO;
+    private final UsuarioRepository UsuarioRepository;
     private final Map<String, HttpSession> sessoes = new ConcurrentHashMap<>();
 
-    public SessaoLogListener(usuarioDAO usuarioDAO) {
-        this.usuarioDAO = usuarioDAO;
+    public SessaoLogListener(UsuarioRepository UsuarioRepository) {
+        this.UsuarioRepository = UsuarioRepository;
     }
 
     @Override
@@ -76,7 +76,7 @@ public class SessaoLogListener implements HttpSessionListener {
         }
 
         try {
-            usuarioDAO.finalizarSessaoLog(sessaoLogId,
+            UsuarioRepository.finalizarSessaoLog(sessaoLogId,
                     Instant.ofEpochMilli(session.getCreationTime()), Instant.now(), email);
         } catch (Exception e) {
             // Uma falha no banco nao deve impedir que a sessao seja invalidada.

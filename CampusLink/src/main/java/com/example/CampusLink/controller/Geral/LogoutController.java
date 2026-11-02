@@ -3,7 +3,7 @@ package com.example.CampusLink.controller.Geral;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LogoutController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(LogoutController.class);
 
@@ -69,7 +69,7 @@ public class LogoutController {
         logger.info("Sessão encerrada para o usuário {}", usuario != null ? usuario : "usuario autenticado");
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", LogoutController.class.getName(), "logout", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", LogoutController.class.getName(), "logout", null,
                         MessageFormatter.arrayFormat("Sessão encerrada para o usuário {}", new Object[]{usuario != null ? usuario : "usuario autenticado"}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);

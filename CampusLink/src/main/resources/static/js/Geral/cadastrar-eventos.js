@@ -6,7 +6,17 @@ const tipoUsuario = paginaCadastroEventos ? paginaCadastroEventos.dataset.tipoUs
 const usuarioEhAluno = tipoUsuario === 'aluno';
 
 const calendarioFundo = document.getElementById('calendarioFundo');
-const startInput = document.getElementById('inicioEvento');
+const formEvento = document.getElementById('formEvento');
+const inicioEvento = document.getElementById('inicioEvento');
+const fimEvento = document.getElementById('fimEvento');
+const nomeEvento = document.getElementById('nomeEvento');
+const dataEvento = document.getElementById('dataEvento');
+const horaInicioEvento = document.getElementById('horaInicioEvento');
+const horaFimEvento = document.getElementById('horaFimEvento');
+const duracaoEvento = document.getElementById('duracaoEvento');
+const erroHorario = document.getElementById('erroHorario');
+const diaAnterior = document.getElementById('diaAnterior');
+const diaSeguinte = document.getElementById('diaSeguinte');
 const dataDisponibilidade = document.getElementById('dataDisponibilidade');
 const dataEventosDia = document.getElementById('dataEventosDia');
 const gradeHorarios = document.getElementById('gradeHorarios');
@@ -92,6 +102,160 @@ function configurarBusca(campoBusca, lista, mensagem) {
     });
 }
 
+function configurarSeletorTurma() {
+    const botao = document.getElementById('turmaEventoBotao');
+    const rotulo = document.getElementById('turmaEventoRotulo');
+    const painel = document.getElementById('turmaEventoPainel');
+    const lista = document.getElementById('listaTurmasEvento');
+
+    if (!turmaEvento || !botao || !rotulo || !painel || !lista || !buscarTurma) {
+        return;
+    }
+
+    const itens = Array.from(turmaEvento.options).filter(function (opcao) {
+        return opcao.value;
+    }).map(function (opcao) {
+        const item = document.createElement('li');
+        item.id = `turmaEventoOpcao-${opcao.value}`;
+        item.className = 'seletor-turma-opcao';
+        item.setAttribute('role', 'option');
+        item.dataset.valor = opcao.value;
+        item.textContent = opcao.textContent;
+        lista.appendChild(item);
+        return item;
+    });
+
+    function visiveis() {
+        return itens.filter(function (item) {
+            return !item.hidden;
+        });
+    }
+
+    function destacar(item) {
+        itens.forEach(function (outro) {
+            outro.classList.toggle('ativa', outro === item);
+        });
+
+        if (item) {
+            buscarTurma.setAttribute('aria-activedescendant', item.id);
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            buscarTurma.removeAttribute('aria-activedescendant');
+        }
+    }
+
+    function filtrar() {
+        const pesquisa = normalizarTexto(buscarTurma.value);
+
+        itens.forEach(function (item) {
+            item.hidden = !normalizarTexto(item.textContent).includes(pesquisa);
+        });
+
+        mensagemBuscaTurma.hidden = visiveis().length > 0;
+        destacar(visiveis()[0] || null);
+    }
+
+    function atualizarRotulo() {
+        const selecionada = turmaEvento.selectedOptions[0];
+        rotulo.textContent = selecionada && selecionada.value ? selecionada.textContent : 'Selecione a turma';
+        botao.classList.toggle('vazio', !turmaEvento.value);
+
+        itens.forEach(function (item) {
+            item.setAttribute('aria-selected', String(item.dataset.valor === turmaEvento.value));
+        });
+    }
+
+    function abrir() {
+        painel.hidden = false;
+        botao.setAttribute('aria-expanded', 'true');
+        buscarTurma.value = '';
+        filtrar();
+        destacar(itens.find(function (item) {
+            return item.dataset.valor === turmaEvento.value;
+        }) || visiveis()[0] || null);
+        buscarTurma.focus();
+    }
+
+    function fechar(devolverFoco) {
+        painel.hidden = true;
+        botao.setAttribute('aria-expanded', 'false');
+
+        if (devolverFoco) {
+            botao.focus();
+        }
+    }
+
+    function escolher(item) {
+        if (turmaEvento.value !== item.dataset.valor) {
+            turmaEvento.value = item.dataset.valor;
+            turmaEvento.dispatchEvent(new Event('change'));
+        }
+
+        atualizarRotulo();
+        fechar(true);
+    }
+
+    botao.addEventListener('click', function () {
+        if (painel.hidden) {
+            abrir();
+        } else {
+            fechar(false);
+        }
+    });
+
+    buscarTurma.addEventListener('input', filtrar);
+
+    buscarTurma.addEventListener('keydown', function (evento) {
+        const opcoes = visiveis();
+        const atual = opcoes.findIndex(function (item) {
+            return item.classList.contains('ativa');
+        });
+
+        if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
+            evento.preventDefault();
+            const passo = evento.key === 'ArrowDown' ? 1 : -1;
+            destacar(opcoes[Math.min(Math.max(atual + passo, 0), opcoes.length - 1)] || null);
+        } else if (evento.key === 'Enter') {
+            evento.preventDefault();
+            if (opcoes[atual]) {
+                escolher(opcoes[atual]);
+            }
+        } else if (evento.key === 'Escape') {
+            evento.preventDefault();
+            fechar(true);
+        }
+    });
+
+    lista.addEventListener('mousedown', function (evento) {
+        evento.preventDefault();
+    });
+
+    lista.addEventListener('click', function (evento) {
+        const item = evento.target.closest('.seletor-turma-opcao');
+        if (item) {
+            escolher(item);
+        }
+    });
+
+    document.addEventListener('click', function (evento) {
+        if (!painel.hidden && !painel.contains(evento.target) && !botao.contains(evento.target)) {
+            fechar(false);
+        }
+    });
+
+    turmaEvento.addEventListener('invalid', function () {
+        botao.classList.add('invalido');
+        abrir();
+    });
+
+    turmaEvento.addEventListener('change', function () {
+        botao.classList.remove('invalido');
+        atualizarRotulo();
+    });
+
+    atualizarRotulo();
+}
+
 function mostrarMensagemConteudos(mensagem) {
     if (!conteudosRelacionados) {
         return;
@@ -161,6 +325,16 @@ async function carregarConteudosDaTurma(turmaId) {
 
             option.value = conteudo.id;
             option.textContent = conteudo.titulo;
+            option.dataset.titulo = conteudo.titulo;
+
+            if (conteudo.prazoEncerradoEm) {
+                const [ano, mes, dia] = conteudo.prazoEncerradoEm.slice(0, 10).split('-');
+
+                option.dataset.vencidoEm = `${dia}/${mes}`;
+                option.classList.add('conteudo-vencido');
+                option.textContent = `${conteudo.titulo}   ·   ⏱ Vencido em ${dia}/${mes}`;
+                option.title = `Prazo encerrado em ${dia}/${mes}/${ano}`;
+            }
 
             conteudosRelacionados.appendChild(option);
         });
@@ -184,7 +358,141 @@ async function carregarConteudosDaTurma(turmaId) {
     }
 }
 
-configurarBusca(buscarTurma, turmaEvento, mensagemBuscaTurma);
+// evita enviar o mesmo cadastro mais de uma vez enquanto carrega
+function minutosDoHorario(horario) {
+    if (!/^\d{2}:\d{2}$/.test(horario || '')) {
+        return null;
+    }
+
+    const [horas, minutos] = horario.split(':').map(Number);
+
+    return horas * 60 + minutos;
+}
+
+function horarioDosMinutos(totalMinutos) {
+    const limitado = Math.max(0, Math.min(totalMinutos, 23 * 60 + 59));
+
+    return `${String(Math.floor(limitado / 60)).padStart(2, '0')}:${String(limitado % 60).padStart(2, '0')}`;
+}
+
+function validarHorarioEvento() {
+    const inicio = minutosDoHorario(horaInicioEvento.value);
+    const fim = minutosDoHorario(horaFimEvento.value);
+    let mensagem = '';
+
+    if (inicio !== null && fim !== null && fim <= inicio) {
+        mensagem = 'O horário de término deve ser depois do início, no mesmo dia.';
+    }
+
+    if (duracaoEvento) {
+        duracaoEvento.textContent = inicio !== null && fim !== null && fim > inicio
+            ? formatarDuracao(fim - inicio)
+            : '';
+    }
+
+    horaFimEvento.setCustomValidity(mensagem);
+
+    if (erroHorario) {
+        erroHorario.textContent = mensagem;
+        erroHorario.hidden = mensagem === '';
+    }
+
+    return mensagem === '';
+}
+
+function formatarDuracao(minutos) {
+    const horas = Math.floor(minutos / 60);
+    const resto = minutos % 60;
+
+    if (horas === 0) {
+        return `${resto} min`;
+    }
+
+    return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
+}
+
+// evita enviar o mesmo cadastro mais de uma vez enquanto carrega
+function configurarEnvioEvento() {
+    if (!formEvento) {
+        return;
+    }
+
+    const botaoSalvar = document.querySelector('button[type="submit"][form="formEvento"]');
+    const conteudoOriginal = botaoSalvar ? botaoSalvar.innerHTML : '';
+    let enviando = false;
+
+    const avisoVencidos = document.getElementById('avisoConteudosVencidos');
+    const listaVencidos = document.getElementById('listaConteudosVencidos');
+    const confirmarCriacao = document.getElementById('confirmarCriacaoEvento');
+    let vencidosConfirmados = false;
+
+    if (confirmarCriacao) {
+        confirmarCriacao.addEventListener('click', function () {
+            vencidosConfirmados = true;
+            bootstrap.Modal.getOrCreateInstance(avisoVencidos).hide();
+            formEvento.requestSubmit();
+        });
+    }
+
+    formEvento.addEventListener('submit', function (evento) {
+        if (enviando || !validarHorarioEvento()) {
+            evento.preventDefault();
+            return;
+        }
+
+        const vencidosSelecionados = conteudosRelacionados
+            ? Array.from(conteudosRelacionados.selectedOptions).filter(function (opcao) {
+                return opcao.dataset.vencidoEm;
+            })
+            : [];
+
+        if (vencidosSelecionados.length > 0 && !vencidosConfirmados && avisoVencidos && typeof bootstrap !== 'undefined') {
+            evento.preventDefault();
+            listaVencidos.innerHTML = '';
+
+            vencidosSelecionados.forEach(function (opcao) {
+                const item = document.createElement('li');
+                const titulo = document.createElement('span');
+                const tag = document.createElement('span');
+
+                titulo.textContent = opcao.dataset.titulo;
+                tag.classList.add('tag-vencido');
+                tag.textContent = `Vencido em ${opcao.dataset.vencidoEm}`;
+
+                item.append(titulo, tag);
+                listaVencidos.appendChild(item);
+            });
+
+            bootstrap.Modal.getOrCreateInstance(avisoVencidos).show();
+            return;
+        }
+
+        inicioEvento.value = `${dataEvento.value}T${horaInicioEvento.value}`;
+        fimEvento.value = `${dataEvento.value}T${horaFimEvento.value}`;
+
+        enviando = true;
+        formEvento.setAttribute('aria-busy', 'true');
+
+        if (botaoSalvar) {
+            botaoSalvar.disabled = true;
+            botaoSalvar.textContent = 'Salvando...';
+        }
+    });
+
+    // libera o formulario ao voltar pelo navegador
+    window.addEventListener('pageshow', function () {
+        enviando = false;
+        formEvento.removeAttribute('aria-busy');
+
+        if (botaoSalvar) {
+            botaoSalvar.disabled = false;
+            botaoSalvar.innerHTML = conteudoOriginal;
+        }
+    });
+}
+
+configurarEnvioEvento();
+configurarSeletorTurma();
 configurarBusca(buscarConteudo, conteudosRelacionados, mensagemBuscaConteudo);
 
 if (turmaEvento) {
@@ -337,95 +645,124 @@ function atualizarCalendarioDeFundo() {
     }
 }
 
-function formatarDataExibicao(data) {
-    const dataFormatada = new Date(`${data}T12:00:00`);
+function eventoEmEdicao() {
+    if (!dataEvento || !dataValida(dataEvento.value) || !horaInicioEvento.value || !horaFimEvento.value) {
+        return null;
+    }
 
-    return dataFormatada.toLocaleDateString('pt-BR', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-}
+    const inicio = new Date(`${dataEvento.value}T${horaInicioEvento.value}:00`);
+    const fim = new Date(`${dataEvento.value}T${horaFimEvento.value}:00`);
 
-function obterEventosDaHora(data, hora) {
-    const inicioHora = new Date(`${data}T${String(hora).padStart(2, '0')}:00:00`);
-    const fimHora = new Date(inicioHora.getTime() + 60 * 60 * 1000);
+    if (fim <= inicio) {
+        return null;
+    }
 
-    return eventosDados.filter(function (evento) {
-        return evento.inicio &&
-            evento.fim &&
-            evento.inicio < fimHora &&
-            evento.fim > inicioHora;
-    });
+    return {
+        nome: 'Prévia · ' + (nomeEvento && nomeEvento.value.trim() ? nomeEvento.value.trim() : 'Novo evento'),
+        inicio: inicio,
+        fim: fim,
+        prioridade: 'rascunho'
+    };
 }
 
 function atualizarAgendaDoDia() {
-    if (!gradeHorarios || !dataEventosDia) {
+    if (!dataEvento) {
+        const dataSelecionada = dataValida(queryDate) ? queryDate : obterDataHoje();
+
+        montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, eventosDados);
         return;
     }
 
-    const dataSelecionada = dataValida(queryDate) ? queryDate : obterDataHoje();
+    const rascunho = eventoEmEdicao();
+    const eventos = rascunho ? eventosDados.concat([rascunho]) : eventosDados;
 
-    dataEventosDia.textContent = formatarDataExibicao(dataSelecionada);
-    gradeHorarios.innerHTML = '';
+    montarAgendaDoDia(gradeHorarios, dataEventosDia, dataEvento.value, eventos);
+}
 
-    for (let hora = 0; hora < 24; hora++) {
-        const eventosDaHora = obterEventosDaHora(dataSelecionada, hora);
+function rolarAgendaParaRascunho() {
+    const inicio = minutosDoHorario(horaInicioEvento.value);
 
-        const linha = document.createElement('div');
+    if (gradeHorarios && inicio !== null) {
+        gradeHorarios.scrollTop = Math.max(inicio / 60 * ALTURA_HORA_AGENDA - ALTURA_HORA_AGENDA, 0);
+    }
+}
 
-        linha.classList.add('horario-linha');
+function definirInicio(minutos) {
+    const duracaoAtual = (minutosDoHorario(horaFimEvento.value) ?? 0) - (minutosDoHorario(horaInicioEvento.value) ?? 0);
+    const duracao = duracaoAtual > 0 ? duracaoAtual : 60;
 
-        const horario = document.createElement('time');
+    horaInicioEvento.value = horarioDosMinutos(minutos);
+    horaFimEvento.value = horarioDosMinutos(Math.min(minutos + duracao, 23 * 60 + 59));
+}
 
-        horario.classList.add('horario-hora');
-        horario.textContent = `${String(hora).padStart(2, '0')}:00`;
+function mudarDia(deslocamento) {
+    const data = new Date(`${dataEvento.value}T12:00:00`);
 
-        const faixa = document.createElement('div');
+    data.setDate(data.getDate() + deslocamento);
+    dataEvento.value = formatarData(data);
+    validarHorarioEvento();
+    atualizarAgendaDoDia();
+}
 
-        faixa.classList.add('horario-faixa');
+function configurarHorarioEvento() {
+    if (!dataEvento) {
+        return;
+    }
 
-        if (eventosDaHora.length === 0) {
-            faixa.classList.add('horario-livre');
+    const agora = new Date();
+    const proximaMeiaHora = Math.min(Math.ceil((agora.getHours() * 60 + agora.getMinutes() + 1) / 30) * 30, 23 * 60);
 
-            const linhaLivre = document.createElement('span');
+    dataEvento.value = dataValida(queryDate) ? queryDate : obterDataHoje();
+    definirInicio(dataValida(queryDate) ? 8 * 60 : proximaMeiaHora);
 
-            linhaLivre.classList.add('linha-livre');
+    [dataEvento, horaInicioEvento, horaFimEvento].forEach(function (campo) {
+        campo.addEventListener('change', function () {
+            validarHorarioEvento();
+            atualizarAgendaDoDia();
+        });
+    });
 
-            faixa.appendChild(linhaLivre);
-        } else {
-            faixa.classList.add('horario-ocupado');
+    horaInicioEvento.addEventListener('change', rolarAgendaParaRascunho);
 
-            const nomes = eventosDaHora.map(function (evento) {
-                return evento.nome;
-            }).join(', ');
+    if (nomeEvento) {
+        nomeEvento.addEventListener('input', atualizarAgendaDoDia);
+    }
 
-            const eventoTexto = document.createElement('span');
+    if (diaAnterior) {
+        diaAnterior.addEventListener('click', function () {
+            mudarDia(-1);
+        });
+    }
 
-            eventoTexto.classList.add('nome-evento-horario');
+    if (diaSeguinte) {
+        diaSeguinte.addEventListener('click', function () {
+            mudarDia(1);
+        });
+    }
 
-            if (eventosDaHora.length === 1) {
-                eventoTexto.textContent = nomes;
-            } else {
-                eventoTexto.textContent = `${eventosDaHora.length} eventos: ${nomes}`;
+    if (gradeHorarios) {
+        gradeHorarios.addEventListener('click', function (evento) {
+            const corpo = gradeHorarios.querySelector('.agenda-corpo');
+
+            if (!corpo) {
+                return;
             }
 
-            faixa.appendChild(eventoTexto);
-        }
+            const deslocamento = evento.clientY - corpo.getBoundingClientRect().top;
+            const minutos = Math.floor(deslocamento / ALTURA_HORA_AGENDA * 60 / 30) * 30;
 
-        linha.appendChild(horario);
-        linha.appendChild(faixa);
-
-        gradeHorarios.appendChild(linha);
+            definirInicio(Math.max(0, Math.min(minutos, 23 * 60)));
+            validarHorarioEvento();
+            atualizarAgendaDoDia();
+        });
     }
+
+    validarHorarioEvento();
 }
 
 const dataInicial = dataValida(queryDate) ? queryDate : obterDataHoje();
 
-if (startInput && queryDate) {
-    startInput.value = queryDate + 'T08:00';
-}
+configurarHorarioEvento();
 
 if (dataDisponibilidade) {
     dataDisponibilidade.value = dataInicial;
@@ -437,3 +774,6 @@ if (turmaEvento && turmaEvento.value) {
 
 atualizarCalendarioDeFundo();
 atualizarAgendaDoDia();
+if (dataEvento) {
+    rolarAgendaParaRascunho();
+}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Domínios autorizados | CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/conteudosDenunciados.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-container">
+
+        <header class="admin-topo">
+            <div>
+                <p class="admin-etiqueta">Administração</p>
+                <h1>Domínios autorizados</h1>
+                <p>Analise as solicitações dos professores e veja os domínios já liberados para links</p>
+            </div>
+
+            <a th:href="@{/admin/painel}" class="btn btn-outline-primary">Voltar ao início</a>
+        </header>
+
+        <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
+
+        <!-- Pendentes -->
+        <div class="admin-resumo">
+            <strong th:text="${#lists.size(pendentes)}">0</strong>
+            <span>solicitações aguardando análise</span>
+        </div>
+
+        <p th:if="${#lists.isEmpty(pendentes)}" class="admin-vazio">
+            Nenhuma solicitação aguardando análise.
+        </p>
+
+        <section th:if="${!#lists.isEmpty(pendentes)}" class="admin-lista" aria-label="Solicitações pendentes">
+
+            <article th:each="dominio : ${pendentes}" class="admin-card">
+
+                <div class="admin-card-topo">
+                    <h2 th:text="${dominio.dominio}">exemplo.com</h2>
+                    <span class="admin-status">Pendente</span>
+                </div>
+
+                <p class="admin-descricao"
+                   th:text="${dominio.justificativa != null ? dominio.justificativa : 'Sem justificativa informada'}">
+                    Justificativa
+                </p>
+
+                <div class="admin-informacoes">
+                    <div>
+                        <span>Professor</span>
+                        <strong th:text="${dominio.nomeProfessor != null ? dominio.nomeProfessor : 'Não identificado'}">Professor</strong>
+                    </div>
+
+                    <div>
+                        <span>Solicitado em</span>
+                        <strong th:text="${dominio.createdAt != null ? #temporals.format(dominio.createdAt, 'dd/MM/yyyy HH:mm') : 'Não informado'}">Data</strong>
+                    </div>
+                </div>
+
+                <p class="admin-horario">
+                    Atenção: aprovar um domínio libera também todos os subdomínios dele.
+                    Evite aprovar sites de hospedagem aberta (como github.io ou blogspot.com).
+                </p>
+
+                <div class="admin-acoes">
+
+                    <form th:action="@{/admin/dominios/{id}/aprovar(id=${dominio.id})}"
+                          method="post"
+                          class="admin-liberar-form">
+
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                        <button type="submit" class="btn btn-primary">Aprovar domínio</button>
+                    </form>
+
+                    <form th:action="@{/admin/dominios/{id}/rejeitar(id=${dominio.id})}"
+                          method="post"
+                          class="admin-reprovar-form">
+
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                        <label th:for="'motivo-' + ${dominio.id}" class="form-label">Motivo da rejeição</label>
+
+                        <textarea th:id="'motivo-' + ${dominio.id}"
+                                  name="comentarioAdmin"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Explique para o professor por que o domínio foi rejeitado"
+                                  required></textarea>
+
+                        <button type="submit" class="btn btn-danger">Rejeitar solicitação</button>
+                    </form>
+
+                </div>
+            </article>
+        </section>
+
+        <!-- Autorizados -->
+        <div class="admin-resumo">
+            <strong th:text="${#lists.size(aprovados)}">0</strong>
+            <span>domínios autorizados</span>
+        </div>
+
+        <p th:if="${#lists.isEmpty(aprovados)}" class="admin-vazio">
+            Nenhum domínio autorizado ainda.
+        </p>
+
+        <table th:if="${!#lists.isEmpty(aprovados)}" class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th scope="col">Domínio</th>
+                <th scope="col">Aprovado em</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="dominio : ${aprovados}">
+                <td th:text="${dominio.dominio}">exemplo.com</td>
+                <td th:text="${dominio.analisadoEm != null ? #temporals.format(dominio.analisadoEm, 'dd/MM/yyyy HH:mm') : 'Domínio inicial'}">Data</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p class="admin-horario">Os horários estão em UTC.</p>
+
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

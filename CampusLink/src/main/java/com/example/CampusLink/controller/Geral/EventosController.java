@@ -1,15 +1,18 @@
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.alunoDAO;
-import com.example.CampusLink.dao.professorDAO;
-import com.example.CampusLink.dao.turmaDAO;
+import com.example.CampusLink.repository.AlunoRepository;
+import com.example.CampusLink.repository.ProfessorRepository;
+import com.example.CampusLink.repository.TurmaRepository;
+import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
+import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Evento;
 import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DisponibilidadeService;
 import com.example.CampusLink.service.EventoService;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.service.ViabilidadeService;
+import com.example.CampusLink.repository.UsuarioRepository;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +37,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/eventos")
@@ -42,15 +49,17 @@ import java.util.List;
 public class EventosController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(EventosController.class);
     private final EventoService eventoService;
     private final DisponibilidadeService disponibilidadeService;
     private final ConteudoService conteudoService;
-    private final alunoDAO alunoDAO;
-    private final professorDAO professorDAO;
-    private final turmaDAO turmaDAO;
+    private final AlunoRepository alunoRepository;
+    private final ProfessorRepository professorRepository;
+    private final TurmaRepository turmaRepository;
+    private final ViabilidadeService viabilidadeService;
+    private final ConteudoRepository conteudoRepository;
 
     // mostra a tela do calendário
     @GetMapping
@@ -61,7 +70,7 @@ public class EventosController {
             logger.warn("Acesso recusado ao calendario");
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "exibirCalendario", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "exibirCalendario", null,
                             "Acesso recusado ao calendario", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -74,7 +83,7 @@ public class EventosController {
         logger.debug("Calendario exibido para {}", obterTipoUsuario(session));
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", EventosController.class.getName(), "exibirCalendario", null,
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", EventosController.class.getName(), "exibirCalendario", null,
                         MessageFormatter.arrayFormat("Calendario exibido para {}", new Object[]{obterTipoUsuario(session)}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -116,7 +125,7 @@ public class EventosController {
             logger.warn("Professor {} tentou acessar a turma {}", idProfessor, turmaId);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "listarConteudosDaTurma", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "listarConteudosDaTurma", null,
                             MessageFormatter.arrayFormat("Professor {} tentou acessar a turma {}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -125,8 +134,12 @@ public class EventosController {
             return List.of();
         }
 
-        return conteudoService.listarPorTurma(turmaId
-        );
+        List<ConteudoDTO> conteudos = conteudoService.listarPorTurma(turmaId);
+        Map<Long, LocalDateTime> prazosEncerrados =
+                conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList());
+        conteudos.forEach(conteudo -> conteudo.setPrazoEncerradoEm(prazosEncerrados.get(conteudo.getId())));
+
+        return conteudos;
     }
 
 
@@ -171,9 +184,9 @@ public class EventosController {
             return "redirect:/eventos/cadastrar";
         }
 
-        if (fim.isBefore(inicio)) {
-
-            redirectAttributes.addFlashAttribute("erro", "A data final nao pode ser anterior a data inicial");
+        String erroHorario = EventoService.validarHorario(inicio, fim);
+        if (erroHorario != null) {
+            redirectAttributes.addFlashAttribute("erro", erroHorario);
             return "redirect:/eventos/cadastrar";
         }
 
@@ -182,7 +195,7 @@ public class EventosController {
             logger.warn("Cadastro de evento recusado: professor sem acesso à turma. professorId={} turmaId={}", idProfessor, turmaId);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
                             MessageFormatter.arrayFormat("Cadastro de evento recusado: professor sem acesso à turma. professorId={} turmaId={}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -207,7 +220,7 @@ public class EventosController {
                 logger.warn("Cadastro de evento recusado: conteúdo não pertence à turma. professorId={} turmaId={} conteudoIds={}", idProfessor, turmaId, conteudoIds);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "cadastrarEvento", null,
                                 MessageFormatter.arrayFormat("Cadastro de evento recusado: conteúdo não pertence à turma. professorId={} turmaId={} conteudoIds={}", new Object[]{idProfessor, turmaId, conteudoIds}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -224,10 +237,11 @@ public class EventosController {
         evento.setIdProfessor(idProfessor);
         evento.setIdTurma(turmaId);
         eventoService.adicionarEvento(evento, conteudoIds);
+        turmaRepository.registrarAlteracao(session.getAttribute("email2FA").toString(), turmaId);
         logger.info("Evento cadastrado idProfessor={} idTurma={}", idProfessor, turmaId);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "cadastrarEvento", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "cadastrarEvento", null,
                         MessageFormatter.arrayFormat("Evento cadastrado idProfessor={} idTurma={}", new Object[]{idProfessor, turmaId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -278,7 +292,7 @@ public class EventosController {
             logger.warn("Exclusão de evento recusada: professor não é responsável pelo evento. professorId={} eventoId={}", idProfessor, eventoId);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "excluirEvento", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", EventosController.class.getName(), "excluirEvento", null,
                             MessageFormatter.arrayFormat("Exclusão de evento recusada: professor não é responsável pelo evento. professorId={} eventoId={}", new Object[]{idProfessor, eventoId}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -292,7 +306,7 @@ public class EventosController {
         logger.info("Evento {} excluido pelo professor {}", eventoId, idProfessor);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "excluirEvento", null,
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", EventosController.class.getName(), "excluirEvento", null,
                         MessageFormatter.arrayFormat("Evento {} excluido pelo professor {}", new Object[]{eventoId, idProfessor}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -336,6 +350,12 @@ public class EventosController {
             return "redirect:/eventos/cadastrar";
         }
 
+        if (data == null || data.isBefore(LocalDate.now(ZoneId.of("America/Sao_Paulo")))) {
+
+            redirectAttributes.addFlashAttribute("erro", "Não é possível cadastrar disponibilidade em dias que já passaram");
+            return "redirect:/eventos/cadastrar";
+        }
+
         disponibilidadeService.salvarDisponibilidade(idAluno, data, horasDisponiveis);
         redirectAttributes.addFlashAttribute("mensagem", "Disponibilidade cadastrada com sucesso!");
         return "redirect:/eventos";
@@ -347,11 +367,18 @@ public class EventosController {
     private void carregarDadosDaPagina(Model model, HttpSession session) throws SQLException {
 
         String tipoUsuario = obterTipoUsuario(session);
-        model.addAttribute("eventos", eventoService.listarEventos());
+        List<Evento> eventos = eventoService.listarEventos();
+        model.addAttribute("eventos", eventos);
         model.addAttribute("tipoUsuario", tipoUsuario);
         model.addAttribute("disponibilidades", List.of());
         model.addAttribute("conteudos", List.of());
         model.addAttribute("turmasProfessor", List.of());
+        model.addAttribute("planoEstudo", List.of());
+        model.addAttribute("conteudosPorEvento", Map.of());
+        model.addAttribute("conteudosConcluidos", Set.of());
+        model.addAttribute("prioridades", List.of());
+        model.addAttribute("nomeTurmaPorId", Map.of());
+        model.addAttribute("agora", LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         if (usuarioEhProfessor(session)) {
 
@@ -359,8 +386,9 @@ public class EventosController {
 
             if (idProfessor != null) {
 
-                List<TurmaDTO> turmasProfessor = turmaDAO.buscarTurmasDoUsuario("professor", idProfessor.toString());
+                List<TurmaDTO> turmasProfessor = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor.toString());
                 model.addAttribute("turmasProfessor", turmasProfessor);
+                model.addAttribute("eventos", eventosDasTurmas(eventos, turmasProfessor));
             }
         }
 
@@ -371,8 +399,32 @@ public class EventosController {
             if (idAluno != null) {
 
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
+
+                List<TurmaDTO> turmasAluno = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
+                List<Evento> eventosDoAluno = eventosDasTurmas(eventos, turmasAluno);
+                model.addAttribute("eventos", eventosDoAluno);
+                model.addAttribute("conteudosPorEvento",
+                        conteudoRepository.listarPorEventos(eventosDoAluno.stream().map(Evento::getId).toList()));
+                model.addAttribute("conteudosConcluidos",
+                        conteudoRepository.listarConcluidosDosAlunos(List.of(idAluno)).getOrDefault(idAluno, Set.of()));
+
+                List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
+                model.addAttribute("proximoEventoRisco", viabilidadeService.proximoEventoPendente(resultados));
+                model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
+                model.addAttribute("nomeTurmaPorId", turmasAluno.stream()
+                        .collect(Collectors.toMap(TurmaDTO::getId, TurmaDTO::getNomeTurma, (nome, repetido) -> nome)));
+
+                model.addAttribute("planoEstudo", viabilidadeService.gerarPlano(idAluno));
             }
         }
+    }
+
+
+    private List<Evento> eventosDasTurmas(List<Evento> eventos, List<TurmaDTO> turmas) {
+
+        List<Long> idsTurmas = turmas.stream().map(TurmaDTO::getId).toList();
+
+        return eventos.stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
     }
 
 
@@ -386,7 +438,7 @@ public class EventosController {
             return null;
         }
 
-        String idAluno = alunoDAO.buscarPorIDAluno(email.toString());
+        String idAluno = alunoRepository.buscarPorIDAluno(email.toString());
 
         if (idAluno == null || idAluno.isBlank()) {
             return null;
@@ -406,7 +458,7 @@ public class EventosController {
             return null;
         }
 
-        String idProfessor = professorDAO.buscarPorIDProfessor(email.toString());
+        String idProfessor = professorRepository.buscarPorIDProfessor(email.toString());
 
         if (idProfessor == null || idProfessor.isBlank()) {
 
@@ -423,7 +475,7 @@ public class EventosController {
             return false;
         }
 
-        List<TurmaDTO> turmasProfessor = turmaDAO.buscarTurmasDoUsuario("professor", idProfessor.toString());
+        List<TurmaDTO> turmasProfessor = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor.toString());
 
         return turmasProfessor.stream().anyMatch(turma -> turma.getId() != null && turma.getId().equals(idTurma));
     }

@@ -15,23 +15,49 @@
 
 <main>
 
-    <h2 class="title">Verificação duas etapas</h2>
-
-    <form th:action="@{/verificar}" method="post" class="form-verificacao form-autenticacao">
+    <form th:action="@{/verificar}" method="post" class="form-verificacao form-autenticacao"
+          data-submit-once>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-        <label for="codigo" class="label_info">Código de verificação</label>
+        <label id="codigoLabel" for="codigo-1" class="label_info">Código de verificação</label>
+        <p id="descricaoCodigo" class="descricao-codigo">Para concluir seu acesso, digite o código de 6 dígitos enviado para seu e-mail.</p>
 
-        <input type="text" id="codigo" name="codigo" placeholder="Digite o código recebido" autocomplete="one-time-code" required class="textbox">
+        <div class="codigo-inputs" role="group" aria-labelledby="codigoLabel" aria-describedby="descricaoCodigo">
+            <input type="hidden" id="codigo" name="codigo">
+            <input type="text" id="codigo-1" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="6" autocomplete="one-time-code" aria-label="Dígito 1 do código" required>
+            <input type="text" id="codigo-2" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 2 do código" required>
+            <input type="text" id="codigo-3" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 3 do código" required>
+            <input type="text" id="codigo-4" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 4 do código" required>
+            <input type="text" id="codigo-5" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 5 do código" required>
+            <input type="text" id="codigo-6" class="codigo-digit" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="off" aria-label="Dígito 6 do código" required>
+        </div>
 
-        <button type="submit" class="Sendbutton">Verificar</button>
+        <div id="contadores2fa" class="contadores-2fa" th:attr="data-validade=${segundosValidade},data-reenvio=${segundosReenvio}">
+            <div class="contador-2fa">
+                <span>O código expira em</span>
+                <strong id="tempoValidade" role="timer" th:text="${tempoValidade}">00:00</strong>
+                <progress id="barraValidade" class="barra-validade" max="300" value="0" th:value="${segundosValidade}"
+                          aria-label="Tempo restante de validade do código" aria-describedby="tempoValidade"></progress>
+            </div>
+        </div>
+        <p id="estadoCodigo" class="estado-codigo" role="status"
+           th:text="${segundosValidade > 0 ? 'O código vale por 5 minutos após a emissão.' : 'Código expirado ou indisponível. Solicite um novo código.'}"></p>
+
+        <button id="verificarCodigo" type="submit" class="Sendbutton" th:disabled="${segundosValidade == 0}">Verificar</button>
+        <button id="reenviarCodigo" type="submit" class="reenviar-button" th:formaction="@{/verificar/reenviar}"
+                formnovalidate th:disabled="${segundosReenvio > 0}" aria-describedby="ajudaReenvio"
+                th:text="${segundosReenvio > 0 ? 'Solicitar novo código (' + tempoReenvio + ')' : 'Solicitar novo código'}">Solicitar novo código</button>
+        <p id="ajudaReenvio" class="estado-codigo">Aguarde 2 minutos entre os envios. Um novo código substitui o anterior.</p>
+        <noscript><p class="estado-codigo">Atualize a página para consultar o tempo restante e liberar o reenvio.</p></noscript>
 
     </form>
 
-    <p th:if="${erro}" th:text="${erro}" class="mensagemErro"></p>
+    <p th:if="${erro}" th:text="${erro}" class="mensagemErro" role="alert"></p>
+    <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem-sucesso" role="status"></p>
 
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/Geral/verificar.js}"></script>
 </body>
 </html>

@@ -46,25 +46,68 @@ body {
    BARRA DE PESQUISA
 ================================ */
 
+.busca-turma-container {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 12px;
+}
+
 .busca-turma {
     width: 100%;
     height: 48px;
-    margin-bottom: 28px;
     padding: 0 20px;
-    border: none;
+    border: 2px solid var(--campus-navy);
     border-radius: 14px;
     background-color: rgba(255, 255, 255, 0.9);
-    color: #11194d;
+    color: var(--campus-navy);
     font-size: 15px;
 }
 
 .busca-turma::placeholder {
-    color: #6b7290;
+    color: var(--campus-muted);
 }
 
 .busca-turma:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.25);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.25);
+}
+
+.sugestoes-turma {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid var(--campus-border);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(var(--campus-navy-rgb), 0.18);
+}
+
+.sugestoes-turma[hidden] {
+    display: none;
+}
+
+.sugestao-turma,
+.sugestao-turma-vazia {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--campus-navy);
+    text-decoration: none;
+}
+
+.sugestao-turma:hover,
+.sugestao-turma:focus {
+    background: var(--campus-surface-alt);
+    color: var(--campus-navy);
+    outline: none;
+}
+
+.sugestao-turma-vazia {
+    color: var(--campus-muted);
 }
 
 
@@ -75,6 +118,7 @@ body {
 .lista-turmas {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-auto-rows: 220px;
     gap: 24px;
 }
 
@@ -84,8 +128,9 @@ body {
 ================================ */
 
 .turma-card {
-    aspect-ratio: 1 / 1;
     width: 100%;
+    height: 220px;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -93,7 +138,7 @@ body {
     gap: 14px;
     padding: 20px;
     border-radius: 22px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     text-decoration: none;
     text-align: center;
@@ -108,9 +153,9 @@ body {
 
 .turma-card:hover {
     color: white;
-    background-color: #182363;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 10px 25px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -141,6 +186,12 @@ body {
     font-size: 18px;
     font-weight: 700;
     color: white;
+    width: 100%;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
 }
 
 
@@ -151,13 +202,13 @@ body {
 .acao-turma {
     width: 100%;
     height: 50px;
-    margin-top: 28px;
+    margin-top: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border: none;
     border-radius: 25px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: #ffffff;
     font-size: 18px;
     font-weight: 700;
@@ -169,12 +220,16 @@ body {
         box-shadow 0.2s ease;
 }
 
+.turmas-acoes {
+    margin-bottom: 24px;
+}
+
 
 .acao-turma:hover {
     color: white;
-    background-color: #192566;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 6px 16px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -188,7 +243,7 @@ body {
     text-align: center;
     border-radius: 20px;
     background-color: rgba(255, 255, 255, 0.65);
-    color: #11194d;
+    color: var(--campus-navy);
     font-size: 18px;
     font-weight: 600;
 }
@@ -196,18 +251,38 @@ body {
    VOLTAR / TÍTULO DA TURMA
 ================================ */
 
-.voltar-turmas {
-    display: inline-block;
+.voltar-turmas,
+.botao-compacto {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
     margin-bottom: 14px;
+    padding: 7px 15px;
+    border-radius: 18px;
+    background-color: var(--campus-navy);
     color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
     text-decoration: none;
-    opacity: 0.85;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.voltar-turmas:hover {
+.voltar-turmas:hover,
+.botao-compacto:hover {
+    background-color: var(--campus-navy-hover);
     color: #ffffff;
-    opacity: 1;
-    text-decoration: underline;
+    transform: translateY(-2px);
+}
+
+.voltar-turmas:focus-visible,
+.botao-compacto:focus-visible {
+    outline: 3px solid var(--campus-accent);
+    outline-offset: 3px;
+}
+
+.turmas-container > h1,
+.turmas-container > h2 {
+    color: var(--campus-navy);
 }
 
 
@@ -230,7 +305,7 @@ body {
     justify-content: space-between;
     padding: 18px 32px;
     border-radius: 18px;
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: #ffffff;
     transition:
             transform 0.2s ease,
@@ -240,9 +315,9 @@ body {
 
 
 .conteudo-card:hover {
-    background-color: #182363;
+    background-color: var(--campus-navy-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 25, 75, 0.25);
+    box-shadow: 0 8px 20px rgba(var(--campus-navy-rgb), 0.25);
 }
 
 
@@ -272,6 +347,88 @@ body {
     color: #ffffff;
 }
 
+.evento-score > summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.evento-score > summary::-webkit-details-marker {
+    display: none;
+}
+
+.evento-score-seta {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.evento-score[open] .evento-score-seta {
+    transform: rotate(180deg);
+}
+
+.evento-score-conteudos {
+    gap: 10px;
+    margin: 12px 0 0 32px;
+}
+
+.evento-score-item {
+    min-height: 0;
+    padding: 12px 24px;
+}
+
+.evento-score-item .conteudo-nome {
+    font-size: 16px;
+}
+
+.progresso-evento {
+    max-width: 360px;
+}
+
+.progresso-evento .progress {
+    height: 8px;
+    margin-bottom: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.aviso-falta {
+    color: #ffd8a8;
+    font-weight: 700;
+}
+
+a.conteudo-card,
+a.conteudo-card:hover {
+    gap: 16px;
+    color: #ffffff;
+}
+
+.turmas-container-larga {
+    max-width: 80vw;
+}
+
+.tabela-acompanhamento {
+    table-layout: fixed;
+    min-width: 100%;
+}
+
+.tabela-acompanhamento .coluna-aluno {
+    width: 220px;
+}
+
+.tabela-acompanhamento .coluna-conteudo {
+    width: 130px;
+}
+
+.tabela-acompanhamento .coluna-conclusao {
+    width: 110px;
+}
+
+.tabela-acompanhamento .coluna-ritmo {
+    width: 120px;
+}
+
+.tabela-acompanhamento .coluna-situacao {
+    width: 230px;
+}
+
 /* ===============================
    MODAL
 ================================ */
@@ -284,7 +441,7 @@ body {
 
 
 .campus-modal .modal-header {
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     border: none;
     padding: 20px 24px;
@@ -298,7 +455,7 @@ body {
 
 .campus-modal .modal-body {
     padding: 25px;
-    color: #11194d;
+    color: var(--campus-navy);
 }
 
 
@@ -312,27 +469,27 @@ body {
 .campus-modal .form-control {
     height: 48px;
     border-radius: 10px;
-    border: 1px solid #cad1df;
+    border: 1px solid var(--campus-border);
 }
 
 
 .campus-modal .form-control:focus {
-    border-color: #11194d;
-    box-shadow: 0 0 0 3px rgba(17, 25, 77, 0.15);
+    border-color: var(--campus-navy);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.15);
 }
 
 
 /* Botão do modal */
 
 .btn-campus {
-    background-color: #11194d;
+    background-color: var(--campus-navy);
     color: white;
     border: none;
 }
 
 
 .btn-campus:hover {
-    background-color: #192566;
+    background-color: var(--campus-navy-hover);
     color: white;
 }
 
@@ -341,7 +498,7 @@ body {
 
 .erro-campo {
     margin-top: 6px;
-    color: #c62828;
+    color: var(--campus-danger);
     font-size: 14px;
 }
 
@@ -358,16 +515,21 @@ body {
 
     .busca-turma {
         height: 44px;
-        margin-bottom: 20px;
         font-size: 14px;
+    }
+
+    .busca-turma-container {
+        margin-bottom: 12px;
     }
 
     .lista-turmas {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-auto-rows: 180px;
         gap: 16px;
     }
 
     .turma-card {
+        height: 180px;
         border-radius: 18px;
         padding: 16px;
         gap: 10px;
@@ -408,4 +570,14 @@ body {
         font-size: 14px;
     }
 
+}
+
+.conteudo-card .botao-compacto {
+    background-color: #ffffff;
+    color: var(--campus-navy);
+}
+
+.conteudo-card .botao-compacto:hover {
+    background-color: var(--campus-surface-alt);
+    color: var(--campus-navy);
 }

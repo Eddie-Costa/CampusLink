@@ -1,14 +1,14 @@
 :root {
-    --admin-azul: #11183f;
-    --admin-azul-claro: #1d2b62;
-    --admin-texto: #344054;
-    --admin-borda: #d9e1ed;
+    --admin-azul: var(--campus-navy);
+    --admin-azul-claro: var(--campus-navy-hover);
+    --admin-texto: var(--campus-muted);
+    --admin-borda: var(--campus-border);
 }
 
 body {
     min-height: 100vh;
     margin: 0;
-    background-color: #b7c5d9;
+    background-color: var(--campus-page-bg);
     background-image: url("/images/bg.png");
     background-position: center;
     background-repeat: no-repeat;
@@ -94,7 +94,7 @@ body {
     background-color: #fff;
     border: 1px solid var(--admin-borda);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(17, 24, 63, 0.08);
+    box-shadow: 0 8px 24px rgba(var(--campus-navy-rgb), 0.08);
 }
 
 .admin-card-topo {
@@ -114,8 +114,8 @@ body {
 .admin-status {
     flex-shrink: 0;
     padding: 7px 12px;
-    color: #85510c;
-    background-color: #fff2d6;
+    color: var(--campus-warning-text);
+    background-color: var(--campus-warning-bg);
     border-radius: 20px;
     font-size: 13px;
     font-weight: 700;
@@ -133,7 +133,7 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
     padding: 18px;
-    background-color: #f5f7fb;
+    background-color: var(--campus-surface);
     border-radius: 10px;
 }
 
@@ -142,7 +142,7 @@ body {
 .admin-arquivo span {
     display: block;
     margin-bottom: 5px;
-    color: #667085;
+    color: var(--campus-muted);
     font-size: 13px;
 }
 
@@ -202,8 +202,8 @@ body {
 .admin-denuncia {
     margin-top: 10px;
     padding: 14px;
-    background-color: #f7f9fd;
-    border-left: 4px solid #d99b34;
+    background-color: var(--campus-surface-alt);
+    border-left: 4px solid var(--campus-warning);
     border-radius: 8px;
 }
 
@@ -215,7 +215,7 @@ body {
 }
 
 .admin-denuncia-topo span {
-    color: #85510c;
+    color: var(--campus-warning-text);
     font-size: 13px;
 }
 
@@ -228,7 +228,7 @@ body {
 
 .admin-denuncia time,
 .admin-denuncia > span {
-    color: #667085;
+    color: var(--campus-muted);
     font-size: 12px;
 }
 
@@ -267,7 +267,7 @@ body {
 
 .admin-reprovar-form .form-control:focus {
     border-color: var(--admin-azul);
-    box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.12);
+    box-shadow: 0 0 0 3px rgba(var(--campus-navy-rgb), 0.12);
 }
 
 .admin-acoes .btn-primary {
@@ -286,7 +286,7 @@ body {
 
 .admin-horario {
     margin: 20px 0 0;
-    color: #475467;
+    color: var(--campus-muted);
     font-size: 12px;
 }
 

@@ -36,7 +36,8 @@ no banco por conta própria.
 
 | Método | Rota | Entrada | Retorno de sucesso |
 | --- | --- | --- | --- |
-| GET | `/googlebooks/buscar` | `q`, string obrigatória na query | Array JSON de até 10 livros |
+| GET | `/googlebooks/buscar` | `q` obrigatório; `startIndex` opcional | Array JSON de até 10 livros; pode enviar `X-Next-Start-Index` |
+| GET | `/googlebooks/detalhes` | `id`, identificador do volume obrigatório | Metadados do livro selecionado |
 | GET | `/youtube/buscar` | `q`, string obrigatória na query | Array JSON de até 10 vídeos |
 
 Exemplos locais:
@@ -44,8 +45,11 @@ Exemplos locais:
 - [Buscar livros](http://localhost:8080/googlebooks/buscar?q=engenharia%20de%20software)
 - [Buscar vídeos](http://localhost:8080/youtube/buscar?q=engenharia%20de%20software)
 
-As duas operações não recebem corpo. O limite de 10 é definido nos services;
-esta versão não expõe parâmetros de paginação ou de quantidade ao cliente.
+As duas operações não recebem corpo. O limite de 10 é definido nos services.
+Google Books aceita `startIndex` e retorna o índice seguinte no cabeçalho
+`X-Next-Start-Index` quando há mais resultados.
+Na página da turma, `/googlebooks/detalhes?id=...` consulta o volume exato para
+exibir título, autor e capa de livros já cadastrados.
 O frontend aplica `trim()` e ignora a busca vazia. Os controllers exigem a
 presença de `q`, mas não validam texto vazio ou composto por espaços quando
 acessados diretamente.
@@ -72,12 +76,11 @@ formulários destinados ao professor.
 | Sem usuário logado | `200`, com `[]`, sem chamada externa |
 | Parâmetro `q` ausente | `400`, gerado pelo Spring MVC |
 | `q` vazio ou espaços | Sem rejeição específica no controller; o processamento continua conforme o provedor |
-| Falha de rede, credencial, cota ou processamento que gere exceção não tratada | Erro `500` da aplicação; o status do provedor não é repassado diretamente |
+| Limite de requisições do Google Books | `429`, com mensagem para aguardar antes de tentar novamente |
+| Indisponibilidade temporária do Google Books ou da conexão externa | `503`; erros HTTP 5xx do provedor são repetidos até três tentativas |
+| Credencial ou outra resposta 4xx inválida do provedor | `502`, com mensagem de falha de configuração/consulta |
 
-Não há um DTO de erro ou tratamento específico dessas falhas nos dois fluxos.
-O formato do corpo de erro segue a configuração padrão da aplicação.
-Por isso, esta documentação não anuncia `401`, `403`, `429`, `502` ou `503`
-como respostas específicas já implementadas nessas rotas.
+As falhas Google Books retornam um objeto JSON com a propriedade `message`.
 
 ## 4. Google Books API v1
 

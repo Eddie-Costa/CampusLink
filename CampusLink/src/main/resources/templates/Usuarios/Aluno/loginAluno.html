@@ -12,7 +12,8 @@
 
     <main>
         <h1 class="title">LOGIN ALUNO</h1>
-        <form th:action="@{/loginAluno}" th:object="${aluno}" method="post" class="form-login">
+        <form th:action="@{/loginAluno}" th:object="${aluno}" method="post" class="form-login"
+              data-submit-once>
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <label class="label_info">E-mail</label>

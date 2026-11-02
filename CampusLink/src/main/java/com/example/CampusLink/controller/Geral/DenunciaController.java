@@ -3,13 +3,13 @@ package com.example.CampusLink.controller.Geral;
 import org.slf4j.helpers.MessageFormatter;
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.example.CampusLink.dao.alunoDAO;
-import com.example.CampusLink.dao.conteudoDAO;
-import com.example.CampusLink.dao.turmaDAO;
+import com.example.CampusLink.repository.AlunoRepository;
+import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.service.DenunciaService;
 import jakarta.servlet.http.HttpSession;
@@ -26,25 +26,25 @@ import java.util.List;
 public class DenunciaController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DenunciaController.class);
 
     private final DenunciaService denunciaService;
-    private final alunoDAO alunoDAO;
-    private final turmaDAO turmaDAO;
-    private final conteudoDAO conteudoDAO;
+    private final AlunoRepository alunoRepository;
+    private final TurmaRepository turmaRepository;
+    private final ConteudoRepository conteudoRepository;
 
     public DenunciaController(
             DenunciaService denunciaService,
-            alunoDAO alunoDAO,
-            turmaDAO turmaDAO,
-            conteudoDAO conteudoDAO
+            AlunoRepository alunoRepository,
+            TurmaRepository turmaRepository,
+            ConteudoRepository conteudoRepository
     ) {
         this.denunciaService = denunciaService;
-        this.alunoDAO = alunoDAO;
-        this.turmaDAO = turmaDAO;
-        this.conteudoDAO = conteudoDAO;
+        this.alunoRepository = alunoRepository;
+        this.turmaRepository = turmaRepository;
+        this.conteudoRepository = conteudoRepository;
     }
 
     @PostMapping("/turmas/{idTurma}/conteudos/{idConteudo}/denunciar")
@@ -83,7 +83,7 @@ public class DenunciaController {
         try {
 
             String idAlunoTexto =
-                    alunoDAO.buscarPorIDAluno(email);
+                    alunoRepository.buscarPorIDAluno(email);
 
             if (idAlunoTexto == null ||
                     idAlunoTexto.isBlank()) {
@@ -100,7 +100,7 @@ public class DenunciaController {
                     Long.parseLong(idAlunoTexto);
 
             List<TurmaDTO> turmasAluno =
-                    turmaDAO.buscarTurmasDoUsuario(
+                    turmaRepository.buscarTurmasDoUsuario(
                             "aluno",
                             idAlunoTexto
                     );
@@ -128,7 +128,7 @@ public class DenunciaController {
             }
 
             boolean conteudoPertenceTurma =
-                    conteudoDAO.conteudoPertenceTurma(
+                    conteudoRepository.conteudoPertenceTurma(
                             idConteudo,
                             idTurma
                     );
@@ -221,7 +221,7 @@ public class DenunciaController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DenunciaController.class.getName(), "denunciarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DenunciaController.class.getName(), "denunciarConteudo", null,
                             MessageFormatter.arrayFormat("Erro ao preparar denúncia. conteudoId={} turmaId={}", new Object[]{idConteudo, idTurma}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

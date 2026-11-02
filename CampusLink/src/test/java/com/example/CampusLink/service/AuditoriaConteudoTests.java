@@ -1,9 +1,9 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.RevisaoConteudoDAO;
-import com.example.CampusLink.dao.conteudoDAO;
-import com.example.CampusLink.dao.denunciaDAO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.DenunciaRepository;
+import com.example.CampusLink.repository.RevisaoConteudoRepository;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,9 +16,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class AuditoriaConteudoTests {
-    private final usuarioDAO usuarios = mock(usuarioDAO.class);
-    private final conteudoDAO conteudos = mock(conteudoDAO.class);
-    private final denunciaDAO denuncias = mock(denunciaDAO.class);
+    private final UsuarioRepository usuarios = mock(UsuarioRepository.class);
+    private final ConteudoRepository conteudos = mock(ConteudoRepository.class);
+    private final DenunciaRepository denuncias = mock(DenunciaRepository.class);
 
     @Test
     void denunciaDuplicadaRegistraRecusaSemInserirNovaDenuncia() throws Exception {
@@ -46,11 +46,11 @@ class AuditoriaConteudoTests {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void revisaoRegistraResultadoRealDaLiberacaoEReprovacao(boolean sucesso) throws Exception {
-        RevisaoConteudoDAO dao = mock(RevisaoConteudoDAO.class);
-        RevisaoConteudoService service = new RevisaoConteudoService(dao);
-        ReflectionTestUtils.setField(service, "usuarioDAO", usuarios);
-        when(dao.liberarConteudo(10L)).thenReturn(sucesso);
-        when(dao.reprovarConteudo(10L, "motivo")).thenReturn(sucesso);
+        RevisaoConteudoRepository repository = mock(RevisaoConteudoRepository.class);
+        RevisaoConteudoService service = new RevisaoConteudoService(repository);
+        ReflectionTestUtils.setField(service, "UsuarioRepository", usuarios);
+        when(repository.liberarConteudo(10L)).thenReturn(sucesso ? 1 : 0);
+        when(repository.reprovarConteudo(10L, "motivo")).thenReturn(sucesso ? 1 : 0);
         assertEquals(sucesso, service.liberarConteudo(10L));
         assertEquals(sucesso, service.reprovarConteudo(10L, "motivo"));
         verificarLog(sucesso ? "INFO" : "WARN", "liberarConteudo", sucesso ? "Conteúdo liberado" : "Liberação recusada");
@@ -61,7 +61,7 @@ class AuditoriaConteudoTests {
     @ValueSource(booleans = {true, false})
     void acoesDoProfessorRegistramSucessoOuRecusa(boolean sucesso) throws Exception {
         ConteudoService service = new ConteudoService(conteudos, mock(ArquivoService.class));
-        ReflectionTestUtils.setField(service, "usuarioDAO", usuarios);
+        ReflectionTestUtils.setField(service, "UsuarioRepository", usuarios);
         when(conteudos.removerConteudoProfessor(10L, 40L)).thenReturn(sucesso);
         when(conteudos.solicitarRevisao(10L, 40L)).thenReturn(sucesso);
         assertEquals(sucesso, service.removerConteudoProfessor(10L, 40L));
@@ -83,7 +83,7 @@ class AuditoriaConteudoTests {
 
     private DenunciaService denuncias() {
         DenunciaService service = new DenunciaService(denuncias, conteudos);
-        ReflectionTestUtils.setField(service, "usuarioDAO", usuarios);
+        ReflectionTestUtils.setField(service, "UsuarioRepository", usuarios);
         return service;
     }
 

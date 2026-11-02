@@ -1,9 +1,10 @@
+
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import org.slf4j.helpers.MessageFormatter;
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.ArquivoDTO;
@@ -33,11 +34,11 @@ import java.util.Map;
 public class AdminConteudosController {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AdminConteudosController.class);
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+    private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     private final ConteudoService conteudoService;
     private final DenunciaService denunciaService;
@@ -95,7 +96,7 @@ public class AdminConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "listarConteudos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "listarConteudos", null,
                             "erro ao carregar conteúdos para análise", null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -141,7 +142,7 @@ public class AdminConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "liberarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "liberarConteudo", null,
                             MessageFormatter.arrayFormat("erro ao liberar o conteúdo {}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -174,7 +175,7 @@ public class AdminConteudosController {
             logger.warn("Reprovação recusada: motivo vazio. conteudoId={}", idConteudo);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", AdminConteudosController.class.getName(), "reprovarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", AdminConteudosController.class.getName(), "reprovarConteudo", null,
                             MessageFormatter.arrayFormat("Reprovação recusada: motivo vazio. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -200,7 +201,7 @@ public class AdminConteudosController {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "reprovarConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", AdminConteudosController.class.getName(), "reprovarConteudo", null,
                             MessageFormatter.arrayFormat("erro ao reprovar o conteúdo {}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

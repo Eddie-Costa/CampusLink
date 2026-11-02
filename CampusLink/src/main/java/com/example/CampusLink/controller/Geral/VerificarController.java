@@ -1,13 +1,15 @@
+
 package com.example.CampusLink.controller.Geral;
 
-import com.example.CampusLink.dao.alunoDAO;
-import com.example.CampusLink.dao.professorDAO;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.AlunoRepository;
+import com.example.CampusLink.repository.ProfessorRepository;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +18,12 @@ import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
 
@@ -27,7 +32,7 @@ public class VerificarController {
 
     private static final Logger logger = LoggerFactory.getLogger(VerificarController.class);
 
-    private static final String URL_LOGIN_ADMIN = "/gestao/8f3c1d7a-2b94-4e61-a5c8-7d2f9b4a6e31";
+    private static final String URL_LOGIN_ADMIN = "/admin/login";
 
     @Autowired
     private TwoFactorService twoFactorService;
@@ -36,13 +41,56 @@ public class VerificarController {
     private emailService emailService;
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     @Autowired
-    private alunoDAO alunoDAO;
+    private AlunoRepository alunoRepository;
 
     @Autowired
-    private professorDAO professorDAO;
+    private ProfessorRepository professorRepository;
+
+    @ModelAttribute
+    public void carregarTempos(HttpSession session, Model model) {
+        String email = (String) session.getAttribute("email2FA");
+        long validade = twoFactorService.segundosParaExpirarCodigo(email);
+        long reenvio = twoFactorService.segundosParaReenvio(email);
+        model.addAttribute("segundosValidade", validade);
+        model.addAttribute("segundosReenvio", reenvio);
+        model.addAttribute("tempoValidade", String.format("%02d:%02d", validade / 60, validade % 60));
+        model.addAttribute("tempoReenvio", String.format("%02d:%02d", reenvio / 60, reenvio % 60));
+    }
+
+    @PostMapping("/verificar/reenviar")
+    public String reenviarCodigo(HttpSession session, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("email2FA");
+        Object fluxo = session.getAttribute("redirect");
+        if (email == null || email.isBlank()
+                || !("Login".equals(fluxo) || "Cadastro".equals(fluxo) || "ResetPassword".equals(fluxo))) {
+            return "redirect:/login";
+        }
+
+        String codigo;
+        try {
+            codigo = twoFactorService.reenviarCodigo(email);
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("erro", "Aguarde o contador de reenvio chegar a 00:00 para solicitar outro código.");
+            return "redirect:/verificar";
+        }
+
+        try {
+            FinalidadeCodigoEmail finalidade = switch (fluxo.toString()) {
+                case "Cadastro" -> FinalidadeCodigoEmail.CADASTRO;
+                case "ResetPassword" -> FinalidadeCodigoEmail.REDEFINICAO_SENHA;
+                default -> FinalidadeCodigoEmail.ACESSO;
+            };
+            emailService.enviarCodigo(email, codigo, finalidade);
+            redirectAttributes.addFlashAttribute("mensagem", "Novo código enviado para seu e-mail. Use o código mais recente.");
+        } catch (MailException e) {
+            twoFactorService.invalidarCodigo(email);
+            redirectAttributes.addFlashAttribute("erro", "Não foi possível enviar o e-mail. Aguarde 2 minutos e tente novamente.");
+        }
+        return "redirect:/verificar";
+    }
 
     @GetMapping("/verificar")
     public String paginaVerificacao(HttpSession session) {
@@ -53,7 +101,7 @@ public class VerificarController {
 
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacao", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacao", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /login", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -75,7 +123,7 @@ public class VerificarController {
 
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAluno", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAluno", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /loginAluno", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -97,7 +145,7 @@ public class VerificarController {
 
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoProfessor", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoProfessor", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /loginProfessor", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -119,7 +167,7 @@ public class VerificarController {
 
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAdmin", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAdmin", null,
                             "[LOGIN] email 2FA ausente para administrador", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -135,6 +183,10 @@ public class VerificarController {
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam String codigo, HttpSession session, Model model) throws SQLException {
 
+        if (session.getAttribute("email2FA") == null || session.getAttribute("redirect") == null) {
+            return "redirect:/login";
+        }
+
         if (session.getAttribute("redirect").equals("Login")) {
 
             String email = (String) session.getAttribute("email2FA");
@@ -147,7 +199,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -161,7 +213,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -175,7 +227,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido para administrador", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -188,6 +240,7 @@ public class VerificarController {
 
             if (twoFactorService.validarCodigo(email, codigo)) {
 
+                session.removeAttribute("redirect");
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     MDC.put("aluno", email);
                     MDC.put("sessionId", session.getId());
@@ -203,15 +256,15 @@ public class VerificarController {
 
                 // busca o usuario e cria a sessao
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    loginAlunoDTO aluno = alunoDAO.buscarPorEmailAluno(email);
+                    loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
                     session.setAttribute("usuarioLogado", aluno);
 
                 } else if (session.getAttribute("tipoUsuario").equals("professor")) {
-                    loginProfessorDTO professor = professorDAO.buscarPorEmailProfessor(email);
+                    loginProfessorDTO professor = professorRepository.buscarPorEmailProfessor(email);
                     session.setAttribute("usuarioLogado", professor);
 
                 } else if (session.getAttribute("tipoUsuario").equals("admin")) {
-                    loginAdminDTO admin = usuarioDAO.buscarPorEmailAdmin(email);
+                    loginAdminDTO admin = UsuarioRepository.buscarPorEmailAdmin(email);
                     session.setAttribute("usuarioLogado", admin);
                 }
 
@@ -222,7 +275,7 @@ public class VerificarController {
 
                     if (logger.isInfoEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
                                     MessageFormatter.arrayFormat(
                                             "Login concluído. perfil={} email={} doisFatores=true",
                                             new Object[]{session.getAttribute("tipoUsuario"), email}
@@ -244,7 +297,7 @@ public class VerificarController {
 
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                             "[LOGIN] codigo 2FA invalido no fluxo de login", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -255,7 +308,7 @@ public class VerificarController {
 
             String email = (String) session.getAttribute("email2FA");
 
-            session.setAttribute("tipoUsuario", usuarioDAO.buscarPorTipoUsuario(email));
+            session.setAttribute("tipoUsuario", UsuarioRepository.buscarPorTipoUsuario(email));
 
             // verifica se o email da sessao existe
             if (email == null) {
@@ -265,7 +318,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -279,7 +332,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -291,11 +344,12 @@ public class VerificarController {
             }
 
             if (twoFactorService.validarCodigo(email, codigo)) {
+                session.removeAttribute("redirect");
                 logger.info("O usuário com email: {} passou na validação de token para Reset de senha", email);
 
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
                                 MessageFormatter.arrayFormat(
                                         "O usuário com email: {} passou na validação de token para Reset de senha",
                                         new Object[]{email}
@@ -307,10 +361,10 @@ public class VerificarController {
 
                 // busca o usuario para validar o tipo
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    loginAlunoDTO aluno = alunoDAO.buscarPorEmailAluno(email);
+                    loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
 
                 } else if (session.getAttribute("tipoUsuario").equals("professor")) {
-                    loginProfessorDTO professor = professorDAO.buscarPorEmailProfessor(email);
+                    loginProfessorDTO professor = professorRepository.buscarPorEmailProfessor(email);
                 }
 
                 return "redirect:/ResetPassword";
@@ -322,7 +376,7 @@ public class VerificarController {
 
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                 MessageFormatter.arrayFormat(
                                         "Codigo 2FA inválido inserido para o email: {}",
                                         new Object[]{email}
@@ -347,7 +401,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -361,7 +415,7 @@ public class VerificarController {
 
                     if (logger.isWarnEnabled()) {
                         try {
-                            usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                            UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -374,6 +428,7 @@ public class VerificarController {
 
             if (twoFactorService.validarCodigo(email, codigo)) {
 
+                session.removeAttribute("redirect");
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     session.setAttribute("verificado", "true");
                     return "redirect:/cadastrarAlunoVerificado";
@@ -391,7 +446,7 @@ public class VerificarController {
 
         if (logger.isWarnEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
+                UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                         MessageFormatter.arrayFormat(
                                 "Codigo 2FA inválido inserido para usuario com email: {}",
                                 new Object[]{session.getAttribute("email2FA")}

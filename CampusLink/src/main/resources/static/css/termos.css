@@ -1,7 +1,36 @@
 /* Documento de termos compartilhado por todas as páginas. */
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.site-footer-container {
+    margin-top: auto;
+}
+
+body > .app-page {
+    min-height: 0;
+    flex: 1 0 auto;
+}
+
+.app-page > .registration-area {
+    min-height: 0;
+}
+
+body > .turmas-page {
+    min-height: 0;
+    flex: 1 0 auto;
+}
+
 .termos-documento {
     padding: clamp(1rem, 4vw, 2rem);
-    color: #27314f;
+    color: var(--campus-navy);
     font-size: 1rem;
     line-height: 1.75;
     overflow-wrap: anywhere;
@@ -10,7 +39,7 @@
 
 .termos-documento .termos-titulo {
     margin: 0 0 1rem;
-    color: #111844;
+    color: var(--campus-navy);
     font-size: 1.35rem;
     font-weight: 700;
     line-height: 1.4;
@@ -18,15 +47,15 @@
 
 .termos-documento .termos-metadados {
     margin-bottom: .25rem;
-    color: #596579;
+    color: var(--campus-muted);
     font-size: .9rem;
 }
 
 .termos-documento .termos-secao {
     margin: 2rem 0 1rem;
     padding-top: 1.25rem;
-    border-top: 1px solid #dce3eb;
-    color: #1b4965;
+    border-top: 1px solid var(--campus-border);
+    color: var(--campus-link);
     font-size: 1.1rem;
     font-weight: 700;
     line-height: 1.5;
@@ -57,18 +86,18 @@
 .termos-documento th,
 .termos-documento td {
     padding: .85rem;
-    border: 1px solid #dce3eb;
+    border: 1px solid var(--campus-border);
     text-align: left;
     vertical-align: top;
 }
 
 .termos-documento th {
-    background: #edf3f7;
-    color: #1b4965;
+    background: var(--campus-surface-alt);
+    color: var(--campus-link);
 }
 
 .termos-documento tbody tr:nth-child(even) {
-    background: #f8fafc;
+    background: var(--campus-surface);
 }
 
 @media (max-width: 575.98px) {
@@ -100,7 +129,7 @@
         content: attr(data-label);
         display: block;
         margin-bottom: .25rem;
-        color: #1b4965;
+        color: var(--campus-link);
         font-weight: 700;
     }
 }

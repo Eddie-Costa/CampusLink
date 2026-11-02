@@ -21,5 +21,7 @@ public class TurmaDTO {
 
     private String emailPessoa;
 
+    private String nomePessoa;
+
     private String tipoUsuario;
 }

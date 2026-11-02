@@ -1,6 +1,6 @@
 package com.example.CampusLink.controller.Usuarios.Admin;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.service.LoginAttemptService;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 class AdminLoginLogTests {
     private static final String EMAIL = "admin-login-log@example.com";
-    private final usuarioDAO usuarios = mock(usuarioDAO.class);
+    private final UsuarioRepository usuarios = mock(UsuarioRepository.class);
     private final LoginAttemptService tentativas = new LoginAttemptService();
     private final loginAdminController controller = new loginAdminController();
     private final loginAdminDTO admin = new loginAdminDTO();
@@ -27,7 +27,7 @@ class AdminLoginLogTests {
         tentativas.loginSucesso(EMAIL);
         admin.setEmail(EMAIL);
         admin.setSenha("SenhaIncorreta1!");
-        ReflectionTestUtils.setField(controller, "usuarioDAO", usuarios);
+        ReflectionTestUtils.setField(controller, "UsuarioRepository", usuarios);
         ReflectionTestUtils.setField(controller, "loginAttemptService", tentativas);
     }
 

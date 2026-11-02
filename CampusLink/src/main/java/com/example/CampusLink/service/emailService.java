@@ -1,12 +1,15 @@
 package com.example.CampusLink.service;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
+import com.example.CampusLink.dto.ChamadoDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,9 +17,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.slf4j.helpers.MessageFormatter;
-import org.springframework.web.util.HtmlUtils;
+import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,21 +30,27 @@ import java.io.StringWriter;
 public class emailService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(emailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private EmailTemplateService emailTemplateService;
+
+    @Autowired
+    private ChamadoPdfService chamadoPdfService;
+
     @Async("emailTaskExecutor")
-    public void enviarCodigo(String para, String codigo) {
+    public void enviarCodigo(String para, String codigo, FinalidadeCodigoEmail finalidade) {
 
         String operacaoId = UUID.randomUUID().toString();
         logger.debug("Iniciando envio de email de 2FA. operacaoId={}", operacaoId);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Iniciando envio de email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -47,210 +58,19 @@ public class emailService {
         }
 
         try {
-            MimeMessage mensagem =
-                    mailSender.createMimeMessage();
-
-            MimeMessageHelper helper =
-                    new MimeMessageHelper(
-                            mensagem,
-                            MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
-                            StandardCharsets.UTF_8.name()
-                    );
-
-            helper.setFrom("tccumcriqedmat@gmail.com");
-            helper.setTo(para);
-            helper.setSubject(
-                    "Seu código de verificação - CampusLink"
-            );
-
-            String textoSimples =
-                    "Seu código de verificação do CampusLink é: "
-                            + codigo
-                            + ". Este código expira em 5 minutos.";
-
-            String corpoHtml = """
-                    <!DOCTYPE html>
-                    <html lang="pt-BR">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport"
-                              content="width=device-width, initial-scale=1.0">
-                        <title>Verificação CampusLink</title>
-                    </head>
-
-                    <body style="
-                        margin: 0;
-                        padding: 0;
-                        background-color: #eef2f7;
-                        font-family: Arial, Helvetica, sans-serif;
-                    ">
-
-                        <table role="presentation"
-                               width="100%"
-                               cellspacing="0"
-                               cellpadding="0"
-                               border="0"
-                               style="
-                                   width: 100%;
-                                   background-color: #eef2f7;
-                               ">
-
-                            <tr>
-                                <td align="center"
-                                    style="padding: 35px 15px;">
-
-                                    <table role="presentation"
-                                           width="100%"
-                                           cellspacing="0"
-                                           cellpadding="0"
-                                           border="0"
-                                           style="
-                                               width: 100%;
-                                               max-width: 600px;
-                                               overflow: hidden;
-                                               background-color: #ffffff;
-                                               border-radius: 14px;
-                                               box-shadow: 0 4px 15px
-                                                   rgba(17, 24, 63, 0.15);
-                                           ">
-
-                                        <tr>
-                                            <td align="center"
-                                                style="
-                                                    padding: 28px 20px;
-                                                    background-color: #11183f;
-                                                    color: #ffffff;
-                                                ">
-
-                                                <h1 style="
-                                                    margin: 0;
-                                                    font-size: 28px;
-                                                    letter-spacing: 1px;
-                                                ">
-                                                    CampusLink
-                                                </h1>
-
-                                                <p style="
-                                                    margin: 8px 0 0;
-                                                    color: #dce5ff;
-                                                    font-size: 14px;
-                                                ">
-                                                    integração para sua vida acadêmica
-                                                </p>
-
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style="
-                                                padding: 35px 32px;
-                                                color: #27314f;
-                                            ">
-
-                                                <h2 style="
-                                                    margin: 0 0 18px;
-                                                    color: #11183f;
-                                                    font-size: 23px;
-                                                    text-align: center;
-                                                ">
-                                                    Código de verificação
-                                                </h2>
-
-                                                <p style="
-                                                    margin: 0 0 20px;
-                                                    font-size: 15px;
-                                                    line-height: 1.6;
-                                                    text-align: center;
-                                                ">
-                                                    Recebemos uma solicitação
-                                                    de acesso à sua conta.
-                                                </p>
-
-                                                <p style="
-                                                    margin: 0 0 12px;
-                                                    font-size: 14px;
-                                                    text-align: center;
-                                                ">
-                                                    Digite o código abaixo
-                                                    na página de verificação:
-                                                </p>
-
-                                                <div style="
-                                                    margin: 25px 0;
-                                                    padding: 18px;
-                                                    border-radius: 10px;
-                                                    background-color: #eef2ff;
-                                                    color: #11183f;
-                                                    font-size: 32px;
-                                                    font-weight: bold;
-                                                    letter-spacing: 8px;
-                                                    text-align: center;
-                                                ">
-                                                    {{CODIGO}}
-                                                </div>
-
-                                                <p style="
-                                                    margin: 0;
-                                                    color: #596584;
-                                                    font-size: 13px;
-                                                    line-height: 1.6;
-                                                    text-align: center;
-                                                ">
-                                                    Este código é válido por
-                                                    <strong>5 minutos</strong>.
-                                                </p>
-
-                                                <p style="
-                                                    margin: 18px 0 0;
-                                                    color: #596584;
-                                                    font-size: 13px;
-                                                    line-height: 1.6;
-                                                    text-align: center;
-                                                ">
-                                                    Se você não realizou essa
-                                                    solicitação, ignore este e-mail.
-                                                </p>
-
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td align="center"
-                                                style="
-                                                    padding: 18px;
-                                                    background-color: #f5f7fb;
-                                                    color: #737b89;
-                                                    font-size: 12px;
-                                                ">
-
-                                                Este é um e-mail automático.
-                                                Não responda esta mensagem.
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-
-                        </table>
-
-                    </body>
-                    </html>
-                    """.replace("{{CODIGO}}", codigo);
-
-            helper.setText(
-                    textoSimples,
-                    corpoHtml
-            );
+            MimeMessage mensagem = mailSender.createMimeMessage();
+            String textoSimples = finalidade.getTitulo() + "\n\n" + finalidade.getDescricao()
+                    + "\n\nCódigo: " + codigo + "\nVálido por 5 minutos. Não compartilhe este código."
+                    + "\n\nSe você não solicitou esta ação, ignore este e-mail.";
+            prepararMensagem(mensagem, para, "CampusLink | " + finalidade.getTitulo(),
+                    textoSimples, emailTemplateService.codigo(codigo, finalidade));
 
             mailSender.send(mensagem);
 
             logger.info("Email HTML de 2FA enviado com sucesso! operacaoId={}", operacaoId);
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Email HTML de 2FA enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -264,19 +84,20 @@ public class emailService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao montar o email HTML de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            throw new MailPreparationException("Erro ao montar o email de verificação", e);
         } catch (MailException e) {
             logger.error("Erro ao enviar email de 2FA. operacaoId={}", operacaoId, e);
             if (logger.isErrorEnabled()) {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarCodigo", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao enviar email de 2FA. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -292,35 +113,22 @@ public class emailService {
         logger.debug("Iniciando envio de email de exportação de dados. operacaoId={}", operacaoId);
         if (logger.isDebugEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "DEBUG", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Iniciando envio de email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
             }
         }
 
-        String corpoEmail =
-                "Nome: " + dadosUsuario.getNome() + "\n"
-                        + "Email: " + dadosUsuario.getEmail() + "\n"
-                        + "Telefone: " + dadosUsuario.getTelefone() + "\n"
-                        + "Data de nascimento: " + dadosUsuario.getDataNascimento() + "\n"
-                        + "Tipo de conta: " + dadosUsuario.getTipoConta() + "\n"
-                        + dadosUsuario.getRotuloIdentificador() + ": " + dadosUsuario.getIdentificador() + "\n"
-                        + "Data de Registro: " + dadosUsuario.getDataCadastro() + "\n\n"
-                        + "Esta cópia contém os dados cadastrais exibidos na área de perfil.\n"
-                        + "Para outras solicitações sobre seus dados, consulte os Termos de Uso na plataforma.";
+        StringBuilder corpoEmail = new StringBuilder("Seus dados pessoais\n\n");
+        emailTemplateService.camposDados(dadosUsuario).forEach((rotulo, valor) ->
+                corpoEmail.append(rotulo).append(": ").append(valor).append("\n"));
+        corpoEmail.append("\nPara outras solicitações sobre seus dados, consulte os Termos de Uso na plataforma.");
 
         try {
             MimeMessage mensagem = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(
-                    mensagem,
-                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
-                    StandardCharsets.UTF_8.name()
-            );
-            helper.setFrom("tccumcriqedmat@gmail.com");
-            helper.setTo(dadosUsuario.getEmail());
-            helper.setSubject("Dados pessoais - Exportação de dados");
-            helper.setText(corpoEmail, montarEmailDadosHtml(dadosUsuario));
+            prepararMensagem(mensagem, dadosUsuario.getEmail(), "CampusLink | Seus dados pessoais",
+                    corpoEmail.toString(), emailTemplateService.dados(dadosUsuario));
             mailSender.send(mensagem);
         } catch (MessagingException | MailException e) {
             logger.error("Erro ao enviar email de exportação de dados. operacaoId={}", operacaoId, e);
@@ -328,7 +136,7 @@ public class emailService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                             MessageFormatter.arrayFormat("Erro ao enviar email de exportação de dados. operacaoId={}", new Object[]{operacaoId}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -343,7 +151,7 @@ public class emailService {
         logger.info("Email de exportação de dados enviado com sucesso! operacaoId={}", operacaoId);
         if (logger.isInfoEnabled()) {
             try {
-                usuarioDAO.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
+                UsuarioRepository.InserirLogsNoBD(null, "INFO", emailService.class.getName(), "enviarEmailDados", UUID.fromString(operacaoId),
                         MessageFormatter.arrayFormat("Email de exportação de dados enviado com sucesso! operacaoId={}", new Object[]{operacaoId}).getMessage(), null, null);
             } catch (Exception erroLogBD) {
                 logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -351,84 +159,52 @@ public class emailService {
         }
     }
 
-    private String montarEmailDadosHtml(DadosUsuarioDTO dadosUsuario) {
-        String campos = campoDadosHtml("Nome", dadosUsuario.getNome())
-                + campoDadosHtml("E-mail", dadosUsuario.getEmail())
-                + campoDadosHtml("Telefone", dadosUsuario.getTelefone())
-                + campoDadosHtml("Data de nascimento", dadosUsuario.getDataNascimento())
-                + campoDadosHtml("Tipo de conta", dadosUsuario.getTipoConta())
-                + campoDadosHtml(dadosUsuario.getRotuloIdentificador(), dadosUsuario.getIdentificador())
-                + campoDadosHtml("Data de registro", dadosUsuario.getDataCadastro());
+    public boolean enviarEmailChamado(ChamadoDTO chamado) {
+        boolean concluido = "concluido".equals(chamado.getStatus());
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                .withZone(ZoneId.of("America/Sao_Paulo"));
+        StringBuilder texto = new StringBuilder();
+        texto.append(concluido ? "Chamado concluído\n\n" : "Chamado registrado\n\n");
+        texto.append(concluido ? "Seu atendimento foi concluído. O histórico completo está no PDF anexado.\n\n"
+                : "Recebemos sua solicitação. Nossa equipe responderá pelo CampusLink.\n\n");
+        texto.append("Protocolo: #").append(chamado.getId()).append("\n");
+        texto.append("Assunto: ").append(chamado.getAssunto()).append("\n");
+        texto.append(concluido ? "Concluído em: " : "Aberto em: ")
+                .append(formato.format(concluido ? chamado.getConcluidoEm() : chamado.getCreatedAt()))
+                .append(" (Brasília)\n");
+        if (!concluido) texto.append("\n").append(chamado.getDescricao()).append("\n");
+        texto.append("\nAcompanhe em Meus chamados no CampusLink.");
 
-        return """
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Seus dados pessoais - CampusLink</title>
-                </head>
-                <body style="margin: 0; padding: 0; background-color: #eef2f7; font-family: Arial, Helvetica, sans-serif;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                           style="width: 100%; background-color: #eef2f7;">
-                        <tr>
-                            <td align="center" style="padding: 35px 15px;">
-                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                       style="width: 100%; max-width: 600px; overflow: hidden; background-color: #ffffff;
-                                              border-radius: 14px; box-shadow: 0 4px 15px rgba(17, 24, 63, 0.15);">
-                                    <tr>
-                                        <td align="center" style="padding: 28px 20px; background-color: #11183f; color: #ffffff;">
-                                            <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">CampusLink</h1>
-                                            <p style="margin: 8px 0 0; color: #dce5ff; font-size: 14px;">
-                                                integração para sua vida acadêmica
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 35px 24px; color: #27314f;">
-                                            <h2 style="margin: 0 0 18px; color: #11183f; font-size: 23px; text-align: center;">
-                                                Seus dados pessoais
-                                            </h2>
-                                            <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6; text-align: center;">
-                                                Conforme sua solicitação, aqui está uma cópia dos dados
-                                                cadastrais exibidos na sua área de perfil.
-                                            </p>
-                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                                   style="width: 100%; table-layout: fixed; background-color: #eef2ff; border-radius: 10px;">
-                                                {{CAMPOS}}
-                                            </table>
-                                            <p style="margin: 24px 0 0; color: #596584; font-size: 13px; line-height: 1.6; text-align: center;">
-                                                Para outras solicitações sobre seus dados, consulte os
-                                                <strong>Termos de Uso</strong> na plataforma.
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td align="center" style="padding: 18px; background-color: #f5f7fb; color: #737b89; font-size: 12px;">
-                                            Este é um e-mail automático. Não responda esta mensagem.
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-                </body>
-                </html>
-                """.replace("{{CAMPOS}}", campos);
+        try {
+            // gera o anexo antes de enviar, para nunca confirmar um envio sem o histórico
+            byte[] pdf = concluido ? chamadoPdfService.gerar(chamado) : null;
+            String hashPdf = pdf == null ? null : chamadoPdfService.sha256(pdf);
+            MimeMessage mensagem = mailSender.createMimeMessage();
+            MimeMessageHelper helper = prepararMensagem(mensagem, chamado.getEmailUsuario(),
+                    "CampusLink | Chamado #" + chamado.getId() + (concluido ? " concluído" : " registrado"),
+                    texto.toString(), emailTemplateService.chamado(chamado));
+            if (pdf != null) {
+                mensagem.setHeader("X-CampusLink-PDF-SHA256", hashPdf);
+                helper.addAttachment("CampusLink-chamado-" + chamado.getId() + "-historico.pdf", new ByteArrayResource(pdf), "application/pdf");
+            }
+            mailSender.send(mensagem);
+            if (hashPdf != null) logger.info("Email de conclusão aceito pelo SMTP. chamado={} pdfSha256={}", chamado.getId(), hashPdf);
+            return true;
+        } catch (MessagingException | MailException e) {
+            logger.error("Erro ao enviar email do chamado {}. status={}", chamado.getId(), chamado.getStatus(), e);
+            return false;
+        }
     }
 
-    private String campoDadosHtml(String rotulo, Object valor) {
-        String texto = valor == null || valor.toString().isBlank() ? "Não informado" : valor.toString();
-        return """
-                <tr>
-                    <td style="padding: 14px 18px; border-bottom: 1px solid #dce5ff; overflow-wrap: anywhere; word-break: break-word;">
-                        <p style="margin: 0 0 5px; color: #596584; font-size: 12px; font-weight: bold;">%s</p>
-                        <p style="margin: 0; color: #11183f; font-size: 15px; line-height: 1.6;">%s</p>
-                    </td>
-                </tr>
-                """.formatted(
-                        HtmlUtils.htmlEscape(rotulo, StandardCharsets.UTF_8.name()),
-                        HtmlUtils.htmlEscape(texto, StandardCharsets.UTF_8.name())
-                );
+    private MimeMessageHelper prepararMensagem(MimeMessage mensagem, String para, String assunto,
+                                               String texto, String html) throws MessagingException {
+        MimeMessageHelper helper = new MimeMessageHelper(mensagem, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name());
+        helper.setFrom("tccumcriqedmat@gmail.com");
+        helper.setTo(para);
+        helper.setSubject(assunto);
+        helper.setText(texto, html);
+        helper.addInline("campuslink-logo", new ClassPathResource("static/images/LogoCampusLink.png"), "image/png");
+        return helper;
     }
 }

@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
         'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const nomesDiasSemana = [
+        'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
+        'Quinta-feira', 'Sexta-feira', 'Sábado'
+    ];
+
     const pagina = document.querySelector('.page-content');
     const tipoUsuario = pagina ? pagina.dataset.tipoUsuario || '' : '';
     const usuarioEhAluno = tipoUsuario.toLowerCase() === 'aluno';
@@ -13,10 +19,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const eventosDados = Array.from(document.querySelectorAll('.evento-dado')).map(function (evento) {
         return {
+            id: evento.dataset.id || '',
             dataInicio: evento.dataset.inicio || '',
             dataFim: evento.dataset.fim || '',
             nome: evento.dataset.nome || '',
-            prioridade: evento.dataset.prioridade || 'MEDIA'
+            prioridade: evento.dataset.prioridade || 'MEDIA',
+            horaInicio: evento.dataset.horaInicio || '',
+            horaFim: evento.dataset.horaFim || '',
+            idTurma: evento.dataset.idTurma || '',
+            turma: evento.dataset.turma || ''
+        };
+    });
+
+    const filtroTurma = document.getElementById('filtroTurma');
+    const filtroTurmaRotulo = document.getElementById('filtroTurmaRotulo');
+    let turmaFiltrada = '';
+
+    function eventoDaTurmaFiltrada(idTurma) {
+        return turmaFiltrada === '' || idTurma === turmaFiltrada;
+    }
+
+    const modalCronograma = document.getElementById('cronogramaDiaModal');
+    const gradeHorarios = document.getElementById('gradeHorarios');
+    const dataEventosDia = document.getElementById('dataEventosDia');
+
+    const eventosDaAgenda = eventosDados.map(function (evento) {
+        return {
+            id: evento.id,
+            nome: evento.nome,
+            prioridade: evento.prioridade,
+            idTurma: evento.idTurma,
+            inicio: evento.horaInicio ? new Date(`${evento.dataInicio}T${evento.horaInicio}:00`) : null,
+            fim: evento.horaFim ? new Date(`${evento.dataFim}T${evento.horaFim}:00`) : null
         };
     });
 
@@ -26,6 +60,24 @@ document.addEventListener('DOMContentLoaded', function () {
             horas: Number(disponibilidade.dataset.horas || 0)
         };
     });
+
+    const planoDados = Array.from(document.querySelectorAll('.plano-dado')).map(function (sessao) {
+        return {
+            data: sessao.dataset.data || '',
+            minutos: Number(sessao.dataset.minutos || 0),
+            conteudo: sessao.dataset.conteudo || '',
+            evento: sessao.dataset.evento || '',
+            dataEvento: sessao.dataset.dataEvento || '',
+            idTurma: sessao.dataset.idTurma || '',
+            idConteudo: sessao.dataset.idConteudo || '',
+            sugestao: sessao.dataset.sugestao === 'true'
+        };
+    });
+
+    const planoEstudoModal = document.getElementById('planoEstudoModal');
+    const dataPlanoEstudo = document.getElementById('dataPlanoEstudo');
+    const turmasPlanoDoDia = document.getElementById('turmasPlanoDoDia');
+    const listaPlanoDoDia = document.getElementById('listaPlanoDoDia');
 
     const calendario = document.getElementById('calendar');
     const mesExibido = document.getElementById('mesExibido');
@@ -38,33 +90,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const quantidadePrioridadeBaixa = document.getElementById('quantidadePrioridadeBaixa');
     const quantidadeEventosTotal = document.getElementById('quantidadeEventosTotal');
 
-    const listaEventos = document.getElementById('listaEventos');
-    const seletorOrdenacao = document.getElementById('ordenarEventos');
-    const botaoAlternarCards = document.getElementById('alternarCards');
-    const ultimoEventoDestaque = document.getElementById('ultimoEventoDestaque');
-    const ultimoEventoContainer = document.getElementById('ultimoEventoContainer');
-    const semEventosNoMes = document.getElementById('semEventosNoMes');
+    const cartoesEventos = document.getElementById('cartoesEventos');
+    const detalheEventoModal = document.getElementById('detalheEventoModal');
+    const detalheEventoCorpo = document.getElementById('detalheEventoCorpo');
+    const voltarAgendaDia = document.getElementById('voltarAgendaDia');
+    let dataAgendaAberta = null;
 
     const hoje = new Date();
+    const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
     let mesAtual = hoje.getMonth();
     let anoAtual = hoje.getFullYear();
 
-    const todosOsCartoesEventos = listaEventos
-        ? Array.from(listaEventos.querySelectorAll('.evento-item'))
-        : [];
-
-    const ordemOriginalEventos = new Map();
-
-    todosOsCartoesEventos.forEach(function (cartao, indice) {
-        ordemOriginalEventos.set(cartao, indice);
-    });
-
-    const pesoPrioridade = {
-        ALTA: 1,
-        MEDIA: 2,
-        BAIXA: 3
-    };
 
     function formatarData(data) {
         const ano = data.getFullYear();
@@ -82,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function buscarEventosDoDia(data) {
         return eventosDados.filter(function (evento) {
-            return evento.dataInicio <= data && data <= evento.dataFim;
+            return evento.dataInicio <= data && data <= evento.dataFim && eventoDaTurmaFiltrada(evento.idTurma);
         });
     }
 
@@ -97,12 +134,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function criarMarcadorEvento(eventos, data) {
-        if (!usuarioEhProfessor || eventos.length === 0) {
+        if (eventos.length === 0) {
             return null;
         }
 
-        const marcador = document.createElement('span');
-
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
         marcador.classList.add('evento-marcador');
 
         const iniciouHoje = eventos.some(function (evento) {
@@ -123,19 +160,165 @@ document.addEventListener('DOMContentLoaded', function () {
             marcador.classList.add('evento-meio');
         }
 
-        if (eventos.length > 1) {
-            marcador.textContent = `${eventos.length} eventos`;
-        } else if (iniciouHoje) {
-            marcador.textContent = eventos[0].nome;
-        } else {
-            marcador.textContent = '';
-        }
+        const prioridade = ['ALTA', 'MEDIA', 'BAIXA'].find(function (nivel) {
+            return eventos.some(function (evento) {
+                return (evento.prioridade || 'MEDIA').toUpperCase() === nivel;
+            });
+        }) || 'MEDIA';
+        marcador.classList.add(`evento-prioridade-${prioridade.toLowerCase()}`);
+
+        marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
 
         marcador.title = eventos.map(function (evento) {
             return evento.nome;
         }).join(', ');
 
+        marcador.setAttribute('aria-label', `Ver cronograma do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirCronograma(data);
+        });
+
         return marcador;
+    }
+
+    function formatarDataCurta(data) {
+        const [, mes, dia] = data.split('-');
+
+        return `${dia}/${mes}`;
+    }
+
+    function formatarMinutos(minutos) {
+        const horas = Math.floor(minutos / 60);
+        const resto = minutos % 60;
+
+        if (horas === 0) {
+            return `${resto}min`;
+        }
+
+        return resto === 0 ? `${horas}h` : `${horas}h${String(resto).padStart(2, '0')}`;
+    }
+
+    function buscarPlanoDoDia(data) {
+        return planoDados.filter(function (sessao) {
+            return sessao.data === data && eventoDaTurmaFiltrada(sessao.idTurma);
+        });
+    }
+
+    function criarMarcadorEstudo(sessoes, data) {
+        const minutosPlanejados = sessoes.reduce(function (total, sessao) {
+            return total + (sessao.sugestao ? 0 : sessao.minutos);
+        }, 0);
+        const minutosSugeridos = sessoes.reduce(function (total, sessao) {
+            return total + (sessao.sugestao ? sessao.minutos : 0);
+        }, 0);
+        const horasSugeridas = Math.ceil(minutosSugeridos / 15) * 15;
+
+        const marcador = document.createElement('button');
+        marcador.type = 'button';
+        marcador.classList.add('estudo-marcador');
+        marcador.textContent = `Estudar ${formatarMinutos(minutosPlanejados + horasSugeridas)}`;
+        marcador.title = sessoes.map(function (sessao) {
+            return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}${sessao.sugestao ? ' (sugestão)' : ''}`;
+        }).join('\n');
+
+        if (minutosSugeridos > 0) {
+            marcador.classList.add('estudo-sugestao');
+            marcador.title += `\n\nInclui ${formatarMinutos(horasSugeridas)} sugeridas: cadastre disponibilidade neste dia.`;
+        }
+        marcador.setAttribute('aria-label', `Ver plano de estudos do dia ${formatarDataCurta(data)}`);
+        marcador.addEventListener('click', function () {
+            abrirPlanoDoDia(data);
+        });
+
+        return marcador;
+    }
+
+    function agruparPlanoPorConteudo(sessoes) {
+        const grupos = new Map();
+
+        sessoes.forEach(function (sessao) {
+            const chave = `${sessao.idConteudo}|${sessao.evento}|${sessao.dataEvento}`;
+            const grupo = grupos.get(chave) || Object.assign({}, sessao, { minutos: 0, sugestao: false });
+
+            grupo.minutos += sessao.minutos;
+            grupo.sugestao = grupo.sugestao || sessao.sugestao;
+            grupos.set(chave, grupo);
+        });
+
+        return Array.from(grupos.values());
+    }
+
+    function abrirPlanoDoDia(data) {
+        if (!planoEstudoModal || !listaPlanoDoDia || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        const sessoes = agruparPlanoPorConteudo(buscarPlanoDoDia(data));
+        const nomesTurmas = new Map();
+
+        eventosDados.forEach(function (evento) {
+            nomesTurmas.set(evento.idTurma, evento.turma || 'Turma');
+        });
+
+        dataPlanoEstudo.textContent = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
+            weekday: 'long', day: '2-digit', month: 'long'
+        });
+
+        listaPlanoDoDia.innerHTML = '';
+        sessoes.forEach(function (sessao) {
+            const item = document.createElement('li');
+            const descricao = document.createElement('div');
+            const conteudo = document.createElement('strong');
+            const evento = document.createElement('span');
+            const tempo = document.createElement('span');
+
+            conteudo.textContent = sessao.conteudo;
+            evento.textContent = `${sessao.evento} · ${formatarDataCurta(sessao.dataEvento)}`;
+            tempo.classList.add('plano-dia-tempo');
+            tempo.textContent = formatarMinutos(sessao.minutos);
+
+            if (sessao.sugestao) {
+                item.classList.add('plano-dia-sugestao');
+                tempo.textContent += ' · sugestão';
+            }
+
+            descricao.append(conteudo, evento);
+            item.append(descricao, tempo);
+            listaPlanoDoDia.appendChild(item);
+        });
+
+        turmasPlanoDoDia.innerHTML = '';
+        Array.from(new Set(sessoes.map(function (sessao) {
+            return sessao.idTurma;
+        }))).forEach(function (idTurma) {
+            const link = document.createElement('a');
+
+            link.href = `/turmas/${encodeURIComponent(idTurma)}`;
+            link.classList.add('botao-ir-turma');
+            link.textContent = `Ir para ${nomesTurmas.get(idTurma) || 'a turma'}`;
+            turmasPlanoDoDia.appendChild(link);
+        });
+
+        bootstrap.Modal.getOrCreateInstance(planoEstudoModal).show();
+    }
+
+    function abrirCronograma(data) {
+        if (!modalCronograma || typeof bootstrap === 'undefined' || typeof montarAgendaDoDia === 'undefined') {
+            return;
+        }
+
+        const eventosVisiveis = eventosDaAgenda.filter(function (evento) {
+            return eventoDaTurmaFiltrada(evento.idTurma);
+        });
+        const topoPrimeiroEvento = montarAgendaDoDia(gradeHorarios, dataEventosDia, data, eventosVisiveis);
+        const corpoModal = modalCronograma.querySelector('.modal-body');
+        dataAgendaAberta = data;
+
+        modalCronograma.addEventListener('shown.bs.modal', function () {
+            corpoModal.scrollTop = Math.max(topoPrimeiroEvento - ALTURA_HORA_AGENDA, 0);
+        }, { once: true });
+
+        bootstrap.Modal.getOrCreateInstance(modalCronograma).show();
     }
 
     function eventoComecaNoMesExibido(evento) {
@@ -149,11 +332,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function atualizarResumoPrioridades() {
-        if (!usuarioEhProfessor) {
+        if (!usuarioEhProfessor && !usuarioEhAluno) {
             return;
         }
 
-        const eventosDoMes = eventosDados.filter(eventoComecaNoMesExibido);
+        const eventosDoMes = eventosDados.filter(function (evento) {
+            return eventoComecaNoMesExibido(evento) && eventoDaTurmaFiltrada(evento.idTurma);
+        });
 
         let quantidadeAlta = 0;
         let quantidadeMedia = 0;
@@ -188,155 +373,56 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function cartaoComecaNoMesExibido(cartao) {
-        if (!cartao) {
-            return false;
-        }
-
-        const inicio = cartao.dataset.inicio || '';
-        const mesEsperado = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
-
-        return inicio.startsWith(mesEsperado);
-    }
-
-    function obterPrioridade(cartao) {
-        const prioridade = (cartao.dataset.prioridade || 'MEDIA').toUpperCase();
-
-        return pesoPrioridade[prioridade] || 2;
-    }
-
-    function obterDataInicio(cartao) {
-        const data = Date.parse(cartao.dataset.inicio || '');
-
-        return Number.isNaN(data) ? Number.MAX_SAFE_INTEGER : data;
-    }
-
-    function removerBadgeNovo(cartao) {
-        if (!cartao) {
+    function devolverCartaoAberto() {
+        if (!detalheEventoCorpo || !cartoesEventos) {
             return;
         }
 
-        cartao.classList.remove('evento-item-fixo');
+        Array.from(detalheEventoCorpo.querySelectorAll('.evento-item')).forEach(function (cartao) {
+            cartoesEventos.appendChild(cartao);
+        });
+    }
 
-        const badge = cartao.querySelector('.evento-badge-novo');
+    function recolherConteudos(cartao) {
+        const botao = cartao.querySelector('.botao-alternar-conteudos');
+        const lista = botao ? document.getElementById(botao.getAttribute('aria-controls')) : null;
 
-        if (badge) {
-            badge.remove();
+        if (botao && lista) {
+            lista.hidden = true;
+            botao.setAttribute('aria-expanded', 'false');
+            botao.textContent = 'Mostrar conteúdos';
         }
     }
 
-    function adicionarBadgeNovo(cartao) {
+    function abrirDetalheEvento(idEvento) {
+        if (!detalheEventoModal || !detalheEventoCorpo || !cartoesEventos || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        const cartao = cartoesEventos.querySelector(`.evento-item[data-id="${CSS.escape(idEvento)}"]`);
+
         if (!cartao) {
             return;
         }
 
-        cartao.classList.add('evento-item-fixo');
+        devolverCartaoAberto();
+        recolherConteudos(cartao);
+        detalheEventoCorpo.appendChild(cartao);
 
-        const identificacao = cartao.querySelector('.evento-identificacao');
-
-        if (identificacao && !identificacao.querySelector('.evento-badge-novo')) {
-            const badgeNovo = document.createElement('span');
-
-            badgeNovo.classList.add('evento-badge-novo');
-            badgeNovo.textContent = 'Novo';
-
-            identificacao.appendChild(badgeNovo);
-        }
-    }
-
-    function ordenarCartoes(cartoes) {
-        const cartoesOrdenados = cartoes.slice();
-        const tipoOrdenacao = seletorOrdenacao ? seletorOrdenacao.value : 'original';
-
-        if (tipoOrdenacao === 'prioridade') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                const diferenca = obterPrioridade(cartaoA) - obterPrioridade(cartaoB);
-
-                if (diferenca !== 0) {
-                    return diferenca;
-                }
-
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
+        if (voltarAgendaDia) {
+            voltarAgendaDia.hidden = !dataAgendaAberta;
         }
 
-        if (tipoOrdenacao === 'inicio') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                const diferenca = obterDataInicio(cartaoA) - obterDataInicio(cartaoB);
+        const mostrarDetalhe = function () {
+            bootstrap.Modal.getOrCreateInstance(detalheEventoModal).show();
+        };
 
-                if (diferenca !== 0) {
-                    return diferenca;
-                }
-
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
+        if (modalCronograma && modalCronograma.classList.contains('show')) {
+            modalCronograma.addEventListener('hidden.bs.modal', mostrarDetalhe, { once: true });
+            bootstrap.Modal.getInstance(modalCronograma).hide();
+        } else {
+            mostrarDetalhe();
         }
-
-        if (tipoOrdenacao === 'original') {
-            cartoesOrdenados.sort(function (cartaoA, cartaoB) {
-                return ordemOriginalEventos.get(cartaoA) - ordemOriginalEventos.get(cartaoB);
-            });
-        }
-
-        return cartoesOrdenados;
-    }
-
-    function atualizarVisaoEventosDoMes() {
-        atualizarResumoPrioridades();
-
-        if (!usuarioEhProfessor || !listaEventos) {
-            return;
-        }
-
-        todosOsCartoesEventos.forEach(function (cartao) {
-            removerBadgeNovo(cartao);
-
-            cartao.hidden = true;
-
-            listaEventos.appendChild(cartao);
-        });
-
-        const cartoesDoMes = todosOsCartoesEventos.filter(cartaoComecaNoMesExibido);
-
-        if (semEventosNoMes) {
-            semEventosNoMes.hidden = cartoesDoMes.length > 0;
-        }
-
-        if (cartoesDoMes.length === 0) {
-            if (ultimoEventoDestaque) {
-                ultimoEventoDestaque.hidden = true;
-            }
-
-            return;
-        }
-
-        const ultimoCartaoDoMes = cartoesDoMes.reduce(function (maisNovo, cartaoAtual) {
-            const idMaisNovo = Number(maisNovo.dataset.id || 0);
-            const idAtual = Number(cartaoAtual.dataset.id || 0);
-
-            return idAtual > idMaisNovo ? cartaoAtual : maisNovo;
-        });
-
-        adicionarBadgeNovo(ultimoCartaoDoMes);
-
-        ultimoCartaoDoMes.hidden = false;
-
-        if (ultimoEventoContainer && ultimoEventoDestaque) {
-            ultimoEventoContainer.appendChild(ultimoCartaoDoMes);
-            ultimoEventoDestaque.hidden = false;
-        }
-
-        const cartoesComunsDoMes = cartoesDoMes.filter(function (cartao) {
-            return cartao !== ultimoCartaoDoMes;
-        });
-
-        const cartoesOrdenados = ordenarCartoes(cartoesComunsDoMes);
-
-        cartoesOrdenados.forEach(function (cartao) {
-            cartao.hidden = false;
-
-            listaEventos.appendChild(cartao);
-        });
     }
 
     function atualizarCalendario() {
@@ -345,80 +431,63 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         calendario.innerHTML = '';
-
         mesExibido.textContent = `${meses[mesAtual]} de ${anoAtual}`;
+        seletorMes.value = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
 
-        seletorMes.value =
-            `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+        // mostra os dias da semana acima das datas
+        diasSemana.forEach(function (dia, indice) {
+            const cabecalho = document.createElement('div');
 
-        const primeiroDiaSemana =
-            new Date(anoAtual, mesAtual, 1).getDay();
+            cabecalho.classList.add('calendar-weekday');
+            cabecalho.textContent = dia;
+            cabecalho.title = nomesDiasSemana[indice];
 
-        const ultimoDiaMes =
-            new Date(anoAtual, mesAtual + 1, 0).getDate();
+            calendario.appendChild(cabecalho);
+        });
 
-        const quantidadeCelulas =
-            Math.ceil((primeiroDiaSemana + ultimoDiaMes) / 7) * 7;
+        const primeiroDiaSemana = new Date(anoAtual, mesAtual, 1).getDay();
+        const ultimoDiaMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+        const quantidadeCelulas = Math.ceil((primeiroDiaSemana + ultimoDiaMes) / 7) * 7;
 
         for (let indice = 0; indice < quantidadeCelulas; indice++) {
-            const data =
-                new Date(
-                    anoAtual,
-                    mesAtual,
-                    indice - primeiroDiaSemana + 1
-                );
-
-            const dataFormatada = formatarData(data);
-
-            const pertenceAoMesAtual =
-                data.getMonth() === mesAtual &&
-                data.getFullYear() === anoAtual;
-
-            const celula =
-                document.createElement('div');
+            const dia = indice - primeiroDiaSemana + 1;
+            const celula = document.createElement('div');
 
             celula.classList.add('day-cell');
-            celula.setAttribute('role', 'gridcell');
 
-            if (!pertenceAoMesAtual) {
-                celula.classList.add('adjacent-month');
+            // deixa vazios os lugares que pertencem a outro mes
+            if (dia < 1 || dia > ultimoDiaMes) {
+                celula.classList.add('adjacent-month', 'calendar-empty');
+                celula.setAttribute('aria-hidden', 'true');
+                calendario.appendChild(celula);
+                continue;
             }
 
-            const numeroDia =
-                document.createElement('span');
+            const data = new Date(anoAtual, mesAtual, dia);
+            const dataFormatada = formatarData(data);
+
+            celula.setAttribute('role', 'gridcell');
+            celula.setAttribute('aria-label', `${dia} de ${meses[mesAtual]} de ${anoAtual}`);
+
+            const numeroDia = document.createElement('span');
 
             numeroDia.classList.add('day-number');
-            numeroDia.textContent =
-                String(data.getDate()).padStart(2, '0');
+            numeroDia.textContent = String(dia).padStart(2, '0');
 
-            const linkCadastro =
-                document.createElement('a');
+            const linkCadastro = document.createElement('a');
 
             linkCadastro.classList.add('day-add');
-            linkCadastro.href =
-                `${urlCadastro}?data=${dataFormatada}`;
-
+            linkCadastro.href = `${urlCadastro}?data=${dataFormatada}`;
             linkCadastro.textContent = '+';
 
-            const acao =
-                usuarioEhAluno
-                    ? 'Cadastrar disponibilidade'
-                    : 'Cadastrar evento';
+            const acao = usuarioEhAluno ? 'Cadastrar disponibilidade' : 'Cadastrar evento';
 
-            linkCadastro.setAttribute(
-                'aria-label',
-                `${acao} no dia ${data.getDate()}`
-            );
+            linkCadastro.setAttribute('aria-label', `${acao} no dia ${dia} de ${meses[mesAtual]} de ${anoAtual}`);
 
-            const eventosDoDia =
-                buscarEventosDoDia(dataFormatada);
+            const eventosDoDia = buscarEventosDoDia(dataFormatada);
 
             if (usuarioEhProfessor && eventosDoDia.length > 0) {
-                const marcadorEvento =
-                    criarMarcadorEvento(
-                        eventosDoDia,
-                        dataFormatada
-                    );
+                const marcadorEvento = criarMarcadorEvento(eventosDoDia, dataFormatada);
 
                 if (marcadorEvento) {
                     celula.classList.add('tem-evento');
@@ -426,31 +495,50 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            const eventosQueComecamNoDia = usuarioEhAluno
+                ? eventosDoDia.filter(function (evento) {
+                    return evento.dataInicio === dataFormatada;
+                })
+                : [];
+
+            if (eventosQueComecamNoDia.length > 0) {
+                const marcadorEvento = criarMarcadorEvento(eventosQueComecamNoDia, dataFormatada);
+
+                marcadorEvento.classList.add('evento-marcador-aluno');
+                celula.appendChild(marcadorEvento);
+            }
+
             if (usuarioEhAluno) {
-                const disponibilidadeEncontrada =
-                    buscarDisponibilidade(dataFormatada);
+                const disponibilidadeEncontrada = buscarDisponibilidade(dataFormatada);
+                const disponibilidade = disponibilidadeEncontrada || {
+                    data: dataFormatada,
+                    horas: 0
+                };
 
-                const disponibilidade =
-                    disponibilidadeEncontrada || {
-                        data: dataFormatada,
-                        horas: 0
-                    };
-
-                const marcadorDisponibilidade =
-                    criarMarcadorDisponibilidade(disponibilidade);
+                const marcadorDisponibilidade = criarMarcadorDisponibilidade(disponibilidade);
 
                 celula.classList.add('tem-disponibilidade');
-
                 celula.appendChild(marcadorDisponibilidade);
+
+                const sessoesDoDia = data < inicioDeHoje ? [] : buscarPlanoDoDia(dataFormatada);
+
+                if (sessoesDoDia.length > 0) {
+                    celula.appendChild(criarMarcadorEstudo(sessoesDoDia, dataFormatada));
+                }
             }
 
             celula.appendChild(numeroDia);
-            celula.appendChild(linkCadastro);
+
+            if (data < inicioDeHoje) {
+                celula.classList.add('dia-passado');
+            } else if (eventosQueComecamNoDia.length === 0) {
+                celula.appendChild(linkCadastro);
+            }
 
             calendario.appendChild(celula);
         }
 
-        atualizarVisaoEventosDoMes();
+        atualizarResumoPrioridades();
     }
 
     if (mesAnterior) {
@@ -481,10 +569,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (seletorMes) {
         seletorMes.addEventListener('change', function () {
-            const partes = this.value.split('-');
+            if (!this.value) {
+                return;
+            }
 
-            anoAtual = Number(partes[0]);
-            mesAtual = Number(partes[1]) - 1;
+            const partes = this.value.split('-');
+            const anoSelecionado = Number(partes[0]);
+            const mesSelecionado = Number(partes[1]) - 1;
+
+            if (!Number.isInteger(anoSelecionado) || !Number.isInteger(mesSelecionado)
+                || anoSelecionado < 1 || mesSelecionado < 0 || mesSelecionado > 11) {
+                return;
+            }
+
+            anoAtual = anoSelecionado;
+            mesAtual = mesSelecionado;
 
             atualizarCalendario();
         });
@@ -499,42 +598,129 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function () {
                 popup.remove();
             }, 400);
-
         }, 3500);
     }
 
-    if (listaEventos && botaoAlternarCards) {
-        botaoAlternarCards.addEventListener('click', function () {
-            const estaOculto =
-                listaEventos.classList.toggle('cards-ocultos');
+    document.addEventListener('click', function (event) {
+        const botao = event.target.closest('.botao-alternar-conteudos');
 
-            this.textContent =
-                estaOculto
-                    ? 'Mostrar cards'
-                    : 'Ocultar cards';
+        if (!botao) {
+            return;
+        }
 
-            this.setAttribute(
-                'aria-expanded',
-                String(!estaOculto)
-            );
+        const lista = document.getElementById(botao.getAttribute('aria-controls'));
+
+        if (!lista) {
+            return;
+        }
+
+        const expandido = botao.getAttribute('aria-expanded') === 'true';
+
+        lista.hidden = expandido;
+        botao.setAttribute('aria-expanded', String(!expandido));
+        botao.textContent = expandido ? 'Mostrar conteúdos' : 'Ocultar conteúdos';
+    });
+
+    if (filtroTurma && filtroTurmaRotulo) {
+        const turmas = new Map();
+
+        eventosDados.forEach(function (evento) {
+            if (evento.idTurma && !turmas.has(evento.idTurma)) {
+                turmas.set(evento.idTurma, evento.turma || 'Turma não identificada');
+            }
+        });
+
+        Array.from(turmas.entries())
+            .sort(function (turmaA, turmaB) {
+                return turmaA[1].localeCompare(turmaB[1], 'pt-BR');
+            })
+            .forEach(function ([idTurma, nomeTurma]) {
+                const opcao = document.createElement('option');
+
+                opcao.value = idTurma;
+                opcao.textContent = nomeTurma;
+                filtroTurma.appendChild(opcao);
+            });
+
+        filtroTurmaRotulo.hidden = turmas.size < 2;
+
+        filtroTurma.addEventListener('change', function () {
+            turmaFiltrada = filtroTurma.value;
+            atualizarCalendario();
         });
     }
 
-    if (seletorOrdenacao) {
-        seletorOrdenacao.addEventListener('change', function () {
-            atualizarVisaoEventosDoMes();
+    if (gradeHorarios) {
+        gradeHorarios.addEventListener('click', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card) {
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+
+        gradeHorarios.addEventListener('keydown', function (event) {
+            const card = event.target.closest('.agenda-evento-clicavel');
+
+            if (card && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                abrirDetalheEvento(card.dataset.idEvento);
+            }
+        });
+    }
+
+    if (detalheEventoModal) {
+        detalheEventoModal.addEventListener('hidden.bs.modal', devolverCartaoAberto);
+    }
+
+    if (voltarAgendaDia) {
+        voltarAgendaDia.addEventListener('click', function () {
+            if (!dataAgendaAberta || !detalheEventoModal) {
+                return;
+            }
+
+            const data = dataAgendaAberta;
+            detalheEventoModal.addEventListener('hidden.bs.modal', function () {
+                abrirCronograma(data);
+            }, { once: true });
+            bootstrap.Modal.getInstance(detalheEventoModal).hide();
         });
     }
 
     document.querySelectorAll('.form-excluir-evento').forEach(function (form) {
         form.addEventListener('submit', function (event) {
-            const confirmar =
-                confirm('Deseja realmente excluir este evento?');
+            const confirmar = confirm('Deseja realmente excluir este evento?');
 
             if (!confirmar) {
                 event.preventDefault();
             }
         });
+    });
+
+    const confirmarRefazerModal = document.getElementById('confirmarRefazerModal');
+    const formRefazerConteudo = document.getElementById('formRefazerConteudo');
+    const tituloConteudoRefazer = document.getElementById('tituloConteudoRefazer');
+
+    document.addEventListener('click', function (event) {
+        const botao = event.target.closest('.botao-refazer');
+
+        if (!botao || !confirmarRefazerModal || !formRefazerConteudo || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        formRefazerConteudo.action = botao.dataset.acao;
+        tituloConteudoRefazer.textContent = botao.dataset.titulo || 'este conteúdo';
+
+        const mostrarConfirmacao = function () {
+            bootstrap.Modal.getOrCreateInstance(confirmarRefazerModal).show();
+        };
+
+        if (detalheEventoModal && detalheEventoModal.classList.contains('show')) {
+            detalheEventoModal.addEventListener('hidden.bs.modal', mostrarConfirmacao, { once: true });
+            bootstrap.Modal.getInstance(detalheEventoModal).hide();
+        } else {
+            mostrarConfirmacao();
+        }
     });
 
     atualizarCalendario();

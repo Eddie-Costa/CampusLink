@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${status == 404 ? 'Página não encontrada' : (status == 403 ? 'Acesso negado' : 'Erro')} + ' | CampusLink'">Erro | CampusLink</title>
+    <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            background: var(--campus-page-bg) url("/images/bg.png") center / cover fixed;
+            color: var(--campus-navy);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .erro-cartao {
+            width: min(520px, 100%);
+            padding: 40px 32px 32px;
+            border-radius: 22px;
+            background: var(--campus-white);
+            box-shadow: 0 18px 36px rgba(var(--campus-navy-rgb), 0.18);
+            text-align: center;
+        }
+
+        .erro-cartao img {
+            width: 96px;
+            margin-bottom: 18px;
+        }
+
+        .erro-codigo {
+            margin: 0;
+            color: var(--campus-muted);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .erro-cartao h1 {
+            margin: 8px 0 12px;
+            font-size: 26px;
+        }
+
+        .erro-cartao p {
+            margin: 0 0 26px;
+            color: var(--campus-muted);
+            line-height: 1.5;
+        }
+
+        .erro-acoes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .erro-acoes a,
+        .erro-acoes button {
+            padding: 10px 22px;
+            border: 2px solid var(--campus-navy);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--campus-navy);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .erro-acoes a {
+            background: var(--campus-navy);
+            color: var(--campus-white);
+        }
+
+        .erro-acoes a:hover,
+        .erro-acoes a:focus-visible {
+            background: var(--campus-navy-hover);
+        }
+
+        .erro-acoes button:hover,
+        .erro-acoes button:focus-visible {
+            background: var(--campus-surface-alt);
+        }
+    </style>
+</head>
+<body>
+
+<main class="erro-cartao" th:switch="${status}">
+    <img th:src="@{/images/LogoCampusLink.png}" alt="CampusLink">
+
+    <p class="erro-codigo" th:text="${'ERRO ' + (status != null ? status : '')}">ERRO</p>
+
+    <th:block th:case="400">
+        <h1>Requisição inválida</h1>
+        <p>Algum dado enviado não está no formato esperado. Volte e tente novamente.</p>
+    </th:block>
+
+    <th:block th:case="403">
+        <h1>Acesso negado</h1>
+        <p>Você não tem permissão para acessar esta página ou a sua sessão expirou. Recarregue a página ou entre novamente.</p>
+    </th:block>
+
+    <th:block th:case="404">
+        <h1>Página não encontrada</h1>
+        <p>O endereço acessado não existe ou foi removido.</p>
+    </th:block>
+
+    <th:block th:case="405">
+        <h1>Ação não permitida</h1>
+        <p>Esta ação não pode ser feita por este caminho. Volte à página anterior e tente pelo botão correspondente.</p>
+    </th:block>
+
+    <th:block th:case="*">
+        <h1>Algo deu errado</h1>
+        <p>Tivemos um problema ao processar sua solicitação. Tente novamente em instantes.</p>
+    </th:block>
+
+    <div class="erro-acoes">
+        <button type="button" onclick="history.back()">Voltar à página anterior</button>
+        <a th:href="@{/home}">Voltar para o início</a>
+    </div>
+</main>
+
+</body>
+</html>

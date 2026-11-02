@@ -1,5 +1,6 @@
 package com.example.CampusLink.dao;
 
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.service.SupabaseStorageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 class PerfilDadosTests {
     @Autowired DataSource dataSource;
     private Connection conn;
-    private usuarioDAO usuarios;
+    private UsuarioRepository usuarios;
     private SupabaseStorageService storage;
 
     @BeforeEach
@@ -35,7 +36,7 @@ class PerfilDadosTests {
         // ficam em pg_temp, isolados das tabelas reais e descartados ao final.
         for (String tabela : new String[]{"USUARIOS", "ALUNOS", "PROFESSORES", "ADMINISTRADOR", "TURMAS",
                 "ALUNO_TURMA", "PROFESSOR_TURMA", "DISPONIBILIDADES", "DENUNCIAS", "CONTEUDOS", "EVENTOS",
-                "EVENTO_CONTEUDO", "ARQUIVOS"}) {
+                "EVENTO_CONTEUDO", "ARQUIVOS", "PROGRESSO_CONTEUDO"}) {
             sql("CREATE TEMP TABLE \"" + tabela + "\" (LIKE public.\"" + tabela + "\" INCLUDING CONSTRAINTS)");
         }
         sql("ALTER TABLE pg_temp.\"USUARIOS\" ADD PRIMARY KEY (id)");
@@ -58,7 +59,7 @@ class PerfilDadosTests {
                 });
         DataSource temporario = mock(DataSource.class);
         when(temporario.getConnection()).thenReturn(isolada);
-        usuarios = new usuarioDAO();
+        usuarios = new UsuarioRepository();
         storage = mock(SupabaseStorageService.class);
         ReflectionTestUtils.setField(usuarios, "dataSource", temporario);
         ReflectionTestUtils.setField(usuarios, "storage", storage);

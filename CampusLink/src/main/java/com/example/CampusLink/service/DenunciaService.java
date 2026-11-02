@@ -3,12 +3,12 @@ package com.example.CampusLink.service;
 import org.slf4j.helpers.MessageFormatter;
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.example.CampusLink.dao.conteudoDAO;
-import com.example.CampusLink.dao.denunciaDAO;
+import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.DenunciaRepository;
 import com.example.CampusLink.dto.DenunciaDTO;
 import org.springframework.stereotype.Service;
 
@@ -19,19 +19,19 @@ import java.util.List;
 public class DenunciaService {
 
     @Autowired
-    private usuarioDAO usuarioDAO;
+    private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DenunciaService.class);
 
-    private final denunciaDAO denunciaDAO;
-    private final conteudoDAO conteudoDAO;
+    private final DenunciaRepository denunciaRepository;
+    private final ConteudoRepository conteudoRepository;
 
     public DenunciaService(
-            denunciaDAO denunciaDAO,
-            conteudoDAO conteudoDAO
+            DenunciaRepository denunciaRepository,
+            ConteudoRepository conteudoRepository
     ) {
-        this.denunciaDAO = denunciaDAO;
-        this.conteudoDAO = conteudoDAO;
+        this.denunciaRepository = denunciaRepository;
+        this.conteudoRepository = conteudoRepository;
     }
 
     public String registrarDenuncia(Long idConteudo, Long idAluno, Long idTurma, String motivo) {
@@ -40,7 +40,7 @@ public class DenunciaService {
             logger.warn("Denúncia recusada: identificadores ausentes. conteudoId={} alunoId={} turmaId={}", idConteudo, idAluno, idTurma);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                             MessageFormatter.arrayFormat("Denúncia recusada: identificadores ausentes. conteudoId={} alunoId={} turmaId={}", new Object[]{idConteudo, idAluno, idTurma}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -53,7 +53,7 @@ public class DenunciaService {
             logger.warn("Denúncia recusada: motivo vazio. conteudoId={} alunoId={}", idConteudo, idAluno);
             if (logger.isWarnEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                             MessageFormatter.arrayFormat("Denúncia recusada: motivo vazio. conteudoId={} alunoId={}", new Object[]{idConteudo, idAluno}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -64,13 +64,13 @@ public class DenunciaService {
 
         try {
 
-            String statusConteudo = conteudoDAO.buscarStatus(idConteudo);
+            String statusConteudo = conteudoRepository.buscarStatus(idConteudo);
 
             if (statusConteudo == null) {
                 logger.warn("Conteúdo não encontrado para denúncia. conteudoId={}", idConteudo);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Conteúdo não encontrado para denúncia. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -83,7 +83,7 @@ public class DenunciaService {
                 logger.warn("Conteúdo indisponível para denúncia. conteudoId={} status={}", idConteudo, statusConteudo);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Conteúdo indisponível para denúncia. conteudoId={} status={}", new Object[]{idConteudo, statusConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -92,13 +92,13 @@ public class DenunciaService {
                 return "conteudo_indisponivel";
             }
 
-            boolean jaDenunciou = denunciaDAO.alunoJaDenunciou(idConteudo, idAluno);
+            boolean jaDenunciou = denunciaRepository.alunoJaDenunciou(idConteudo, idAluno);
 
             if (jaDenunciou) {
                 logger.warn("Denúncia duplicada. conteudoId={} alunoId={}", idConteudo, idAluno);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Denúncia duplicada. conteudoId={} alunoId={}", new Object[]{idConteudo, idAluno}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -107,13 +107,13 @@ public class DenunciaService {
                 return "duplicada";
             }
 
-            Long idProfessor = conteudoDAO.buscarIdProfessor(idConteudo);
+            Long idProfessor = conteudoRepository.buscarIdProfessor(idConteudo);
 
             if (idProfessor == null) {
                 logger.warn("Professor não encontrado para denúncia. conteudoId={}", idConteudo);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Professor não encontrado para denúncia. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -122,13 +122,13 @@ public class DenunciaService {
                 return "professor_nao_encontrado";
             }
 
-            int totalAlunos = denunciaDAO.contarAlunosDaTurma(idTurma);
+            int totalAlunos = denunciaRepository.contarAlunosDaTurma(idTurma);
 
             if (totalAlunos <= 0) {
                 logger.warn("Denúncia recusada: turma sem alunos. turmaId={}", idTurma);
                 if (logger.isWarnEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "WARN", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Denúncia recusada: turma sem alunos. turmaId={}", new Object[]{idTurma}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -142,11 +142,11 @@ public class DenunciaService {
             denuncia.setIdAluno(idAluno);
             denuncia.setIdProfessor(idProfessor);
             denuncia.setMotivo(motivo.trim());
-            denunciaDAO.inserir(denuncia);
+            denunciaRepository.inserir(denuncia);
             logger.info("Denúncia registrada. conteudoId={} alunoId={} turmaId={}", idConteudo, idAluno, idTurma);
             if (logger.isInfoEnabled()) {
                 try {
-                    usuarioDAO.InserirLogsNoBD(null, "INFO", DenunciaService.class.getName(), "registrarDenuncia", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "INFO", DenunciaService.class.getName(), "registrarDenuncia", null,
                             MessageFormatter.arrayFormat("Denúncia registrada. conteudoId={} alunoId={} turmaId={}", new Object[]{idConteudo, idAluno, idTurma}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -154,7 +154,7 @@ public class DenunciaService {
             }
 
             int quantidadeDenuncias =
-                    denunciaDAO.contarDenunciasPendentes(
+                    denunciaRepository.contarDenunciasPendentes(
                             idConteudo
                     );
 
@@ -169,11 +169,11 @@ public class DenunciaService {
 
             if (quantidadeDenuncias >= limiteDenuncias) {
 
-                conteudoDAO.atualizarStatus(idConteudo, "suspenso_denuncia");
+                conteudoRepository.atualizarStatus(idConteudo, "suspenso_denuncia");
                 logger.info("Conteúdo suspenso automaticamente por denúncias. conteudoId={} quantidade={} limite={}", idConteudo, quantidadeDenuncias, limiteDenuncias);
                 if (logger.isInfoEnabled()) {
                     try {
-                        usuarioDAO.InserirLogsNoBD(null, "INFO", DenunciaService.class.getName(), "registrarDenuncia", null,
+                        UsuarioRepository.InserirLogsNoBD(null, "INFO", DenunciaService.class.getName(), "registrarDenuncia", null,
                                 MessageFormatter.arrayFormat("Conteúdo suspenso automaticamente por denúncias. conteudoId={} quantidade={} limite={}", new Object[]{idConteudo, quantidadeDenuncias, limiteDenuncias}).getMessage(), null, null);
                     } catch (Exception erroLogBD) {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -191,7 +191,7 @@ public class DenunciaService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "registrarDenuncia", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "registrarDenuncia", null,
                             MessageFormatter.arrayFormat("Erro ao registrar denúncia. conteudoId={} alunoId={} turmaId={}", new Object[]{idConteudo, idAluno, idTurma}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -204,7 +204,7 @@ public class DenunciaService {
     public int contarDenuncias(Long idConteudo) {
 
         try {
-            return denunciaDAO.contarDenunciasPendentes(idConteudo);
+            return denunciaRepository.contarDenunciasPendentes(idConteudo);
 
         } catch (SQLException e) {
             logger.error("Erro ao contar denúncias. conteudoId={}", idConteudo, e);
@@ -212,7 +212,7 @@ public class DenunciaService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "contarDenuncias", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "contarDenuncias", null,
                             MessageFormatter.arrayFormat("Erro ao contar denúncias. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -225,7 +225,7 @@ public class DenunciaService {
     public List<String> listarNomesAlunos(Long idConteudo) {
 
         try {
-            return denunciaDAO.listarNomesAlunosPorConteudo(idConteudo);
+            return denunciaRepository.listarNomesAlunosPorConteudo(idConteudo);
 
         } catch (SQLException e) {
             logger.error("Erro ao consultar alunos das denúncias. conteudoId={}", idConteudo, e);
@@ -233,7 +233,7 @@ public class DenunciaService {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "listarNomesAlunos", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "listarNomesAlunos", null,
                             MessageFormatter.arrayFormat("Erro ao consultar alunos das denúncias. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
@@ -246,14 +246,14 @@ public class DenunciaService {
     public List<DenunciaDTO> listarPorConteudo(Long idConteudo) {
 
         try {
-            return denunciaDAO.listarPorConteudo(idConteudo);
+            return denunciaRepository.listarPorConteudo(idConteudo);
         } catch (SQLException e) {
             logger.error("Erro ao consultar denúncias. conteudoId={}", idConteudo, e);
             if (logger.isErrorEnabled()) {
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
-                    usuarioDAO.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "listarPorConteudo", null,
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", DenunciaService.class.getName(), "listarPorConteudo", null,
                             MessageFormatter.arrayFormat("Erro ao consultar denúncias. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, excecaoLogBD.toString());
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);

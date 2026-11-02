@@ -25,7 +25,11 @@ public class TwoFactorService {
 
         long agora = System.currentTimeMillis();
         removerCodigosExpirados(agora);
-        String codigo = String.valueOf(random.nextInt(900000) + 100000);
+        String codigoAnterior = codigos.get(chave);
+        String codigo;
+        do {
+            codigo = String.valueOf(random.nextInt(900000) + 100000);
+        } while (codigo.equals(codigoAnterior));
 
         codigos.put(chave, codigo);
         expiracao.put(chave, agora + TEMPO_EXPIRACAO);
@@ -40,11 +44,6 @@ public class TwoFactorService {
             if (chave == null || chave.isBlank()) {
 
                 throw new IllegalArgumentException("a chave de verificacao e obrigatoria");
-            }
-
-            if (!codigos.containsKey(chave) && !expiracao.containsKey(chave)) {
-
-                throw new IllegalStateException("nao existe uma verificacao ativa para esta chave");
             }
 
             long segundosRestantes = segundosParaReenvio(chave);
@@ -158,6 +157,14 @@ public class TwoFactorService {
             codigos.remove(chave);
             expiracao.remove(chave);
             proximoReenvio.remove(chave);
+        }
+    }
+
+    public void invalidarCodigo(String chave) {
+        synchronized (TwoFactorService.class) {
+            // mantem a espera de reenvio mesmo quando o envio do email falha
+            codigos.remove(chave);
+            expiracao.remove(chave);
         }
     }
 

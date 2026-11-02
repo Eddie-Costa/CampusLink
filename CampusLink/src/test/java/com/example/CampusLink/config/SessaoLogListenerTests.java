@@ -1,6 +1,6 @@
 package com.example.CampusLink.config;
 
-import com.example.CampusLink.dao.usuarioDAO;
+import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import jakarta.servlet.http.HttpSessionEvent;
@@ -13,7 +13,7 @@ import static org.mockito.Mockito.mock;
 class SessaoLogListenerTests {
     @Test
     void encerraTodasAsSessoesDoTitularSemAfetarOutrasContas() {
-        SessaoLogListener listener = new SessaoLogListener(mock(usuarioDAO.class));
+        SessaoLogListener listener = new SessaoLogListener(mock(UsuarioRepository.class));
         loginAlunoDTO aluno = new loginAlunoDTO();
         aluno.setEmail("titular@example.com");
         loginProfessorDTO professor = new loginProfessorDTO();
