@@ -497,9 +497,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.conteudo-excluir-form').forEach(function (form) {
+    document.querySelectorAll('form[data-confirmar]').forEach(function (form) {
         form.addEventListener('submit', function (event) {
-            const confirmar = confirm('Excluir este conteúdo? Essa ação não pode ser desfeita.');
+            const confirmar = confirm(form.dataset.confirmar);
 
             if (!confirmar) {
                 event.preventDefault();
