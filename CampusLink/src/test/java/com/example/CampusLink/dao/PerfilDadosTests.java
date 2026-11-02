@@ -36,7 +36,7 @@ class PerfilDadosTests {
         // ficam em pg_temp, isolados das tabelas reais e descartados ao final.
         for (String tabela : new String[]{"USUARIOS", "ALUNOS", "PROFESSORES", "ADMINISTRADOR", "TURMAS",
                 "ALUNO_TURMA", "PROFESSOR_TURMA", "DISPONIBILIDADES", "DENUNCIAS", "CONTEUDOS", "EVENTOS",
-                "EVENTO_CONTEUDO", "ARQUIVOS"}) {
+                "EVENTO_CONTEUDO", "ARQUIVOS", "PROGRESSO_CONTEUDO"}) {
             sql("CREATE TEMP TABLE \"" + tabela + "\" (LIKE public.\"" + tabela + "\" INCLUDING CONSTRAINTS)");
         }
         sql("ALTER TABLE pg_temp.\"USUARIOS\" ADD PRIMARY KEY (id)");
