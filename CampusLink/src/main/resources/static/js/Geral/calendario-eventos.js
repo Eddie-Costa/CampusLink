@@ -160,6 +160,13 @@ document.addEventListener('DOMContentLoaded', function () {
             marcador.classList.add('evento-meio');
         }
 
+        const prioridade = ['ALTA', 'MEDIA', 'BAIXA'].find(function (nivel) {
+            return eventos.some(function (evento) {
+                return (evento.prioridade || 'MEDIA').toUpperCase() === nivel;
+            });
+        }) || 'MEDIA';
+        marcador.classList.add(`evento-prioridade-${prioridade.toLowerCase()}`);
+
         marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
 
         marcador.title = eventos.map(function (evento) {

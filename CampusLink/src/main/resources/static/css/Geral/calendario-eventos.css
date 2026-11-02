@@ -439,12 +439,18 @@ body {
     color: #ffffff;
 }
 
-.evento-marcador.evento-inicio,
-.evento-marcador.evento-unico,
-.evento-marcador.evento-meio,
-.evento-marcador.evento-fim,
-.day-cell.adjacent-month .evento-marcador {
+.evento-marcador.evento-prioridade-alta {
     background: var(--vermelho-evento);
+    color: #ffffff;
+}
+
+.evento-marcador.evento-prioridade-media {
+    background: var(--amarelo-evento);
+    color: var(--azul-escuro);
+}
+
+.evento-marcador.evento-prioridade-baixa {
+    background: var(--azul-prioridade);
     color: #ffffff;
 }
 
@@ -464,8 +470,6 @@ button.evento-marcador:focus-visible {
     top: 50%;
     bottom: auto;
     z-index: 3;
-    background: #ffffff;
-    color: var(--azul-escuro);
     font-size: 11px;
     transform: translateY(-50%);
     pointer-events: auto;
@@ -599,14 +603,6 @@ button.evento-marcador:focus-visible {
     width: 20px;
     height: 12px;
     border-radius: 3px;
-}
-
-.legenda-vermelha {
-    background: var(--vermelho-evento);
-}
-
-.legenda-amarela {
-    background: var(--amarelo-evento);
 }
 
 .legenda-verde {
