@@ -3,6 +3,7 @@ package com.example.CampusLink.dao;
 import com.example.CampusLink.controller.Geral.DashboardController;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.DashboardFiltro;
 import com.example.CampusLink.repository.DashboardRepository;
 import com.example.CampusLink.service.DashboardService;
@@ -61,6 +62,10 @@ class DashboardRepositoryTests {
                        (3,'Outro professor','outro@example.com','11999990003','1990-01-01','hash','PROFESSORES',false,'2026-10-01');
                 INSERT INTO pg_temp."PROFESSORES" (id,id_usuario,matricula,created_at)
                 VALUES (20,2,'12345678902','2026-11-02 12:00:00-03'::timestamptz), (30,3,'12345678903','2026-11-02 12:00:00-03'::timestamptz);
+                INSERT INTO pg_temp."USUARIOS" (id,nome,email,telefone,datanasc,senha,perfil,status,created_at)
+                VALUES (4,'Admin','admin@example.com','11999990004','1990-01-01','hash','ADMINISTRADOR',true,'2026-11-02');
+                INSERT INTO pg_temp."ADMINISTRADOR" (id,id_usuario,matricula,created_at,master)
+                VALUES (40,4,'12345678904','2026-11-02 12:00:00-03',false);
                 INSERT INTO pg_temp."TURMAS" (id,nome_turma,id_alunos,id_professores,id_proprietario,created_at)
                 VALUES (100,'Turma A',ARRAY[10]::bigint[],ARRAY[20]::bigint[],20,'2026-11-02 12:00:00-03'::timestamptz),
                        (200,'Turma B',ARRAY[10]::bigint[],ARRAY[20]::bigint[],30,'2026-11-02 12:00:00-03'::timestamptz),
@@ -173,6 +178,62 @@ class DashboardRepositoryTests {
         sql("UPDATE pg_temp.\"TURMAS\" SET id_professores=ARRAY[]::bigint[], id_proprietario=30");
         sql("DELETE FROM pg_temp.\"CONTEUDOS\" WHERE id_professor=20");
         mvc().perform(get("/dashboard/professor").session(session)).andExpect(status().isOk());
+    }
+
+    @Test
+    void administradorContaPerfisInatividadeEDenunciasSemDuplicarConteudos() throws Exception {
+        sql("""
+                INSERT INTO pg_temp."DENUNCIAS" (id,id_conteudo,id_aluno,id_professor,motivo,status,created_at)
+                VALUES (1,4,10,20,'Teste','pendente','2026-11-01 12:00-03'),
+                       (2,4,11,20,'Teste','pendente','2026-11-01 12:00-03'),
+                       (3,1,10,20,'Teste','analisada_liberada','2026-10-01 12:00-03');
+                """);
+        var p = repository.parametros("admin",40,filtro("todos",0,"todos"));
+        var usuarios = repository.resumoUsuarios(p);
+        assertEquals(4L, usuarios.get("usuarios"));
+        assertEquals(3L, usuarios.get("ativos"));
+        assertEquals(1L, usuarios.get("inativos"));
+        assertEquals(2L, usuarios.get("professores"));
+        assertEquals(1L, usuarios.get("administradores"));
+        assertEquals(4, repository.usuariosRecentes(p).size());
+        assertEquals(2, repository.usuariosPorMes(p).size());
+        assertEquals(3L, repository.resumoTurmasAdmin(p).get("turmas"));
+        assertEquals(2L, repository.resumoTurmasAdmin(p).get("responsaveis"));
+        assertEquals(3L, repository.resumoTurmasAdmin(p).get("eventos"));
+        assertEquals(3, repository.turmasAdmin(p).size());
+        assertEquals(4L, repository.resumoConteudos(p).get("conteudos"));
+        var denuncias = repository.resumoDenuncias(p);
+        assertEquals(3L, denuncias.get("denuncias"));
+        assertEquals(2L, denuncias.get("denunciados"));
+        assertEquals(2L, denuncias.get("pendentes"));
+        assertEquals(1L, denuncias.get("resolvidas"));
+        assertEquals(1L, denuncias.get("liberados"));
+        assertEquals(2, repository.denunciasPorSituacao(p).size());
+        assertEquals(1, repository.listarConteudos(p,true).size());
+        assertEquals(40L, repository.buscarIdentidade("admin@example.com","admin"));
+
+        var filtrado = repository.parametros("admin",40,new DashboardFiltro("mes",0,"todos","ALUNOS",agora));
+        assertEquals(1L, repository.resumoUsuarios(filtrado).get("usuarios"));
+        assertEquals(2L, repository.resumoDenuncias(filtrado).get("denuncias"));
+        assertEquals(4L, repository.resumoConteudos(filtrado).get("conteudos"));
+    }
+
+    @Test
+    void renderizaAdminComFiltrosESemDados() throws Exception {
+        var admin = new loginAdminDTO(); admin.setEmail("admin@example.com");
+        var session = new MockHttpSession();
+        session.setAttribute("usuarioLogado",admin); session.setAttribute("tipoUsuario","admin");
+        session.setAttribute("email2FA",admin.getEmail());
+        String html = mvc().perform(get("/dashboard/admin").session(session)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(html.contains("Insights Administrativos"));
+        assertTrue(html.contains("Turma privada"));
+        assertTrue(html.contains("/admin/usuarios/4/editar"));
+        String filtrado = mvc().perform(get("/dashboard/admin?perfil=ALUNOS").session(session)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(filtrado.contains("/admin/usuarios/4/editar"));
+        sql("DELETE FROM pg_temp.\"CONTEUDOS\"; DELETE FROM pg_temp.\"EVENTOS\"; DELETE FROM pg_temp.\"TURMAS\"; DELETE FROM pg_temp.\"USUARIOS\" WHERE id<>4");
+        mvc().perform(get("/dashboard/admin?perfil=ALUNOS").session(session)).andExpect(status().isOk());
     }
 
     @Test

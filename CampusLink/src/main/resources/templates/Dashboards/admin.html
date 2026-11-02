@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Dashboards/fragments :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="dashboard-page">
+    <header th:replace="~{Dashboards/fragments :: titulo('Uma visão geral das contas, atividades e demandas de moderação do CampusLink.', 'Backoffice')}"></header>
+    <nav class="dashboard-shortcuts" aria-label="Atalhos administrativos">
+        <a class="btn btn-primary" th:href="@{/admin/painel}">Painel administrativo</a>
+        <a class="btn btn-outline-primary" th:href="@{/admin/conteudos-denunciados}">Analisar conteúdos</a>
+        <a class="btn btn-outline-primary" th:href="@{/admin/eventos}">Gerenciar eventos</a>
+    </nav>
+    <section th:replace="~{Dashboards/fragments :: filtros}"></section>
+    <section th:each="grupo : ${dados.grupos}">
+        <h2 class="dashboard-group-title" th:text="${grupo.titulo}"></h2>
+        <div th:with="dados=${grupo}"><section th:replace="~{Dashboards/fragments :: cards}"></section></div>
+    </section>
+    <section th:replace="~{Dashboards/fragments :: graficos}"></section>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Usuários recentes</h2><a th:href="@{/admin/usuarios}">Gerenciar usuários</a></div>
+        <p class="dashboard-help">Até 10 cadastros mais recentes, conforme período e perfil selecionados.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.usuarios)}">Nenhum cadastro neste recorte.</p>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(dados.usuarios)}">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Usuários recentes</caption>
+                <thead><tr><th scope="col">Nome</th><th scope="col">Perfil</th><th scope="col">Cadastro</th><th scope="col">Situação</th><th scope="col">Acesso</th></tr></thead>
+                <tbody><tr th:each="usuario : ${dados.usuarios}">
+                    <td th:text="${usuario.nome}"></td><td th:text="${usuario.perfil}"></td><td th:text="${usuario.data}"></td>
+                    <td th:text="${usuario.situacao}"></td><td><a th:href="@{/admin/usuarios/{id}/editar(id=${usuario.id})}">Gerenciar</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Conteúdos que precisam de atenção</h2><a th:href="@{/admin/conteudos}">Ver todos os conteúdos</a></div>
+        <p class="dashboard-help">Até 10 publicações do período com suspensão ou denúncias pendentes. A quantidade de denúncias inclui todo o histórico do conteúdo.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.conteudos)}">Nenhum conteúdo precisa de atenção neste recorte.</p>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(dados.conteudos)}">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Conteúdos para acompanhamento administrativo</caption>
+                <thead><tr><th scope="col">Conteúdo</th><th scope="col">Professor</th><th scope="col">Turmas</th><th scope="col">Denúncias</th><th scope="col">Situação</th><th scope="col">Acesso</th></tr></thead>
+                <tbody><tr th:each="conteudo : ${dados.conteudos}">
+                    <td th:text="${conteudo.titulo}"></td><td th:text="${conteudo.professor}"></td><td th:text="${conteudo.turmas}"></td>
+                    <td th:text="${conteudo.denuncias}"></td><td th:text="${conteudo.situacao}"></td>
+                    <td><a th:if="${conteudo.situacao == 'Em análise'}" th:href="@{/admin/conteudos-denunciados}">Analisar</a>
+                        <a th:unless="${conteudo.situacao == 'Em análise'}" th:href="@{/admin/conteudos(busca=${conteudo.titulo})}">Consultar</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Visão geral das turmas</h2><a th:href="@{/admin/turmas}">Ver todas</a></div>
+        <p class="dashboard-help">Até 20 turmas cadastradas no período. Alunos são os vínculos atuais; conteúdos são as publicações do período, incluindo removidos.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.turmas)}">Nenhuma turma cadastrada neste recorte.</p>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(dados.turmas)}">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Turmas cadastradas</caption>
+                <thead><tr><th scope="col">Turma</th><th scope="col">Responsável</th><th scope="col">Alunos</th><th scope="col">Conteúdos</th><th scope="col">Acesso</th></tr></thead>
+                <tbody><tr th:each="turma : ${dados.turmas}">
+                    <td th:text="${turma.nome}"></td><td th:text="${turma.professor}"></td><td th:text="${turma.alunos}"></td>
+                    <td th:text="${turma.conteudos}"></td><td><a th:href="@{/admin/turmas/{id}/editar(id=${turma.id})}">Gerenciar</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section th:replace="~{Dashboards/fragments :: insights('Insights Administrativos')}"></section>
+</main>
+</body>
+</html>

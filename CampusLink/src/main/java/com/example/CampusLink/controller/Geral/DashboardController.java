@@ -41,21 +41,25 @@ public class DashboardController {
         String autenticado = tipoAutenticado(session);
         if (autenticado == null) return "redirect:/login";
         if (!tipo.equals(autenticado)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        if ("admin".equals(tipo)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
         Long id = repository.buscarIdentidade(session.getAttribute("email2FA").toString().trim(), tipo);
         if (id == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        DashboardFiltro filtro = new DashboardFiltro(periodo, turma, "aluno".equals(tipo) ? prioridade : "todos", "todos");
-        var opcoes = repository.listarTurmas(repository.parametros(tipo, id,
-                new DashboardFiltro("todos", 0, "todos", "todos")));
+        DashboardFiltro filtro = new DashboardFiltro(periodo, "admin".equals(tipo) ? 0 : turma,
+                "aluno".equals(tipo) ? prioridade : "todos", "admin".equals(tipo) ? perfil : "todos");
+        var opcoes = "admin".equals(tipo) ? List.<java.util.Map<String,Object>>of()
+                : repository.listarTurmas(repository.parametros(tipo, id, new DashboardFiltro("todos", 0, "todos", "todos")));
         if (filtro.getTurma() != 0 && opcoes.stream().noneMatch(t -> ((Number) t.get("id")).longValue() == filtro.getTurma())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         model.addAttribute("tipo", tipo);
         model.addAttribute("filtro", filtro);
         model.addAttribute("opcoesTurmas", opcoes);
-        model.addAttribute("dados", "aluno".equals(tipo) ? service.aluno(id, filtro) : service.professor(id, filtro));
+        model.addAttribute("dados", switch (tipo) {
+            case "aluno" -> service.aluno(id, filtro);
+            case "professor" -> service.professor(id, filtro);
+            default -> service.admin(id, filtro);
+        });
         return "Dashboards/" + tipo;
     }
 

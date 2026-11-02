@@ -96,6 +96,67 @@ public class DashboardService {
                 ponto("Passados", eventos.get("passados")));
     }
 
+    public Map<String, Object> admin(long id, DashboardFiltro filtro) {
+        var p = repository.parametros("admin", id, filtro);
+        var usuarios = repository.resumoUsuarios(p);
+        var conteudos = repository.resumoConteudos(p);
+        var turmas = repository.resumoTurmasAdmin(p);
+        var eventos = repository.resumoEventos(p);
+        var denuncias = repository.resumoDenuncias(p);
+        var porTurma = repository.conteudosPorTurma(p);
+        List<Map<String, Object>> grupos = List.of(
+                grupo("Contas", List.of(
+                        card("Contas cadastradas", usuarios.get("usuarios"), "Cadastros no período e perfil selecionados"),
+                        card("Alunos", usuarios.get("alunos"), "Contas com perfil de aluno"),
+                        card("Professores", usuarios.get("professores"), "Contas com perfil de professor"),
+                        card("Administradores", usuarios.get("administradores"), "Contas do backoffice"),
+                        card("Contas ativas", usuarios.get("ativos"), "Situação atual das contas do recorte"),
+                        card("Contas inativas", usuarios.get("inativos"), "Não representam bloqueio ou suspensão"))),
+                grupo("Conteúdos", List.of(
+                        card("Conteúdos publicados", conteudos.get("conteudos"), "Publicações no período, incluindo removidos"),
+                        card("Conteúdos ativos", conteudos.get("ativos"), "Disponíveis para consulta"),
+                        card("Suspensos por denúncias", conteudos.get("suspensos"), "Inclui os que aguardam análise"),
+                        card("Aguardando análise", conteudos.get("analise"), "Suspensos com revisão solicitada"))),
+                grupo("Turmas e eventos", List.of(
+                        card("Turmas cadastradas", turmas.get("turmas"), "Criadas no período selecionado"),
+                        card("Professores responsáveis", turmas.get("responsaveis"), "Responsáveis distintos nas turmas do recorte"),
+                        card("Eventos cadastrados", turmas.get("eventos"), "Todos os status, criados no período"),
+                        card("Eventos futuros", eventos.get("futuros"), "Eventos ativos criados no período"),
+                        card("Eventos passados", eventos.get("passados"), "Eventos ativos com data final ultrapassada"))),
+                grupo("Denúncias", List.of(
+                        card("Denúncias registradas", denuncias.get("denuncias"), "Recebidas no período selecionado"),
+                        card("Conteúdos denunciados", denuncias.get("denunciados"), "Conteúdos distintos nas denúncias do recorte"),
+                        card("Denúncias pendentes", denuncias.get("pendentes"), "Ainda sem decisão registrada"),
+                        card("Denúncias analisadas", denuncias.get("resolvidas"), "Com liberação ou remoção registrada"))));
+        var graficos = List.of(
+                grafico("Usuários por perfil", "doughnut", "Contas conforme os filtros de período e perfil.", List.of(
+                        ponto("Alunos", usuarios.get("alunos")), ponto("Professores", usuarios.get("professores")), ponto("Administradores", usuarios.get("administradores")))),
+                grafico("Situação das contas", "doughnut", "Estado atual das contas cadastradas no recorte.", List.of(
+                        ponto("Ativas", usuarios.get("ativos")), ponto("Inativas", usuarios.get("inativos")), ponto("Não informado", usuarios.get("sem_status")))),
+                grafico("Situação dos conteúdos", "doughnut", "Categorias sem sobreposição; inclui removidos.", repository.situacaoConteudos(p)),
+                grafico("Cadastros ao longo do tempo", "line", "Novas contas por mês, conforme o perfil selecionado.", repository.usuariosPorMes(p)),
+                grafico("Situação das denúncias", "bar", "Situação atual das denúncias recebidas no período.", repository.denunciasPorSituacao(p)),
+                grafico("Conteúdos por turma", "bar", "Até 10 turmas atuais com mais publicações no período; inclui removidos.", porTurma));
+        List<String> insights = new ArrayList<>();
+        insights.add("Existem " + conteudos.get("analise") + " conteúdos publicados no recorte aguardando análise administrativa.");
+        insights.add("Há " + usuarios.get("inativos") + " contas inativas entre os cadastros selecionados.");
+        insights.add("Foram registradas " + denuncias.get("denuncias") + " denúncias no período; " + denuncias.get("pendentes") + " continuam pendentes.");
+        insights.add("Há registro de liberação em " + denuncias.get("liberados") + " conteúdos distintos nas denúncias do recorte. Isso não indica sua situação atual.");
+        if (!porTurma.isEmpty() && numero(porTurma.getFirst(),"quantidade") > 0) {
+            insights.add("A turma com mais publicações no período é " + porTurma.getFirst().get("nome") + ".");
+        }
+        Map<String, Object> dados = new LinkedHashMap<>();
+        dados.put("grupos",grupos); dados.put("graficos",graficos); dados.put("insights",insights);
+        dados.put("usuarios",repository.usuariosRecentes(p));
+        dados.put("conteudos",repository.listarConteudos(p,true));
+        dados.put("turmas",repository.turmasAdmin(p));
+        return dados;
+    }
+
+    private Map<String, Object> grupo(String titulo, List<Map<String, Object>> cards) {
+        return Map.of("titulo",titulo,"cards",cards);
+    }
+
     private Map<String, Object> card(String titulo, Object valor, String detalhe) {
         return Map.of("titulo", titulo, "valor", valor, "detalhe", detalhe);
     }

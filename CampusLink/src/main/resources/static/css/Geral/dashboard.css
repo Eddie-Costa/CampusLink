@@ -55,6 +55,7 @@
 .dashboard-insights ul { padding-left: 20px; margin: 16px 0 0; }
 .dashboard-insights li { padding: 7px 0; font-size: .9rem; }
 .dashboard-footnote { text-align: center; }
+.dashboard-group-title { font-size: 1.1rem; font-weight: 700; margin: 24px 0 16px; }
 .dashboard-page a:focus-visible, .dashboard-page summary:focus-visible { outline: 3px solid var(--campus-accent); outline-offset: 4px; }
 @media (max-width: 1000px) {
     .dashboard-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
