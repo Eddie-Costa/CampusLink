@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Dashboards/fragments :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="dashboard-page">
+    <header th:replace="~{Dashboards/fragments :: titulo('Suas turmas, compromissos e evolução nos estudos em um só lugar.', 'Área do aluno')}"></header>
+    <nav class="dashboard-shortcuts" aria-label="Atalhos do aluno">
+        <a class="btn btn-primary" th:href="@{/eventos}">Meu plano de estudos</a>
+        <a class="btn btn-outline-primary" th:href="@{/score}">Acompanhar meu Score</a>
+    </nav>
+    <section th:replace="~{Dashboards/fragments :: filtros}"></section>
+    <section th:replace="~{Dashboards/fragments :: cards}"></section>
+    <section th:replace="~{Dashboards/fragments :: graficos}"></section>
+    <section th:replace="~{Dashboards/fragments :: eventos}"></section>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Minhas turmas</h2><a th:href="@{/turmas}">Ver todas</a></div>
+        <p class="dashboard-help">Até 20 turmas do recorte. Um conteúdo compartilhado conta uma vez no total e aparece em cada turma vinculada.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.turmas)}">Você ainda não participa de nenhuma turma neste recorte.</p>
+        <div class="dashboard-class-grid">
+            <article th:each="turma : ${dados.turmas}" class="dashboard-class">
+                <h3 th:text="${turma.nome}"></h3>
+                <p th:text="${turma.concluidos + ' de ' + turma.conteudos + ' conteúdos concluídos'}"></p>
+                <progress max="100" th:value="${turma.conteudos == 0 ? 0 : turma.concluidos * 100.0 / turma.conteudos}" th:attr="aria-label=${'Progresso em ' + turma.nome}"></progress>
+                <a th:href="@{/turmas/{id}(id=${turma.id})}">Acessar turma →</a>
+            </article>
+        </div>
+    </section>
+    <section th:replace="~{Dashboards/fragments :: insights('Insights dos Estudos')}"></section>
+    <p class="dashboard-footnote">O progresso considera marcações de conclusão de conteúdos. O CampusLink não registra horas efetivamente estudadas nem a conclusão formal de eventos.</p>
+</main>
+</body>
+</html>

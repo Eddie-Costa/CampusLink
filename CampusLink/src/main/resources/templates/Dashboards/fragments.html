@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meu Dashboard · CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
+    <link rel="stylesheet" th:href="@{/css/Geral/dashboard.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" defer></script>
+    <script th:src="@{/js/Geral/dashboard.js}" defer></script>
+</head>
+<body>
+<header th:fragment="titulo(descricao, perfil)" class="dashboard-heading">
+    <div>
+        <span class="dashboard-eyebrow" th:text="${perfil}"></span>
+        <h1>Meu Dashboard</h1>
+        <p th:text="${descricao}"></p>
+    </div>
+    <span class="dashboard-date" th:text="${'Atualizado em ' + #temporals.format(filtro.agora, 'dd/MM/yyyy HH:mm')}"></span>
+</header>
+
+<section th:fragment="filtros" class="dashboard-panel dashboard-filters" aria-label="Filtros do dashboard">
+    <form method="get" th:action="@{/dashboard/{tipo}(tipo=${tipo})}">
+        <div>
+            <label for="periodo">Período</label>
+            <select id="periodo" name="periodo" class="form-select">
+                <option value="todos" th:selected="${filtro.periodo == 'todos'}">Todos os períodos</option>
+                <option value="7" th:selected="${filtro.periodo == '7'}">Últimos 7 dias</option>
+                <option value="30" th:selected="${filtro.periodo == '30'}">Últimos 30 dias</option>
+                <option value="mes" th:selected="${filtro.periodo == 'mes'}">Mês atual</option>
+            </select>
+        </div>
+        <div th:if="${tipo != 'admin'}">
+            <label for="turma">Turma</label>
+            <select id="turma" name="turma" class="form-select">
+                <option value="0">Todas as minhas turmas</option>
+                <option th:each="turma : ${opcoesTurmas}" th:value="${turma.id}" th:text="${turma.nome}" th:selected="${filtro.turma == turma.id}"></option>
+            </select>
+        </div>
+        <div th:if="${tipo == 'aluno'}">
+            <label for="prioridade">Prioridade dos eventos</label>
+            <select id="prioridade" name="prioridade" class="form-select">
+                <option value="todos">Todas as prioridades</option>
+                <option value="ALTA" th:selected="${filtro.prioridade == 'ALTA'}">Alta</option>
+                <option value="MEDIA" th:selected="${filtro.prioridade == 'MEDIA'}">Média</option>
+                <option value="BAIXA" th:selected="${filtro.prioridade == 'BAIXA'}">Baixa</option>
+            </select>
+        </div>
+        <div th:if="${tipo == 'admin'}">
+            <label for="perfil">Perfil das contas</label>
+            <select id="perfil" name="perfil" class="form-select">
+                <option value="todos">Todos os perfis</option>
+                <option value="ALUNOS" th:selected="${filtro.perfil == 'ALUNOS'}">Aluno</option>
+                <option value="PROFESSORES" th:selected="${filtro.perfil == 'PROFESSORES'}">Professor</option>
+                <option value="ADMINISTRADOR" th:selected="${filtro.perfil == 'ADMINISTRADOR'}">Administrador</option>
+            </select>
+        </div>
+        <div class="dashboard-filter-actions">
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-primary" th:href="@{/dashboard/{tipo}(tipo=${tipo})}">Limpar</a>
+        </div>
+    </form>
+    <p class="dashboard-help" th:if="${tipo == 'aluno'}">O período filtra a data dos eventos e das conclusões no gráfico de evolução. Os cards e o resumo de conteúdos mostram o progresso atual das turmas selecionadas. A prioridade filtra somente eventos. “Todos” inclui eventos futuros.</p>
+    <p class="dashboard-help" th:if="${tipo == 'professor'}">O período filtra a data de publicação dos conteúdos e a data de criação dos eventos. Turmas e alunos mostram o vínculo atual. Materiais e eventos são de sua autoria; os filtros não alteram seus vínculos.</p>
+    <p class="dashboard-help" th:if="${tipo == 'admin'}">O período considera o cadastro de contas e turmas, a publicação de conteúdos e a criação de eventos e denúncias. O perfil filtra somente as informações de contas.</p>
+</section>
+
+<section th:fragment="cards" class="dashboard-cards" aria-label="Indicadores">
+    <article th:each="card : ${dados.cards}" class="dashboard-panel dashboard-metric">
+        <h2 th:text="${card.titulo}"></h2>
+        <strong th:text="${card.valor}"></strong>
+        <p th:text="${card.detalhe}"></p>
+    </article>
+</section>
+
+<section th:fragment="graficos" class="dashboard-charts" aria-label="Gráficos">
+    <article th:each="grafico : ${dados.graficos}" class="dashboard-panel dashboard-chart" th:attr="data-tipo=${grafico.tipo}">
+        <h2 th:text="${grafico.titulo}"></h2>
+        <p class="dashboard-help" th:text="${grafico.detalhe}"></p>
+        <div class="dashboard-canvas" hidden>
+            <canvas role="img" th:attr="aria-label=${grafico.titulo + '. Valores disponíveis na tabela abaixo.'}"></canvas>
+        </div>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(grafico.pontos)}">Nenhum registro neste recorte.</p>
+        <details open th:unless="${#lists.isEmpty(grafico.pontos)}">
+            <summary>Ver valores do gráfico</summary>
+            <div class="table-responsive">
+                <table class="table table-sm dashboard-chart-data">
+                    <caption class="visually-hidden" th:text="${grafico.titulo}"></caption>
+                    <thead><tr><th scope="col">Categoria</th><th scope="col">Quantidade</th></tr></thead>
+                    <tbody><tr th:each="ponto : ${grafico.pontos}"><th scope="row" th:text="${ponto.nome}"></th><td th:text="${ponto.quantidade}"></td></tr></tbody>
+                </table>
+            </div>
+        </details>
+    </article>
+</section>
+
+<section th:fragment="eventos" class="dashboard-panel">
+    <div class="dashboard-section-heading"><h2>Próximos eventos</h2><a th:href="@{/eventos}">Abrir calendário</a></div>
+    <p class="dashboard-help">Até 10 eventos futuros ou em andamento, conforme os filtros. Um evento passado não significa atividade concluída.</p>
+    <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.eventos)}">Nenhum próximo evento neste recorte. Experimente selecionar todos os períodos.</p>
+    <div class="table-responsive" th:unless="${#lists.isEmpty(dados.eventos)}">
+        <table class="table align-middle">
+            <caption class="visually-hidden">Próximos eventos do recorte</caption>
+            <thead><tr><th scope="col">Evento</th><th scope="col">Turma</th><th scope="col">Data</th><th scope="col">Prioridade</th><th scope="col">Situação</th><th scope="col">Acesso</th></tr></thead>
+            <tbody><tr th:each="evento : ${dados.eventos}">
+                <td th:text="${evento.titulo}"></td><td th:text="${evento.nome_turma}"></td><td class="text-nowrap" th:text="${evento.data}"></td>
+                <td><span class="dashboard-badge" th:classappend="${evento.prioridade == 'ALTA' ? 'dashboard-badge-warning' : ''}" th:text="${evento.prioridade}"></span></td>
+                <td th:text="${evento.situacao}"></td><td><a th:href="@{/turmas/{id}(id=${evento.id_turma})}">Abrir turma</a></td>
+            </tr></tbody>
+        </table>
+    </div>
+</section>
+
+<section th:fragment="insights(titulo)" class="dashboard-panel dashboard-insights">
+    <span class="dashboard-eyebrow">Para acompanhar</span>
+    <h2 th:text="${titulo}"></h2>
+    <ul><li th:each="insight : ${dados.insights}" th:text="${insight}"></li></ul>
+</section>
+</body>
+</html>
