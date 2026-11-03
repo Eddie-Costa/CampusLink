@@ -3,15 +3,19 @@
 <head th:replace="~{Dashboards/fragments :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: nav}"></div>
-<main class="dashboard-page">
+<main class="dashboard-page" th:attr="data-perfil=${tipo}">
     <header th:replace="~{Dashboards/fragments :: titulo('Acompanhe suas turmas, publicações e próximos compromissos.', 'Área do professor')}"></header>
     <nav class="dashboard-shortcuts" aria-label="Atalhos do professor">
         <a class="btn btn-primary" th:href="@{/meus-conteudos}">Gerenciar meus conteúdos</a>
         <a class="btn btn-outline-primary" th:href="@{/acompanhamento}">Acompanhar as turmas</a>
     </nav>
     <section th:replace="~{Dashboards/fragments :: filtros}"></section>
-    <section th:replace="~{Dashboards/fragments :: cards}"></section>
+    <div th:replace="~{Dashboards/fragments :: organizar}"></div>
+    <section th:replace="~{Dashboards/fragments :: resumo}"></section>
+    <section th:replace="~{Dashboards/fragments :: indicadores}"></section>
     <section th:replace="~{Dashboards/fragments :: graficos}"></section>
+    <details class="dashboard-section" data-secao="turmas">
+    <summary><span>Minhas turmas<small>Alunos, vínculos e atividades</small></span></summary>
     <section class="dashboard-panel">
         <div class="dashboard-section-heading"><h2>Minhas turmas</h2><a th:href="@{/turmas}">Ver todas</a></div>
         <p class="dashboard-help">Até 20 turmas do recorte. Conteúdos e eventos consideram sua autoria e o período selecionado.</p>
@@ -28,6 +32,9 @@
             </table>
         </div>
     </section>
+    </details>
+    <details class="dashboard-section" data-secao="conteudos">
+    <summary><span>Meus conteúdos<small>Publicações e acompanhamento de denúncias</small></span></summary>
     <section class="dashboard-panel">
         <div class="dashboard-section-heading"><h2>Meus conteúdos</h2><a th:href="@{/meus-conteudos}">Ver todos</a></div>
         <p class="dashboard-help">Até 10 publicações mais recentes do recorte. Denúncias mostram o total registrado em cada conteúdo.</p>
@@ -44,6 +51,7 @@
             </table>
         </div>
     </section>
+    </details>
     <section th:replace="~{Dashboards/fragments :: eventos}"></section>
     <section th:replace="~{Dashboards/fragments :: insights('Insights das Turmas')}"></section>
 </main>

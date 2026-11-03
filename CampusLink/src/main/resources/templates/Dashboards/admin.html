@@ -3,7 +3,7 @@
 <head th:replace="~{Dashboards/fragments :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: nav}"></div>
-<main class="dashboard-page">
+<main class="dashboard-page" th:attr="data-perfil=${tipo}">
     <header th:replace="~{Dashboards/fragments :: titulo('Uma visão geral das contas, atividades e demandas de moderação do CampusLink.', 'Backoffice')}"></header>
     <nav class="dashboard-shortcuts" aria-label="Atalhos administrativos">
         <a class="btn btn-primary" th:href="@{/admin/painel}">Painel administrativo</a>
@@ -11,11 +11,12 @@
         <a class="btn btn-outline-primary" th:href="@{/admin/eventos}">Gerenciar eventos</a>
     </nav>
     <section th:replace="~{Dashboards/fragments :: filtros}"></section>
-    <section th:each="grupo : ${dados.grupos}">
-        <h2 class="dashboard-group-title" th:text="${grupo.titulo}"></h2>
-        <div th:with="dados=${grupo}"><section th:replace="~{Dashboards/fragments :: cards}"></section></div>
-    </section>
+    <div th:replace="~{Dashboards/fragments :: organizar}"></div>
+    <section th:replace="~{Dashboards/fragments :: resumo}"></section>
+    <section th:replace="~{Dashboards/fragments :: indicadores}"></section>
     <section th:replace="~{Dashboards/fragments :: graficos}"></section>
+    <details class="dashboard-section" data-secao="usuarios">
+    <summary><span>Usuários recentes<small>Contas e gerenciamento de cadastros</small></span></summary>
     <section class="dashboard-panel">
         <div class="dashboard-section-heading"><h2>Usuários recentes</h2><a th:href="@{/admin/usuarios}">Gerenciar usuários</a></div>
         <p class="dashboard-help">Até 10 cadastros mais recentes, conforme período e perfil selecionados.</p>
@@ -31,6 +32,9 @@
             </table>
         </div>
     </section>
+    </details>
+    <details class="dashboard-section" data-secao="conteudos">
+    <summary><span>Conteúdos que precisam de atenção<small>Denúncias e análise administrativa</small></span></summary>
     <section class="dashboard-panel">
         <div class="dashboard-section-heading"><h2>Conteúdos que precisam de atenção</h2><a th:href="@{/admin/conteudos}">Ver todos os conteúdos</a></div>
         <p class="dashboard-help">Até 10 publicações do período com suspensão ou denúncias pendentes. A quantidade de denúncias inclui todo o histórico do conteúdo.</p>
@@ -48,6 +52,9 @@
             </table>
         </div>
     </section>
+    </details>
+    <details class="dashboard-section" data-secao="turmas">
+    <summary><span>Visão geral das turmas<small>Responsáveis, alunos e materiais</small></span></summary>
     <section class="dashboard-panel">
         <div class="dashboard-section-heading"><h2>Visão geral das turmas</h2><a th:href="@{/admin/turmas}">Ver todas</a></div>
         <p class="dashboard-help">Até 20 turmas cadastradas no período. Alunos são os vínculos atuais; conteúdos são as publicações do período, incluindo removidos.</p>
@@ -63,6 +70,7 @@
             </table>
         </div>
     </section>
+    </details>
     <section th:replace="~{Dashboards/fragments :: insights('Insights Administrativos')}"></section>
 </main>
 </body>

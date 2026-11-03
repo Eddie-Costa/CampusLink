@@ -61,28 +61,62 @@
             <a class="btn btn-outline-primary" th:href="@{/dashboard/{tipo}(tipo=${tipo})}">Limpar</a>
         </div>
     </form>
+    <details class="dashboard-filter-help">
+    <summary>Como os filtros são aplicados?</summary>
     <p class="dashboard-help" th:if="${tipo == 'aluno'}">O período filtra a data dos eventos e das conclusões no gráfico de evolução. Os cards e o resumo de conteúdos mostram o progresso atual das turmas selecionadas. A prioridade filtra somente eventos. “Todos” inclui eventos futuros.</p>
     <p class="dashboard-help" th:if="${tipo == 'professor'}">O período filtra a data de publicação dos conteúdos e a data de criação dos eventos. Turmas e alunos mostram o vínculo atual. Materiais e eventos são de sua autoria; os filtros não alteram seus vínculos.</p>
     <p class="dashboard-help" th:if="${tipo == 'admin'}">O período considera o cadastro de contas e turmas, a publicação de conteúdos e a criação de eventos e denúncias. O perfil filtra somente as informações de contas.</p>
+    </details>
 </section>
 
-<section th:fragment="cards" class="dashboard-cards" aria-label="Indicadores">
-    <article th:each="card : ${dados.cards}" class="dashboard-panel dashboard-metric">
+<div th:fragment="organizar" class="dashboard-organize">
+    <p>Abra apenas os assuntos que deseja acompanhar.</p>
+    <div class="dashboard-view-actions" hidden>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-dashboard-action="abrir">Expandir tudo</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-dashboard-action="recolher">Recolher tudo</button>
+        <button type="button" class="btn btn-link btn-sm" data-dashboard-action="padrao">Visão inicial</button>
+    </div>
+</div>
+
+<details th:fragment="resumo" class="dashboard-section dashboard-overview" data-secao="resumo" open>
+    <summary><span>Visão geral<small>Seus principais indicadores</small></span></summary>
+    <div class="dashboard-section-content"><section th:replace="~{Dashboards/fragments :: cards(${dados.destaques})}"></section></div>
+</details>
+
+<section th:fragment="indicadores" aria-label="Indicadores por assunto">
+    <details th:each="grupo : ${dados.grupos}" class="dashboard-section" th:attr="data-secao=${'indicadores-' + grupo.titulo}">
+        <summary><span th:text="${grupo.titulo}"></span><span class="dashboard-section-count" th:text="${#lists.size(grupo.cards) + ' indicadores'}"></span></summary>
+        <div class="dashboard-section-content"><section th:replace="~{Dashboards/fragments :: cards(${grupo.cards})}"></section></div>
+    </details>
+</section>
+
+<section th:fragment="cards(itens)" class="dashboard-cards" aria-label="Indicadores">
+    <article th:each="card : ${itens}" class="dashboard-panel dashboard-metric">
         <h2 th:text="${card.titulo}"></h2>
         <strong th:text="${card.valor}"></strong>
         <p th:text="${card.detalhe}"></p>
     </article>
 </section>
 
-<section th:fragment="graficos" class="dashboard-charts" aria-label="Gráficos">
-    <article th:each="grafico : ${dados.graficos}" class="dashboard-panel dashboard-chart" th:attr="data-tipo=${grafico.tipo}">
-        <h2 th:text="${grafico.titulo}"></h2>
+<details th:fragment="graficos" class="dashboard-section" data-secao="graficos">
+    <summary><span>Gráficos e comparações<small>Escolha quais visualizações abrir</small></span><span class="dashboard-section-count" th:text="${#lists.size(dados.graficos) + ' visualizações'}"></span></summary>
+    <div class="dashboard-section-content dashboard-charts">
+    <details th:each="grafico : ${dados.graficos}" class="dashboard-chart" th:classappend="${grafico.tipo == 'ranking' ? 'dashboard-chart-wide' : ''}" th:attr="data-tipo=${grafico.tipo},data-secao=${'grafico-' + grafico.titulo}">
+        <summary th:text="${grafico.titulo}"></summary>
+        <div class="dashboard-chart-content">
         <p class="dashboard-help" th:text="${grafico.detalhe}"></p>
-        <div class="dashboard-canvas" hidden>
+        <ol th:if="${grafico.tipo == 'ranking' and !#lists.isEmpty(grafico.pontos)}" class="dashboard-ranking" th:attr="aria-label=${grafico.titulo}">
+            <li th:each="ponto, ordem : ${grafico.pontos}">
+                <span class="dashboard-ranking-name"><span class="dashboard-ranking-position" th:text="${ordem.count}"></span><span th:text="${ponto.nome}"></span></span>
+                <meter min="0" th:max="${grafico.maximo}" th:value="${ponto.quantidade}" th:attr="aria-label=${ponto.nome + ': ' + ponto.quantidade}"></meter>
+                <strong th:text="${ponto.quantidade}"></strong>
+            </li>
+        </ol>
+        <div th:unless="${grafico.tipo == 'ranking'}" class="dashboard-canvas" hidden>
             <canvas role="img" th:attr="aria-label=${grafico.titulo + '. Valores disponíveis na tabela abaixo.'}"></canvas>
         </div>
         <p class="dashboard-empty" th:if="${#lists.isEmpty(grafico.pontos)}">Nenhum registro neste recorte.</p>
-        <details open th:unless="${#lists.isEmpty(grafico.pontos)}">
+        <details class="dashboard-chart-values" open th:if="${grafico.tipo != 'ranking' and !#lists.isEmpty(grafico.pontos)}">
             <summary>Ver valores do gráfico</summary>
             <div class="table-responsive">
                 <table class="table table-sm dashboard-chart-data">
@@ -92,10 +126,14 @@
                 </table>
             </div>
         </details>
-    </article>
-</section>
+        </div>
+    </details>
+    </div>
+</details>
 
-<section th:fragment="eventos" class="dashboard-panel">
+<details th:fragment="eventos" class="dashboard-section" data-secao="eventos">
+    <summary><span>Próximos eventos<small>Agenda e acesso às turmas</small></span></summary>
+    <section class="dashboard-panel">
     <div class="dashboard-section-heading"><h2>Próximos eventos</h2><a th:href="@{/eventos}">Abrir calendário</a></div>
     <p class="dashboard-help">Até 10 eventos futuros ou em andamento, conforme os filtros. Um evento passado não significa atividade concluída.</p>
     <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.eventos)}">Nenhum próximo evento neste recorte. Experimente selecionar todos os períodos.</p>
@@ -111,11 +149,15 @@
         </table>
     </div>
 </section>
+</details>
 
-<section th:fragment="insights(titulo)" class="dashboard-panel dashboard-insights">
+<details th:fragment="insights(titulo)" class="dashboard-section" data-secao="insights">
+    <summary><span th:text="${titulo}"></span></summary>
+    <section class="dashboard-panel dashboard-insights">
     <span class="dashboard-eyebrow">Para acompanhar</span>
     <h2 th:text="${titulo}"></h2>
     <ul><li th:each="insight : ${dados.insights}" th:text="${insight}"></li></ul>
 </section>
+</details>
 </body>
 </html>

@@ -35,7 +35,7 @@ public class DashboardService {
                         List.of(ponto("Pendentes", resumo.get("pendentes")), ponto("Concluídos", resumo.get("concluidos")),
                                 ponto("Atrasados", resumo.get("atrasados")))),
                 grafico("Evolução dos estudos", "line", "Conteúdos concluídos por mês no período selecionado.", repository.evolucaoAluno(p)),
-                grafico("Eventos por turma", "bar", "Até 10 turmas com mais eventos no recorte.", repository.eventosPorTurma(p)),
+                grafico("Eventos por turma", "ranking", "Até 10 turmas com mais eventos no recorte.", repository.eventosPorTurma(p)),
                 grafico("Prioridades dos eventos", "doughnut", "Prioridades registradas nos eventos do recorte.", repository.prioridades(p)));
 
         List<String> insights = new ArrayList<>();
@@ -47,6 +47,9 @@ public class DashboardService {
         }
         Map<String, Object> dados = new LinkedHashMap<>();
         dados.put("cards", cards);
+        dados.put("destaques", List.of(cards.get(0), cards.get(3), cards.get(5), cards.get(7)));
+        dados.put("grupos", List.of(grupo("Conteúdos e progresso", cards.subList(1, 6)),
+                grupo("Turmas e agenda", List.of(cards.get(0), cards.get(6), cards.get(7)))));
         dados.put("graficos", graficos);
         dados.put("insights", insights);
         dados.put("turmas", repository.turmasAluno(p));
@@ -72,7 +75,7 @@ public class DashboardService {
                 card("Eventos futuros", eventos.get("futuros"), "Ainda não iniciados"),
                 card("Eventos passados", eventos.get("passados"), "Data final já ultrapassada"));
         var graficos = List.of(
-                grafico("Conteúdos por turma", "bar", "Suas publicações; até 10 turmas. Materiais compartilhados aparecem em cada turma.", porTurma),
+                grafico("Conteúdos por turma", "ranking", "Suas publicações; até 10 turmas. Materiais compartilhados aparecem em cada turma.", porTurma),
                 grafico("Situação dos conteúdos", "doughnut", "Categorias separadas; em análise significa revisão solicitada.", repository.situacaoConteudos(p)),
                 grafico("Eventos criados por mês", "line", "Data de cadastro dos eventos ativos de sua autoria.", repository.eventosPorMes(p)),
                 grafico("Distribuição dos eventos", "doughnut", "Situação temporal dos eventos no recorte.", distribuicaoEventos(eventos)));
@@ -85,6 +88,9 @@ public class DashboardService {
         }
         Map<String, Object> dados = new LinkedHashMap<>();
         dados.put("cards", cards); dados.put("graficos", graficos); dados.put("insights", insights);
+        dados.put("destaques", List.of(cards.get(0), cards.get(2), cards.get(6), cards.get(8)));
+        dados.put("grupos", List.of(grupo("Turmas e alunos", cards.subList(0, 3)),
+                grupo("Publicações e moderação", cards.subList(3, 7)), grupo("Agenda", cards.subList(7, 10))));
         dados.put("turmas", repository.turmasProfessor(p));
         dados.put("conteudos", repository.listarConteudos(p, false));
         dados.put("eventos", repository.proximosEventos(p));
@@ -136,7 +142,7 @@ public class DashboardService {
                 grafico("Situação dos conteúdos", "doughnut", "Categorias sem sobreposição; inclui removidos.", repository.situacaoConteudos(p)),
                 grafico("Cadastros ao longo do tempo", "line", "Novas contas por mês, conforme o perfil selecionado.", repository.usuariosPorMes(p)),
                 grafico("Situação das denúncias", "bar", "Situação atual das denúncias recebidas no período.", repository.denunciasPorSituacao(p)),
-                grafico("Conteúdos por turma", "bar", "Até 10 turmas atuais com mais publicações no período; inclui removidos.", porTurma));
+                grafico("Conteúdos por turma", "ranking", "Até 10 turmas atuais com mais publicações no período; inclui removidos.", porTurma));
         List<String> insights = new ArrayList<>();
         insights.add("Existem " + conteudos.get("analise") + " conteúdos publicados no recorte aguardando análise administrativa.");
         insights.add("Há " + usuarios.get("inativos") + " contas inativas entre os cadastros selecionados.");
@@ -147,6 +153,11 @@ public class DashboardService {
         }
         Map<String, Object> dados = new LinkedHashMap<>();
         dados.put("grupos",grupos); dados.put("graficos",graficos); dados.put("insights",insights);
+        dados.put("destaques", List.of(
+                card("Contas cadastradas", usuarios.get("usuarios"), "Cadastros no recorte selecionado"),
+                card("Turmas cadastradas", turmas.get("turmas"), "Criadas no período selecionado"),
+                card("Aguardando análise", conteudos.get("analise"), "Conteúdos com revisão solicitada"),
+                card("Denúncias pendentes", denuncias.get("pendentes"), "Ainda sem decisão registrada")));
         dados.put("usuarios",repository.usuariosRecentes(p));
         dados.put("conteudos",repository.listarConteudos(p,true));
         dados.put("turmas",repository.turmasAdmin(p));
@@ -162,7 +173,8 @@ public class DashboardService {
     }
 
     private Map<String, Object> grafico(String titulo, String tipo, String detalhe, List<Map<String, Object>> pontos) {
-        return Map.of("titulo", titulo, "tipo", tipo, "detalhe", detalhe, "pontos", pontos);
+        long maximo = pontos.stream().mapToLong(ponto -> numero(ponto, "quantidade")).max().orElse(0);
+        return Map.of("titulo", titulo, "tipo", tipo, "detalhe", detalhe, "pontos", pontos, "maximo", Math.max(1, maximo));
     }
 
     private Map<String, Object> ponto(String nome, Object quantidade) {
