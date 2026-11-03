@@ -60,6 +60,9 @@
                         <div th:if="${session.tipoUsuario == 'aluno'}">
                             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                                 <li>
+                                    <a th:href="@{/dashboard}" class="nav-link px-2">Meu Dashboard</a>
+                                </li>
+                                <li>
                                     <a href="/turmas" class="nav-link px-2">Turmas</a>
                                 </li>
                                 <li>
@@ -74,6 +77,9 @@
                         <!-- Links para professores -->
                         <div th:if="${session.tipoUsuario == 'professor'}">
                             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                                <li>
+                                    <a th:href="@{/dashboard}" class="nav-link px-2">Meu Dashboard</a>
+                                </li>
                                 <li>
                                     <a href="/turmas" class="nav-link px-2">Turmas</a>
                                 </li>
@@ -95,6 +101,9 @@
                         <!-- link para administrador -->
                         <div th:if="${session.tipoUsuario == 'admin'}">
                             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                                <li>
+                                    <a th:href="@{/dashboard}" class="nav-link px-2">Meu Dashboard</a>
+                                </li>
                                 <li>
                                     <a th:href="@{/admin/painel}" class="nav-link px-2">Painel Administrativo</a>
                                 </li>

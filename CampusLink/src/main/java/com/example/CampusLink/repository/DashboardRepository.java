@@ -62,7 +62,8 @@ public class DashboardRepository {
                         SELECT 1 FROM public."EVENTO_CONTEUDO" ec
                         JOIN public."EVENTOS" e ON e.id = ec.id_evento
                         WHERE ec.id_conteudo = c.id AND upper(e.status) = 'ATIVO'
-                            AND EXISTS (SELECT 1 FROM turmas t WHERE t.id = e.id_turma)
+                            AND EXISTS (SELECT 1 FROM public."TURMAS" t
+                                WHERE t.id = e.id_turma AND :pessoa = ANY(t.id_alunos))
                         HAVING max(e.data_hora) < :agora
                             AND (c.reaberto_em IS NULL OR c.reaberto_em AT TIME ZONE 'America/Sao_Paulo' <= max(e.data_hora))
                     ) AS atrasado

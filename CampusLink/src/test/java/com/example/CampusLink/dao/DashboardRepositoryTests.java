@@ -133,6 +133,11 @@ class DashboardRepositoryTests {
         sql("UPDATE pg_temp.\"CONTEUDOS\" SET reaberto_em = null WHERE id=2");
         sql("INSERT INTO pg_temp.\"EVENTO_CONTEUDO\" (id_evecon,id_evento,id_conteudo) VALUES (2,1,2)");
         assertEquals(0L, repository.resumoAluno(p).get("atrasados"));
+        sql("UPDATE pg_temp.\"EVENTOS\" SET id_turma=200 WHERE id=1");
+        var selecionada = repository.parametros("aluno",10,filtro("todos",100,"todos"));
+        assertEquals(0L, repository.resumoAluno(selecionada).get("atrasados"));
+        sql("UPDATE pg_temp.\"EVENTOS\" SET id_turma=300 WHERE id=1");
+        assertEquals(1L, repository.resumoAluno(selecionada).get("atrasados"));
     }
 
     @Test
@@ -172,6 +177,7 @@ class DashboardRepositoryTests {
         String html = mvc().perform(get("/dashboard/professor").session(session)).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(html.contains("Insights das Turmas"));
+        assertEquals(1, html.split("href=\"/dashboard\"",-1).length - 1);
         assertTrue(html.contains("Participante"));
         assertFalse(html.contains("Turma privada"));
         mvc().perform(get("/dashboard/professor?turma=300").session(session)).andExpect(status().isForbidden());
@@ -227,6 +233,7 @@ class DashboardRepositoryTests {
         String html = mvc().perform(get("/dashboard/admin").session(session)).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(html.contains("Insights Administrativos"));
+        assertEquals(1, html.split("href=\"/dashboard\"",-1).length - 1);
         assertTrue(html.contains("Turma privada"));
         assertTrue(html.contains("/admin/usuarios/4/editar"));
         String filtrado = mvc().perform(get("/dashboard/admin?perfil=ALUNOS").session(session)).andExpect(status().isOk())
@@ -246,6 +253,7 @@ class DashboardRepositoryTests {
         String html = mvc.perform(get("/dashboard/aluno").session(session)).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(html.contains("Insights dos Estudos"));
+        assertEquals(1, html.split("href=\"/dashboard\"",-1).length - 1);
         assertTrue(html.contains("Turma A"));
         assertFalse(html.contains("Turma privada"));
         sql("UPDATE pg_temp.\"TURMAS\" SET id_alunos=ARRAY[]::bigint[]");
