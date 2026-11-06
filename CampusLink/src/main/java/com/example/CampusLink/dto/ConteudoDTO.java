@@ -1,3 +1,4 @@
+// dados de conteudo organiza as informacoes dos materiais academicos
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +13,7 @@ import java.util.List;
 import com.example.CampusLink.validation.UrlValida;
 
 
+// registro do material esta classe valida titulo descricao e link e guarda autoria prazo e revisao
 @Getter
 @Setter
 public class ConteudoDTO {

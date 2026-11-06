@@ -1,3 +1,4 @@
+<!-- listar eventos administrativos apresenta filtros detalhes e confirmacao de exclusao dos eventos -->
 
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
@@ -257,7 +258,7 @@
 
 </main>
 
-<!-- confirmacao antes de excluir cada evento -->
+
 <div th:each="evento : ${eventos}" class="modal fade"
      th:id="${'excluirEventoModal' + evento.id}" tabindex="-1"
      th:attr="aria-labelledby=${'tituloExcluirEvento' + evento.id}" aria-hidden="true">

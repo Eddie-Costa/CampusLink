@@ -1,3 +1,4 @@
+// formulario de cadastro de professor define os dados recebidos na inscricao
 package com.example.CampusLink.dto.Professor;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados do professor inscrito esta classe valida matricula contato nascimento e senha
 @Getter
 @Setter
 

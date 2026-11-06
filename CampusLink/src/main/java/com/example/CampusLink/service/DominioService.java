@@ -1,3 +1,4 @@
+// regras de dominios controlam os enderecos aceitos nos materiais
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.repository.DominioRepository;
@@ -11,13 +12,14 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
+// servico de sites permitidos esta classe normaliza pedidos e valida as decisoes de aprovacao ou recusa
 @Service
 public class DominioService {
 
     private static final Logger logger = LoggerFactory.getLogger(DominioService.class);
 
-    // exemplo.com, aula.exemplo.com.br (precisa de ao menos um ponto e terminar em letras)
-    // isso também rejeita IPs (192.168.0.1) e "localhost"
+
+
     private static final Pattern DOMINIO_VALIDO = Pattern.compile(
             "^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$"
     );
@@ -25,8 +27,9 @@ public class DominioService {
     @Autowired
     private DominioRepository dominioRepository;
 
-    // ---------- professor ----------
 
+
+    // solicitar dominio validado este metodo normaliza o endereco e impede pedidos pendentes ou aprovados repetidos
     public void solicitar(DominioDTO dominioDTO, Long idProfessor) {
 
         String dominio = normalizar(dominioDTO.getDominio());
@@ -34,7 +37,9 @@ public class DominioService {
         String justificativa = dominioDTO.getJustificativa();
         justificativa = (justificativa == null || justificativa.isBlank()) ? null : justificativa.trim();
 
+        // solicitar dominio confere pedidos existentes e tenta cadastrar a solicitacao
         try {
+            // impedir dominio repetido rejeita dominio autorizado ou com pedido pendente
             if (dominioRepository.existePendenteOuAprovado(dominio)) {
                 throw new IllegalArgumentException(
                         "O domínio " + dominio + " já está autorizado ou já possui uma solicitação em análise.");
@@ -47,7 +52,8 @@ public class DominioService {
             dominioRepository.inserir(dominioDTO);
 
         } catch (SQLException e) {
-            // 23505 = violação do índice único (duas solicitações iguais ao mesmo tempo)
+
+            // tratar dominio duplicado informa quando o banco recusa uma solicitacao repetida
             if ("23505".equals(e.getSQLState())) {
                 throw new IllegalArgumentException(
                         "O domínio " + dominio + " já está autorizado ou já possui uma solicitação em análise.");
@@ -57,7 +63,9 @@ public class DominioService {
         }
     }
 
+    // consultar pedidos do professor este metodo lista suas solicitacoes de dominio e trata falhas
     public List<DominioDTO> listarPorProfessor(Long idProfessor) {
+        // listar pedidos do professor consulta suas solicitacoes de dominio e trata falhas
         try {
             return dominioRepository.listarPorProfessor(idProfessor);
         } catch (SQLException e) {
@@ -66,9 +74,11 @@ public class DominioService {
         }
     }
 
-    // ---------- admin ----------
 
+
+    // consultar pedidos pendentes de dominio este metodo recupera a fila de analise e trata falhas
     public List<DominioDTO> listarPendentes() {
+        // listar dominios pendentes consulta as solicitacoes que aguardam analise
         try {
             return dominioRepository.listarPendentes();
         } catch (SQLException e) {
@@ -77,7 +87,9 @@ public class DominioService {
         }
     }
 
+    // consultar enderecos aprovados este metodo recupera os dominios permitidos e trata falhas
     public List<DominioDTO> listarAprovados() {
+        // listar dominios aprovados consulta os dominios autorizados e trata falhas
         try {
             return dominioRepository.listarAprovados();
         } catch (SQLException e) {
@@ -86,27 +98,33 @@ public class DominioService {
         }
     }
 
+    // analisar pedido de dominio validado este metodo exige motivo de recusa e grava a decisao administrativa
     public void analisar(Long id, boolean aprovar, String comentarioAdmin) {
 
         String comentario = (comentarioAdmin == null || comentarioAdmin.isBlank()) ? null : comentarioAdmin.trim();
 
+        // validar comentario do dominio limita a justificativa a quinhentos caracteres
         if (comentario != null && comentario.length() > 500) {
             throw new IllegalArgumentException("O comentário deve ter no máximo 500 caracteres.");
         }
 
+        // justificar rejeicao do dominio exige um motivo para rejeitar a solicitacao
         if (!aprovar && comentario == null) {
             throw new IllegalArgumentException("Informe o motivo da rejeição.");
         }
 
+        // analisar dominio tenta salvar a aprovacao ou rejeicao do pedido
         try {
             boolean analisado = dominioRepository.analisar(id, aprovar ? "aprovado" : "rejeitado", comentario);
 
+            // conferir analise do dominio informa quando o pedido nao existe ou ja foi analisado
             if (!analisado) {
                 throw new IllegalArgumentException("Essa solicitação não existe ou já foi analisada.");
             }
 
         } catch (SQLException e) {
-            // aprovar um domínio que já foi aprovado em outra solicitação
+
+            // tratar aprovacao duplicada informa que outra solicitacao ja autorizou o dominio
             if ("23505".equals(e.getSQLState())) {
                 throw new IllegalArgumentException("Esse domínio já está autorizado por outra solicitação.");
             }
@@ -115,9 +133,11 @@ public class DominioService {
         }
     }
 
-    // ---------- usado pela validação de URL ----------
 
+
+    // consultar permissao do endereco este metodo verifica o dominio autorizado e trata falhas do banco
     public boolean hostAutorizado(String host) {
+        // verificar dominio autorizado consulta a permissao do endereco e trata falhas
         try {
             return dominioRepository.hostAutorizado(host);
         } catch (SQLException e) {
@@ -126,28 +146,32 @@ public class DominioService {
         }
     }
 
-    // ---------- util ----------
 
-    // aceita "https://www.Exemplo.com/pagina?x=1" e devolve "exemplo.com"
+
+
+    // normalizar dominio solicitado este metodo extrai o nome do site e rejeita formatos invalidos
     public static String normalizar(String entrada) {
 
+        // validar dominio solicitado exige um endereco preenchido
         if (entrada == null || entrada.isBlank()) {
             throw new IllegalArgumentException("Informe o domínio que deseja solicitar.");
         }
 
         String d = entrada.trim().toLowerCase();
 
-        d = d.replaceFirst("^[a-z][a-z0-9+.-]*://", "");   // remove protocolo
-        d = d.replaceAll("[/?#].*$", "");                  // remove caminho, query e fragmento
+        d = d.replaceFirst("^[a-z][a-z0-9+.-]*://", "");
+        d = d.replaceAll("[/?#].*$", "");
 
+        // validar endereco do dominio rejeita entradas com usuario ou senha
         if (d.contains("@")) {
             throw new IllegalArgumentException("Informe apenas o domínio, sem usuário ou senha.");
         }
 
-        d = d.replaceFirst(":\\d+$", "");                  // remove porta
-        d = d.replaceFirst("^www\\.", "");                 // www. é subdomínio comum
-        d = d.replaceFirst("\\.$", "");                    // ponto final
+        d = d.replaceFirst(":\\d+$", "");
+        d = d.replaceFirst("^www\\.", "");
+        d = d.replaceFirst("\\.$", "");
 
+        // conferir formato do dominio rejeita enderecos fora do formato aceito
         if (!DOMINIO_VALIDO.matcher(d).matches()) {
             throw new IllegalArgumentException(
                     "Domínio inválido. Use um formato como exemplo.com ou exemplo.com.br.");

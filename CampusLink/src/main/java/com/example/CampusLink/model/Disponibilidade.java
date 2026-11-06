@@ -1,3 +1,4 @@
+// disponibilidade persistida relaciona dias livres aos alunos
 package com.example.CampusLink.model;
 
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+// horas livres esta classe representa aluno data e quantidade de horas na tabela de disponibilidades
 @Entity
 @Table(name = "\"DISPONIBILIDADES\"", schema = "public")
 @Getter
@@ -29,6 +31,7 @@ public class Disponibilidade {
     @Column(name = "horas_disponiveis", nullable = false)
     private Integer horasDisponiveis;
 
+    // preparar disponibilidade este construtor guarda o aluno o dia e as horas livres
     public Disponibilidade(Long idAluno, LocalDate data, Integer horasDisponiveis) {
         this.idAluno = idAluno;
         this.data = data;

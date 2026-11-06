@@ -1,3 +1,4 @@
+// dados de denuncia organiza o relato sobre um material
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -7,6 +8,7 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
+// registro da denuncia esta classe valida o motivo e guarda aluno professor conteudo e situacao
 @Getter
 @Setter
 public class DenunciaDTO {

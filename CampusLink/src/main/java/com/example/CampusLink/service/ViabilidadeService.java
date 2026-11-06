@@ -1,3 +1,4 @@
+// planejamento academico avalia a carga de estudo antes dos eventos
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// viabilidade de estudo esta classe calcula riscos atrasos prioridades e distribuicao de horas por aluno
 @Service
 @RequiredArgsConstructor
 public class ViabilidadeService {
@@ -55,17 +57,21 @@ public class ViabilidadeService {
     private final TurmaRepository turmaRepository;
     private final DisponibilidadeRepository disponibilidadeRepository;
 
+    // calcular risco do aluno este metodo consulta a viabilidade de estudo de um unico aluno
     public List<ViabilidadeDTO> calcularParaAluno(Long idAluno) {
         return calcularParaAlunos(List.of(idAluno)).getOrDefault(idAluno, List.of());
     }
 
+    // calcular risco de varios alunos este metodo carrega os dados em conjunto e avalia cada participante
     public Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<Long> idsAlunos) {
         Map<Long, List<ViabilidadeDTO>> resultadoPorAluno = new HashMap<>();
 
+        // calcular viabilidade ignora a consulta quando nao existem alunos
         if (idsAlunos.isEmpty()) {
             return resultadoPorAluno;
         }
 
+        // calcular viabilidade dos alunos tenta carregar os dados e calcular a situacao de cada aluno
         try {
             LocalDate hoje = LocalDate.now(FUSO);
             DadosAlunos dados = carregar(idsAlunos, hoje);
@@ -83,13 +89,16 @@ public class ViabilidadeService {
         }
     }
 
+    // listar materiais atrasados este metodo identifica conteudos nao concluidos com prazo encerrado nas turmas dos alunos
     public Map<Long, List<ViabilidadeDTO>> listarAtrasados(List<Long> idsAlunos) {
         Map<Long, List<ViabilidadeDTO>> atrasadosPorAluno = new HashMap<>();
 
+        // listar atrasos ignora a consulta quando nao existem alunos
         if (idsAlunos.isEmpty()) {
             return atrasadosPorAluno;
         }
 
+        // listar conteudos atrasados tenta reunir eventos prazos e progresso para identificar atrasos de cada aluno
         try {
             Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
 
@@ -118,10 +127,12 @@ public class ViabilidadeService {
                 List<ViabilidadeDTO> atrasados = new ArrayList<>();
 
                 for (Evento evento : eventosPassados) {
+                    // filtrar eventos do aluno ignora eventos de turmas em que o aluno nao participa
                     if (!turmasAluno.contains(evento.getIdTurma())) {
                         continue;
                     }
                     for (ConteudoDTO conteudo : conteudosPorEvento.getOrDefault(evento.getId(), List.of())) {
+                        // filtrar conteudos atrasados ignora materiais concluidos sem prazo encerrado ou ja listados
                         if (concluidos.contains(conteudo.getId()) || !prazosEncerrados.containsKey(conteudo.getId())
                                 || !jaListados.add(conteudo.getId())) {
                             continue;
@@ -148,7 +159,9 @@ public class ViabilidadeService {
         }
     }
 
+    // consultar minutos concluidos recentemente este metodo soma duracoes estimadas usando o valor padrao quando necessario
     public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias) {
+        // calcular ritmo de estudos consulta os minutos concluidos pelos alunos no periodo
         try {
             return conteudoRepository.minutosConcluidosRecentes(idsAlunos, dias, DURACAO_PADRAO_MIN);
         } catch (SQLException e) {
@@ -157,15 +170,19 @@ public class ViabilidadeService {
         }
     }
 
+    // calcular minutos diarios necessarios este metodo divide a carga restante pelos dias ate o evento
     public int minutosNecessariosPorDia(ViabilidadeDTO resumoEvento) {
         long dias = ChronoUnit.DAYS.between(LocalDate.now(FUSO), resumoEvento.getDataEvento().toLocalDate());
         return dias <= 0 ? resumoEvento.getCargaMin() : (int) Math.ceil(resumoEvento.getCargaMin() / (double) dias);
     }
 
+    // registrar erro no planejamento este metodo grava a falha junto aos alunos envolvidos
     private void registrarErro(String metodo, String mensagem, List<Long> idsAlunos, SQLException e) {
         logger.error(mensagem, idsAlunos, e);
 
+        // registro de erros confere se esta habilitado ao registrar erro no planejamento
         if (logger.isErrorEnabled()) {
+            // gravar historico ao registrar erro no planejamento tenta salvar o registro no banco e informa falhas
             try {
                 StringWriter excecaoLogBD = new StringWriter();
                 e.printStackTrace(new PrintWriter(excecaoLogBD));
@@ -179,7 +196,9 @@ public class ViabilidadeService {
         }
     }
 
+    // gerar plano do aluno este metodo carrega eventos materiais e disponibilidade para distribuir os estudos
     public List<SessaoEstudoDTO> gerarPlano(Long idAluno) {
+        // gerar plano de estudos tenta carregar os dados do aluno e distribuir suas sessoes
         try {
             LocalDate hoje = LocalDate.now(FUSO);
             DadosAlunos dados = carregar(List.of(idAluno), hoje);
@@ -193,6 +212,7 @@ public class ViabilidadeService {
         }
     }
 
+    // distribuir plano de estudos este metodo ocupa horas livres sugere horas extras e aponta o que nao cabe
     List<SessaoEstudoDTO> planejar(LocalDate hoje,
                                    List<Evento> eventos,
                                    Map<Long, List<ConteudoDTO>> conteudosPorEvento,
@@ -201,6 +221,7 @@ public class ViabilidadeService {
 
         Map<LocalDate, Integer> livrePorDia = new HashMap<>();
         horasPorDia.forEach((dia, horas) -> {
+            // considerar disponibilidade futura inclui apenas datas a partir de hoje
             if (!dia.isBefore(hoje)) {
                 livrePorDia.put(dia, horas * 60);
             }
@@ -215,6 +236,7 @@ public class ViabilidadeService {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
 
             for (ConteudoDTO conteudo : ordenarConteudos(conteudosPorEvento.getOrDefault(evento.getId(), List.of()))) {
+                // planejar conteudo pendente ignora materiais concluidos ou ja planejados para a data do evento
                 if (concluidos.contains(conteudo.getId()) || !planejados.add(conteudo.getId() + "@" + dataEvento)) {
                     continue;
                 }
@@ -222,6 +244,7 @@ public class ViabilidadeService {
                 int restante = duracaoDe(conteudo);
                 for (LocalDate dia = hoje; dia.isBefore(dataEvento) && restante > 0; dia = dia.plusDays(1)) {
                     int livre = diasDeEvento.contains(dia) ? 0 : livrePorDia.getOrDefault(dia, 0);
+                    // distribuir tempo de estudo ignora dias sem minutos livres
                     if (livre == 0) {
                         continue;
                     }
@@ -232,10 +255,12 @@ public class ViabilidadeService {
                     plano.add(novaSessao(dia, evento, conteudo, minutos));
                 }
 
+                // sugerir horas extras procura horarios adicionais quando ainda resta tempo de estudo
                 if (restante > 0) {
                     restante = sugerirHoras(hoje, evento, conteudo, restante, usadoPorDia, diasDeEvento, plano);
                 }
 
+                // registrar estudo sem data inclui o tempo restante que nao coube no calendario
                 if (restante > 0) {
                     plano.add(novaSessao(null, evento, conteudo, restante));
                 }
@@ -246,6 +271,7 @@ public class ViabilidadeService {
         return plano;
     }
 
+    // sugerir horas extras este metodo distribui a carga restante respeitando o limite diario e os dias de evento
     private int sugerirHoras(LocalDate hoje, Evento evento, ConteudoDTO conteudo, int restante,
                              Map<LocalDate, Integer> usadoPorDia, Set<LocalDate> diasDeEvento, List<SessaoEstudoDTO> plano) {
         int teto = TETO_DIARIO_HORAS * 60;
@@ -253,6 +279,7 @@ public class ViabilidadeService {
         int espacoTotal = 0;
 
         for (LocalDate dia = hoje; dia.isBefore(evento.getInicio().toLocalDate()); dia = dia.plusDays(1)) {
+            // sugerir dia de estudo ignora dias que ja possuem eventos
             if (diasDeEvento.contains(dia)) {
                 continue;
             }
@@ -261,6 +288,7 @@ public class ViabilidadeService {
         }
 
         int sugerir = Math.min(restante, espacoTotal);
+        // encerrar sugestao de horas retorna o tempo restante quando nao ha minutos a sugerir
         if (sugerir == 0) {
             return restante;
         }
@@ -283,6 +311,7 @@ public class ViabilidadeService {
             cota -= corte;
             excesso -= corte;
 
+            // acrescentar sessao sugerida registra uma sessao quando existe tempo disponivel na cota
             if (cota > 0) {
                 usadoPorDia.merge(dia, cota, Integer::sum);
                 SessaoEstudoDTO sessao = novaSessao(dia, evento, conteudo, cota);
@@ -294,6 +323,7 @@ public class ViabilidadeService {
         return restante - sugerir;
     }
 
+    // calcular risco acumulado este metodo compara a carga dos materiais com o tempo disponivel ate cada evento
     List<ViabilidadeDTO> calcular(Long idAluno,
                                   LocalDate hoje,
                                   List<Evento> eventos,
@@ -324,10 +354,12 @@ public class ViabilidadeService {
                 item.setTituloConteudo(conteudo.getTitulo());
                 item.setCapacidadeMin(capacidade);
 
+                // classificar conteudo concluido marca como concluido ou calcula o risco do material pendente
                 if (concluidos.contains(conteudo.getId())) {
                     item.setNivel("concluido");
                     item.setMotivo("Conteúdo concluído.");
                 } else {
+                    // acumular carga de estudo conta o tempo do conteudo uma vez para cada data de evento
                     if (!cargaAteConteudo.containsKey(conteudo.getId() + "@" + dataEvento)) {
                         cargaAcumulada += duracaoDe(conteudo);
                         cargaAteConteudo.put(conteudo.getId() + "@" + dataEvento, cargaAcumulada);
@@ -345,6 +377,7 @@ public class ViabilidadeService {
             ViabilidadeDTO resumoEvento = novoResultado(idAluno, evento);
             resumoEvento.setCargaMin(cargaAcumulada);
             resumoEvento.setCapacidadeMin(capacidade);
+            // resumir risco do evento usa verde sem conteudos ou o pior nivel dos materiais
             if (conteudos.isEmpty()) {
                 resumoEvento.setNivel("verde");
                 resumoEvento.setMotivo("Nenhum conteúdo associado a este evento.");
@@ -356,6 +389,7 @@ public class ViabilidadeService {
             }
             resultado.add(resumoEvento);
 
+            // acumular carga do evento registra o tempo adicional de estudo exigido pelo evento
             if (cargaAcumulada > cargaAntesDoEvento) {
                 cargaPorEventoNoDia.computeIfAbsent(dataEvento, dia -> new LinkedHashMap<>())
                         .merge(evento.getNome(), cargaAcumulada - cargaAntesDoEvento, Integer::sum);
@@ -365,12 +399,14 @@ public class ViabilidadeService {
         return resultado;
     }
 
+    // listar prioridades de estudo este metodo seleciona materiais vermelhos antes dos amarelos sem repeticao
     public List<ViabilidadeDTO> listarPrioridades(List<ViabilidadeDTO> resultados) {
         List<ViabilidadeDTO> prioridades = new ArrayList<>();
         Set<Long> jaListados = new HashSet<>();
 
         for (String nivel : List.of("vermelho", "amarelo")) {
             for (ViabilidadeDTO resultado : resultados) {
+                // listar prioridades inclui conteudos do nivel escolhido sem repetir materiais
                 if (resultado.getIdConteudo() != null && nivel.equals(resultado.getNivel())
                         && jaListados.add(resultado.getIdConteudo())) {
                     prioridades.add(resultado);
@@ -381,13 +417,16 @@ public class ViabilidadeService {
         return prioridades;
     }
 
+    // buscar proximo evento pendente este metodo prefere o primeiro resumo ainda nao concluido
     public ViabilidadeDTO proximoEventoPendente(List<ViabilidadeDTO> resultados) {
         ViabilidadeDTO proximo = null;
 
         for (ViabilidadeDTO resultado : resultados) {
+            // buscar proximo evento ignora resultados individuais de conteudos
             if (resultado.getIdConteudo() != null) {
                 continue;
             }
+            // escolher evento pendente prefere um evento ainda nao concluido
             if (proximo == null || ("concluido".equals(proximo.getNivel()) && !"concluido".equals(resultado.getNivel()))) {
                 proximo = resultado;
             }
@@ -396,26 +435,31 @@ public class ViabilidadeService {
         return proximo;
     }
 
+    // dados carregados do planejamento este registro reune turmas eventos materiais conclusoes e disponibilidade dos alunos
     private record DadosAlunos(Map<Long, List<Long>> turmasPorAluno,
                                List<Evento> eventos,
                                Map<Long, List<ConteudoDTO>> conteudosPorEvento,
                                Map<Long, Set<Long>> concluidosPorAluno,
                                Map<Long, Map<LocalDate, Integer>> horasPorAluno) {
 
+        // listar eventos do aluno carregado este metodo separa os eventos ligados as turmas do participante
         List<Evento> eventosDo(Long idAluno) {
             List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
             return eventos.stream().filter(evento -> turmasAluno.contains(evento.getIdTurma())).toList();
         }
 
+        // consultar conclusoes carregadas este metodo retorna os materiais concluidos do aluno ou um conjunto vazio
         Set<Long> concluidosDo(Long idAluno) {
             return concluidosPorAluno.getOrDefault(idAluno, Set.of());
         }
 
+        // consultar horas carregadas este metodo retorna a disponibilidade diaria do aluno ou um mapa vazio
         Map<LocalDate, Integer> horasDo(Long idAluno) {
             return horasPorAluno.getOrDefault(idAluno, Map.of());
         }
     }
 
+    // carregar dados do planejamento este metodo reune turmas eventos futuros conteudos conclusoes e horas dos alunos
     private DadosAlunos carregar(List<Long> idsAlunos, LocalDate hoje) throws SQLException {
         Map<Long, List<Long>> turmasPorAluno = turmaRepository.buscarTurmasDosAlunos(idsAlunos);
 
@@ -440,6 +484,7 @@ public class ViabilidadeService {
         return new DadosAlunos(turmasPorAluno, eventos, conteudosPorEvento, concluidosPorAluno, horasPorAluno);
     }
 
+    // ordenar eventos para estudo este metodo prioriza dia depois importancia e horario
     private List<Evento> ordenarEventos(List<Evento> eventos) {
         return eventos.stream()
                 .sorted(Comparator.comparing((Evento evento) -> evento.getInicio().toLocalDate())
@@ -448,12 +493,14 @@ public class ViabilidadeService {
                 .toList();
     }
 
+    // ordenar conteudos para estudo este metodo organiza os materiais pelo peso da prioridade
     private List<ConteudoDTO> ordenarConteudos(List<ConteudoDTO> conteudos) {
         return conteudos.stream()
                 .sorted(Comparator.comparing(conteudo -> pesoPrioridade(conteudo.getPrioridade())))
                 .toList();
     }
 
+    // montar sessao de estudo este metodo relaciona dia evento conteudo e minutos previstos
     private SessaoEstudoDTO novaSessao(LocalDate dia, Evento evento, ConteudoDTO conteudo, int minutos) {
         SessaoEstudoDTO sessao = new SessaoEstudoDTO();
         sessao.setData(dia);
@@ -467,19 +514,24 @@ public class ViabilidadeService {
         return sessao;
     }
 
+    // classificar risco de estudo este metodo escolhe verde amarelo ou vermelho conforme carga e capacidade
     private String classificar(int cargaMin, int capacidadeMin, int maximoMin) {
+        // classificar risco verde usa verde quando o estudo cabe na disponibilidade
         if (cargaMin <= capacidadeMin) {
             return "verde";
         }
+        // classificar risco amarelo usa amarelo quando o estudo cabe no limite ampliado
         if (cargaMin <= maximoMin) {
             return "amarelo";
         }
         return "vermelho";
     }
 
+    // calcular capacidade ate o evento este metodo soma horas livres anteriores ao prazo sem dias de evento
     private int capacidadeAte(LocalDate hoje, LocalDate dataEvento, Map<LocalDate, Integer> horasPorDia, Set<LocalDate> diasDeEvento) {
         int horas = 0;
         for (LocalDate dia = hoje; dia.isBefore(dataEvento); dia = dia.plusDays(1)) {
+            // calcular capacidade de estudo soma as horas apenas em dias sem eventos
             if (!diasDeEvento.contains(dia)) {
                 horas += horasPorDia.getOrDefault(dia, 0);
             }
@@ -487,9 +539,11 @@ public class ViabilidadeService {
         return horas * 60;
     }
 
+    // contar dias de estudo este metodo conta as datas anteriores ao prazo sem dias de evento
     private int diasDeEstudoAte(LocalDate hoje, LocalDate dataEvento, Set<LocalDate> diasDeEvento) {
         int dias = 0;
         for (LocalDate dia = hoje; dia.isBefore(dataEvento); dia = dia.plusDays(1)) {
+            // contar dias de estudo considera apenas dias sem eventos
             if (!diasDeEvento.contains(dia)) {
                 dias++;
             }
@@ -497,17 +551,21 @@ public class ViabilidadeService {
         return dias;
     }
 
+    // identificar dias de evento este metodo reune as datas de inicio sem repeticao
     private Set<LocalDate> diasComEvento(List<Evento> eventos) {
         Set<LocalDate> dias = new HashSet<>();
         eventos.forEach(evento -> dias.add(evento.getInicio().toLocalDate()));
         return dias;
     }
 
+    // consultar duracao para estudo este metodo usa os minutos do material ou a duracao padrao
     public int duracaoDe(ConteudoDTO conteudo) {
         return conteudo.getDuracaoEstimadaMin() != null ? conteudo.getDuracaoEstimadaMin() : DURACAO_PADRAO_MIN;
     }
 
+    // pesar prioridade de estudo este metodo coloca alta antes de media e baixa
     private int pesoPrioridade(String prioridade) {
+        // definir peso da prioridade usa o peso padrao quando nao ha prioridade
         if (prioridade == null) {
             return 1;
         }
@@ -518,10 +576,12 @@ public class ViabilidadeService {
         };
     }
 
+    // escolher maior risco este metodo retorna o nivel mais grave entre os dois informados
     private String pior(String nivelAtual, String novoNivel) {
         return ORDEM_NIVEIS.indexOf(novoNivel) > ORDEM_NIVEIS.indexOf(nivelAtual) ? novoNivel : nivelAtual;
     }
 
+    // preparar resultado de viabilidade este metodo associa aluno turma e dados do evento
     private ViabilidadeDTO novoResultado(Long idAluno, Evento evento) {
         ViabilidadeDTO item = new ViabilidadeDTO();
         item.setIdAluno(idAluno);
@@ -532,18 +592,22 @@ public class ViabilidadeService {
         return item;
     }
 
+    // explicar carga do mesmo dia este metodo resume as horas exigidas por outros eventos na mesma data
     private String descreverOutrosEventosDoDia(Map<String, Integer> cargaPorEvento) {
+        // descrever eventos do dia retorna vazio quando nao existem cargas de outros eventos
         if (cargaPorEvento.isEmpty()) {
             return "";
         }
 
         int total = cargaPorEvento.values().stream().mapToInt(Integer::intValue).sum();
+        // descrever unico evento mostra o nome e o tempo quando existe apenas outro evento
         if (cargaPorEvento.size() == 1) {
             return " (incluindo " + formatarHoras(total) + " de " + cargaPorEvento.keySet().iterator().next() + ", no mesmo dia)";
         }
         return " (incluindo " + formatarHoras(total) + " de outros " + cargaPorEvento.size() + " eventos no mesmo dia)";
     }
 
+    // explicar risco calculado este metodo descreve a carga o tempo livre e a necessidade de mais horas
     private String montarMotivo(ViabilidadeDTO item, String complemento) {
         String texto = "Faltam " + formatarHoras(item.getCargaMin()) + " de estudo" + complemento + " e você tem "
                 + formatarHoras(item.getCapacidadeMin()) + " disponíveis até "
@@ -559,13 +623,16 @@ public class ViabilidadeService {
         };
     }
 
+    // formatar tempo de estudo este metodo transforma minutos em horas e minutos para exibicao
     public String formatarHoras(int minutos) {
         int horas = minutos / 60;
         int resto = minutos % 60;
 
+        // formatar tempo vazio apresenta zero horas quando nao ha minutos
         if (horas == 0 && resto == 0) {
             return "0h";
         }
+        // formatar tempo curto mostra apenas minutos quando nao completa uma hora
         if (horas == 0) {
             return resto + "min";
         }

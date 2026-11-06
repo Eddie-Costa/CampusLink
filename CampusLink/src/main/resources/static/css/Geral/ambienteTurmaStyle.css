@@ -1,3 +1,4 @@
+/* estilo do ambiente da turma organiza conteudos participantes buscas e janelas de gerenciamento */
 :root {
     --azul-campus: var(--campus-navy);
     --azul-hover: var(--campus-navy-hover);
@@ -29,7 +30,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* navegacao feita pelo bootstrap */
+
 
 .turmas-page {
     position: relative;
@@ -165,9 +166,9 @@ main.container > p {
     flex-direction: column;
     gap: 16px;
     margin-top: 48px;
-    max-height: 560px;          /* altura máxima da lista; depois disso rola */
+    max-height: 560px;
     overflow-y: auto;
-    padding: 4px 8px 4px 0;     /* respiro para a sombra e o hover dos cards não serem cortados */
+    padding: 4px 8px 4px 0;
     scrollbar-width: thin;
     scrollbar-color: #5b6aa8 transparent;
 }
@@ -366,7 +367,7 @@ main.container > p {
     font-weight: 700;
 }
 
-/* status do conteudo */
+
 
 .status-conteudo {
     display: inline-flex;
@@ -674,7 +675,7 @@ main.container > p {
     transform: translateY(0);
 }
 
-/* conteudo concluido pelo aluno */
+
 
 .conteudo-concluido {
     position: relative;
@@ -908,7 +909,7 @@ main.container > p {
     font-size: 12px;
 }
 
-/* Modal: selecionar conteúdo para editar */
+
 .lista-selecionar-conteudo {
     display: flex;
     flex-direction: column;

@@ -1,3 +1,4 @@
+// evento persistido relaciona a agenda academica ao banco
 package com.example.CampusLink.model;
 
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// compromisso academico esta classe guarda horarios turma professor prioridade e detalhes para exibicao
 @Entity
 @Table(name = "\"EVENTOS\"", schema = "public")
 @Getter
@@ -50,7 +52,7 @@ public class Evento {
     @Setter(AccessLevel.NONE)
     private String prioridade;
 
-    // usado só no codigo e nao vai para a tabela
+
     @Transient
     private String conteudoId;
 
@@ -61,14 +63,16 @@ public class Evento {
     private List<String> nomesConteudos = new ArrayList<>();
 
 
-    // cria o evento com prioridade media
+
+    // preparar evento com prioridade media este construtor usa a prioridade padrao para o novo evento
     public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId) {
 
         this(nome, inicio, fim, conteudoId, "MEDIA");
     }
 
 
-    // cria o evento com a prioridade escolhida
+
+    // preparar evento com prioridade este construtor guarda os dados e inicia o evento como ativo
     public Evento(String nome, LocalDateTime inicio, LocalDateTime fim, String conteudoId, String prioridade) {
 
         this.nome = nome;
@@ -80,10 +84,12 @@ public class Evento {
     }
 
 
-    // deixa a prioridade no formato usado pelo sistema
 
+
+    // normalizar prioridade do evento este metodo usa media quando a opcao nao e reconhecida
     private String normalizarPrioridade(String prioridade) {
 
+        // definir prioridade padrao usa prioridade media quando nenhuma opcao foi preenchida
         if (prioridade == null || prioridade.isBlank()) {
 
             return "MEDIA";
@@ -99,6 +105,7 @@ public class Evento {
     }
 
 
+    // alterar prioridade do evento este metodo normaliza a opcao antes de salvar o valor
     public void setPrioridade(String prioridade
     ) {
 
@@ -106,7 +113,8 @@ public class Evento {
     }
 
 
-    // verifica se o evento tem algum conteudo
+
+    // verificar materiais do evento este metodo informa se existem nomes de conteudos associados
     public boolean possuiConteudoAssociado() {
 
         return nomesConteudos != null && !nomesConteudos.isEmpty();}

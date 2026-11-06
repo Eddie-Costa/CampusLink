@@ -1,3 +1,4 @@
+// resumos dos dashboards organizam os dados que chegam aos paineis
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.DashboardFiltro;
@@ -8,14 +9,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+// montagem dos indicadores esta classe prepara grupos cartoes graficos tabelas e avisos por perfil
 @Service
 public class DashboardService {
     private final DashboardRepository repository;
 
+    // preparar montagem dos dashboards este construtor recebe as consultas dos indicadores
     public DashboardService(DashboardRepository repository) {
         this.repository = repository;
     }
 
+    // montar dashboard do aluno este metodo organiza progresso agenda graficos e avisos das turmas acessiveis
     public Map<String, Object> aluno(long id, DashboardFiltro filtro) {
         var p = repository.parametros("aluno", id, filtro);
         var resumo = repository.resumoAluno(p);
@@ -42,6 +46,7 @@ public class DashboardService {
         insights.add("Você possui " + eventos.get("proximos") + " eventos do recorte nos próximos 7 dias.");
         insights.add("Há " + eventos.get("alta") + " eventos de prioridade alta que ainda não passaram, conforme os filtros.");
         insights.add("Você concluiu " + resumo.get("concluidos") + " de " + resumo.get("conteudos") + " conteúdos disponíveis nas turmas selecionadas.");
+        // destacar conteudos atrasados inclui uma orientacao para reorganizar os estudos
         if (numero(resumo, "atrasados") > 0) {
             insights.add("Revise os " + resumo.get("atrasados") + " conteúdos atrasados no Score para reorganizar seus estudos.");
         }
@@ -57,6 +62,7 @@ public class DashboardService {
         return dados;
     }
 
+    // montar dashboard do professor este metodo organiza turmas publicacoes agenda e pendencias de analise
     public Map<String, Object> professor(long id, DashboardFiltro filtro) {
         var p = repository.parametros("professor", id, filtro);
         var turmas = repository.resumoTurmasProfessor(p);
@@ -83,6 +89,7 @@ public class DashboardService {
         insights.add("Você é responsável por " + turmas.get("gerenciadas") + " turmas e participa de outras " + turmas.get("participantes") + " no recorte.");
         insights.add("Há " + eventos.get("proximos") + " eventos de sua autoria nos próximos 7 dias, conforme os filtros.");
         insights.add("Você possui " + conteudos.get("suspensos") + " conteúdos suspensos no recorte; " + conteudos.get("analise") + " aguardam análise administrativa.");
+        // destacar turma do professor mostra a turma com mais publicacoes no periodo
         if (!porTurma.isEmpty() && numero(porTurma.getFirst(), "quantidade") > 0) {
             insights.add("A turma com mais publicações suas no recorte é " + porTurma.getFirst().get("nome") + ".");
         }
@@ -97,11 +104,13 @@ public class DashboardService {
         return dados;
     }
 
+    // separar situacoes da agenda este metodo prepara as quantidades de eventos futuros atuais e passados
     private List<Map<String, Object>> distribuicaoEventos(Map<String, Object> eventos) {
         return List.of(ponto("Futuros", eventos.get("futuros")), ponto("Em andamento", eventos.get("andamento")),
                 ponto("Passados", eventos.get("passados")));
     }
 
+    // montar dashboard administrativo este metodo organiza contas turmas conteudos e denuncias em grupos
     public Map<String, Object> admin(long id, DashboardFiltro filtro) {
         var p = repository.parametros("admin", id, filtro);
         var usuarios = repository.resumoUsuarios(p);
@@ -148,6 +157,7 @@ public class DashboardService {
         insights.add("Há " + usuarios.get("inativos") + " contas inativas entre os cadastros selecionados.");
         insights.add("Foram registradas " + denuncias.get("denuncias") + " denúncias no período; " + denuncias.get("pendentes") + " continuam pendentes.");
         insights.add("Há registro de liberação em " + denuncias.get("liberados") + " conteúdos distintos nas denúncias do recorte. Isso não indica sua situação atual.");
+        // destacar turma no painel administrativo mostra a turma com mais publicacoes no periodo
         if (!porTurma.isEmpty() && numero(porTurma.getFirst(),"quantidade") > 0) {
             insights.add("A turma com mais publicações no período é " + porTurma.getFirst().get("nome") + ".");
         }
@@ -164,23 +174,28 @@ public class DashboardService {
         return dados;
     }
 
+    // agrupar indicadores do dashboard este metodo junta um titulo e seus cartoes
     private Map<String, Object> grupo(String titulo, List<Map<String, Object>> cards) {
         return Map.of("titulo",titulo,"cards",cards);
     }
 
+    // montar cartao do dashboard este metodo reune titulo valor e explicacao do indicador
     private Map<String, Object> card(String titulo, Object valor, String detalhe) {
         return Map.of("titulo", titulo, "valor", valor, "detalhe", detalhe);
     }
 
+    // montar dados do grafico este metodo reune os valores e calcula o maior valor para as barras
     private Map<String, Object> grafico(String titulo, String tipo, String detalhe, List<Map<String, Object>> pontos) {
         long maximo = pontos.stream().mapToLong(ponto -> numero(ponto, "quantidade")).max().orElse(0);
         return Map.of("titulo", titulo, "tipo", tipo, "detalhe", detalhe, "pontos", pontos, "maximo", Math.max(1, maximo));
     }
 
+    // montar ponto do grafico este metodo associa o nome a quantidade consultada
     private Map<String, Object> ponto(String nome, Object quantidade) {
         return Map.of("nome", nome, "quantidade", quantidade);
     }
 
+    // ler quantidade do indicador este metodo converte o valor numerico do campo para inteiro longo
     private long numero(Map<String, Object> dados, String campo) {
         return ((Number) dados.get(campo)).longValue();
     }

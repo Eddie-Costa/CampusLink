@@ -1,3 +1,4 @@
+// dados de turma organiza os campos usados no ambiente e na lista de participantes
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -5,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// registro da turma esta classe guarda nome descricao responsavel e dados da pessoa selecionada
 @Getter
 @Setter
 public class TurmaDTO {

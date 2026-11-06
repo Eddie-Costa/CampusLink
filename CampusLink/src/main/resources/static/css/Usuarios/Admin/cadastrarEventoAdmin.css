@@ -1,3 +1,4 @@
+/* estilo do cadastro administrativo de evento organiza campos buscas selecao de conteudos e botoes */
 
 :root {
     --azul-campus: var(--campus-navy);
@@ -40,7 +41,7 @@ body {
     margin: 0 auto;
 }
 
-/* cabecalho da pagina */
+
 .cadastrar-evento-admin-topo {
     display: flex;
     align-items: center;
@@ -91,7 +92,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* formulario principal */
+
 .cadastrar-evento-admin-card {
     padding: 30px;
     border: 1px solid var(--cinza-borda);
@@ -133,7 +134,7 @@ body {
     column-gap: 20px;
 }
 
-/* campos do formulario */
+
 .cadastrar-evento-admin-input,
 .cadastrar-evento-admin-select,
 .cadastrar-evento-admin-textarea {
@@ -182,7 +183,7 @@ body {
     cursor: not-allowed;
 }
 
-/* busca das turmas e conteudos */
+
 .cadastrar-evento-admin-busca {
     background-color: #f8f9fc;
 }
@@ -197,7 +198,7 @@ body {
     display: none;
 }
 
-/* lista de conteudos */
+
 .cadastrar-evento-admin-multiselect {
     min-height: 145px;
     padding: 8px;
@@ -216,7 +217,7 @@ body {
     color: var(--branco);
 }
 
-/* botoes do formulario */
+
 .cadastrar-evento-admin-acoes {
     display: flex;
     align-items: center;
@@ -272,7 +273,7 @@ body {
     cursor: not-allowed;
 }
 
-/* ajustes para telas menores */
+
 @media (max-width: 768px) {
     .cadastrar-evento-admin-page {
         padding: 28px 15px 45px;

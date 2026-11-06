@@ -1,6 +1,5 @@
-/* ===============================
-   CONFIGURAÇÕES GERAIS
-================================ */
+/* estilo das turmas organiza busca cartoes janelas e tabelas de acompanhamento dos estudos */
+
 
 * {
     margin: 0;
@@ -21,9 +20,7 @@ body {
 }
 
 
-/* ===============================
-   ÁREA PRINCIPAL
-================================ */
+
 
 .turmas-page {
     min-height: calc(100vh - 68px);
@@ -31,9 +28,7 @@ body {
 }
 
 
-/* ===============================
-   CONTAINER
-================================ */
+
 
 .turmas-container {
     width: 100%;
@@ -42,9 +37,7 @@ body {
 }
 
 
-/* ===============================
-   BARRA DE PESQUISA
-================================ */
+
 
 .busca-turma-container {
     position: relative;
@@ -111,9 +104,7 @@ body {
 }
 
 
-/* ===============================
-   LISTA DE TURMAS (grid)
-================================ */
+
 
 .lista-turmas {
     display: grid;
@@ -123,9 +114,7 @@ body {
 }
 
 
-/* ===============================
-   CARD DA TURMA (quadrado)
-================================ */
+
 
 .turma-card {
     width: 100%;
@@ -149,7 +138,7 @@ body {
 }
 
 
-/* Hover */
+
 
 .turma-card:hover {
     color: white;
@@ -159,9 +148,7 @@ body {
 }
 
 
-/* ===============================
-   ÍCONE
-================================ */
+
 
 .turma-icon {
     display: flex;
@@ -170,7 +157,7 @@ body {
 }
 
 
-/* Ícone de usuário */
+
 
 .turma-icon i {
     font-size: 44px;
@@ -178,9 +165,7 @@ body {
 }
 
 
-/* ===============================
-   NOME DA TURMA
-================================ */
+
 
 .turma-nome {
     font-size: 18px;
@@ -195,9 +180,7 @@ body {
 }
 
 
-/* ===============================
-   BOTÃO CRIAR / BUSCAR TURMA
-================================ */
+
 
 .acao-turma {
     width: 100%;
@@ -233,9 +216,7 @@ body {
 }
 
 
-/* ===============================
-   SEM TURMAS
-================================ */
+
 
 .sem-turmas {
     width: 100%;
@@ -247,9 +228,7 @@ body {
     font-size: 18px;
     font-weight: 600;
 }
-/* ===============================
-   VOLTAR / TÍTULO DA TURMA
-================================ */
+
 
 .voltar-turmas,
 .botao-compacto {
@@ -286,9 +265,7 @@ body {
 }
 
 
-/* ===============================
-   LISTA DE CONTEÚDOS (turma)
-================================ */
+
 
 .lista-conteudos {
     display: flex;
@@ -429,9 +406,7 @@ a.conteudo-card:hover {
     width: 230px;
 }
 
-/* ===============================
-   MODAL
-================================ */
+
 
 .campus-modal {
     border: none;
@@ -465,7 +440,7 @@ a.conteudo-card:hover {
 }
 
 
-/* Input */
+
 .campus-modal .form-control {
     height: 48px;
     border-radius: 10px;
@@ -479,7 +454,7 @@ a.conteudo-card:hover {
 }
 
 
-/* Botão do modal */
+
 
 .btn-campus {
     background-color: var(--campus-navy);
@@ -494,7 +469,7 @@ a.conteudo-card:hover {
 }
 
 
-/* Erros */
+
 
 .erro-campo {
     margin-top: 6px;
@@ -503,9 +478,7 @@ a.conteudo-card:hover {
 }
 
 
-/* ===============================
-   RESPONSIVIDADE
-================================ */
+
 
 @media (max-width: 768px) {
 

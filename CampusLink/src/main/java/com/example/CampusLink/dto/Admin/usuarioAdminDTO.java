@@ -1,8 +1,10 @@
+// resumo administrativo de usuario organiza os dados de gerenciamento da conta
 package com.example.CampusLink.dto.Admin;
 
 import lombok.Getter;
 import lombok.Setter;
 
+// dados da conta na gestao esta classe guarda identificadores perfil situacao e permissao master
 @Getter
 @Setter
 public class usuarioAdminDTO {

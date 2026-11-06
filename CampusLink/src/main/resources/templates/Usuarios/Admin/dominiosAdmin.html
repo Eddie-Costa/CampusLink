@@ -1,3 +1,4 @@
+<!-- autorizar dominios apresenta solicitacoes de enderecos e acoes de aprovacao ou rejeicao -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -27,7 +28,7 @@
         <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>
         <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
 
-        <!-- Pendentes -->
+
         <div class="admin-resumo">
             <strong th:text="${#lists.size(pendentes)}">0</strong>
             <span>solicitações aguardando análise</span>
@@ -104,7 +105,7 @@
             </article>
         </section>
 
-        <!-- Autorizados -->
+
         <div class="admin-resumo">
             <strong th:text="${#lists.size(aprovados)}">0</strong>
             <span>domínios autorizados</span>

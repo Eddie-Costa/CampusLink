@@ -1,3 +1,4 @@
+// documentacao de integracoes apresenta os servicos externos utilizados pelo sistema
 package com.example.CampusLink.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -5,9 +6,11 @@ import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+// descricao das integracoes esta classe prepara as informacoes exibidas na documentacao de consultas
 @Configuration
 public class OpenApiConfig {
 
+    // documentar integracoes este metodo descreve as buscas externas e o envio de emails
     @Bean
     public OpenAPI campusLinkOpenAPI() {
         return new OpenAPI()

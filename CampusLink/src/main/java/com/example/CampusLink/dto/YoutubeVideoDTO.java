@@ -1,9 +1,11 @@
+// dados de video organiza os resultados retornados ao navegador
 package com.example.CampusLink.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+// video encontrado esta classe guarda identificador titulo canal capa e duracao
 @Getter
 @Setter
 public class YoutubeVideoDTO {

@@ -1,3 +1,4 @@
+/* estilo da verificacao organiza digitos do codigo contadores avisos e botoes de acesso */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 .pagina-autenticacao {
@@ -10,7 +11,7 @@
     background: url('../../images/bg.png') center / cover;
 }
 
-/* O formulário ocupa espaço no fluxo e mantém o rodapé após o conteúdo. */
+
 .pagina-autenticacao > main {
     flex: 1;
     display: flex;

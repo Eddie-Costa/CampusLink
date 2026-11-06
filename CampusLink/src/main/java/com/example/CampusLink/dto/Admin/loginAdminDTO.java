@@ -1,3 +1,4 @@
+// formulario de login administrativo define os campos de acesso
 package com.example.CampusLink.dto.Admin;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados de entrada administrativa esta classe guarda email senha e confirmacao com regras de formato
 @Getter
 @Setter
 public class loginAdminDTO {

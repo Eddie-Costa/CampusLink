@@ -1,3 +1,4 @@
+// formulario administrativo de usuario define os campos de uma nova conta
 package com.example.CampusLink.dto.Admin;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados do novo usuario esta classe limita o perfil a aluno ou professor e valida dados pessoais e senha
 @Getter
 @Setter
 public class cadastrarUsuarioAdminDTO {

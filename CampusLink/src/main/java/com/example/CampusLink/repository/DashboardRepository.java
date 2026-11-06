@@ -1,3 +1,4 @@
+// banco dos dashboards centraliza os calculos dos indicadores por perfil
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.DashboardFiltro;
@@ -9,14 +10,17 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
+// consultas dos paineis esta classe aplica os limites de acesso e agrupa dados para resumos e comparacoes
 @Repository
 public class DashboardRepository {
     private final NamedParameterJdbcTemplate jdbc;
 
+    // preparar consultas dos dashboards este construtor permite usar parametros nomeados nas buscas
     public DashboardRepository(JdbcTemplate jdbc) {
         this.jdbc = new NamedParameterJdbcTemplate(jdbc);
     }
 
+    // buscar identidade do dashboard este metodo confere email perfil e conta ativa no banco
     public Long buscarIdentidade(String email, String tipo) {
         String tabela = switch (tipo) {
             case "aluno" -> "ALUNOS";
@@ -31,6 +35,7 @@ public class DashboardRepository {
         return ids.isEmpty() ? null : ids.getFirst();
     }
 
+    // preparar parametros dos dashboards este metodo organiza usuario filtros e limites de datas das consultas
     public MapSqlParameterSource parametros(String tipo, long id, DashboardFiltro filtro) {
         return new MapSqlParameterSource()
                 .addValue("tipo", tipo).addValue("pessoa", id).addValue("turma", filtro.getTurma())
@@ -51,6 +56,7 @@ public class DashboardRepository {
             )
             """;
 
+    // listar turmas autorizadas no dashboard este metodo consulta os vinculos permitidos em ordem de nome
     public List<Map<String, Object>> listarTurmas(MapSqlParameterSource p) {
         return jdbc.queryForList(TURMAS + "SELECT id, nome_turma AS nome FROM turmas ORDER BY nome_turma, id", p);
     }
@@ -73,6 +79,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo do aluno no banco este metodo conta materiais conclusoes pendencias atrasos e progresso
     public Map<String, Object> resumoAluno(MapSqlParameterSource p) {
         return jdbc.queryForMap(CONTEUDOS_ALUNO + """
                 SELECT (SELECT count(*) FROM turmas) AS turmas, count(*) AS conteudos,
@@ -84,6 +91,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // consultar evolucao das conclusoes este metodo agrupa os materiais concluidos por mes no periodo escolhido
     public List<Map<String, Object>> evolucaoAluno(MapSqlParameterSource p) {
         return jdbc.queryForList(CONTEUDOS_ALUNO + """
                 SELECT to_char(concluido_em AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') AS nome,
@@ -95,6 +103,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar progresso das turmas no banco este metodo consulta conteudos e conclusoes de ate vinte turmas
     public List<Map<String, Object>> turmasAluno(MapSqlParameterSource p) {
         return jdbc.queryForList(CONTEUDOS_ALUNO + """
                 SELECT t.id, t.nome_turma AS nome, count(c.id) AS conteudos,
@@ -123,6 +132,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo dos eventos este metodo conta eventos por situacao proximidade e prioridade alta
     public Map<String, Object> resumoEventos(MapSqlParameterSource p) {
         return jdbc.queryForMap(EVENTOS + """
                 SELECT count(*) AS eventos,
@@ -135,6 +145,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // comparar eventos por turma este metodo retorna ate dez turmas ordenadas pela quantidade de eventos
     public List<Map<String, Object>> eventosPorTurma(MapSqlParameterSource p) {
         return jdbc.queryForList(EVENTOS + """
                 SELECT t.nome_turma AS nome, count(e.id) AS quantidade
@@ -143,6 +154,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // contar prioridades dos eventos este metodo agrupa os eventos pela prioridade informada
     public List<Map<String, Object>> prioridades(MapSqlParameterSource p) {
         return jdbc.queryForList(EVENTOS + """
                 SELECT COALESCE(prioridade, 'Não informada') AS nome, count(*) AS quantidade
@@ -150,6 +162,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar proximos eventos do dashboard este metodo consulta ate dez eventos futuros ou em andamento
     public List<Map<String, Object>> proximosEventos(MapSqlParameterSource p) {
         return jdbc.queryForList(EVENTOS + """
                 SELECT id, titulo, id_turma, nome_turma,
@@ -174,6 +187,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo dos conteudos este metodo conta materiais ativos suspensos em analise e removidos
     public Map<String, Object> resumoConteudos(MapSqlParameterSource p) {
         return jdbc.queryForMap(CONTEUDOS + """
                 SELECT count(*) AS conteudos, count(*) FILTER (WHERE status = 'ativo') AS ativos,
@@ -184,10 +198,12 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // comparar situacoes dos conteudos este metodo agrupa os materiais pelo estado exibido no dashboard
     public List<Map<String, Object>> situacaoConteudos(MapSqlParameterSource p) {
         return jdbc.queryForList(CONTEUDOS + "SELECT situacao AS nome, count(*) AS quantidade FROM conteudos GROUP BY situacao ORDER BY situacao", p);
     }
 
+    // comparar conteudos por turma este metodo retorna ate dez turmas ordenadas pela quantidade de materiais
     public List<Map<String, Object>> conteudosPorTurma(MapSqlParameterSource p) {
         return jdbc.queryForList(CONTEUDOS + """
                 SELECT t.nome_turma AS nome, count(c.id) AS quantidade
@@ -196,6 +212,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar materiais no dashboard este metodo consulta dez registros recentes e pode restringir aos que exigem atencao
     public List<Map<String, Object>> listarConteudos(MapSqlParameterSource p, boolean somenteAtencao) {
         return jdbc.queryForList(CONTEUDOS + """
                 SELECT c.id, c.titulo, c.situacao,
@@ -212,6 +229,7 @@ public class DashboardRepository {
                 """, p.addValue("atencao", somenteAtencao));
     }
 
+    // calcular resumo das turmas do professor este metodo conta vinculos responsabilidades e alunos sem repeticao
     public Map<String, Object> resumoTurmasProfessor(MapSqlParameterSource p) {
         return jdbc.queryForMap(TURMAS + """
                 SELECT count(*) AS turmas,
@@ -222,6 +240,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar turmas do professor no dashboard este metodo reune vinculo alunos materiais e eventos de ate vinte turmas
     public List<Map<String, Object>> turmasProfessor(MapSqlParameterSource p) {
         return jdbc.queryForList(CONTEUDOS + """
                 SELECT t.id, t.nome_turma AS nome,
@@ -236,6 +255,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // consultar criacao mensal de eventos este metodo agrupa os eventos pelo mes de cadastro
     public List<Map<String, Object>> eventosPorMes(MapSqlParameterSource p) {
         return jdbc.queryForList(EVENTOS + """
                 SELECT to_char(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') AS nome,
@@ -252,6 +272,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo de contas este metodo conta usuarios por perfil e situacao no recorte escolhido
     public Map<String, Object> resumoUsuarios(MapSqlParameterSource p) {
         return jdbc.queryForMap(USUARIOS + """
                 SELECT count(*) AS usuarios,
@@ -265,6 +286,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // consultar cadastros mensais este metodo agrupa os usuarios pelo mes de criacao da conta
     public List<Map<String, Object>> usuariosPorMes(MapSqlParameterSource p) {
         return jdbc.queryForList(USUARIOS + """
                 SELECT to_char(created_at, 'YYYY-MM') AS nome, count(*) AS quantidade
@@ -272,6 +294,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar contas recentes no dashboard este metodo consulta dez usuarios com perfil data e situacao
     public List<Map<String, Object>> usuariosRecentes(MapSqlParameterSource p) {
         return jdbc.queryForList(USUARIOS + """
                 SELECT id, nome, to_char(created_at, 'DD/MM/YYYY') AS data,
@@ -290,6 +313,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo de denuncias este metodo conta relatos materiais denunciados pendencias e resolucoes
     public Map<String, Object> resumoDenuncias(MapSqlParameterSource p) {
         return jdbc.queryForMap(DENUNCIAS + """
                 SELECT count(*) AS denuncias, count(DISTINCT id_conteudo) AS denunciados,
@@ -300,6 +324,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // comparar situacoes das denuncias este metodo agrupa relatos pendentes liberados e removidos
     public List<Map<String, Object>> denunciasPorSituacao(MapSqlParameterSource p) {
         return jdbc.queryForList(DENUNCIAS + """
                 SELECT CASE status WHEN 'pendente' THEN 'Pendentes' WHEN 'analisada_liberada' THEN 'Analisadas: liberado'
@@ -316,6 +341,7 @@ public class DashboardRepository {
             )
             """;
 
+    // calcular resumo administrativo de turmas este metodo conta turmas responsaveis e eventos no periodo
     public Map<String, Object> resumoTurmasAdmin(MapSqlParameterSource p) {
         return jdbc.queryForMap(TURMAS_ADMIN + """
                 SELECT count(*) AS turmas, count(DISTINCT id_proprietario) AS responsaveis,
@@ -326,6 +352,7 @@ public class DashboardRepository {
                 """, p);
     }
 
+    // listar turmas administrativas no dashboard este metodo consulta ate vinte turmas com responsavel alunos e materiais
     public List<Map<String, Object>> turmasAdmin(MapSqlParameterSource p) {
         return jdbc.queryForList(TURMAS_ADMIN + """
                 SELECT t.id, t.nome_turma AS nome, COALESCE(u.nome, 'Sem responsável') AS professor,

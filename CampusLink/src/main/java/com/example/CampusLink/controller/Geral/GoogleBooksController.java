@@ -1,3 +1,4 @@
+// pesquisa de livros disponibiliza buscas e detalhes para a interface
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.GoogleBookDTO;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 
+// controle de livros esta classe verifica a sessao e trata respostas e falhas do catalogo externo
 @RestController
 public class GoogleBooksController {
 
@@ -34,9 +36,11 @@ public class GoogleBooksController {
     private static final Pattern VOLUME_ID_PATTERN = Pattern.compile("[A-Za-z0-9_-]{1,128}");
     private final GoogleBooksService googleBooksService;
 
+    // preparar consulta de livros este construtor recebe o servico de busca externa
     public GoogleBooksController(GoogleBooksService googleBooksService) {
         this.googleBooksService = googleBooksService;
     }
+    // buscar livros pela tela este metodo consulta uma pagina de resultados e trata falhas do provedor
     @Operation(
             tags = {"Google Books"},
             summary = "Buscar livros",
@@ -131,13 +135,16 @@ public class GoogleBooksController {
             @RequestParam(value = "startIndex", defaultValue = "0") int startIndex,
             HttpSession session) {
 
+        // proteger consulta externa retorna uma lista vazia quando nao existe usuario conectado
         if (session.getAttribute("usuarioLogado") == null) {
             return ResponseEntity.ok(List.of());
         }
 
+        // buscar livros externos consulta resultados e paginacao e trata limites ou falhas do provedor
         try {
             GoogleBooksService.PaginaLivros pagina = googleBooksService.buscarLivros(termo, startIndex);
             HttpHeaders headers = new HttpHeaders();
+            // indicar proxima pagina inclui o indice de continuacao quando existem mais livros
             if (pagina.nextStartIndex() != null) {
                 headers.set("X-Next-Start-Index", pagina.nextStartIndex().toString());
             }
@@ -146,11 +153,13 @@ public class GoogleBooksController {
             int statusProvedor = e.getStatusCode().value();
             logger.warn("Google Books respondeu com HTTP {} durante a busca.", statusProvedor);
 
+            // informar limite de buscas avisa que o provedor restringiu temporariamente as pesquisas
             if (statusProvedor == 429) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                         .body(Map.of("message", "O Google Books limitou temporariamente as buscas. Aguarde um pouco e tente novamente."));
             }
 
+            // informar falha do provedor apresenta indisponibilidade quando o servidor de livros falha
             if (e.getStatusCode().is5xxServerError()) {
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                         .body(Map.of("message", "O Google Books está temporariamente indisponível. Tente novamente em alguns instantes."));
@@ -165,23 +174,28 @@ public class GoogleBooksController {
         }
     }
 
+    // buscar detalhes do livro pela tela este metodo valida o identificador e consulta o volume escolhido
     @GetMapping("/googlebooks/detalhes")
     @ResponseBody
     public ResponseEntity<?> detalhes(
             @RequestParam("id") String volumeId,
             HttpSession session) {
 
+        // autenticar detalhes do livro exige login para consultar um volume
         if (session.getAttribute("usuarioLogado") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "É necessário entrar para consultar os detalhes do livro."));
         }
+        // validar codigo do livro recusa identificadores fora do formato permitido
         if (!VOLUME_ID_PATTERN.matcher(volumeId).matches()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "O identificador do livro é inválido."));
         }
 
+        // consultar detalhes do livro devolve o volume e trata falhas de resposta ou conexao
         try {
             GoogleBookDTO livro = googleBooksService.buscarDetalhesLivro(volumeId);
+            // informar livro ausente retorna que o volume nao foi encontrado quando a consulta vem vazia
             if (livro == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -190,10 +204,12 @@ public class GoogleBooksController {
             int statusProvedor = e.getStatusCode().value();
             logger.warn("Google Books respondeu com HTTP {} ao consultar detalhes do volume.", statusProvedor);
 
+            // informar limite de detalhes avisa que o provedor restringiu as consultas de livros
             if (statusProvedor == 429) {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                         .body(Map.of("message", "O Google Books limitou temporariamente as consultas. Tente novamente mais tarde."));
             }
+            // informar indisponibilidade de detalhes reconhece falhas do servidor de livros
             if (e.getStatusCode().is5xxServerError()) {
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                         .body(Map.of("message", "O Google Books está temporariamente indisponível."));

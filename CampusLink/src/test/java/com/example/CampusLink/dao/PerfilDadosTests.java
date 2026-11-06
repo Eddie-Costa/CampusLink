@@ -1,3 +1,4 @@
+// verificacao dos dados pessoais exercita consultas e exclusoes em tabelas temporarias
 package com.example.CampusLink.dao;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -21,6 +22,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+// testes da limpeza de contas esta classe confere vinculos impedimentos e cancelamento de gravacoes incompletas
 @SpringBootTest
 class PerfilDadosTests {
     @Autowired DataSource dataSource;
@@ -28,12 +30,13 @@ class PerfilDadosTests {
     private UsuarioRepository usuarios;
     private SupabaseStorageService storage;
 
+    // preparar testes de dados pessoais este metodo cria tabelas temporarias e direciona as operacoes para dados isolados
     @BeforeEach
     void prepararTabelasTemporarias() throws Exception {
         conn = dataSource.getConnection();
         conn.setAutoCommit(true);
-        // Somente a estrutura é lida do banco. Todos os dados e alterações do teste
-        // ficam em pg_temp, isolados das tabelas reais e descartados ao final.
+
+
         for (String tabela : new String[]{"USUARIOS", "ALUNOS", "PROFESSORES", "ADMINISTRADOR", "TURMAS",
                 "ALUNO_TURMA", "PROFESSOR_TURMA", "DISPONIBILIDADES", "DENUNCIAS", "CONTEUDOS", "EVENTOS",
                 "EVENTO_CONTEUDO", "ARQUIVOS", "PROGRESSO_CONTEUDO"}) {
@@ -47,10 +50,13 @@ class PerfilDadosTests {
 
         Connection isolada = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
                 new Class<?>[]{Connection.class}, (proxy, method, args) -> {
+                    // preservar conexao do perfil impede o fechamento da conexao compartilhada pelo teste
                     if (method.getName().equals("close")) return null;
+                    // isolar consultas do perfil direciona as consultas para as tabelas temporarias
                     if (method.getName().equals("prepareStatement")) {
                         args[0] = ((String) args[0]).replace("public.", "pg_temp.");
                     }
+                    // executar consulta do perfil repassa a chamada e preserva a causa de uma falha
                     try {
                         return method.invoke(conn, args);
                     } catch (InvocationTargetException e) {
@@ -81,10 +87,14 @@ class PerfilDadosTests {
                 """);
     }
 
+    // descartar dados temporarios do perfil este metodo cancela gravacoes pendentes remove as tabelas e fecha a conexao
     @AfterEach
     void descartarTabelasTemporarias() throws Exception {
+        // limpar teste do perfil inicia a limpeza quando existe uma conexao
         if (conn != null) {
+            // descartar dados do perfil limpa as tabelas temporarias e garante o fechamento da conexao
             try {
+                // desfazer transacao do perfil cancela uma transacao de teste ainda aberta
                 if (!conn.getAutoCommit()) conn.rollback();
                 conn.setAutoCommit(true);
                 sql("DISCARD TEMP");
@@ -94,6 +104,7 @@ class PerfilDadosTests {
         }
     }
 
+    // testar consulta cadastral este teste confere identificadores de aluno e professor e conta inexistente
     @Test
     void consultaDadosCadastraisDeAlunoEProfessor() throws Exception {
         var aluno = usuarios.consultarDadosPessoais("ALUNO@example.com");
@@ -103,6 +114,7 @@ class PerfilDadosTests {
         assertNull(usuarios.consultarDadosPessoais("inexistente@example.com"));
     }
 
+    // testar delete aluno e vinculos este teste confere a limpeza dos dados preservando turma e outras contas
     @Test
     void excluiAlunoEVinculosPreservandoOutrosUsuariosETurma() throws Exception {
         usuarios.excluirDadosPessoais(1, "aluno@example.com");
@@ -116,6 +128,7 @@ class PerfilDadosTests {
         verifyNoInteractions(storage);
     }
 
+    // testar professor com responsabilidades este teste impede exclusao quando ha turma material ou evento ativo
     @ParameterizedTest
     @ValueSource(strings = {"turma", "material", "evento"})
     void impedeExcluirProfessorComVinculosAtivos(String vinculo) throws Exception {
@@ -134,6 +147,7 @@ class PerfilDadosTests {
         verifyNoInteractions(storage);
     }
 
+    // testar delete professor com material removido este teste confere a limpeza dos arquivos e dos vinculos
     @Test
     void excluiProfessorComMaterialJaRemovidoELimpaArquivos() throws Exception {
         material("removido");
@@ -153,6 +167,7 @@ class PerfilDadosTests {
         assertEquals(1, quantidade("USUARIOS", "id = 1"));
     }
 
+    // testar cancelamento da exclusao incompleta este teste verifica que uma falha final restaura todos os registros
     @Test
     void erroNoFinalDesfazExclusaoDeTodosOsVinculos() throws Exception {
         sql("CREATE TEMP TABLE impedimento (usuario_id integer REFERENCES pg_temp.\"USUARIOS\"(id))");
@@ -165,12 +180,14 @@ class PerfilDadosTests {
         assertEquals(1, quantidade("TURMAS", "10 = ANY(id_alunos)"));
     }
 
+    // testar identidade divergente na exclusao este teste impede combinar o identificador de uma conta com outro email
     @Test
     void naoExcluiIdentidadeDiferente() throws Exception {
         assertThrows(IllegalStateException.class, () -> usuarios.excluirDadosPessoais(1, "professor@example.com"));
         assertEquals(3, quantidade("USUARIOS", "true"));
     }
 
+    // preparar material do teste este metodo grava um conteudo temporario com a situacao informada
     private void material(String status) throws SQLException {
         sql("""
                 INSERT INTO pg_temp."CONTEUDOS" (id, id_turma, id_professor, created_at, titulo, descricao,
@@ -179,7 +196,9 @@ class PerfilDadosTests {
                 """.formatted(status));
     }
 
+    // contar registros temporarios este metodo consulta a quantidade de linhas que atendem a condicao do teste
     private long quantidade(String tabela, String condicao) throws SQLException {
+        // contar registros do teste consulta a quantidade de linhas da tabela temporaria
         try (Statement stmt = conn.createStatement();
              var rs = stmt.executeQuery("SELECT count(*) FROM pg_temp.\"" + tabela + "\" WHERE " + condicao)) {
             rs.next();
@@ -187,7 +206,9 @@ class PerfilDadosTests {
         }
     }
 
+    // executar comando de teste do perfil este metodo roda a instrucao na conexao temporaria
     private void sql(String sql) throws SQLException {
+        // preparar dados do perfil executa o comando de banco usado pelo teste
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         }

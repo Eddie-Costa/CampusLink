@@ -1,9 +1,11 @@
+// dados de livro organiza os resultados retornados ao navegador
 package com.example.CampusLink.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+// livro encontrado esta classe guarda titulo autoria editora ano identificador capa e endereco
 @Getter
 @Setter
 public class GoogleBookDTO {

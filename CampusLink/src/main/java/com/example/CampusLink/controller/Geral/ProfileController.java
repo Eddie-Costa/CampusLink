@@ -1,3 +1,4 @@
+// dados pessoais disponibiliza consulta exportacao e exclusao da propria conta
 package com.example.CampusLink.controller.Geral;
 
 import org.slf4j.helpers.MessageFormatter;
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.sql.SQLException;
 
+// controle do perfil esta classe usa a identidade conectada e exige codigo para confirmar a exclusao
 @Controller
 public class ProfileController {
 
@@ -45,15 +47,19 @@ public class ProfileController {
     @Autowired
     private SessaoLogListener sessaoLogListener;
 
+    // consultar meu perfil este metodo carrega os dados pessoais e os impedimentos para excluir a conta
     @GetMapping({"/profile", "/profile/dados"})
     public String profile(HttpSession session, Model model) throws SQLException {
+        // encaminhar administrador usa o painel administrativo em vez da area de perfil pessoal
         if (ehAdministrador(session)) {
             return "redirect:/admin/painel";
         }
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         DadosUsuarioDTO dados = dadosDaSessao(session);
+        // exigir dados da conta retorna ao login quando nao encontra o cadastro
         if (dados == null) {
             return "redirect:/login";
         }
@@ -63,24 +69,31 @@ public class ProfileController {
         return "Geral/profile";
     }
 
+    // enviar email com dados pessoais este metodo envia o cadastro ao email do usuario conectado
     @PostMapping("/profile/exportar")
     public String exportar(HttpSession session, RedirectAttributes redirectAttributes) throws SQLException {
+        // encaminhar administrador usa o painel administrativo em vez da area de perfil pessoal
         if (ehAdministrador(session)) {
             return "redirect:/admin/painel";
         }
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         DadosUsuarioDTO dados = dadosDaSessao(session);
+        // exigir dados da conta retorna ao login quando nao encontra o cadastro
         if (dados == null) {
             return "redirect:/login";
         }
+        // exportar dados por email tenta enviar os dados cadastrais e informa falhas de envio
         try {
             emailService.enviarEmailDados(dados);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Seus dados cadastrais foram enviados para o e-mail da sua conta.");
         } catch (MailException e) {
             logger.error("Falha no envio da exportação de dados cadastrais. usuarioId={}", dados.getId(), e);
+            // registro de erros confere se esta habilitado ao enviar email com dados pessoais
             if (logger.isErrorEnabled()) {
+                // gravar historico ao enviar email com dados pessoais tenta salvar o registro no banco e informa falhas
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));
@@ -95,21 +108,28 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
+    // solicitar delete conta este metodo verifica os vinculos e envia um codigo exclusivo de confirmacao
     @PostMapping("/profile/excluir")
     public String solicitarExclusao(HttpSession session, RedirectAttributes redirectAttributes) throws SQLException {
+        // encaminhar administrador usa o painel administrativo em vez da area de perfil pessoal
         if (ehAdministrador(session)) {
             return "redirect:/admin/painel";
         }
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         DadosUsuarioDTO dados = dadosDaSessao(session);
+        // exigir dados da conta retorna ao login quando nao encontra o cadastro
         if (dados == null) {
             return "redirect:/login";
         }
+        // impedir delete conta vinculada exige remover ou transferir turmas materiais e eventos antes da exclusao
         if (UsuarioRepository.possuiVinculosParaExclusao(dados.getId())) {
             logger.warn("Exclusão de conta recusada: vínculos existentes. usuarioId={}", dados.getId());
+            // registro de avisos confere se esta habilitado ao solicitar delete conta
             if (logger.isWarnEnabled()) {
+                // gravar historico ao solicitar delete conta tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "solicitarExclusao", null,
                             MessageFormatter.arrayFormat("Exclusão de conta recusada: vínculos existentes. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -123,9 +143,12 @@ public class ProfileController {
 
         synchronized (session) {
             Long ultimoEnvio = (Long) session.getAttribute("ultimoEnvioExclusao");
+            // limitar codigo de exclusao exige dois minutos entre os envios do codigo
             if (ultimoEnvio != null && System.currentTimeMillis() - ultimoEnvio < 120_000) {
                 logger.warn("Reenvio de código de exclusão recusado: intervalo mínimo. usuarioId={}", dados.getId());
+                // registro de avisos confere se esta habilitado ao solicitar delete conta
                 if (logger.isWarnEnabled()) {
+                    // gravar historico ao solicitar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "solicitarExclusao", null,
                                 MessageFormatter.arrayFormat("Reenvio de código de exclusão recusado: intervalo mínimo. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -136,16 +159,19 @@ public class ProfileController {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Aguarde dois minutos entre os envios do código de exclusão.");
                 return "redirect:/profile";
             }
-            // Uma chave própria impede o uso de códigos de login/recuperação para excluir uma conta.
+
             String chave = chaveExclusao(session, dados);
             String codigo = TwoFactorService.gerarCodigo(chave);
             session.setAttribute("ultimoEnvioExclusao", System.currentTimeMillis());
+            // solicitar codigo de exclusao envia a mensagem e cancela a solicitacao pendente se o envio falhar
             try {
                 emailService.enviarCodigo(dados.getEmail(), codigo, FinalidadeCodigoEmail.EXCLUSAO_CONTA);
                 session.setAttribute("exclusaoPendente", true);
                 session.setAttribute("tentativasExclusao", 0);
                 logger.info("Exclusão de conta solicitada. usuarioId={}", dados.getId());
+                // registro de informacoes confere se esta habilitado ao solicitar delete conta
                 if (logger.isInfoEnabled()) {
+                    // gravar historico ao solicitar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "solicitarExclusao", null,
                                 MessageFormatter.arrayFormat("Exclusão de conta solicitada. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -156,7 +182,9 @@ public class ProfileController {
                 redirectAttributes.addFlashAttribute("mensagemSucesso", "Solicitamos o envio de um código ao seu e-mail. Ele vale por cinco minutos.");
             } catch (MailException e) {
                 logger.error("Falha ao solicitar envio do código de exclusão. usuarioId={}", dados.getId(), e);
+                // registro de erros confere se esta habilitado ao solicitar delete conta
                 if (logger.isErrorEnabled()) {
+                    // gravar historico ao solicitar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         StringWriter excecaoLogBD = new StringWriter();
                         e.printStackTrace(new PrintWriter(excecaoLogBD));
@@ -174,24 +202,31 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
+    // confirmar delete conta este metodo valida o codigo remove os dados e encerra as sessoes
     @PostMapping("/profile/excluir/confirmar")
     public String confirmarExclusao(HttpSession session, @RequestParam(defaultValue = "") String codigo,
                                    @RequestParam(defaultValue = "false") boolean confirmar,
                                    RedirectAttributes redirectAttributes) throws SQLException {
+        // encaminhar administrador usa o painel administrativo em vez da area de perfil pessoal
         if (ehAdministrador(session)) {
             return "redirect:/admin/painel";
         }
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         DadosUsuarioDTO dados = dadosDaSessao(session);
+        // exigir dados da conta retorna ao login quando nao encontra o cadastro
         if (dados == null) {
             return "redirect:/login";
         }
         synchronized (session) {
+            // exigir confirmacao da conta recusa a exclusao sem solicitacao pendente ou aceite expresso
             if (!Boolean.TRUE.equals(session.getAttribute("exclusaoPendente")) || !confirmar) {
                 logger.warn("Exclusão recusada: solicitação ou confirmação ausente. usuarioId={}", dados.getId());
+                // registro de avisos confere se esta habilitado ao confirmar delete conta
                 if (logger.isWarnEnabled()) {
+                    // gravar historico ao confirmar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
                                 MessageFormatter.arrayFormat("Exclusão recusada: solicitação ou confirmação ausente. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -204,10 +239,13 @@ public class ProfileController {
             }
             String chave = chaveExclusao(session, dados);
             int tentativas = (Integer) session.getAttribute("tentativasExclusao");
+            // verificar codigo de exclusao conta uma tentativa quando o codigo tem formato invalido ou nao confere
             if (!codigo.matches("\\d{6}") || !twoFactorService.validarCodigo(chave, codigo)) {
                 session.setAttribute("tentativasExclusao", ++tentativas);
                 logger.warn("Código de exclusão inválido ou expirado. usuarioId={} tentativas={}", dados.getId(), tentativas);
+                // registro de avisos confere se esta habilitado ao confirmar delete conta
                 if (logger.isWarnEnabled()) {
+                    // gravar historico ao confirmar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
                                 MessageFormatter.arrayFormat("Código de exclusão inválido ou expirado. usuarioId={} tentativas={}", new Object[]{dados.getId(), tentativas}).getMessage(), null, null);
@@ -215,9 +253,12 @@ public class ProfileController {
                         logger.error("Erro ao gravar log no banco.", erroLogBD);
                     }
                 }
+                // limitar tentativas de exclusao cancela o codigo apos cinco erros ou avisa para tentar novamente
                 if (tentativas >= 5) {
                     logger.warn("Limite de tentativas de exclusão atingido. usuarioId={}", dados.getId());
+                    // registro de avisos confere se esta habilitado ao confirmar delete conta
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao confirmar delete conta tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
                                     MessageFormatter.arrayFormat("Limite de tentativas de exclusão atingido. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -235,10 +276,13 @@ public class ProfileController {
             }
             session.removeAttribute("exclusaoPendente");
             session.removeAttribute("tentativasExclusao");
+            // delete dados pessoais tenta excluir a conta e informa os vinculos que impedem a operacao
             try {
                 UsuarioRepository.excluirDadosPessoais(dados.getId(), dados.getEmail());
                 logger.info("Conta excluída. usuarioId={}", dados.getId());
+                // registro de informacoes confere se esta habilitado ao confirmar delete conta
                 if (logger.isInfoEnabled()) {
+                    // gravar historico ao confirmar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "confirmarExclusao", null,
                                 MessageFormatter.arrayFormat("Conta excluída. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -248,7 +292,9 @@ public class ProfileController {
                 }
             } catch (IllegalStateException e) {
                 logger.warn("Exclusão de conta recusada. usuarioId={} motivo={}", dados.getId(), e.getMessage());
+                // registro de avisos confere se esta habilitado ao confirmar delete conta
                 if (logger.isWarnEnabled()) {
+                    // gravar historico ao confirmar delete conta tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "confirmarExclusao", null,
                                 MessageFormatter.arrayFormat("Exclusão de conta recusada. usuarioId={} motivo={}", new Object[]{dados.getId(), e.getMessage()}).getMessage(), null, null);
@@ -262,23 +308,28 @@ public class ProfileController {
         }
         twoFactorService.limparCodigo(dados.getEmail());
         sessaoLogListener.encerrarSessoesDoUsuario(dados.getEmail());
+        // encerrar conta excluida invalida a sessao e ignora o caso em que ela ja foi encerrada
         try {
             session.invalidate();
         } catch (IllegalStateException ignored) {
-            // O listener já pode ter encerrado a sessão atual.
+
         }
         return "redirect:/login?contaExcluida";
     }
 
+    // cancelar delete conta este metodo descarta o codigo e limpa a solicitacao de exclusao
     @PostMapping("/profile/excluir/cancelar")
     public String cancelarExclusao(HttpSession session) throws SQLException {
+        // encaminhar administrador usa o painel administrativo em vez da area de perfil pessoal
         if (ehAdministrador(session)) {
             return "redirect:/admin/painel";
         }
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         DadosUsuarioDTO dados = dadosDaSessao(session);
+        // exigir dados da conta retorna ao login quando nao encontra o cadastro
         if (dados == null) {
             return "redirect:/login";
         }
@@ -286,7 +337,9 @@ public class ProfileController {
         session.removeAttribute("exclusaoPendente");
         session.removeAttribute("tentativasExclusao");
         logger.info("Solicitação de exclusão de conta cancelada. usuarioId={}", dados.getId());
+        // registro de informacoes confere se esta habilitado ao cancelar delete conta
         if (logger.isInfoEnabled()) {
+            // gravar historico ao cancelar delete conta tenta salvar o registro no banco e informa falhas
             try {
                 UsuarioRepository.InserirLogsNoBD(null, "INFO", ProfileController.class.getName(), "cancelarExclusao", null,
                         MessageFormatter.arrayFormat("Solicitação de exclusão de conta cancelada. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
@@ -297,41 +350,52 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
+    // verificar administrador no perfil este metodo identifica o perfil administrativo da sessao
     private boolean ehAdministrador(HttpSession session) {
         return "admin".equals(session.getAttribute("tipoUsuario"));
     }
 
+    // buscar titular da conta este metodo consulta os dados pela identidade conectada e encerra sessoes invalidas
     private DadosUsuarioDTO dadosDaSessao(HttpSession session) throws SQLException {
         Object usuario = session.getAttribute("usuarioLogado");
-        // O titular vem da identidade autenticada, nunca de parâmetros ou do e-mail temporário do 2FA.
+
         String email = null;
 
+        // ler email pessoal do aluno identifica a conta pelos dados do aluno conectado
         if (usuario instanceof loginAlunoDTO aluno) {
             email = aluno.getEmail();
-        } else if (usuario instanceof loginProfessorDTO professor) {
+        }
+        // ler email pessoal do professor identifica a conta pelos dados do professor conectado
+        else if (usuario instanceof loginProfessorDTO professor) {
             email = professor.getEmail();
         }
 
+        // encerrar sessao sem email invalida o acesso quando nao consegue identificar a conta
         if (email == null) {
             session.invalidate();
             return null;
         }
 
         DadosUsuarioDTO dados = UsuarioRepository.consultarDadosPessoais(email);
+        // encerrar sessao sem cadastro invalida o acesso quando o usuario nao existe mais no banco
         if (dados == null) {
             session.invalidate();
         }
         return dados;
     }
 
+    // separar codigo de exclusao este metodo cria uma chave ligada a sessao e ao titular
     private String chaveExclusao(HttpSession session, DadosUsuarioDTO dados) {
         return "exclusao:" + session.getId() + ":" + dados.getId();
     }
 
+    // tratar falha no perfil este metodo registra o problema e informa a indisponibilidade dos dados
     @ExceptionHandler({SQLException.class, RestClientException.class})
     public String erroBanco(Exception e, Model model, HttpServletResponse response) {
         logger.error("Erro ao acessar ou alterar dados do perfil.", e);
+        // registro de erros confere se esta habilitado ao tratar falha no perfil
         if (logger.isErrorEnabled()) {
+            // gravar historico ao tratar falha no perfil tenta salvar o registro no banco e informa falhas
             try {
                 StringWriter excecaoLogBD = new StringWriter();
                 e.printStackTrace(new PrintWriter(excecaoLogBD));

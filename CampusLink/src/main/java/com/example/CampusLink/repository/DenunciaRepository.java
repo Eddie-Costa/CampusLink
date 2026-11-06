@@ -1,3 +1,4 @@
+// banco de denuncias centraliza relatos e contagens de participantes
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.DenunciaDTO;
@@ -13,15 +14,18 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+// persistencia de relatos esta classe grava motivos identifica repeticoes e atualiza decisoes de analise
 @Repository
 public class DenunciaRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    // preparar consulta de denuncias este construtor recebe o acesso ao banco
     public DenunciaRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // cadastrar denuncia no banco este metodo grava o motivo e os envolvidos e recupera os dados do registro
     public void inserir(DenunciaDTO denuncia) throws SQLException {
 
         String sql = """
@@ -31,6 +35,7 @@ public class DenunciaRepository {
                 RETURNING "id", "status", "created_at"
                 """;
 
+        // gravar denuncia prepara conteudo aluno professor e motivo e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
                 stmt.setLong(1, denuncia.getIdConteudo());
@@ -38,14 +43,17 @@ public class DenunciaRepository {
                 stmt.setLong(3, denuncia.getIdProfessor());
                 stmt.setString(4, denuncia.getMotivo());
 
+                // ler denuncia criada recupera os dados devolvidos pelo cadastro e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
+                    // preencher denuncia salva guarda codigo situacao e data quando o registro foi devolvido
                     if (rs.next()) {
 
                         denuncia.setId(rs.getLong("id"));
                         denuncia.setStatus(rs.getString("status"));
                         Timestamp createdAt = rs.getTimestamp("created_at");
 
+                        // preencher data da denuncia converte a data apenas quando ela existe
                         if (createdAt != null) {
                             denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -58,6 +66,7 @@ public class DenunciaRepository {
         }
     }
 
+    // verificar denuncia repetida este metodo confere se o aluno ja denunciou o material
     public boolean alunoJaDenunciou(Long idConteudo, Long idAluno) throws SQLException {
 
         String sql = """
@@ -67,14 +76,17 @@ public class DenunciaRepository {
                 AND "id_aluno" = ?
                 """;
 
+        // conferir denuncia anterior consulta aluno e conteudo e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
                 stmt.setLong(2, idAluno);
 
+                // ler denuncias anteriores recupera a contagem e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
+                    // identificar denuncia repetida confirma quando a quantidade encontrada e maior que zero
                     if (rs.next()) {
                         return rs.getInt("quantidade") > 0;
                     }
@@ -86,6 +98,7 @@ public class DenunciaRepository {
         }
     }
 
+    // contar denuncias pendentes do conteudo este metodo conta alunos distintos com relatos ainda nao analisados
     public int contarDenunciasPendentes(Long idConteudo) throws SQLException {
 
         String sql = """
@@ -95,13 +108,16 @@ public class DenunciaRepository {
                 AND "status" = 'pendente'
                 """;
 
+        // consultar total de denuncias pendentes busca pelo conteudo e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
 
+                // ler total de denuncias recupera a quantidade pendente e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
+                    // devolver denuncias contadas usa a quantidade apenas quando a consulta possui resultado
                     if (rs.next()) {
                         return rs.getInt("quantidade");
                     }
@@ -113,6 +129,7 @@ public class DenunciaRepository {
         }
     }
 
+    // contar alunos para denuncia este metodo consulta a quantidade de participantes distintos da turma
     public int contarAlunosDaTurma(
             Long idTurma
     ) throws SQLException {
@@ -123,13 +140,16 @@ public class DenunciaRepository {
                 WHERE "id_turma" = ?
                 """;
 
+        // consultar tamanho da turma conta os alunos vinculados e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
                 stmt.setLong(1, idTurma);
 
+                // ler total de alunos recupera a quantidade encontrada e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
+                    // devolver alunos contados usa a quantidade apenas quando a consulta possui resultado
                     if (rs.next()) {
                         return rs.getInt("quantidade");
                     }
@@ -141,6 +161,7 @@ public class DenunciaRepository {
         }
     }
 
+    // listar autores das denuncias este metodo consulta os nomes dos alunos sem repeticao
     public List<String> listarNomesAlunosPorConteudo(Long idConteudo) throws SQLException {
 
         List<String> alunos = new ArrayList<>();
@@ -156,11 +177,13 @@ public class DenunciaRepository {
                 ORDER BY u."nome"
                 """;
 
+        // consultar autores das denuncias busca os nomes pelo conteudo e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
 
+                // ler nomes dos denunciantes preenche a lista de alunos e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
@@ -176,6 +199,7 @@ public class DenunciaRepository {
         return alunos;
     }
 
+    // listar denuncias do material este metodo consulta motivos situacoes e nomes dos alunos
     public List<DenunciaDTO> listarPorConteudo(Long idConteudo) throws SQLException {
 
         List<DenunciaDTO> denuncias = new ArrayList<>();
@@ -191,11 +215,13 @@ public class DenunciaRepository {
                 ORDER BY d."created_at" DESC
                 """;
 
+        // consultar relatos do conteudo busca as denuncias associadas e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
 
+                // ler relatos encontrados monta denuncias com autor motivo e situacao e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
@@ -210,6 +236,7 @@ public class DenunciaRepository {
                         denuncia.setNomeAluno(rs.getString("nome_aluno"));
                         Timestamp createdAt = rs.getTimestamp("created_at");
 
+                        // preencher data do relato inclui a data de criacao quando ela existe
                         if (createdAt != null) {
                             denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -226,6 +253,7 @@ public class DenunciaRepository {
         return denuncias;
     }
 
+    // atualizar denuncias pendentes este metodo aplica a decisao de analise aos relatos do conteudo
     public void atualizarStatusPorConteudo(Long idConteudo, String status) throws SQLException {
 
         String sql = """
@@ -235,6 +263,7 @@ public class DenunciaRepository {
                 AND "status" = 'pendente'
                 """;
 
+        // atualizar situacao das denuncias grava o novo estado pelo conteudo e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
                 stmt.setString(1, status);
@@ -247,10 +276,12 @@ public class DenunciaRepository {
         }
     }
 
-    // preserva o contrato de erro usado pelos consumidores
+
+    // tratar erro do banco de denuncias este metodo recupera a falha original ou cria uma falha de consulta
     private SQLException converterErro(DataAccessException erro) {
         Throwable causa = erro;
         while (causa != null) {
+            // recuperar falha do banco devolve a causa original quando ela e uma falha de consulta
             if (causa instanceof SQLException sqlException) {
                 return sqlException;
             }
