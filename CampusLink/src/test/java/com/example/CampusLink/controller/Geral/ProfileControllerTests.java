@@ -87,7 +87,7 @@ class ProfileControllerTests {
     }
 
     @Test
-    void renderizaProfessorComVinculosSemBotaoDeExclusao() throws Exception {
+    void renderizaProfessorComVinculosInformandoQueOMaterialPermanece() throws Exception {
         loginProfessorDTO professor = new loginProfessorDTO();
         professor.setEmail("titular@example.com");
         session.setAttribute("usuarioLogado", professor);
@@ -97,8 +97,8 @@ class ProfileControllerTests {
         when(usuarios.possuiVinculosParaExclusao(42)).thenReturn(true);
         String html = mvc.perform(get("/profile").session(session)).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Matrícula")))
-                .andExpect(content().string(containsString("Ver materiais")))
-                .andExpect(content().string(not(containsString("Solicitar código de exclusão"))))
+                .andExpect(content().string(containsString("continuarão disponíveis para os alunos")))
+                .andExpect(content().string(containsString("Solicitar código de exclusão")))
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         preview("professor.html", html);
     }
@@ -152,11 +152,11 @@ class ProfileControllerTests {
     }
 
     @Test
-    void vinculosImpedemSolicitacaoDeExclusao() throws Exception {
+    void vinculosNaoImpedemSolicitacaoDeExclusao() throws Exception {
         when(usuarios.possuiVinculosParaExclusao(42)).thenReturn(true);
-        mvc.perform(post("/profile/excluir").session(session).with(csrf())).andExpect(flash().attributeExists("mensagemErro"));
-        verifyNoInteractions(emails);
-        verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
+        mvc.perform(post("/profile/excluir").session(session).with(csrf()))
+                .andExpect(flash().attributeExists("mensagemSucesso"));
+        verify(emails).enviarCodigo(eq("titular@example.com"), anyString(), eq(FinalidadeCodigoEmail.EXCLUSAO_CONTA));
     }
 
     @Test
@@ -169,7 +169,7 @@ class ProfileControllerTests {
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                         .param("codigo", codigo).param("confirmar", "true"))
                 .andExpect(redirectedUrl("/login?contaExcluida"));
-        verify(usuarios).excluirDadosPessoais(42, "titular@example.com");
+        verify(usuarios).anonimizarDadosPessoais(42, "titular@example.com");
         verify(usuarios).InserirLogsNoBD(isNull(), eq("INFO"), anyString(), eq("confirmarExclusao"),
                 isNull(), eq("Conta excluída. usuarioId=42"), isNull(), isNull());
         verify(sessoes).encerrarSessoesDoUsuario("titular@example.com");
@@ -183,7 +183,7 @@ class ProfileControllerTests {
         String codigo = solicitarCodigo();
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf()).param("codigo", codigo))
                 .andExpect(flash().attributeExists("mensagemErro"));
-        verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
+        verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
     @Test
@@ -198,7 +198,7 @@ class ProfileControllerTests {
         assertNull(session.getAttribute("exclusaoPendente"));
         verify(usuarios).InserirLogsNoBD(isNull(), eq("WARN"), anyString(), eq("confirmarExclusao"),
                 isNull(), contains("Limite de tentativas de exclusão atingido"), isNull(), isNull());
-        verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
+        verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
     @Test
@@ -214,13 +214,13 @@ class ProfileControllerTests {
                 isNull(), contains("cancelada. usuarioId=42"), isNull(), isNull());
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", codigo).param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
-        verify(usuarios, never()).excluirDadosPessoais(anyLong(), anyString());
+        verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
     @Test
     void falhaNaExclusaoMantemSessaoSemDeclararSucesso() throws Exception {
         String codigo = solicitarCodigo();
-        doThrow(new SQLException("indisponivel")).when(usuarios).excluirDadosPessoais(42, dados.getEmail());
+        doThrow(new SQLException("indisponivel")).when(usuarios).anonimizarDadosPessoais(42, dados.getEmail());
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", codigo).param("confirmar", "true")).andExpect(status().isServiceUnavailable());
         assertFalse(session.isInvalid());

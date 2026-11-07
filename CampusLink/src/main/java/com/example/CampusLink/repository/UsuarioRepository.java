@@ -99,7 +99,7 @@ public class UsuarioRepository {
         }
     }
 
-    public void excluirDadosPessoais(long idUsuario, String email) throws SQLException {
+    public void anonimizarDadosPessoais(long idUsuario, String email) throws SQLException {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
@@ -126,54 +126,26 @@ public class UsuarioRepository {
 
                 impedirExclusaoProprioAdministrador(conn, idUsuario);
 
-                // confere novamente os vinculos antes de excluir a conta
-                if (possuiVinculosParaExclusao(conn, idUsuario)) {
-                    throw new IllegalStateException("Remova ou transfira suas turmas, materiais e eventos antes de excluir a conta.");
-                }
-
                 // apaga os materiais que ja estavam removidos e seus arquivos
                 excluirMateriaisRemovidos(conn, idUsuario);
 
+                // historico academico, chamados e aceites continuam ligados a conta, agora sem identificacao
+                executarExclusao(conn, "DELETE FROM public.\"TURMA_ATIVIDADE\" WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, """
-                        DELETE FROM public."DENUNCIAS"
-                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
-                           OR id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
-                        """, idUsuario, idUsuario);
-
-                executarExclusao(conn, """
-                        DELETE FROM public."DISPONIBILIDADES"
-                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                        UPDATE public."CONSENTIMENTOS" SET revogado_em = now()
+                        WHERE id_usuario = ? AND revogado_em IS NULL
                         """, idUsuario);
 
-                executarExclusao(conn, """
-                        DELETE FROM public."PROGRESSO_CONTEUDO"
-                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
-                        """, idUsuario);
+                anonimizarLogs(conn, normalizarEmail(email));
 
+                executarExclusao(conn, "UPDATE public.\"ALUNOS\" SET rgm = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
+                executarExclusao(conn, "UPDATE public.\"PROFESSORES\" SET matricula = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, """
-                        DELETE FROM public."ALUNO_TURMA"
-                        WHERE id_aluno IN (SELECT id FROM public."ALUNOS" WHERE id_usuario = ?)
+                        UPDATE public."USUARIOS"
+                        SET nome = 'Usuário removido', email = NULL, telefone = NULL, datanasc = DATE '1900-01-01',
+                            senha = '!anonimizado', status = false, anonimizado_em = now()
+                        WHERE id = ?
                         """, idUsuario);
-
-                executarExclusao(conn, """
-                        DELETE FROM public."PROFESSOR_TURMA"
-                        WHERE id_professor IN (SELECT id FROM public."PROFESSORES" WHERE id_usuario = ?)
-                        """, idUsuario);
-
-                executarExclusao(conn, """
-                        UPDATE public."TURMAS" t SET id_alunos = array_remove(t.id_alunos, a.id)
-                        FROM public."ALUNOS" a WHERE a.id_usuario = ? AND a.id = ANY(t.id_alunos)
-                        """, idUsuario);
-
-                executarExclusao(conn, """
-                        UPDATE public."TURMAS" t SET id_professores = array_remove(t.id_professores, p.id)
-                        FROM public."PROFESSORES" p WHERE p.id_usuario = ? AND p.id = ANY(t.id_professores)
-                        """, idUsuario);
-
-                executarExclusao(conn, "DELETE FROM public.\"ALUNOS\" WHERE id_usuario = ?", idUsuario);
-                executarExclusao(conn, "DELETE FROM public.\"PROFESSORES\" WHERE id_usuario = ?", idUsuario);
-                executarExclusao(conn, "DELETE FROM public.\"ADMINISTRADOR\" WHERE id_usuario = ?", idUsuario);
-                executarExclusao(conn, "DELETE FROM public.\"USUARIOS\" WHERE id = ?", idUsuario);
 
                 conn.commit();
 
@@ -214,6 +186,38 @@ public class UsuarioRepository {
                 stmt.setLong(i + 1, ids[i]);
             }
 
+            stmt.executeUpdate();
+        }
+    }
+
+    private void anonimizarLogs(Connection conn, String email) throws SQLException {
+        // ***= faz o PostgreSQL tratar o e-mail como texto literal, sem interpretar "." ou "+" como expressao
+        String padrao = "***=" + email;
+        String contem = "%" + email + "%";
+
+        try (PreparedStatement stmt = conn.prepareStatement("""
+                UPDATE public."LOGS_EVENTOS"
+                SET mensagem = regexp_replace(mensagem, ?, '[anonimizado]', 'gi'),
+                    excecao = regexp_replace(excecao, ?, '[anonimizado]', 'gi'),
+                    detalhes = regexp_replace(detalhes::text, ?, '[anonimizado]', 'gi')::jsonb
+                WHERE mensagem ILIKE ? OR excecao ILIKE ? OR detalhes::text ILIKE ?
+                """)) {
+            stmt.setString(1, padrao);
+            stmt.setString(2, padrao);
+            stmt.setString(3, padrao);
+            stmt.setString(4, contem);
+            stmt.setString(5, contem);
+            stmt.setString(6, contem);
+            stmt.executeUpdate();
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement("""
+                UPDATE public."LOGS_SESSOES"
+                SET log_completo = regexp_replace(log_completo, ?, '[anonimizado]', 'gi')
+                WHERE log_completo ILIKE ?
+                """)) {
+            stmt.setString(1, padrao);
+            stmt.setString(2, contem);
             stmt.executeUpdate();
         }
     }

@@ -112,20 +112,6 @@ public class ProfileController {
         if (dados == null) {
             return "redirect:/login";
         }
-        if (UsuarioRepository.possuiVinculosParaExclusao(dados.getId())) {
-            logger.warn("Exclusão de conta recusada: vínculos existentes. usuarioId={}", dados.getId());
-            if (logger.isWarnEnabled()) {
-                try {
-                    UsuarioRepository.InserirLogsNoBD(null, "WARN", ProfileController.class.getName(), "solicitarExclusao", null,
-                            MessageFormatter.arrayFormat("Exclusão de conta recusada: vínculos existentes. usuarioId={}", new Object[]{dados.getId()}).getMessage(), null, null);
-                } catch (Exception erroLogBD) {
-                    logger.error("Erro ao gravar log no banco.", erroLogBD);
-                }
-            }
-            redirectAttributes.addFlashAttribute("mensagemErro", "Antes de excluir sua conta, remova ou transfira suas turmas, materiais e eventos.");
-            return "redirect:/profile";
-        }
-
         synchronized (session) {
             Long ultimoEnvio = (Long) session.getAttribute("ultimoEnvioExclusao");
             if (ultimoEnvio != null && System.currentTimeMillis() - ultimoEnvio < 120_000) {
@@ -241,7 +227,7 @@ public class ProfileController {
             session.removeAttribute("exclusaoPendente");
             session.removeAttribute("tentativasExclusao");
             try {
-                UsuarioRepository.excluirDadosPessoais(dados.getId(), dados.getEmail());
+                UsuarioRepository.anonimizarDadosPessoais(dados.getId(), dados.getEmail());
                 logger.info("Conta excluída. usuarioId={}", dados.getId());
                 if (logger.isInfoEnabled()) {
                     try {

@@ -117,22 +117,19 @@
             <section id="excluir-conta" class="profile-card profile-danger">
                 <span class="profile-eyebrow">ENCERRAMENTO DA CONTA</span>
                 <h2>Excluir minha conta</h2>
-                <p class="profile-description">A exclusão remove seu cadastro, suas participações em turmas,
-                    disponibilidades e denúncias vinculadas. Você perderá o acesso à conta. Esta ação não pode ser
+                <p class="profile-description">Ao excluir a conta, seus dados pessoais são <strong>anonimizados</strong>:
+                    nome, e-mail, telefone, data de nascimento e RGM ou matrícula deixam de existir no CampusLink e não
+                    há como associá-los novamente a você. Você perderá o acesso à conta. Esta ação não pode ser
                     desfeita.</p>
-                <p class="profile-note">Registros de segurança e cópias de segurança seguem os critérios de conservação
-                    informados nos Termos de Uso. A exportação acima contém somente os dados cadastrais.</p>
-                <div th:if="${possuiVinculos}" class="alert alert-warning">
-                    <p>Antes de excluir sua conta, remova ou transfira as turmas sob sua responsabilidade,
-                        seus materiais e seus eventos. Se precisar de ajuda com esses vínculos, utilize o canal dos
-                        Termos de Uso.</p>
-                    <div class="d-flex flex-wrap gap-3">
-                        <a th:href="@{/turmas}">Ver turmas</a>
-                        <a th:href="@{/meus-conteudos}">Ver materiais</a>
-                        <a th:href="@{/eventos}">Ver eventos</a>
-                    </div>
+                <p class="profile-note">Seu histórico acadêmico (participação em turmas, progresso, disponibilidade),
+                    seus chamados e o registro de aceite dos termos continuam no sistema, mas aparecem como
+                    "Usuário removido". Nos registros de segurança, seu e-mail é substituído por "[anonimizado]".
+                    A exportação acima contém somente os dados cadastrais; faça-a antes, se quiser uma cópia.</p>
+                <div th:if="${possuiVinculos}" class="alert alert-info">
+                    Suas turmas, materiais e eventos continuarão disponíveis para os alunos, sem o seu nome.
+                    A administração das turmas sob sua responsabilidade passará a ser feita pela equipe do CampusLink.
                 </div>
-                <th:block th:unless="${possuiVinculos}">
+                <th:block>
                     <p class="profile-note">Para sua segurança, confirme a exclusão com um código enviado ao e-mail da
                         conta.</p>
                     <form th:action="@{/profile/excluir}" method="post" data-submit-once>

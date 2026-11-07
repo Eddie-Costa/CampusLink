@@ -36,7 +36,8 @@ class PerfilDadosTests {
         // ficam em pg_temp, isolados das tabelas reais e descartados ao final.
         for (String tabela : new String[]{"USUARIOS", "ALUNOS", "PROFESSORES", "ADMINISTRADOR", "TURMAS",
                 "ALUNO_TURMA", "PROFESSOR_TURMA", "DISPONIBILIDADES", "DENUNCIAS", "CONTEUDOS", "EVENTOS",
-                "EVENTO_CONTEUDO", "ARQUIVOS", "PROGRESSO_CONTEUDO"}) {
+                "EVENTO_CONTEUDO", "ARQUIVOS", "PROGRESSO_CONTEUDO", "TURMA_ATIVIDADE", "CONSENTIMENTOS",
+                "LOGS_EVENTOS", "LOGS_SESSOES"}) {
             sql("CREATE TEMP TABLE \"" + tabela + "\" (LIKE public.\"" + tabela + "\" INCLUDING CONSTRAINTS)");
         }
         sql("ALTER TABLE pg_temp.\"USUARIOS\" ADD PRIMARY KEY (id)");
@@ -78,6 +79,14 @@ class PerfilDadosTests {
                 INSERT INTO pg_temp."PROFESSOR_TURMA" VALUES (1, 20, 100, now());
                 INSERT INTO pg_temp."DISPONIBILIDADES" VALUES (1, 10, CURRENT_DATE, 2, now());
                 INSERT INTO pg_temp."DENUNCIAS" VALUES (1, 500, 10, 20, 'Teste', 'pendente', now());
+                INSERT INTO pg_temp."TURMA_ATIVIDADE" (id, id_usuario, id_turma, alterado_em) VALUES (1, 1, 100, now());
+                INSERT INTO pg_temp."CONSENTIMENTOS" (id, id_usuario, tipo, id_termo, hash_sha256, aceito_em)
+                    VALUES (1, 1, 'termos_uso', 1, repeat('a', 64), now() - interval '1 day');
+                INSERT INTO pg_temp."LOGS_EVENTOS" (id, data_hora, nivel, classe, mensagem, detalhes, excecao) VALUES
+                    (1, now(), 'INFO', 'Teste', 'Login concluído. email=ALUNO@example.com', '{"email": "aluno@example.com"}', 'falha para aluno@example.com'),
+                    (2, now(), 'INFO', 'Teste', 'Login concluído. email=professor@example.com', NULL, NULL);
+                INSERT INTO pg_temp."LOGS_SESSOES" (sessao_log_id, usuario_id, inicio, status, log_completo)
+                    VALUES (gen_random_uuid(), 1, now(), 'ENCERRADA', 'sessão de aluno@example.com');
                 """);
     }
 
@@ -104,21 +113,51 @@ class PerfilDadosTests {
     }
 
     @Test
-    void excluiAlunoEVinculosPreservandoOutrosUsuariosETurma() throws Exception {
-        usuarios.excluirDadosPessoais(1, "aluno@example.com");
-        assertEquals(0, quantidade("USUARIOS", "id = 1"));
-        assertEquals(0, quantidade("ALUNOS", "id = 10"));
-        assertEquals(0, quantidade("ALUNO_TURMA", "id_aluno = 10"));
-        assertEquals(0, quantidade("DISPONIBILIDADES", "id_aluno = 10"));
-        assertEquals(0, quantidade("DENUNCIAS", "id_aluno = 10"));
-        assertEquals(1, quantidade("TURMAS", "id = 100 AND cardinality(id_alunos) = 0"));
-        assertEquals(2, quantidade("USUARIOS", "id <> 1"));
+    void anonimizaCadastroDoAlunoEMantemHistoricoAcademico() throws Exception {
+        usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
+
+        assertEquals(1, quantidade("USUARIOS", """
+                id = 1 AND nome = 'Usuário removido' AND email IS NULL AND telefone IS NULL
+                AND datanasc = DATE '1900-01-01' AND senha = '!anonimizado' AND status = false
+                AND anonimizado_em IS NOT NULL
+                """));
+        assertEquals(1, quantidade("ALUNOS", "id = 10 AND rgm = 'ANON-10'"));
+        assertEquals(1, quantidade("ALUNO_TURMA", "id_aluno = 10"));
+        assertEquals(1, quantidade("DISPONIBILIDADES", "id_aluno = 10"));
+        assertEquals(1, quantidade("DENUNCIAS", "id_aluno = 10"));
+        assertEquals(1, quantidade("TURMAS", "10 = ANY(id_alunos)"));
+        assertEquals(2, quantidade("USUARIOS", "id <> 1 AND status = true AND email IS NOT NULL"));
+        assertNull(usuarios.consultarDadosPessoais("aluno@example.com"));
         verifyNoInteractions(storage);
+    }
+
+    @Test
+    void revogaAceitesERemoveTurmasRecentesDoTitular() throws Exception {
+        usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
+
+        assertEquals(1, quantidade("CONSENTIMENTOS", "id_usuario = 1 AND revogado_em IS NOT NULL"));
+        assertEquals(0, quantidade("TURMA_ATIVIDADE", "id_usuario = 1"));
+    }
+
+    @Test
+    void substituiOEmailDoTitularNosLogsSemAlterarOsDeOutrosUsuarios() throws Exception {
+        usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
+
+        assertEquals(0, quantidade("LOGS_EVENTOS", """
+                mensagem ILIKE '%aluno@example.com%' OR excecao ILIKE '%aluno@example.com%'
+                OR detalhes::text ILIKE '%aluno@example.com%'
+                """));
+        assertEquals(1, quantidade("LOGS_EVENTOS", """
+                id = 1 AND mensagem = 'Login concluído. email=[anonimizado]'
+                AND excecao = 'falha para [anonimizado]' AND detalhes->>'email' = '[anonimizado]'
+                """));
+        assertEquals(1, quantidade("LOGS_EVENTOS", "id = 2 AND mensagem = 'Login concluído. email=professor@example.com'"));
+        assertEquals(1, quantidade("LOGS_SESSOES", "log_completo = 'sessão de [anonimizado]'"));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"turma", "material", "evento"})
-    void impedeExcluirProfessorComVinculosAtivos(String vinculo) throws Exception {
+    void anonimizaProfessorComVinculosEMantemOMaterial(String vinculo) throws Exception {
         switch (vinculo) {
             case "turma" -> sql("UPDATE pg_temp.\"TURMAS\" SET id_proprietario = 20 WHERE id = 100");
             case "material" -> material("ativo");
@@ -128,47 +167,52 @@ class PerfilDadosTests {
                     """);
         }
         assertTrue(usuarios.possuiVinculosParaExclusao(2));
-        assertThrows(IllegalStateException.class, () -> usuarios.excluirDadosPessoais(2, "professor@example.com"));
-        assertEquals(1, quantidade("USUARIOS", "id = 2"));
+
+        usuarios.anonimizarDadosPessoais(2, "professor@example.com");
+
+        assertEquals(1, quantidade("USUARIOS", "id = 2 AND nome = 'Usuário removido' AND email IS NULL"));
+        assertEquals(1, quantidade("PROFESSORES", "id = 20 AND matricula = 'ANON-20'"));
         assertEquals(1, quantidade("PROFESSOR_TURMA", "id_professor = 20"));
+        assertEquals(1, quantidade("TURMAS", "id = 100 AND 20 = ANY(id_professores)"));
+        switch (vinculo) {
+            case "turma" -> assertEquals(1, quantidade("TURMAS", "id = 100 AND id_proprietario = 20"));
+            case "material" -> assertEquals(1, quantidade("CONTEUDOS", "id = 500 AND status = 'ativo'"));
+            case "evento" -> assertEquals(1, quantidade("EVENTOS", "id = 1 AND id_professor = 20"));
+        }
         verifyNoInteractions(storage);
     }
 
     @Test
-    void excluiProfessorComMaterialJaRemovidoELimpaArquivos() throws Exception {
+    void limpaMaterialJaRemovidoDoProfessorEOsArquivos() throws Exception {
         material("removido");
         sql("""
                 INSERT INTO pg_temp."ARQUIVOS" (id, id_conteudo, created_at, bucket_id, storage_path)
                     VALUES (1, 500, now(), 'arquivos-teste', 'material-teste.pdf');
                 INSERT INTO pg_temp."EVENTO_CONTEUDO" VALUES (1, 999, 500);
                 """);
-        assertFalse(usuarios.possuiVinculosParaExclusao(2));
-        usuarios.excluirDadosPessoais(2, "professor@example.com");
+        usuarios.anonimizarDadosPessoais(2, "professor@example.com");
         verify(storage).excluir("arquivos-teste", "material-teste.pdf");
         assertEquals(0, quantidade("CONTEUDOS", "id_professor = 20"));
         assertEquals(0, quantidade("ARQUIVOS", "id_conteudo = 500"));
         assertEquals(0, quantidade("EVENTO_CONTEUDO", "id_conteudo = 500"));
-        assertEquals(0, quantidade("PROFESSORES", "id = 20"));
-        assertEquals(1, quantidade("TURMAS", "id = 100 AND id_professores = ARRAY[30]::bigint[]"));
-        assertEquals(1, quantidade("USUARIOS", "id = 1"));
+        assertEquals(1, quantidade("PROFESSORES", "id = 20 AND matricula = 'ANON-20'"));
     }
 
     @Test
-    void erroNoFinalDesfazExclusaoDeTodosOsVinculos() throws Exception {
-        sql("CREATE TEMP TABLE impedimento (usuario_id integer REFERENCES pg_temp.\"USUARIOS\"(id))");
-        sql("INSERT INTO pg_temp.impedimento VALUES (1)");
-        assertThrows(SQLException.class, () -> usuarios.excluirDadosPessoais(1, "aluno@example.com"));
-        assertEquals(1, quantidade("USUARIOS", "id = 1"));
-        assertEquals(1, quantidade("ALUNO_TURMA", "id_aluno = 10"));
-        assertEquals(1, quantidade("DISPONIBILIDADES", "id_aluno = 10"));
-        assertEquals(1, quantidade("DENUNCIAS", "id_aluno = 10"));
-        assertEquals(1, quantidade("TURMAS", "10 = ANY(id_alunos)"));
+    void erroNoFinalDesfazTodaAAnonimizacao() throws Exception {
+        sql("ALTER TABLE pg_temp.\"USUARIOS\" ADD CONSTRAINT impedimento CHECK (email IS NOT NULL)");
+        assertThrows(SQLException.class, () -> usuarios.anonimizarDadosPessoais(1, "aluno@example.com"));
+        assertEquals(1, quantidade("USUARIOS", "id = 1 AND email = 'aluno@example.com'"));
+        assertEquals(1, quantidade("ALUNOS", "id = 10 AND rgm = '12345678901'"));
+        assertEquals(1, quantidade("CONSENTIMENTOS", "id_usuario = 1 AND revogado_em IS NULL"));
+        assertEquals(1, quantidade("TURMA_ATIVIDADE", "id_usuario = 1"));
+        assertEquals(1, quantidade("LOGS_EVENTOS", "id = 1 AND mensagem ILIKE '%aluno@example.com%'"));
     }
 
     @Test
-    void naoExcluiIdentidadeDiferente() throws Exception {
-        assertThrows(IllegalStateException.class, () -> usuarios.excluirDadosPessoais(1, "professor@example.com"));
-        assertEquals(3, quantidade("USUARIOS", "true"));
+    void naoAnonimizaIdentidadeDiferente() throws Exception {
+        assertThrows(IllegalStateException.class, () -> usuarios.anonimizarDadosPessoais(1, "professor@example.com"));
+        assertEquals(3, quantidade("USUARIOS", "anonimizado_em IS NULL AND status = true"));
     }
 
     private void material(String status) throws SQLException {
