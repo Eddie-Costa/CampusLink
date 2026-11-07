@@ -90,7 +90,7 @@ class ProfileControllerTests {
         verify(usuarios).consultarDadosPessoais("titular@example.com");
     }
 
-    // testar perfil com vinculos este teste confere que o professor com materiais nao recebe a acao de exclusao
+    // testar perfil com vinculos este teste confere que o professor com materiais pode encerrar a conta e ve que o material permanece
     @Test
     void renderizaProfessorComVinculosInformandoQueOMaterialPermanece() throws Exception {
         loginProfessorDTO professor = new loginProfessorDTO();
@@ -161,7 +161,7 @@ class ProfileControllerTests {
                 .andExpect(flash().attributeExists("mensagemErro")).andExpect(flash().attributeCount(1));
     }
 
-    // testar vinculos antes da exclusao este teste impede envio de codigo quando existem responsabilidades
+    // testar vinculos antes da anonimizacao este teste confere que responsabilidades nao impedem o envio do codigo
     @Test
     void vinculosNaoImpedemSolicitacaoDeExclusao() throws Exception {
         when(usuarios.possuiVinculosParaExclusao(42)).thenReturn(true);
@@ -170,7 +170,7 @@ class ProfileControllerTests {
         verify(emails).enviarCodigo(eq("titular@example.com"), anyString(), eq(FinalidadeCodigoEmail.EXCLUSAO_CONTA));
     }
 
-    // testar delete conta confirmado este teste valida a exclusao o registro e o encerramento das sessoes
+    // testar encerramento confirmado este teste valida a anonimizacao o registro e o encerramento das sessoes
     @Test
     void codigoCorretoEConfirmacaoExcluemContaEEncerramSessoes() throws Exception {
         String codigo = solicitarCodigo();
@@ -232,7 +232,7 @@ class ProfileControllerTests {
         verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
-    // testar falha ao excluir conta este teste preserva a sessao e registra o erro sem declarar sucesso
+    // testar falha ao anonimizar conta este teste preserva a sessao e registra o erro sem declarar sucesso
     @Test
     void falhaNaExclusaoMantemSessaoSemDeclararSucesso() throws Exception {
         String codigo = solicitarCodigo();

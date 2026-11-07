@@ -105,12 +105,14 @@ public class turmasController {
         }
 
         Long idTurma;
+        // converter id da turma volta para a lista quando o endereco traz um id invalido
         try {
             idTurma = Long.parseLong(id);
         } catch (NumberFormatException e) {
             return "redirect:/turmas";
         }
 
+        // exigir participacao na turma impede abrir turmas alheias trocando o id no endereco
         if (!participaDaTurma(session, idTurma, "ambienteTurma")) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
             return "redirect:/turmas";
@@ -238,7 +240,9 @@ public class turmasController {
         Object email = session.getAttribute("email2FA");
         String idUsuario = null;
 
+        // identificar participante busca o id de aluno ou professor pelo email da sessao
         if (idTurma != null && email != null) {
+            // escolher tabela do perfil consulta alunos ou professores conforme o tipo de usuario
             if ("aluno".equals(tipo)) {
                 idUsuario = alunoRepository.buscarPorIDAluno(email.toString());
             } else if ("professor".equals(tipo)) {
@@ -250,9 +254,12 @@ public class turmasController {
                 && turmaRepository.buscarTurmasDoUsuario(tipo.toString(), idUsuario).stream()
                 .anyMatch(turma -> idTurma.equals(turma.getId()));
 
+        // registrar acesso negado grava no log a tentativa de entrar em turma alheia
         if (!participa) {
             logger.warn("[{}] acesso negado: usuário não participa da turma {}.", operacao, idTurma);
+            // registro de avisos confere se esta habilitado ao negar acesso a turma
             if (logger.isWarnEnabled()) {
+                // gravar historico do acesso negado tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), operacao, null,
                             MessageFormatter.arrayFormat("[{}] acesso negado: usuário não participa da turma {}.", new Object[]{operacao, idTurma}).getMessage(), null, null);
@@ -458,6 +465,7 @@ public class turmasController {
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
+        // exigir perfil professor recusa a criacao de turma por alunos e administradores
         if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
             return "redirect:/turmas";
         }
@@ -485,6 +493,7 @@ public class turmasController {
         }
 
         String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        // exigir professor identificado impede criar turma sem responsavel
         if (idProfessor == null || idProfessor.isBlank()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível identificar o professor.");
             return "redirect:/turmas";
@@ -541,10 +550,12 @@ public class turmasController {
             return "redirect:/turmas/" + id;
         }
 
+        // exigir participacao recusa a exclusao de conteudo em turmas das quais o professor nao participa
         if (!participaDaTurma(session, id, "excluirConteudo")) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
             return "redirect:/turmas";
         }
+        // exigir conteudo da turma impede excluir conteudo de outra turma usando o id da propria turma
         if (!conteudoService.pertenceATurma(idConteudo, id)) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não pertence a esta turma.");
             return "redirect:/turmas/" + id;
@@ -679,6 +690,7 @@ public class turmasController {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
             return "redirect:/turmas";
         }
+        // exigir conteudo da turma impede editar conteudo de outra turma usando o id da propria turma
         if (!conteudoService.pertenceATurma(idConteudo, id)) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não pertence a esta turma.");
             return "redirect:/turmas/" + id;

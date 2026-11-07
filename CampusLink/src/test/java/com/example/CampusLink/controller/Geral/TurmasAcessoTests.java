@@ -1,3 +1,4 @@
+// verificacao do acesso as turmas confere que so participantes abrem a turma e alteram seus conteudos
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.config.SecurityConfig;
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
+// testes das turmas esta classe simula a troca do id da turma na url e acoes em turmas alheias
 @WebMvcTest(turmasController.class)
 @Import(SecurityConfig.class)
 class TurmasAcessoTests {
@@ -51,6 +53,7 @@ class TurmasAcessoTests {
     @MockitoBean ChamadoAcessoService acessoChamados;
     @MockitoBean TermosService termos;
 
+    // testar aluno de fora da turma este teste confere que trocar o id na url nao abre turma alheia
     @Test
     void alunoNaoAbreTurmaDaQualNaoParticipaTrocandoOIdNaUrl() throws Exception {
         MockHttpSession session = sessao("aluno", "aluno@teste.com");
@@ -63,12 +66,14 @@ class TurmasAcessoTests {
         verify(conteudos, never()).buscarPorTurma(any(), any(), any());
     }
 
+    // testar id de turma invalido este teste confere a volta para a lista de turmas
     @Test
     void idDeTurmaInvalidoVoltaParaListaDeTurmas() throws Exception {
         mvc.perform(get("/turmas/abc").session(sessao("aluno", "aluno@teste.com")))
                 .andExpect(redirectedUrl("/turmas"));
     }
 
+    // testar professor de outra turma este teste confere que ele nao exclui conteudo
     @Test
     void professorDeOutraTurmaNaoExcluiConteudo() throws Exception {
         MockHttpSession session = sessao("professor", "prof@teste.com");
@@ -80,6 +85,7 @@ class TurmasAcessoTests {
         verify(conteudos, never()).excluir(any());
     }
 
+    // testar conteudo de outra turma este teste confere que o professor nao exclui conteudo alheio pela propria turma
     @Test
     void professorNaoExcluiConteudoDeOutraTurmaUsandoOIdDaSuaTurma() throws Exception {
         MockHttpSession session = sessao("professor", "prof@teste.com");
@@ -93,6 +99,7 @@ class TurmasAcessoTests {
         verify(conteudos, never()).excluir(any());
     }
 
+    // testar professor da turma este teste confere que a exclusao permitida continua funcionando
     @Test
     void professorDaTurmaExcluiConteudoDela() throws Exception {
         MockHttpSession session = sessao("professor", "prof@teste.com");
@@ -105,6 +112,7 @@ class TurmasAcessoTests {
         verify(conteudos).excluir(99L);
     }
 
+    // testar professor de fora da turma este teste confere que ele nao cria conteudo
     @Test
     void professorDeOutraTurmaNaoCriaConteudo() throws Exception {
         MockHttpSession session = sessao("professor", "prof@teste.com");
@@ -117,6 +125,7 @@ class TurmasAcessoTests {
         verify(conteudos, never()).criar(any(), any());
     }
 
+    // testar cadastro iniciado este teste confere que sessao sem login completo nao cria turma em nome de outro professor
     @Test
     void sessaoDeCadastroIniciadoNaoCriaTurmaEmNomeDeOutroProfessor() throws Exception {
         MockHttpSession cadastroIniciado = new MockHttpSession();
@@ -129,6 +138,7 @@ class TurmasAcessoTests {
         verify(professores, never()).InsertTurmasIntoBD(any(), any(), any());
     }
 
+    // montar sessao do teste este metodo simula aluno ou professor com login completo
     private MockHttpSession sessao(String tipo, String email) {
         Object usuario;
         if ("aluno".equals(tipo)) {
@@ -148,6 +158,7 @@ class TurmasAcessoTests {
         return session;
     }
 
+    // montar turma do teste este metodo cria a turma com o id informado
     private TurmaDTO turma(Long id) {
         TurmaDTO turma = new TurmaDTO();
         turma.setId(id);

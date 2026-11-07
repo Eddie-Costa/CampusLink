@@ -62,7 +62,9 @@ public class ArquivoController {
         this.professorRepository = professorRepository;
     }
 
+    // verificar acesso ao arquivo este metodo libera o arquivo somente para alunos e professores vinculados a turma do conteudo
     private boolean podeAcessar(HttpSession session, Long idConteudo) throws SQLException {
+        // recusar arquivo sem conteudo bloqueia arquivos que nao pertencem a nenhum conteudo de turma
         if (idConteudo == null) {
             return false;
         }
@@ -70,6 +72,7 @@ public class ArquivoController {
         Object usuario = session.getAttribute("usuarioLogado");
         String tipo = null;
         String idUsuario = null;
+        // identificar usuario do arquivo busca o id de aluno ou professor pelo email do usuario conectado
         if (usuario instanceof loginAlunoDTO aluno && "aluno".equals(session.getAttribute("tipoUsuario"))) {
             tipo = "aluno";
             idUsuario = alunoRepository.buscarPorIDAluno(aluno.getEmail());
@@ -82,9 +85,12 @@ public class ArquivoController {
                 && conteudoRepository.usuarioTemAcessoAoConteudo(idConteudo, tipo, Long.parseLong(idUsuario));
     }
 
+    // registrar recusa de arquivo este metodo grava no log as tentativas de acesso a arquivos sem vinculo
     private void registrarRecusa(String operacao, Long idArquivo, Long idConteudo) {
         logger.warn("[{}] acesso a arquivo recusado: usuário sem vínculo. arquivoId={} conteudoId={}", operacao, idArquivo, idConteudo);
+        // registro de avisos confere se esta habilitado ao recusar acesso a arquivo
         if (logger.isWarnEnabled()) {
+            // gravar historico da recusa tenta salvar o registro no banco e informa falhas
             try {
                 UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), operacao, null,
                         MessageFormatter.arrayFormat("[{}] acesso a arquivo recusado: usuário sem vínculo. arquivoId={} conteudoId={}", new Object[]{operacao, idArquivo, idConteudo}).getMessage(), null, null);
@@ -94,6 +100,7 @@ public class ArquivoController {
         }
     }
 
+    // verificar professor conectado este metodo exige login completo de professor e nao apenas o perfil escolhido no login
     private boolean professorLogado(HttpSession session) {
         return session.getAttribute("usuarioLogado") instanceof loginProfessorDTO
                 && "professor".equals(session.getAttribute("tipoUsuario"));
@@ -127,6 +134,7 @@ public class ArquivoController {
 
         List<ArquivoDTO> visiveis = new ArrayList<>();
         for (ArquivoDTO arquivo : arquivoService.listarTodos()) {
+            // filtrar arquivos visiveis mostra apenas arquivos de conteudos aos quais o usuario tem acesso
             if (podeAcessar(session, arquivo.getIdConteudo())) {
                 visiveis.add(arquivo);
             }
@@ -187,6 +195,7 @@ public class ArquivoController {
             redirectAttributes.addFlashAttribute("erro", "Informe o conteúdo ao qual o arquivo pertence.");
             return "redirect:/arquivos";
         }
+        // exigir vinculo com o conteudo recusa envio para conteudo de turma da qual o professor nao participa
         if (!podeAcessar(session, idConteudo)) {
             registrarRecusa("upload", null, idConteudo);
             redirectAttributes.addFlashAttribute("erro", "Você não tem acesso a este conteúdo.");
@@ -247,6 +256,7 @@ public class ArquivoController {
         }
 
         ArquivoDTO arquivo;
+        // localizar arquivo responde nao encontrado quando o id nao existe
         try {
             arquivo = arquivoService.buscarPorId(id);
         } catch (IllegalArgumentException e) {
@@ -255,6 +265,7 @@ public class ArquivoController {
                     .build();
         }
 
+        // recusar arquivo sem conteudo bloqueia o download de arquivos sem turma
         if (arquivo.getIdConteudo() == null) {
             registrarRecusa("download", id, null);
             return ResponseEntity
@@ -268,6 +279,7 @@ public class ArquivoController {
             // consultar acesso ao material verifica a situacao do conteudo e retorna erro se a consulta falhar
             try {
 
+                // exigir vinculo com a turma recusa o download de arquivos de turmas das quais o usuario nao participa
                 if (!podeAcessar(session, arquivo.getIdConteudo())) {
                     registrarRecusa("download", id, arquivo.getIdConteudo());
                     return ResponseEntity
@@ -364,12 +376,14 @@ public class ArquivoController {
 
         // conferir arquivo excluido recusa arquivos inexistentes ou de conteudos sem vinculo com o professor
         ArquivoDTO arquivoExcluido;
+        // localizar arquivo excluido avisa quando o id nao existe
         try {
             arquivoExcluido = arquivoService.buscarPorId(id);
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", "Arquivo não encontrado.");
             return "redirect:/arquivos";
         }
+        // exigir vinculo com o conteudo recusa a exclusao de arquivos de turmas alheias
         if (!podeAcessar(session, arquivoExcluido.getIdConteudo())) {
             registrarRecusa("excluir", id, arquivoExcluido.getIdConteudo());
             redirectAttributes.addFlashAttribute("erro", "Você não tem acesso a este arquivo.");

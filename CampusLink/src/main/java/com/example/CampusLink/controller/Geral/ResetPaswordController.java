@@ -52,9 +52,11 @@ public class ResetPaswordController {
     @PostMapping("/ResetVerification")
     public String ResetVerification(@Valid @ModelAttribute("usuario") redefinirSenhaDTO usuarioDTO, BindingResult result, Model model, HttpSession session){
 
+        // impedir troca de identidade recusa o esqueci a senha para quem ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/profile";
         }
+        // validar email informado reapresenta o formulario quando o email e invalido
         if (result.hasFieldErrors("email")) {
             model.addAttribute("mensagemDeErro", result.getFieldError("email").getDefaultMessage());
             return "Geral/ResetPassword_Verification";
@@ -107,6 +109,7 @@ public class ResetPaswordController {
 
 
         String email = resetLiberado(session);
+        // exigir codigo validado recusa a troca de senha sem a verificacao do email do titular
         if (email == null) {
             return "redirect:/ResetPassword_Verification";
         }
@@ -148,9 +151,11 @@ public class ResetPaswordController {
         return "redirect:/login";
     }
 
+    // conferir liberacao da redefinicao este metodo retorna o email somente quando o codigo foi validado para ele
     private String resetLiberado(HttpSession session) {
         Object liberadoPara = session.getAttribute(SESSAO_RESET_LIBERADO);
         Object email = session.getAttribute("email2FA");
+        // comparar email liberado exige que o email verificado seja o mesmo da sessao
         if (liberadoPara instanceof String emailLiberado && emailLiberado.equals(email)) {
             return emailLiberado;
         }

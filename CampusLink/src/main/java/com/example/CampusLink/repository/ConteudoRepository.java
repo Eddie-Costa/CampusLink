@@ -750,10 +750,12 @@ public class ConteudoRepository {
         }
     }
 
+    // verificar acesso ao conteudo este metodo confere se o aluno ou professor participa de alguma turma do conteudo
     public boolean usuarioTemAcessoAoConteudo(Long idConteudo, String tipoUsuario, Long idUsuario) throws SQLException {
         String sql;
         Object[] parametros;
 
+        // montar consulta do perfil exige aluno da turma ou professor autor participante ou dono
         if ("aluno".equals(tipoUsuario)) {
             sql = """
                     SELECT EXISTS (
@@ -779,6 +781,7 @@ public class ConteudoRepository {
             return false;
         }
 
+        // consultar acesso executa a verificacao e converte falhas do banco
         try {
             return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, parametros));
         } catch (DataAccessException e) {

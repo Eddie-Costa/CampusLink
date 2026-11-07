@@ -1,3 +1,4 @@
+// verificacao do acesso aos arquivos confere download envio e exclusao apenas para quem participa da turma
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.config.SecurityConfig;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// testes dos arquivos esta classe simula tentativas de acessar arquivos de turmas alheias
 @WebMvcTest(ArquivoController.class)
 @Import(SecurityConfig.class)
 class ArquivoAcessoTests {
@@ -46,6 +48,7 @@ class ArquivoAcessoTests {
     @MockitoBean ChamadoAcessoService acessoChamados;
     @MockitoBean TermosService termos;
 
+    // testar aluno de fora da turma este teste confere que o download de arquivo alheio e recusado
     @Test
     void alunoNaoBaixaArquivoDeTurmaDaQualNaoParticipa() throws Exception {
         when(arquivos.buscarPorId(7L)).thenReturn(arquivo(7L, 99L));
@@ -57,6 +60,7 @@ class ArquivoAcessoTests {
         verify(arquivos, never()).download(any());
     }
 
+    // testar aluno da turma este teste confere que o download e permitido para quem participa
     @Test
     void alunoDaTurmaBaixaArquivo() throws Exception {
         when(arquivos.buscarPorId(7L)).thenReturn(arquivo(7L, 99L));
@@ -69,6 +73,7 @@ class ArquivoAcessoTests {
                 .andExpect(status().isOk());
     }
 
+    // testar arquivo inexistente este teste confere a resposta de nao encontrado
     @Test
     void arquivoInexistenteRetorna404() throws Exception {
         when(arquivos.buscarPorId(8L)).thenThrow(new IllegalArgumentException("Arquivo não encontrado."));
@@ -77,6 +82,7 @@ class ArquivoAcessoTests {
                 .andExpect(status().isNotFound());
     }
 
+    // testar sessao sem login completo este teste confere que cadastro iniciado nao envia nem exclui arquivos
     @Test
     void sessaoSemLoginCompletoNaoExcluiNemEnviaArquivo() throws Exception {
         MockHttpSession cadastroIniciado = new MockHttpSession();
@@ -91,6 +97,7 @@ class ArquivoAcessoTests {
         verify(arquivos, never()).salvar(any(), any());
     }
 
+    // testar exclusao de arquivo alheio este teste confere que professor sem vinculo nao exclui
     @Test
     void professorNaoExcluiArquivoDeConteudoAlheio() throws Exception {
         when(arquivos.buscarPorId(7L)).thenReturn(arquivo(7L, 99L));
@@ -102,6 +109,7 @@ class ArquivoAcessoTests {
         verify(arquivos, never()).excluir(any());
     }
 
+    // testar anexo em conteudo alheio este teste confere que professor sem vinculo nao envia arquivo
     @Test
     void professorNaoAnexaArquivoAConteudoAlheio() throws Exception {
         when(professores.buscarPorIDProfessor("prof@teste.com")).thenReturn("20");
@@ -113,6 +121,7 @@ class ArquivoAcessoTests {
         verify(arquivos, never()).salvar(any(), any());
     }
 
+    // preparar sessao de aluno este metodo simula um aluno com login completo
     private MockHttpSession sessaoAluno() {
         loginAlunoDTO aluno = new loginAlunoDTO();
         aluno.setEmail("aluno@teste.com");
@@ -123,6 +132,7 @@ class ArquivoAcessoTests {
         return session;
     }
 
+    // preparar sessao de professor este metodo simula um professor com login completo
     private MockHttpSession sessaoProfessor() {
         loginProfessorDTO professor = new loginProfessorDTO();
         professor.setEmail("prof@teste.com");
@@ -133,6 +143,7 @@ class ArquivoAcessoTests {
         return session;
     }
 
+    // montar arquivo do teste este metodo cria um arquivo ligado ao conteudo informado
     private ArquivoDTO arquivo(Long id, Long idConteudo) {
         ArquivoDTO arquivo = new ArquivoDTO();
         arquivo.setId(id);

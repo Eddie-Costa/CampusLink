@@ -449,7 +449,9 @@ public class ConteudoService {
         }
     }
 
+    // verificar turma do conteudo este metodo confere se o conteudo pertence a turma informada
     public boolean pertenceATurma(Long idConteudo, Long idTurma) {
+        // consultar turma do conteudo converte falhas do banco em erro da aplicacao
         try {
             return conteudoRepository.conteudoPertenceTurma(idConteudo, idTurma);
         } catch (SQLException e) {

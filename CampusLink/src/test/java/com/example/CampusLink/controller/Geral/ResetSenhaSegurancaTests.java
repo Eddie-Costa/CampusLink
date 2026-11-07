@@ -1,3 +1,4 @@
+// verificacao da recuperacao de senha confere que a troca exige o codigo validado do proprio email
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.config.SecurityConfig;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
+// testes do esqueci a senha esta classe simula tentativas de trocar a senha de outra conta
 @WebMvcTest(ResetPaswordController.class)
 @Import(SecurityConfig.class)
 class ResetSenhaSegurancaTests {
@@ -43,6 +45,7 @@ class ResetSenhaSegurancaTests {
     @MockitoBean ChamadoAcessoService acessoChamados;
     @MockitoBean TermosService termos;
 
+    // testar troca sem codigo este teste confere que nao e possivel trocar a senha pulando o codigo do email
     @Test
     void naoTrocaSenhaDeOutraContaPulandoOCodigoDoEmail() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -55,6 +58,7 @@ class ResetSenhaSegurancaTests {
         verify(usuarios, never()).UpdateSenhaUsuario(any(), any());
     }
 
+    // testar tela de nova senha este teste confere que ela exige o codigo validado
     @Test
     void telaDeNovaSenhaExigeCodigoValidado() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -64,6 +68,7 @@ class ResetSenhaSegurancaTests {
                 .andExpect(redirectedUrl("/ResetPassword_Verification"));
     }
 
+    // testar email diferente este teste confere que a liberacao de um email nao vale para outro
     @Test
     void liberacaoDeUmEmailNaoValeParaOutro() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -77,6 +82,7 @@ class ResetSenhaSegurancaTests {
         verify(usuarios, never()).UpdateSenhaUsuario(any(), any());
     }
 
+    // testar troca valida este teste confere a troca apos o codigo e a limpeza da sessao
     @Test
     void trocaSenhaDepoisDoCodigoValidadoELimpaASessao() throws Exception {
         MockHttpSession session = liberada("eu@teste.com");
@@ -90,6 +96,7 @@ class ResetSenhaSegurancaTests {
         assertNull(session.getAttribute("email2FA"));
     }
 
+    // testar senha fraca este teste confere que a senha fora das regras e recusada
     @Test
     void recusaSenhaFraca() throws Exception {
         mvc.perform(post("/reset").session(liberada("eu@teste.com")).with(csrf())
@@ -98,6 +105,7 @@ class ResetSenhaSegurancaTests {
         verify(usuarios, never()).UpdateSenhaUsuario(any(), any());
     }
 
+    // testar usuario conectado este teste confere que o esqueci a senha nao troca a identidade da sessao
     @Test
     void usuarioLogadoNaoTrocaOEmailDaSessaoPeloEsqueciASenha() throws Exception {
         MockHttpSession session = new MockHttpSession();
@@ -110,6 +118,7 @@ class ResetSenhaSegurancaTests {
         assertEquals("eu@teste.com", session.getAttribute("email2FA"));
     }
 
+    // montar sessao liberada este metodo simula o codigo ja validado para o email informado
     private MockHttpSession liberada(String email) {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(ResetPaswordController.SESSAO_RESET_LIBERADO, email);

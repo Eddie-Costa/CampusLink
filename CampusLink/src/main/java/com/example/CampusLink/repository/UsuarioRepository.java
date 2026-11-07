@@ -142,22 +142,27 @@ public class UsuarioRepository {
                     }
                 }
 
+                // impedir anonimizar administrador exige que contas administrativas sejam encerradas por outro admin
                 impedirExclusaoProprioAdministrador(conn, idUsuario);
 
-                // apaga os materiais que ja estavam removidos e seus arquivos
+                // limpar materiais removidos apaga os materiais que ja estavam removidos e seus arquivos
                 excluirMateriaisRemovidos(conn, idUsuario);
 
-                // historico academico, chamados e aceites continuam ligados a conta, agora sem identificacao
+                // manter historico anonimo turmas progresso chamados e aceites continuam ligados a conta sem identificacao
                 executarExclusao(conn, "DELETE FROM public.\"TURMA_ATIVIDADE\" WHERE id_usuario = ?", idUsuario);
+                // revogar aceites registra a data de encerramento nos aceites ativos dos termos
                 executarExclusao(conn, """
                         UPDATE public."CONSENTIMENTOS" SET revogado_em = now()
                         WHERE id_usuario = ? AND revogado_em IS NULL
                         """, idUsuario);
 
+                // anonimizar email nos logs troca o email do titular por [anonimizado] nos registros de seguranca
                 anonimizarLogs(conn, normalizarEmail(email));
 
+                // anonimizar rgm e matricula troca o identificador academico por ANON seguido do id interno
                 executarExclusao(conn, "UPDATE public.\"ALUNOS\" SET rgm = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, "UPDATE public.\"PROFESSORES\" SET matricula = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
+                // anonimizar cadastro troca nome email telefone nascimento e senha e marca a conta como inativa e anonimizada
                 executarExclusao(conn, """
                         UPDATE public."USUARIOS"
                         SET nome = 'Usuário removido', email = NULL, telefone = NULL, datanasc = DATE '1900-01-01',
@@ -168,7 +173,7 @@ public class UsuarioRepository {
                 conn.commit();
 
             } catch (SQLException | RuntimeException e) {
-                // desfazer delete da conta tenta cancelar as alteracoes quando a exclusao falha
+                // desfazer anonimizacao cancela todas as alteracoes quando algum passo falha
                 try {
                     conn.rollback();
 
@@ -218,10 +223,11 @@ public class UsuarioRepository {
 
     // anonimizar registros este metodo troca o email do titular por [anonimizado] nos logs de eventos e de sessoes
     private void anonimizarLogs(Connection conn, String email) throws SQLException {
-        // ***= faz o PostgreSQL tratar o e-mail como texto literal, sem interpretar "." ou "+" como expressao
+        // tratar email como texto literal o prefixo ***= impede que o banco interprete ponto ou mais como expressao
         String padrao = "***=" + email;
         String contem = "%" + email + "%";
 
+        // anonimizar logs de eventos troca o email nas mensagens excecoes e detalhes
         try (PreparedStatement stmt = conn.prepareStatement("""
                 UPDATE public."LOGS_EVENTOS"
                 SET mensagem = regexp_replace(mensagem, ?, '[anonimizado]', 'gi'),
@@ -238,6 +244,7 @@ public class UsuarioRepository {
             stmt.executeUpdate();
         }
 
+        // anonimizar logs de sessoes troca o email no historico completo das sessoes
         try (PreparedStatement stmt = conn.prepareStatement("""
                 UPDATE public."LOGS_SESSOES"
                 SET log_completo = regexp_replace(log_completo, ?, '[anonimizado]', 'gi')
@@ -361,8 +368,10 @@ public class UsuarioRepository {
                         stmt2.executeUpdate();
                     }
 
+                    // registrar aceite no cadastro grava o aceite da versao vigente dos termos na mesma transacao do usuario
                     try (PreparedStatement stmt3 = conn.prepareStatement(sqlAceiteTermos)) {
                         stmt3.setLong(1, idUsuario);
+                        // exigir termo publicado desfaz o cadastro quando nao ha versao dos termos para aceitar
                         if (stmt3.executeUpdate() == 0) {
                             throw new SQLException("Nenhuma versão dos termos publicada para registrar o aceite.");
                         }

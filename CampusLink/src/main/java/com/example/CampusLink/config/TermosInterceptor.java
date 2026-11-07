@@ -1,3 +1,4 @@
+// bloqueio por termos de uso lgpd leva ao aceite quem ainda nao aceitou a versao vigente dos termos
 package com.example.CampusLink.config;
 
 import com.example.CampusLink.dto.DadosUsuarioDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.List;
 import java.util.Set;
 
+// controle do aceite dos termos esta classe roda antes de cada pagina e redireciona alunos e professores sem aceite valido
 @Component
 public class TermosInterceptor implements HandlerInterceptor {
 
@@ -29,14 +31,17 @@ public class TermosInterceptor implements HandlerInterceptor {
     private final ChamadoAcessoService acessoService;
     private final TermosService termosService;
 
+    // preparar bloqueio por termos este construtor recebe a identificacao do usuario e o servico dos termos
     public TermosInterceptor(ChamadoAcessoService acessoService, TermosService termosService) {
         this.acessoService = acessoService;
         this.termosService = termosService;
     }
 
+    // exigir aceite dos termos este metodo libera paginas publicas e de privacidade e redireciona o resto para o aceite
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession(false);
+        // ignorar quem nao precisa aceitar libera visitantes administradores e sessoes que ja aceitaram
         if (session == null || session.getAttribute("usuarioLogado") == null
                 || !("aluno".equals(session.getAttribute("tipoUsuario")) || "professor".equals(session.getAttribute("tipoUsuario")))
                 || Boolean.TRUE.equals(session.getAttribute(SESSAO_TERMOS_ACEITOS))) {
@@ -44,16 +49,20 @@ public class TermosInterceptor implements HandlerInterceptor {
         }
 
         String caminho = request.getRequestURI().substring(request.getContextPath().length());
+        // liberar telas sem aceite permite termos perfil sair e arquivos de estilo antes do aceite
         if (LIBERADOS_SEM_ACEITE.stream().anyMatch(caminho::startsWith)) {
             return true;
         }
 
         DadosUsuarioDTO usuario = acessoService.usuarioDaSessao(session);
+        // ignorar usuario nao identificado deixa a verificacao de login para as outras camadas
         if (usuario == null) {
             return true;
         }
 
+        // consultar aceite no banco guarda na sessao quem ja aceitou para nao consultar a cada pagina
         try {
+            // liberar aceite valido marca a sessao quando a versao atual ja foi aceita
             if (termosService.aceitouVersaoAtual(usuario.getId())) {
                 session.setAttribute(SESSAO_TERMOS_ACEITOS, true);
                 session.removeAttribute(SESSAO_TERMOS_PENDENTES);
@@ -65,6 +74,7 @@ public class TermosInterceptor implements HandlerInterceptor {
         }
 
         session.setAttribute(SESSAO_TERMOS_PENDENTES, true);
+        // liberar paginas publicas permite ao usuario com termos pendentes navegar como um visitante
         if (PAGINAS_PUBLICAS.contains(caminho)) {
             return true;
         }

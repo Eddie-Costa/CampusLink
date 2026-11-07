@@ -1,3 +1,4 @@
+// autenticacao para o spring security converte o login da sessao em um usuario com papel aluno professor ou admin
 package com.example.CampusLink.config;
 
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
@@ -17,20 +18,23 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-// Traduz o login feito pela sessão da aplicação para o Spring Security, que então aplica as regras de acesso.
+// controle da autenticacao por sessao esta classe informa ao spring security quem esta conectado e com qual papel
 public class SessaoAutenticacaoFilter extends OncePerRequestFilter {
 
+    // identificar usuario da requisicao este metodo le a sessao e registra o papel usado pelas regras do securityconfig
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
+        // ler sessao existente ignora visitantes sem sessao que seguem como anonimos
         if (session != null) {
             Object usuario = session.getAttribute("usuarioLogado");
             Object tipo = session.getAttribute("tipoUsuario");
             String email = null;
             String papel = null;
 
+            // definir papel do usuario exige que os dados de login e o perfil escolhido sejam do mesmo tipo
             if (usuario instanceof loginAlunoDTO aluno && "aluno".equals(tipo)) {
                 email = aluno.getEmail();
                 papel = "ROLE_ALUNO";
@@ -42,6 +46,7 @@ public class SessaoAutenticacaoFilter extends OncePerRequestFilter {
                 papel = "ROLE_ADMIN";
             }
 
+            // registrar usuario no spring security cria a autenticacao somente quando o papel foi reconhecido
             if (papel != null && email != null) {
                 SecurityContext contexto = SecurityContextHolder.createEmptyContext();
                 contexto.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(

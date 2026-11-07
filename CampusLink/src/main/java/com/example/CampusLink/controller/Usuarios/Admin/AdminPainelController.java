@@ -21,6 +21,7 @@ public class AdminPainelController {
 
     private final AdminUsuarioRepository adminUsuarioRepository;
 
+    // preparar painel administrativo este construtor recebe a consulta de administradores
     public AdminPainelController(AdminUsuarioRepository adminUsuarioRepository) {
         this.adminUsuarioRepository = adminUsuarioRepository;
     }
@@ -36,6 +37,7 @@ public class AdminPainelController {
         }
 
         boolean master = false;
+        // identificar administrador master exibe o card dos termos de uso apenas para o master
         try {
             usuarioAdminDTO admin = adminUsuarioRepository.buscarAdministradorPorEmail((String) session.getAttribute("email2FA"));
             master = admin != null && admin.isMaster();

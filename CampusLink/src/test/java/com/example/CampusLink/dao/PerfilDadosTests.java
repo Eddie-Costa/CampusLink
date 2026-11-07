@@ -123,7 +123,7 @@ class PerfilDadosTests {
         assertNull(usuarios.consultarDadosPessoais("inexistente@example.com"));
     }
 
-    // testar delete aluno e vinculos este teste confere a limpeza dos dados preservando turma e outras contas
+    // testar anonimizacao do aluno este teste confere a troca dos dados pessoais preservando turmas progresso e outras contas
     @Test
     void anonimizaCadastroDoAlunoEMantemHistoricoAcademico() throws Exception {
         usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
@@ -143,6 +143,7 @@ class PerfilDadosTests {
         verifyNoInteractions(storage);
     }
 
+    // testar aceites e turmas recentes este teste confere a revogacao dos aceites e a remocao do atalho de turmas
     @Test
     void revogaAceitesERemoveTurmasRecentesDoTitular() throws Exception {
         usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
@@ -151,6 +152,7 @@ class PerfilDadosTests {
         assertEquals(0, quantidade("TURMA_ATIVIDADE", "id_usuario = 1"));
     }
 
+    // testar anonimizacao dos logs este teste confere a troca do email do titular sem afetar outros usuarios
     @Test
     void substituiOEmailDoTitularNosLogsSemAlterarOsDeOutrosUsuarios() throws Exception {
         usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
@@ -212,7 +214,7 @@ class PerfilDadosTests {
         assertEquals(1, quantidade("PROFESSORES", "id = 20 AND matricula = 'ANON-20'"));
     }
 
-    // testar cancelamento da exclusao incompleta este teste verifica que uma falha final restaura todos os registros
+    // testar cancelamento da anonimizacao incompleta este teste verifica que uma falha final restaura todos os registros
     @Test
     void erroNoFinalDesfazTodaAAnonimizacao() throws Exception {
         sql("ALTER TABLE pg_temp.\"USUARIOS\" ADD CONSTRAINT impedimento CHECK (email IS NOT NULL)");
@@ -224,7 +226,7 @@ class PerfilDadosTests {
         assertEquals(1, quantidade("LOGS_EVENTOS", "id = 1 AND mensagem ILIKE '%aluno@example.com%'"));
     }
 
-    // testar identidade divergente na exclusao este teste impede combinar o identificador de uma conta com outro email
+    // testar identidade divergente na anonimizacao este teste impede combinar o identificador de uma conta com outro email
     @Test
     void naoAnonimizaIdentidadeDiferente() throws Exception {
         assertThrows(IllegalStateException.class, () -> usuarios.anonimizarDadosPessoais(1, "professor@example.com"));
