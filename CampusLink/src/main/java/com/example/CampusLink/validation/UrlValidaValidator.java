@@ -1,3 +1,4 @@
+// validacao de enderecos confere os links informados nos materiais
 package com.example.CampusLink.validation;
 
 import jakarta.validation.ConstraintValidator;
@@ -10,6 +11,7 @@ import java.util.regex.Pattern;
 import com.example.CampusLink.service.DominioService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+// verificador de links esta classe limita tamanho protocolo e destino aos dominios autorizados
 public class UrlValidaValidator implements ConstraintValidator<UrlValida, String> {
 
     @Autowired
@@ -21,9 +23,9 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
 
     private static final Pattern CARACTERE_DE_CONTROLE = Pattern.compile("[\\s\\p{Cntrl}]");
 
-    // hosts/faixas que não fazem sentido para um link de conteúdo educacional
-    // e que, se o servidor um dia buscar essa URL (ex: preview, integrações),
-    // poderiam ser usados para acessar rede interna (SSRF)
+
+
+
     private static final Pattern HOST_BLOQUEADO = Pattern.compile(
             "^(localhost" +
                     "|127(\\.\\d{1,3}){3}" +
@@ -37,24 +39,29 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
             Pattern.CASE_INSENSITIVE
     );
 
+    // validar link do conteudo este metodo confere formato protocolo e dominio autorizado aceitando campo vazio
     @Override
     public boolean isValid(String valor, ConstraintValidatorContext context) {
 
+        // validar endereco opcional aceita um valor vazio
         if (valor == null || valor.isBlank()) {
-            return true; // campo opcional
+            return true;
         }
 
         String url = valor.trim();
 
+        // validar tamanho do endereco rejeita enderecos acima do limite permitido
         if (url.length() > TAMANHO_MAXIMO) {
             return falhar(context, "A URL deve possuir no máximo " + TAMANHO_MAXIMO + " caracteres.");
         }
 
+        // validar caracteres do endereco rejeita espacos e caracteres de controle
         if (CARACTERE_DE_CONTROLE.matcher(url).find()) {
             return falhar(context, "A URL não pode conter espaços ou caracteres de controle.");
         }
 
         URI uri;
+        // ler endereco informado tenta interpretar o endereco e informa erros de formato
         try {
             uri = new URI(url);
         } catch (URISyntaxException e) {
@@ -62,29 +69,35 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
         }
 
         String protocolo = uri.getScheme();
+        // validar protocolo do endereco exige http ou https
         if (protocolo == null || !PROTOCOLOS_PERMITIDOS.contains(protocolo.toLowerCase())) {
             return falhar(context, "A URL deve começar com http:// ou https://.");
         }
 
+        // validar credenciais no endereco rejeita enderecos com usuario ou senha
         if (uri.getUserInfo() != null) {
             return falhar(context, "A URL não pode conter usuário/senha embutidos.");
         }
 
         String host = uri.getHost();
+        // validar dominio do endereco exige um nome de servidor preenchido
         if (host == null || host.isBlank()) {
             return falhar(context, "A URL deve possuir um endereço válido.");
         }
 
+        // bloquear endereco restrito rejeita servidores que correspondem aos enderecos bloqueados
         if (HOST_BLOQUEADO.matcher(host).matches()) {
             return falhar(context, "Esse endereço não é permitido.");
         }
         boolean autorizado;
+        // consultar permissao do dominio tenta verificar se o dominio esta autorizado
         try {
             autorizado = dominioService.hostAutorizado(host);
         } catch (RuntimeException e) {
             return falhar(context, "Não foi possível verificar o domínio agora. Tente novamente.");
         }
 
+        // exigir dominio autorizado orienta solicitar liberacao quando o dominio nao e permitido
         if (!autorizado) {
             return falhar(context, "O domínio " + host.toLowerCase()
                     + " não está autorizado. Feche e use o botão \"Solicitar Domínio\" para pedir a liberação.");
@@ -92,6 +105,7 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
         return true;
     }
 
+    // informar erro do link este metodo substitui a mensagem padrao pelo motivo da recusa
     private boolean falhar(ConstraintValidatorContext context, String mensagem) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(mensagem)

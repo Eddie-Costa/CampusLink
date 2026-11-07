@@ -1,3 +1,4 @@
+// banco de dominios centraliza pedidos e autorizacoes de sites
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.DominioDTO;
@@ -13,17 +14,20 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+// persistencia de dominios esta classe registra solicitacoes e consulta enderecos aprovados
 @Repository
 public class DominioRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    // preparar consulta de dominios este construtor recebe o acesso ao banco
     public DominioRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // ---------- professor ----------
 
+
+    // cadastrar pedido de dominio no banco este metodo grava endereco professor e justificativa
     public void inserir(DominioDTO dominio) throws SQLException {
 
         String sql = """
@@ -32,6 +36,7 @@ public class DominioRepository {
                 RETURNING "id", "status", "created_at"
                 """;
 
+        // gravar pedido de dominio prepara endereco professor e justificativa e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -39,12 +44,15 @@ public class DominioRepository {
                 stmt.setLong(2, dominio.getIdProfessor());
                 stmt.setString(3, dominio.getJustificativa());
 
+                // ler dominio solicitado recupera os dados da gravacao e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
+                    // preencher dominio cadastrado guarda codigo situacao e data quando o banco devolve o registro
                     if (rs.next()) {
                         dominio.setId(rs.getLong("id"));
                         dominio.setStatus(rs.getString("status"));
 
                         Timestamp createdAt = rs.getTimestamp("created_at");
+                        // preencher data do pedido converte a criacao do dominio apenas quando ela existe
                         if (createdAt != null) {
                             dominio.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -57,6 +65,7 @@ public class DominioRepository {
         }
     }
 
+    // listar dominios do professor no banco este metodo consulta seus pedidos do mais recente ao mais antigo
     public List<DominioDTO> listarPorProfessor(Long idProfessor) throws SQLException {
 
         String sql = """
@@ -68,11 +77,13 @@ public class DominioRepository {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
+        // consultar dominios do professor busca os pedidos pelo solicitante e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idProfessor);
 
+                // ler pedidos pessoais monta a lista de dominios e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         dominios.add(montar(rs));
@@ -87,8 +98,9 @@ public class DominioRepository {
         return dominios;
     }
 
-    // ---------- admin ----------
 
+
+    // listar dominios pendentes no banco este metodo consulta pedidos por ordem de chegada com o nome do professor
     public List<DominioDTO> listarPendentes() throws SQLException {
 
         String sql = """
@@ -102,8 +114,10 @@ public class DominioRepository {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
+        // consultar dominios pendentes busca os pedidos em analise e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                // ler pedidos pendentes monta os dominios com os nomes dos professores e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
@@ -121,6 +135,7 @@ public class DominioRepository {
         return dominios;
     }
 
+    // listar dominios aprovados no banco este metodo consulta os enderecos permitidos em ordem alfabetica
     public List<DominioDTO> listarAprovados() throws SQLException {
 
         String sql = """
@@ -132,8 +147,10 @@ public class DominioRepository {
 
         List<DominioDTO> dominios = new ArrayList<>();
 
+        // consultar dominios aprovados busca os enderecos liberados e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                // ler enderecos aprovados monta a lista de dominios e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
@@ -149,7 +166,8 @@ public class DominioRepository {
         return dominios;
     }
 
-    // só analisa solicitações que ainda estão pendentes
+
+    // analisar dominio no banco este metodo grava a decisao o comentario e a data de um pedido pendente
     public boolean analisar(Long id, String novoStatus, String comentarioAdmin) throws SQLException {
 
         String sql = """
@@ -161,6 +179,7 @@ public class DominioRepository {
                 AND "status" = 'pendente'
                 """;
 
+        // gravar analise do dominio atualiza situacao e comentario do pedido e converte falhas
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
@@ -175,9 +194,10 @@ public class DominioRepository {
         }
     }
 
-    // ---------- consultas usadas pela validação ----------
 
-    // true se já existe pedido pendente ou aprovado para esse domínio
+
+
+    // verificar pedido de dominio existente este metodo procura um endereco pendente ou ja aprovado
     public boolean existePendenteOuAprovado(String dominio) throws SQLException {
 
         String sql = """
@@ -188,11 +208,13 @@ public class DominioRepository {
                 LIMIT 1
                 """;
 
+        // consultar dominio repetido verifica se o endereco ja esta pendente ou aprovado e converte falhas
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
                 stmt.setString(1, dominio);
 
+                // ler existencia do dominio confirma se encontrou um registro e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     return rs.next();
                 }
@@ -202,8 +224,9 @@ public class DominioRepository {
         }
     }
 
-    // true se o host é um domínio aprovado ou subdomínio dele
-    // ex: aprovado "exemplo.com" libera "exemplo.com" e "www.exemplo.com"
+
+
+    // verificar endereco autorizado no banco este metodo aceita um dominio aprovado ou seus subdominios
     public boolean hostAutorizado(String host) throws SQLException {
 
         String sql = """
@@ -217,12 +240,14 @@ public class DominioRepository {
                 LIMIT 1
                 """;
 
+        // consultar endereco autorizado verifica o servidor informado e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
                 stmt.setString(1, host);
                 stmt.setString(2, host);
 
+                // ler autorizacao do endereco confirma se encontrou uma permissao e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     return rs.next();
                 }
@@ -232,8 +257,9 @@ public class DominioRepository {
         }
     }
 
-    // ---------- util ----------
 
+
+    // montar dados do dominio este metodo organiza o pedido consultado com datas e decisao administrativa
     private DominioDTO montar(ResultSet rs) throws SQLException {
 
         DominioDTO dominio = new DominioDTO();
@@ -249,11 +275,13 @@ public class DominioRepository {
         dominio.setComentarioAdmin(rs.getString("comentario_admin"));
 
         Timestamp createdAt = rs.getTimestamp("created_at");
+        // preencher criacao do dominio converte a data apenas quando ela existe
         if (createdAt != null) {
             dominio.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
         }
 
         Timestamp analisadoEm = rs.getTimestamp("analisado_em");
+        // preencher analise do dominio converte a data apenas quando o pedido ja foi analisado
         if (analisadoEm != null) {
             dominio.setAnalisadoEm(analisadoEm.toInstant().atOffset(ZoneOffset.UTC));
         }
@@ -261,10 +289,12 @@ public class DominioRepository {
         return dominio;
     }
 
-    // preserva o contrato de erro usado pelos consumidores
+
+    // tratar erro do banco de dominios este metodo recupera a falha original ou cria uma falha de consulta
     private SQLException converterErro(DataAccessException erro) {
         Throwable causa = erro;
         while (causa != null) {
+            // recuperar falha do banco devolve a causa original quando ela e uma falha de consulta
             if (causa instanceof SQLException sqlException) {
                 return sqlException;
             }

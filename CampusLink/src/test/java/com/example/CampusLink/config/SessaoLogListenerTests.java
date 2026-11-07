@@ -1,3 +1,4 @@
+// verificacao de sessoes exercita a desconexao por titular
 package com.example.CampusLink.config;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -10,7 +11,9 @@ import org.springframework.mock.web.MockHttpSession;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+// testes de encerramento esta classe confere que outras contas continuam conectadas
 class SessaoLogListenerTests {
+    // testar encerramento das sessoes este teste confere que apenas as sessoes do titular sao encerradas
     @Test
     void encerraTodasAsSessoesDoTitularSemAfetarOutrasContas() {
         SessaoLogListener listener = new SessaoLogListener(mock(UsuarioRepository.class));
@@ -27,6 +30,7 @@ class SessaoLogListenerTests {
         assertFalse(outra.isInvalid());
     }
 
+    // preparar sessao de teste este metodo registra uma sessao simulada com o usuario informado
     private MockHttpSession sessao(SessaoLogListener listener, Object usuario) {
         MockHttpSession sessao = new MockHttpSession();
         sessao.setAttribute("usuarioLogado", usuario);

@@ -1,3 +1,4 @@
+// banco de revisoes define as alteracoes de materiais e denuncias apos analise
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.model.Conteudo;
@@ -6,9 +7,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+// decisoes de moderacao esta interface atualiza o conteudo e a situacao dos relatos pendentes
 public interface RevisaoConteudoRepository extends JpaRepository<Conteudo, Long> {
 
-    // libera o conteudo que esta aguardando analise
+
+    // liberar material em revisao no banco este metodo reativa o conteudo e limpa os dados da analise
     @Modifying
     @Query(value = """
             UPDATE public."CONTEUDOS"
@@ -22,7 +25,8 @@ public interface RevisaoConteudoRepository extends JpaRepository<Conteudo, Long>
             """, nativeQuery = true)
     int liberarConteudo(@Param("idConteudo") Long idConteudo);
 
-    // reprova o conteudo que esta aguardando analise
+
+    // reprovar material em revisao no banco este metodo marca o conteudo como removido e guarda o motivo
     @Modifying
     @Query(value = """
             UPDATE public."CONTEUDOS"
@@ -37,7 +41,8 @@ public interface RevisaoConteudoRepository extends JpaRepository<Conteudo, Long>
     int reprovarConteudo(@Param("idConteudo") Long idConteudo,
                          @Param("comentarioAdmin") String comentarioAdmin);
 
-    // marca as denuncias pendentes como liberadas
+
+    // resolver denuncias com liberacao este metodo marca os relatos pendentes como analisados e liberados
     @Modifying
     @Query(value = """
             UPDATE public."DENUNCIAS"
@@ -47,7 +52,8 @@ public interface RevisaoConteudoRepository extends JpaRepository<Conteudo, Long>
             """, nativeQuery = true)
     int marcarDenunciasLiberadas(@Param("idConteudo") Long idConteudo);
 
-    // marca as denuncias pendentes como removidas
+
+    // resolver denuncias com remocao este metodo marca os relatos pendentes como analisados e removidos
     @Modifying
     @Query(value = """
             UPDATE public."DENUNCIAS"

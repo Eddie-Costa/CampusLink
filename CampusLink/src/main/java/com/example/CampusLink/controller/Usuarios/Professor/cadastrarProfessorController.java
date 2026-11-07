@@ -1,3 +1,4 @@
+// inscricao de professores organiza o cadastro publico desse perfil
 package com.example.CampusLink.controller.Usuarios.Professor;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+// cadastro de professor esta classe guarda os dados ate a verificacao e confere duplicidades antes de gravar
 @Controller
 public class cadastrarProfessorController {
 
@@ -40,12 +42,15 @@ public class cadastrarProfessorController {
 
     private static final Logger logger = LoggerFactory.getLogger(cadastrarProfessorController.class);
 
+    // preparar cadastro de professor este construtor recebe as operacoes de cadastro de usuarios
     public cadastrarProfessorController(UsuarioRepository UsuarioRepository) {
         this.UsuarioRepository = UsuarioRepository;
     }
 
+    // abrir cadastro de professor este metodo prepara o formulario para quem ainda nao entrou
     @GetMapping("/cadastrarProfessor")
     public String CadastrarProfessor(org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
@@ -54,20 +59,25 @@ public class cadastrarProfessorController {
         return "Usuarios/Professor/cadastrarProfessor";
     }
 
+    // verificar cadastro de professor este metodo guarda os dados na sessao e inicia a confirmacao por email
     @PostMapping("/cadastrarProfessor")
     public String VerificacaoRegistrar(@Valid @ModelAttribute("professor") cadastrarProfessorDTO professor, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
 
-        //Encriptador
+
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
+        // validar cadastro de professor reapresenta o formulario quando os dados possuem erros
         if (result.hasErrors()) {
             logger.warn("Dados inválidos no cadastro do professor. erros={}", result.getFieldErrors().stream()
                     .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
                     .toList());
+            // registro de avisos confere se esta habilitado ao verificar cadastro de professor
             if (logger.isWarnEnabled()) {
+                // gravar historico ao verificar cadastro de professor tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarProfessorController.class.getName(), "VerificacaoRegistrar", null,
                             MessageFormatter.arrayFormat("Dados inválidos no cadastro do professor. erros={}", new Object[]{result.getFieldErrors().stream()
@@ -93,6 +103,7 @@ public class cadastrarProfessorController {
         session.setAttribute("DataNasc", professor.getDataNasc());
         session.setAttribute("Senha", encoder.encode(professor.getSenha()));
 
+        // confirmar email do professor envia codigo quando habilitado ou segue para o cadastro verificado
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(professor.getEmail().toLowerCase());
             emailService.enviarCodigo(professor.getEmail().toLowerCase(), codigo, FinalidadeCodigoEmail.CADASTRO);
@@ -104,12 +115,15 @@ public class cadastrarProfessorController {
         }
     }
 
+    // cadastrar professor verificado este metodo confere dados repetidos e grava o cadastro confirmado
     @GetMapping("/cadastrarProfessorVerificado")
     public String registrar(@Valid @ModelAttribute("professor") cadastrarProfessorDTO professor, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
 
+        // exigir professor verificado retorna ao cadastro quando o email ainda nao foi confirmado
         if (!"true".equals(session.getAttribute("verificado"))) {
             return "redirect:/cadastrarProfessor";
         }
@@ -129,7 +143,7 @@ public class cadastrarProfessorController {
         session.removeAttribute("Senha");
         session.removeAttribute("verificado");
 
-        //Encriptador
+
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         List<String> erros = UsuarioRepository.validarDadosDuplicados(
@@ -139,10 +153,13 @@ public class cadastrarProfessorController {
                 professor.getTelefone()
         );
 
-        //Verificar duplicidade antes de tentar inserir
+
+        // impedir cadastro duplicado do professor mostra os conflitos antes de salvar a conta
         if (!erros.isEmpty()) {
             logger.warn("Cadastro recusado por dados duplicados. perfil=professor motivos={}", erros);
+            // registro de avisos confere se esta habilitado ao cadastrar professor verificado
             if (logger.isWarnEnabled()) {
+                // gravar historico ao cadastrar professor verificado tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarProfessorController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Cadastro recusado por dados duplicados. perfil=professor motivos={}", new Object[]{erros}).getMessage(), null, null);
@@ -155,8 +172,9 @@ public class cadastrarProfessorController {
             return "Usuarios/Professor/cadastrarProfessor";
         }
 
+        // salvar novo professor grava o cadastro e retorna ao formulario se o banco falhar
         try {
-            //Inserção de dados no BD
+
             UsuarioRepository.InsertCadastroUsuarioIntoBD(
                     "Professor",
                     professor.getMatricula(),
@@ -168,7 +186,9 @@ public class cadastrarProfessorController {
             );
 
             logger.info("Sucesso ao cadastrar novo professor com email: {}", professor.getEmail());
+            // registro de informacoes confere se esta habilitado ao cadastrar professor verificado
             if (logger.isInfoEnabled()) {
+                // gravar historico ao cadastrar professor verificado tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "INFO", cadastrarProfessorController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Sucesso ao cadastrar novo professor com email: {}", new Object[]{professor.getEmail()}).getMessage(), null, null);
@@ -180,7 +200,9 @@ public class cadastrarProfessorController {
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir professor no banco com email: {}", professor.getEmail(), e);
+            // registro de erros confere se esta habilitado ao cadastrar professor verificado
             if (logger.isErrorEnabled()) {
+                // gravar historico ao cadastrar professor verificado tenta salvar o registro no banco e informa falhas
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));

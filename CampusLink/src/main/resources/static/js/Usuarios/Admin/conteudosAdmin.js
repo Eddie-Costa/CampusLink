@@ -1,4 +1,6 @@
+// lista administrativa de conteudos permite buscar filtrar e carregar mais resultados
 
+// preparar lista administrativa de conteudos configura busca filtro e carregamento de mais itens
 document.addEventListener("DOMContentLoaded", function () {
 
     const campoBusca = document.getElementById("campoBusca");
@@ -6,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalConteudos = document.getElementById("totalConteudos");
     const erroCarregamento = document.getElementById("erroCarregamento");
 
+    // iniciar lista administrativa de conteudos exige os filtros e a area de resultados
     if (!campoBusca || !filtroStatus || !document.getElementById("blocoConteudos")) {
         return;
     }
@@ -14,20 +17,25 @@ document.addEventListener("DOMContentLoaded", function () {
     let requisicaoFiltro = null;
     let requisicaoMais = null;
 
+    // mostrar erro de carregamento exibe a mensagem na area de falhas dos conteudos
     function mostrarErro(mensagem) {
+        // mostrar erro dos conteudos preenche e exibe a area de falha disponivel
         if (erroCarregamento) {
             erroCarregamento.textContent = mensagem;
             erroCarregamento.classList.remove("d-none");
         }
     }
 
+    // limpar erro de carregamento apaga a mensagem e oculta a area de falhas
     function limparErro() {
+        // limpar erro dos conteudos apaga a mensagem e oculta a area de falha
         if (erroCarregamento) {
             erroCarregamento.textContent = "";
             erroCarregamento.classList.add("d-none");
         }
     }
 
+    // montar busca de conteudos combina pagina texto e situacao no endereco da consulta
     function montarUrl(pagina) {
         const bloco = document.getElementById("blocoConteudos");
         const endereco = bloco.dataset.url || "/admin/conteudos";
@@ -41,10 +49,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return url.toString();
     }
 
+    // ler lista recebida extrai a area de conteudos da pagina retornada e rejeita respostas invalidas
     function obterBlocoResposta(html) {
         const documento = new DOMParser().parseFromString(html, "text/html");
         const bloco = documento.getElementById("blocoConteudos");
 
+        // validar resposta dos conteudos rejeita uma resposta sem a area esperada
         if (!bloco) {
             throw new Error("Resposta de conteúdos inválida");
         }
@@ -52,9 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return bloco;
     }
 
+    // atualizar totais de conteudos mostra quantos itens existem e quantos estao visiveis
     function atualizarContadores() {
         const bloco = document.getElementById("blocoConteudos");
 
+        // contar conteudos exibidos encerra quando a area de resultados nao existe
         if (!bloco) {
             return;
         }
@@ -66,23 +78,28 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalEncontrado = bloco.querySelector("#totalEncontrado");
         const botaoMostrarMais = bloco.querySelector("#botaoMostrarMais");
 
+        // mostrar total de conteudos atualiza o contador geral disponivel
         if (totalConteudos) {
             totalConteudos.textContent = total;
         }
 
+        // mostrar quantidade exibida atualiza o contador dos conteudos na tela
         if (totalExibido) {
             totalExibido.textContent = exibidos;
         }
 
+        // mostrar quantidade encontrada atualiza o total correspondente aos filtros
         if (totalEncontrado) {
             totalEncontrado.textContent = total;
         }
 
+        // controlar mais conteudos exibe o botao apenas quando existem outras paginas
         if (botaoMostrarMais) {
             botaoMostrarMais.classList.toggle("d-none", bloco.dataset.temMais !== "true");
         }
     }
 
+    // atualizar endereco dos filtros grava busca e situacao no endereco sem recarregar a pagina
     function atualizarEndereco() {
         const url = new URL(window.location.href);
         const busca = campoBusca.value.trim();
@@ -91,12 +108,14 @@ document.addEventListener("DOMContentLoaded", function () {
         url.searchParams.delete("pagina");
         url.searchParams.delete("fragmento");
 
+        // atualizar busca no endereco inclui o termo preenchido ou retira o parametro vazio
         if (busca) {
             url.searchParams.set("busca", busca);
         } else {
             url.searchParams.delete("busca");
         }
 
+        // atualizar situacao no endereco inclui o filtro especifico ou retira o filtro de todos
         if (status !== "todos") {
             url.searchParams.set("status", status);
         } else {
@@ -106,13 +125,16 @@ document.addEventListener("DOMContentLoaded", function () {
         window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     }
 
-    // atualiza os conteudos quando a busca ou o filtro muda
+
+    // buscar conteudos filtrados cancela buscas anteriores e substitui a lista pelos novos resultados
     async function buscarConteudos() {
 
+        // cancelar filtro anterior interrompe a consulta de conteudos em andamento
         if (requisicaoFiltro) {
             requisicaoFiltro.abort();
         }
 
+        // cancelar pagina anterior interrompe o carregamento de mais conteudos ao mudar o filtro
         if (requisicaoMais) {
             requisicaoMais.abort();
             requisicaoMais = null;
@@ -126,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         limparErro();
 
+        // consultar conteudos filtrados tenta carregar a lista e atualizar os contadores e o endereco
         try {
             const resposta = await fetch(montarUrl(0), {
                 signal: requisicao.signal,
@@ -134,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
+            // detectar falha de conteudos interrompe a leitura quando o servidor nao confirma a consulta
             if (!resposta.ok) {
                 throw new Error("Erro ao buscar conteúdos");
             }
@@ -141,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const html = await resposta.text();
             const novoBloco = obterBlocoResposta(html);
 
+            // descartar filtro cancelado ignora a resposta quando a consulta foi interrompida
             if (requisicao.signal.aborted) {
                 return;
             }
@@ -151,16 +176,19 @@ document.addEventListener("DOMContentLoaded", function () {
             atualizarEndereco();
 
         } catch (erro) {
+            // avisar falha no filtro mostra o erro quando a consulta falha sem cancelamento
             if (erro.name !== "AbortError") {
                 mostrarErro("Não foi possível atualizar os conteúdos. Tente novamente.");
             }
 
         } finally {
+            // finalizar filtro atual limpa o controle apenas se a consulta ainda e a atual
             if (requisicaoFiltro === requisicao) {
                 requisicaoFiltro = null;
 
                 const blocoAtual = document.getElementById("blocoConteudos");
 
+                // liberar area de conteudos retira a indicacao de carregamento da lista atual
                 if (blocoAtual) {
                     blocoAtual.removeAttribute("aria-busy");
                 }
@@ -168,9 +196,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // adiciona mais dez conteudos sem apagar os anteriores
+
+    // carregar mais conteudos consulta a proxima pagina e acrescenta os itens a lista atual
     async function mostrarMaisConteudos() {
 
+        // evitar consultas simultaneas bloqueia mais resultados enquanto ha uma busca em andamento
         if (requisicaoFiltro || requisicaoMais) {
             return;
         }
@@ -179,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const lista = bloco.querySelector("#listaConteudos");
         const botao = bloco.querySelector("#botaoMostrarMais");
 
+        // conferir proxima pagina exige lista botao e indicacao de mais conteudos
         if (!lista || !botao || bloco.dataset.temMais !== "true") {
             return;
         }
@@ -193,6 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         limparErro();
 
+        // carregar mais conteudos tenta acrescentar os resultados e atualizar os dados da paginacao
         try {
             const resposta = await fetch(montarUrl(pagina), {
                 signal: requisicao.signal,
@@ -201,6 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
+            // conferir pagina de conteudos informa falha quando o servidor recusa a consulta
             if (!resposta.ok) {
                 throw new Error("Erro ao carregar mais conteúdos");
             }
@@ -209,10 +242,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const novoBloco = obterBlocoResposta(html);
             const novosConteudos = novoBloco.querySelectorAll(".conteudo-admin-card");
 
+            // descartar pagina cancelada ignora resultados de um carregamento interrompido
             if (requisicao.signal.aborted) {
                 return;
             }
 
+            // acrescentar conteudo recebido coloca o novo cartao ao final da lista
             novosConteudos.forEach(function (conteudo) {
                 lista.appendChild(conteudo);
             });
@@ -224,11 +259,13 @@ document.addEventListener("DOMContentLoaded", function () {
             atualizarContadores();
 
         } catch (erro) {
+            // avisar falha na paginacao mostra o erro quando a consulta falha sem cancelamento
             if (erro.name !== "AbortError") {
                 mostrarErro("Não foi possível carregar mais conteúdos. Tente novamente.");
             }
 
         } finally {
+            // finalizar pagina atual limpa o controle apenas se a consulta ainda e a atual
             if (requisicaoMais === requisicao) {
                 requisicaoMais = null;
             }
@@ -238,22 +275,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // espera o usuario terminar de digitar antes de buscar
+
+    // aguardar busca administrativa reinicia o tempo de espera ao digitar
     campoBusca.addEventListener("input", function () {
         clearTimeout(tempoBusca);
 
+        // executar busca aguardada consulta os conteudos depois da pausa na digitacao
         tempoBusca = setTimeout(function () {
             buscarConteudos();
         }, 350);
     });
 
+    // alterar filtro de situacao cancela a espera e busca imediatamente
     filtroStatus.addEventListener("change", function () {
         clearTimeout(tempoBusca);
         buscarConteudos();
     });
 
-    // funciona mesmo depois que a lista e atualizada
+
+    // mostrar mais por clique identifica o botao mesmo depois da atualizacao da lista
     document.addEventListener("click", function (evento) {
+        // acionar mais conteudos carrega outra pagina ao clicar no botao correspondente
         if (evento.target.id === "botaoMostrarMais") {
             mostrarMaisConteudos();
         }

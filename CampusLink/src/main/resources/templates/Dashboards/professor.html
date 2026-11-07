@@ -1,0 +1,60 @@
+<!-- dashboard do professor apresenta turmas publicacoes compromissos e indicadores de acompanhamento -->
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Dashboards/fragments :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="dashboard-page" th:attr="data-perfil=${tipo}">
+    <header th:replace="~{Dashboards/fragments :: titulo('Acompanhe suas turmas, publicações e próximos compromissos.', 'Área do professor')}"></header>
+    <nav class="dashboard-shortcuts" aria-label="Atalhos do professor">
+        <a class="btn btn-primary" th:href="@{/meus-conteudos}">Gerenciar meus conteúdos</a>
+        <a class="btn btn-outline-primary" th:href="@{/acompanhamento}">Acompanhar as turmas</a>
+    </nav>
+    <section th:replace="~{Dashboards/fragments :: filtros}"></section>
+    <div th:replace="~{Dashboards/fragments :: organizar}"></div>
+    <section th:replace="~{Dashboards/fragments :: resumo}"></section>
+    <section th:replace="~{Dashboards/fragments :: indicadores}"></section>
+    <section th:replace="~{Dashboards/fragments :: graficos}"></section>
+    <details class="dashboard-section" data-secao="turmas">
+    <summary><span>Minhas turmas<small>Alunos, vínculos e atividades</small></span></summary>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Minhas turmas</h2><a th:href="@{/turmas}">Ver todas</a></div>
+        <p class="dashboard-help">Até 20 turmas do recorte. Conteúdos e eventos consideram sua autoria e o período selecionado.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.turmas)}">Nenhuma turma vinculada neste recorte.</p>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(dados.turmas)}">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Turmas do professor</caption>
+                <thead><tr><th scope="col">Turma</th><th scope="col">Vínculo</th><th scope="col">Alunos</th><th scope="col">Conteúdos</th><th scope="col">Eventos</th><th scope="col">Acesso</th></tr></thead>
+                <tbody><tr th:each="turma : ${dados.turmas}">
+                    <td th:text="${turma.nome}"></td><td th:text="${turma.vinculo}"></td><td th:text="${turma.alunos}"></td>
+                    <td th:text="${turma.conteudos}"></td><td th:text="${turma.eventos}"></td>
+                    <td><a th:href="@{/turmas/{id}(id=${turma.id})}">Acessar turma</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+    </details>
+    <details class="dashboard-section" data-secao="conteudos">
+    <summary><span>Meus conteúdos<small>Publicações e acompanhamento de denúncias</small></span></summary>
+    <section class="dashboard-panel">
+        <div class="dashboard-section-heading"><h2>Meus conteúdos</h2><a th:href="@{/meus-conteudos}">Ver todos</a></div>
+        <p class="dashboard-help">Até 10 publicações mais recentes do recorte. Denúncias mostram o total registrado em cada conteúdo.</p>
+        <p class="dashboard-empty" th:if="${#lists.isEmpty(dados.conteudos)}">Nenhum conteúdo publicado neste recorte.</p>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(dados.conteudos)}">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Conteúdos do professor</caption>
+                <thead><tr><th scope="col">Conteúdo</th><th scope="col">Turmas</th><th scope="col">Publicação</th><th scope="col">Situação</th><th scope="col">Denúncias</th><th scope="col">Acesso</th></tr></thead>
+                <tbody><tr th:each="conteudo : ${dados.conteudos}">
+                    <td th:text="${conteudo.titulo}"></td><td th:text="${conteudo.turmas}"></td><td th:text="${conteudo.data}"></td>
+                    <td th:text="${conteudo.situacao}"></td><td th:text="${conteudo.denuncias}"></td>
+                    <td><a th:href="@{/meus-conteudos(busca=${conteudo.titulo})}">Gerenciar</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+    </details>
+    <section th:replace="~{Dashboards/fragments :: eventos}"></section>
+    <section th:replace="~{Dashboards/fragments :: insights('Insights das Turmas')}"></section>
+</main>
+</body>
+</html>

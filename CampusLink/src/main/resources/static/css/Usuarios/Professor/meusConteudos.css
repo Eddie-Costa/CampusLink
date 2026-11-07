@@ -1,3 +1,4 @@
+/* estilo dos meus conteudos organiza filtros cartoes midias detalhes e acoes do professor */
 
 :root {
     --azul-campus: var(--campus-navy);
@@ -169,7 +170,7 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* comentario do administrador */
+
 
 .comentario-admin {
     margin-top: 16px;
@@ -472,7 +473,7 @@ body {
     margin: 20px auto 0;
 }
 
-/* botao mostrar mais igual ao do administrador */
+
 
 #botaoMostrarMais {
     display: inline-flex;

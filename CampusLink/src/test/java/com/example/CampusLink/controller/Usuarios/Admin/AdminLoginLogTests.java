@@ -1,3 +1,4 @@
+// verificacao do login administrativo exercita o registro de falhas
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+// testes das tentativas de administrador esta classe confere validacao bloqueio e mensagens de historico
 class AdminLoginLogTests {
     private static final String EMAIL = "admin-login-log@example.com";
     private final UsuarioRepository usuarios = mock(UsuarioRepository.class);
@@ -22,6 +24,7 @@ class AdminLoginLogTests {
     private final loginAdminController controller = new loginAdminController();
     private final loginAdminDTO admin = new loginAdminDTO();
 
+    // preparar teste de login administrativo este metodo limpa tentativas e configura as dependencias simuladas
     @BeforeEach
     void preparar() {
         tentativas.loginSucesso(EMAIL);
@@ -31,11 +34,13 @@ class AdminLoginLogTests {
         ReflectionTestUtils.setField(controller, "loginAttemptService", tentativas);
     }
 
+    // limpar tentativas depois do teste este metodo remove o bloqueio do email usado no cenario
     @AfterEach
     void limpar() {
         tentativas.loginSucesso(EMAIL);
     }
 
+    // testar dados invalidos no login este teste exige registro da recusa sem consultar a senha
     @Test
     void dadosInvalidosSaoAuditadosSemConsultarSenha() throws Exception {
         BeanPropertyBindingResult validacao = new BeanPropertyBindingResult(admin, "admin");
@@ -46,6 +51,7 @@ class AdminLoginLogTests {
         verificarAviso("Dados de login inválidos", 1);
     }
 
+    // testar falhas e bloqueio administrativo este teste confere os registros das tentativas e do bloqueio
     @Test
     void registraFalhasBloqueioENovaTentativaDuranteBloqueio() throws Exception {
         for (int i = 0; i < 6; i++) {
@@ -58,6 +64,7 @@ class AdminLoginLogTests {
         verificarAviso("Conta bloqueada para administrador", 1);
     }
 
+    // conferir aviso de login este metodo verifica a mensagem e a quantidade de registros no banco simulado
     private void verificarAviso(String mensagem, int quantidade) throws Exception {
         verify(usuarios, times(quantidade)).InserirLogsNoBD(isNull(), eq("WARN"), anyString(), eq("fazerLogin"),
                 isNull(), contains(mensagem), isNull(), isNull());

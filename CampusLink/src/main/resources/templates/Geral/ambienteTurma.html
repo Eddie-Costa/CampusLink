@@ -1,3 +1,4 @@
+<!-- ambiente da turma mostra participantes conteudos e acoes de gerenciamento conforme o perfil -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -12,21 +13,21 @@
 
 <div th:replace="~{fragments/header :: nav}"></div>
 
-<!--Mensagem de sucesso-->
+
 <div th:if="${mensagemSucesso != null}"
      class="alert alert-success alert-dismissible fade show alerta-flutuante" role="alert">
     <span th:text="${mensagemSucesso}">Mensagem de sucesso</span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
 
-<!--Mensagem de erro-->
+
 <div th:if="${mensagemErro != null}"
      class="alert alert-warning alert-dismissible fade show alerta-flutuante" role="alert">
     <span th:text="${mensagemErro}">Mensagem de erro</span>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
 
-<!--Conteiner Turma-->
+
 <main class="container turmas-page"
     th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}, data-abrir-modal-conteudo=${abrirModalConteudo}, data-abrir-modal-editar-turma=${abrirModalEditarTurma}, data-abrir-modal-editar-id=${abrirModalEditarId}">
 
@@ -36,45 +37,26 @@
 
     <div class="turmas-container">
 
-        <!--
-           Visualização do professor
-           contem:
-           Botão participantes da turma
 
-           Se for admin:
-           Botão excluir turma
-        -->
         <div class="pessoas-acoes" th:if="${session.tipoUsuario == 'professor'}">
 
-            <!--
-            Botáo para abrir o modal participantes da turma
-            Modal contem:
-            email das pessoas cadastradas na turma | tipo de usuario (aluno, professor, professor admin)
-            Botão adicionar pessoas e Botão remover pessoas
-            -->
-            <!--Modal participantes Turma-->
+
+
             <div class="modal fade" id="participantesTurma" tabindex="-1" aria-labelledby="participantesTurmaLabel"
                  aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content campus-modal">
 
-                        <!--
-                        Header modal
-                        Titulo
-                        botáo fechar
-                        -->
+
                         <div class="modal-header">
                             <h5 class="modal-title" id="participantesTurmaLabel">Participantes da turma</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
 
-                        <!--
-                        Visualização de Participantes cadastrados
-                        E-mail | Tipo de usuario
-                        -->
+
                         <div class="modal-body">
 
-                            <!--Tabela de pessoas-->
+
                             <div class="participantes-container" th:unless="${#lists.isEmpty(participantesTurma)}">
                                 <label class="visually-hidden" for="buscaParticipantesTurma">Buscar participante por nome ou e-mail</label>
                                 <input type="search" class="form-control busca-participantes-turma"
@@ -120,7 +102,7 @@
                             </div>
                         </div>
 
-                        <!--Botoes adicionarPessoas e RemoverPessoas-->
+
                         <div class="modal-footer">
                             <button type="button" class="acao-turma" id="abrirAdicionarPessoasModal">
                                 Adicionar Pessoas
@@ -131,7 +113,7 @@
                 </div>
             </div>
 
-            <!--Modal adicionarPessoas-->
+
             <div class="modal fade" id="adicionarPessoasModal" tabindex="-1"
                  aria-labelledby="adicionarPessoasModalLabel" aria-hidden="true">
 
@@ -214,7 +196,7 @@
                 Editar Turma
             </button>
 
-            <!-- Excluir turma continua disponível apenas para o administrador dela. -->
+
             <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
                   method="post" class="form-excluir-turma" data-submit-once>
                 <input type="hidden" th:field="*{id}"/>
@@ -518,7 +500,7 @@
     </div>
 </main>
 
-<!--Modal para escolher conteúdo-->
+
 <div class="modal fade" id="selecionarConteudoModal" tabindex="-1"
      aria-labelledby="selecionarConteudoTitulo" aria-hidden="true">
 
@@ -562,7 +544,7 @@
     </div>
 </div>
 
-<!--Modal editar conteúdo-->
+
 <div class="modal fade" th:each="conteudo : ${conteudos}"
      th:id="'editarConteudoModal-' + ${conteudo.id}"
      th:with="dados=${(abrirModalEditarId != null and abrirModalEditarId == conteudo.id) ? conteudoEditado : conteudo}"
@@ -683,7 +665,7 @@
         </div>
     </div>
 </div>
-<!--Modal solicitar domínio-->
+
 <div class="modal fade" id="solicitarDominioModal" tabindex="-1"
      aria-labelledby="solicitarDominioTitulo" aria-hidden="true"
      th:if="${session.tipoUsuario == 'professor'}">
@@ -759,7 +741,7 @@
         </div>
     </div>
 </div>
-<!--Modal adicionar conteúdo-->
+
 <div class="modal fade" id="adicionarConteudoModal" tabindex="-1"
      aria-labelledby="adicionarConteudoTitulo" aria-hidden="true">
 
@@ -881,7 +863,7 @@
     </div>
 </div>
 
-<!-- denuncia do aluno -->
+
 <div class="modal fade" th:each="conteudo : ${conteudos}"
      th:if="${session.tipoUsuario == 'aluno' and conteudo.status == 'ativo'}"
      th:id="'denunciarConteudoModal-' + ${conteudo.id}"

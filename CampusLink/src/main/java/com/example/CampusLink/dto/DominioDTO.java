@@ -1,3 +1,4 @@
+// dados de dominio organiza os pedidos de liberacao de sites
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -7,6 +8,7 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
+// registro do dominio esta classe guarda endereco justificativa professor e decisao administrativa
 @Getter
 @Setter
 public class DominioDTO {
@@ -17,7 +19,7 @@ public class DominioDTO {
     @Size(max = 253, message = "O domínio deve ter no máximo 253 caracteres")
     private String dominio;
 
-    // pendente | aprovado | rejeitado
+
     private String status;
 
     private Long idProfessor;
@@ -31,6 +33,6 @@ public class DominioDTO {
 
     private OffsetDateTime analisadoEm;
 
-    // só preenchido nas listagens do admin (join com USUARIOS)
+
     private String nomeProfessor;
 }

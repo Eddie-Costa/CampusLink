@@ -1,3 +1,4 @@
+/* fundo da escolha de usuario preenche a pagina com a imagem de fundo da plataforma */
 body{
     background-image: url('../images/bg.png');
     background-size: cover;

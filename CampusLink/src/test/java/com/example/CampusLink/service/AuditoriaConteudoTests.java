@@ -1,3 +1,4 @@
+// verificacao dos registros de materiais exercita denuncias e revisoes com consultas simuladas
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.repository.ConteudoRepository;
@@ -15,11 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+// testes da auditoria de conteudos esta classe confere mensagens de sucesso recusa e erro
 class AuditoriaConteudoTests {
     private final UsuarioRepository usuarios = mock(UsuarioRepository.class);
     private final ConteudoRepository conteudos = mock(ConteudoRepository.class);
     private final DenunciaRepository denuncias = mock(DenunciaRepository.class);
 
+    // testar denuncia repetida no historico este teste confere o registro da recusa sem criar outro relato
     @Test
     void denunciaDuplicadaRegistraRecusaSemInserirNovaDenuncia() throws Exception {
         DenunciaService service = denuncias();
@@ -30,6 +33,7 @@ class AuditoriaConteudoTests {
         verificarLog("WARN", "registrarDenuncia", "Denúncia duplicada.");
     }
 
+    // testar suspensao por denuncias este teste confere a mudanca do material e os registros ao atingir o limite
     @Test
     void denunciaQueAtingeLimiteRegistraCadastroESuspensao() throws Exception {
         DenunciaService service = denuncias();
@@ -43,6 +47,7 @@ class AuditoriaConteudoTests {
         verificarLog("INFO", "registrarDenuncia", "Conteúdo suspenso automaticamente");
     }
 
+    // testar registro da revisao este teste confere que liberacao e reprovacao registram o resultado real
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void revisaoRegistraResultadoRealDaLiberacaoEReprovacao(boolean sucesso) throws Exception {
@@ -57,6 +62,7 @@ class AuditoriaConteudoTests {
         verificarLog(sucesso ? "INFO" : "WARN", "reprovarConteudo", sucesso ? "Conteúdo reprovado" : "Reprovação recusada");
     }
 
+    // testar registro das acoes do professor este teste confere sucesso ou recusa na remocao e no pedido de revisao
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void acoesDoProfessorRegistramSucessoOuRecusa(boolean sucesso) throws Exception {
@@ -70,6 +76,7 @@ class AuditoriaConteudoTests {
         verificarLog(sucesso ? "INFO" : "WARN", "solicitarRevisao", sucesso ? "Revisão de conteúdo solicitada" : "Solicitação de revisão recusada");
     }
 
+    // testar falha na denuncia este teste confere a preservacao da causa e o registro do erro
     @Test
     void erroDeDenunciaMantemCausaERegistraExcecao() throws Exception {
         DenunciaService service = denuncias();
@@ -81,12 +88,14 @@ class AuditoriaConteudoTests {
                 isNull(), contains("conteudoId=10"), isNull(), contains("SQLException: falha simulada"));
     }
 
+    // preparar servico de denuncias do teste este metodo monta o servico com banco e historico simulados
     private DenunciaService denuncias() {
         DenunciaService service = new DenunciaService(denuncias, conteudos);
         ReflectionTestUtils.setField(service, "UsuarioRepository", usuarios);
         return service;
     }
 
+    // conferir registro de conteudo este metodo verifica nivel operacao e trecho da mensagem esperada
     private void verificarLog(String nivel, String operacao, String mensagem) throws Exception {
         verify(usuarios).InserirLogsNoBD(isNull(), eq(nivel), anyString(), eq(operacao),
                 isNull(), contains(mensagem), isNull(), isNull());

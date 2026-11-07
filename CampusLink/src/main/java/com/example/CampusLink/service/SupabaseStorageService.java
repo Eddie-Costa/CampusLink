@@ -1,3 +1,4 @@
+// armazenamento externo realiza o envio a recuperacao e a exclusao dos arquivos
 package com.example.CampusLink.service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,14 @@ import java.util.Map;
 import java.util.UUID;
 
 
+// servico de armazenamento esta classe usa caminhos unicos e a pasta configurada para guardar materiais
 @Service
 public class SupabaseStorageService {
 
     private final RestClient restClient;
     private final String bucket;
 
+    // preparar armazenamento externo este construtor recebe a conexao e a pasta dos arquivos
     public SupabaseStorageService(
             RestClient supabaseRestClient,
             @Value("${supabase.storage.bucket}") String bucket) {
@@ -27,14 +30,17 @@ public class SupabaseStorageService {
         this.bucket = bucket;
     }
 
+    // enviar arquivo ao armazenamento este metodo cria um nome unico e envia os dados sem sobrescrever
     public String upload(MultipartFile arquivo) {
 
+        // enviar arquivo ao armazenamento tenta preparar o caminho e transmitir os dados do arquivo
         try {
 
             String storagePath = gerarStoragePath(arquivo);
 
             String mimeType = arquivo.getContentType();
 
+            // definir tipo do envio usa um tipo de arquivo generico quando o original nao informa um
             if (mimeType == null) {
                 mimeType = "application/octet-stream";
             }
@@ -53,6 +59,7 @@ public class SupabaseStorageService {
         }
     }
 
+    // recuperar arquivo do armazenamento este metodo baixa os dados pelo caminho e recusa uma resposta vazia
     public byte[] download(String storagePath) {
 
         byte[] arquivo = restClient.get()
@@ -64,6 +71,7 @@ public class SupabaseStorageService {
                 .retrieve()
                 .body(byte[].class);
 
+        // conferir download do arquivo avisa quando o armazenamento nao retorna os dados
         if (arquivo == null) {
 
             throw new RuntimeException(
@@ -74,10 +82,12 @@ public class SupabaseStorageService {
         return arquivo;
     }
 
+    // delete arquivo na pasta configurada este metodo encaminha a remocao para o destino padrao
     public void excluir(String storagePath) {
         excluir(bucket, storagePath);
     }
 
+    // delete arquivo na pasta informada este metodo solicita a remocao do caminho no armazenamento externo
     public void excluir(String bucketId, String storagePath) {
 
         Map<String, List<String>> body =
@@ -91,6 +101,7 @@ public class SupabaseStorageService {
                 .toBodilessEntity();
     }
 
+    // criar nome unico do arquivo este metodo combina um identificador aleatorio com a extensao original em minusculas
     private String gerarStoragePath(
             MultipartFile arquivo) {
 
@@ -98,6 +109,7 @@ public class SupabaseStorageService {
 
         String extensao = "";
 
+        // preservar extensao do arquivo aproveita o trecho depois do ultimo ponto no nome original
         if (nomeOriginal != null && nomeOriginal.contains(".")) {
 
             extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));

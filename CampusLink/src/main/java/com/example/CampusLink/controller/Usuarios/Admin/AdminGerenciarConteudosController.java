@@ -1,3 +1,4 @@
+// catalogo administrativo permite consultar os conteudos de todos os professores
 
 package com.example.CampusLink.controller.Usuarios.Admin;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+// controle da lista de materiais esta classe aplica filtros e paginacao para o administrador
 @Controller
 public class AdminGerenciarConteudosController {
 
@@ -26,11 +28,13 @@ public class AdminGerenciarConteudosController {
 
     private final ConteudoService conteudoService;
 
+    // preparar listagem administrativa de materiais este construtor recebe o servico de conteudos
     public AdminGerenciarConteudosController(ConteudoService conteudoService) {
         this.conteudoService = conteudoService;
     }
 
-    // lista os conteudos de todos os professores
+
+    // listar conteudos administrativos este metodo aplica busca situacao e paginacao e pode devolver apenas a lista
     @GetMapping("/admin/conteudos")
     public String listarConteudos(
             HttpSession session,
@@ -41,10 +45,12 @@ public class AdminGerenciarConteudosController {
             @RequestParam(value = "fragmento", defaultValue = "false") boolean fragmento
     ) {
 
+        // proteger gerenciamento de conteudos exige login administrativo antes de listar materiais
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/admin/login";
         }
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
@@ -53,14 +59,17 @@ public class AdminGerenciarConteudosController {
         busca = busca == null ? "" : busca.trim();
         status = status == null ? "todos" : status.trim().toLowerCase(Locale.ROOT);
 
+        // corrigir filtro de conteudos usa todas as situacoes quando o valor recebido nao e reconhecido
         if (!"ativo".equals(status) && !"suspenso_denuncia".equals(status) && !"removido".equals(status)) {
             status = "todos";
         }
 
+        // carregar conteudos administrativos calcula paginacao e filtros e trata falhas de carregamento
         try {
             int totalFiltrados = conteudoService.contarFiltradosParaAdmin(busca, status);
             int totalPaginas = Math.max(1, (totalFiltrados + 9) / 10);
 
+            // limitar pagina consultada usa a ultima pagina quando o numero pedido ultrapassa os resultados
             if (pagina >= totalPaginas) {
                 pagina = totalPaginas - 1;
             }
@@ -76,6 +85,7 @@ public class AdminGerenciarConteudosController {
             model.addAttribute("totalPaginas", totalPaginas);
             model.addAttribute("temMais", (long) pagina * 10 + conteudos.size() < totalFiltrados);
 
+            // responder apenas lista devolve somente a area de conteudos quando a consulta pede uma parte da pagina
             if (fragmento) {
                 return "Usuarios/Admin/conteudosAdmin :: blocoConteudos";
             }
@@ -83,6 +93,7 @@ public class AdminGerenciarConteudosController {
         } catch (SQLException | RuntimeException e) {
             logger.error("erro ao carregar os conteudos para o administrador", e);
 
+            // informar falha da lista retorna erro ao navegador quando o carregamento parcial falha
             if (fragmento) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possível carregar os conteúdos.", e);
             }
@@ -101,27 +112,32 @@ public class AdminGerenciarConteudosController {
         return "Usuarios/Admin/conteudosAdmin";
     }
 
-    // verifica se o usuario da sessao e um administrador
+
+    // validar administrador da lista de conteudos este metodo confere o perfil e o email da conta conectada
     private boolean ehAdministrador(HttpSession session) {
 
         Object tipoUsuario = session.getAttribute("tipoUsuario");
         Object usuarioLogado = session.getAttribute("usuarioLogado");
         Object emailSessao = session.getAttribute("email2FA");
 
+        // conferir perfil administrativo rejeita sessoes com outro tipo de usuario
         if (!"admin".equals(tipoUsuario)) {
             return false;
         }
 
+        // conferir dados administrativos rejeita um usuario que nao possui os dados de administrador
         if (!(usuarioLogado instanceof loginAdminDTO)) {
             return false;
         }
 
+        // conferir email da sessao rejeita valores que nao sao texto
         if (!(emailSessao instanceof String)) {
             return false;
         }
 
         loginAdminDTO admin = (loginAdminDTO) usuarioLogado;
 
+        // exigir email do administrador rejeita contas sem email preenchido
         if (admin.getEmail() == null || admin.getEmail().isBlank()) {
             return false;
         }

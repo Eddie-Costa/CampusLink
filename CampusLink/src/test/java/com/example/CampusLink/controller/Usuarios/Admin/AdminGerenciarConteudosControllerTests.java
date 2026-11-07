@@ -1,3 +1,4 @@
+// verificacao do catalogo administrativo exercita filtros e limites de acesso
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
@@ -17,14 +18,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+// testes da lista de conteudos esta classe confere paginacao e recusa do perfil de aluno
 class AdminGerenciarConteudosControllerTests {
 
     private final ConteudoService conteudoService = mock(ConteudoService.class);
     private final AdminGerenciarConteudosController controller = new AdminGerenciarConteudosController(conteudoService);
 
+    // testar filtros administrativos de conteudos este teste confere busca situacao e ajuste de pagina fora do limite
     @Test
     void listaConteudosComBuscaFiltroEPaginacao() throws SQLException {
-        // confere os filtros e ajusta uma pagina que ultrapassa o total
+
         loginAdminDTO admin = new loginAdminDTO();
         admin.setEmail("admin@example.com");
         MockHttpSession session = new MockHttpSession();
@@ -50,9 +53,10 @@ class AdminGerenciarConteudosControllerTests {
         verify(conteudoService).listarTodosParaAdminPaginado(1, "matematica", "ativo");
     }
 
+    // testar bloqueio de aluno na lista administrativa este teste impede a consulta dos conteudos
     @Test
     void impedeAcessoDeAlunoSemConsultarConteudos() {
-        // impede que um aluno consulte os conteudos da area administrativa
+
         loginAlunoDTO aluno = new loginAlunoDTO();
         aluno.setEmail("aluno@example.com");
         MockHttpSession session = new MockHttpSession();

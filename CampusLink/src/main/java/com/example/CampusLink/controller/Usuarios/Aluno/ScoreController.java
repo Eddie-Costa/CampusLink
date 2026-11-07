@@ -1,3 +1,4 @@
+// progresso de estudos apresenta conclusoes riscos e prioridades para o aluno
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
 import com.example.CampusLink.dto.ConteudoDTO;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// controle do score esta classe limita as consultas as turmas do aluno e prepara os resumos
 @Controller
 @RequiredArgsConstructor
 public class ScoreController {
@@ -42,15 +44,18 @@ public class ScoreController {
     private final ConteudoService conteudoService;
     private final ViabilidadeService viabilidadeService;
 
+    // consultar progresso do aluno este metodo reune conclusoes prioridades e ritmo de estudo por turma
     @GetMapping("/score")
     public String exibirScore(Model model, HttpSession session) throws SQLException {
 
         String redirecionamento = verificarAcesso(session, "exibirScore");
+        // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
         if (redirecionamento != null) {
             return redirecionamento;
         }
 
         Long idAluno = buscarIdAluno(session);
+        // identificar aluno do score retorna ao login quando nao encontra o aluno conectado
         if (idAluno == null) {
             return "redirect:/login";
         }
@@ -83,6 +88,7 @@ public class ScoreController {
         return "Usuarios/Aluno/score";
     }
 
+    // consultar progresso da turma este metodo confere a participacao e detalha conclusoes atrasos e horas faltantes
     @GetMapping("/score/turma/{id}")
     public String exibirScoreTurma(@PathVariable Long id,
                                    Model model,
@@ -90,11 +96,13 @@ public class ScoreController {
                                    RedirectAttributes redirectAttributes) throws SQLException {
 
         String redirecionamento = verificarAcesso(session, "exibirScoreTurma");
+        // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
         if (redirecionamento != null) {
             return redirecionamento;
         }
 
         Long idAluno = buscarIdAluno(session);
+        // identificar aluno do score da turma retorna ao login quando nao encontra o cadastro
         if (idAluno == null) {
             return "redirect:/login";
         }
@@ -104,6 +112,7 @@ public class ScoreController {
                 .findFirst()
                 .orElse(null);
 
+        // proteger score de outra turma recusa a consulta quando o aluno nao participa da turma
         if (turma == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
             return "redirect:/score";
@@ -116,6 +125,7 @@ public class ScoreController {
         Map<Long, List<ViabilidadeDTO>> conteudosPorEvento = new HashMap<>();
         Set<Long> conteudosComEvento = new HashSet<>();
         for (ViabilidadeDTO resultado : resultadosTurma) {
+            // reunir conteudos dos eventos agrupa apenas resultados que possuem conteudo identificado
             if (resultado.getIdConteudo() != null) {
                 conteudosPorEvento.computeIfAbsent(resultado.getIdEvento(), idEvento -> new ArrayList<>()).add(resultado);
                 conteudosComEvento.add(resultado.getIdConteudo());
@@ -133,6 +143,7 @@ public class ScoreController {
         Map<Long, Integer> minutosFaltandoPorEvento = new HashMap<>();
         Map<Long, Integer> minutosFaltandoPorConteudo = new HashMap<>();
         for (SessaoEstudoDTO sessao : viabilidadeService.gerarPlano(idAluno)) {
+            // somar estudo nao alocado conta sugestoes ou sessoes sem data da turma selecionada
             if ((sessao.getData() == null || sessao.isSugestao()) && id.equals(sessao.getIdTurma())) {
                 minutosFaltandoPorEvento.merge(sessao.getIdEvento(), sessao.getMinutos(), Integer::sum);
                 minutosFaltandoPorConteudo.merge(sessao.getIdConteudo(), sessao.getMinutos(), Integer::sum);
@@ -152,6 +163,7 @@ public class ScoreController {
             for (ViabilidadeDTO item : itens) {
                 int duracao = duracaoPorConteudo.getOrDefault(item.getIdConteudo(), duracaoPadrao);
                 minutosTotal += duracao;
+                // contar estudo concluido soma conteudos e minutos quando o nivel indica conclusao
                 if ("concluido".equals(item.getNivel())) {
                     concluidosEvento++;
                     minutosConcluidos += duracao;
@@ -186,15 +198,20 @@ public class ScoreController {
         return "Usuarios/Aluno/scoreTurma";
     }
 
+    // validar acesso ao progresso este metodo exige login e perfil de aluno
     private String verificarAcesso(HttpSession session, String operacao) {
 
+        // exigir sessao verificada retorna ao login quando falta usuario ou email da verificacao
         if (session.getAttribute("usuarioLogado") == null || session.getAttribute("email2FA") == null) {
             return "redirect:/login";
         }
 
+        // restringir consulta do score permite o acesso apenas pelo perfil de aluno
         if (!"aluno".equals(session.getAttribute("tipoUsuario"))) {
             logger.warn("Acesso recusado ao score: usuário não é aluno.");
+            // registro de avisos confere se esta habilitado ao validar acesso ao progresso
             if (logger.isWarnEnabled()) {
+                // gravar historico ao validar acesso ao progresso tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ScoreController.class.getName(), operacao, null,
                             "Acesso recusado ao score: usuário não é aluno.", null, null);
@@ -208,17 +225,20 @@ public class ScoreController {
         return null;
     }
 
+    // buscar aluno do progresso este metodo consulta seu identificador pelo email conectado
     private Long buscarIdAluno(HttpSession session) throws SQLException {
         String idAluno = alunoRepository.buscarPorIDAluno(session.getAttribute("email2FA").toString());
         return idAluno == null || idAluno.isBlank() ? null : Long.valueOf(idAluno);
     }
 
+    // listar materiais ativos do progresso este metodo retira os conteudos indisponiveis da turma
     private List<ConteudoDTO> listarAtivos(Long idTurma) {
         return conteudoService.listarPorTurma(idTurma).stream()
                 .filter(conteudo -> "ativo".equals(conteudo.getStatus()))
                 .toList();
     }
 
+    // calcular ritmo de estudo este metodo compara conclusoes recentes com a carga diaria necessaria
     private Map<String, Object> montarRitmo(Long idAluno, List<ViabilidadeDTO> resultados) {
         int minutosSemana = viabilidadeService.minutosConcluidosRecentes(List.of(idAluno), 7).getOrDefault(idAluno, 0);
         int mediaDiaria = minutosSemana / 7;
@@ -229,6 +249,7 @@ public class ScoreController {
         ritmo.put("proximoEvento", null);
 
         ViabilidadeDTO proximo = viabilidadeService.proximoEventoPendente(resultados);
+        // calcular ritmo necessario compara a media diaria ao proximo evento pendente com carga de estudo
         if (proximo != null && !"concluido".equals(proximo.getNivel()) && proximo.getCargaMin() > 0) {
             int necessarioPorDia = viabilidadeService.minutosNecessariosPorDia(proximo);
             ritmo.put("proximoEvento", proximo);
@@ -239,6 +260,7 @@ public class ScoreController {
         return ritmo;
     }
 
+    // buscar proximo evento por turma este metodo agrupa os resultados e escolhe o evento pendente
     private Map<Long, ViabilidadeDTO> proximoEventoPorTurma(List<ViabilidadeDTO> resultados) {
         Map<Long, List<ViabilidadeDTO>> resultadosPorTurma = new HashMap<>();
         for (ViabilidadeDTO resultado : resultados) {

@@ -1,3 +1,4 @@
+// inscricao de alunos organiza o cadastro publico desse perfil
 package com.example.CampusLink.controller.Usuarios.Aluno;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+// cadastro de aluno esta classe guarda os dados ate a verificacao e confere duplicidades antes de gravar
 @Controller
 public class cadastrarAlunoController {
 
@@ -40,12 +42,15 @@ public class cadastrarAlunoController {
 
     private static final Logger logger = LoggerFactory.getLogger(cadastrarAlunoController.class);
 
+    // preparar cadastro de aluno este construtor recebe as operacoes de cadastro de usuarios
     public cadastrarAlunoController(UsuarioRepository UsuarioRepository) {
         this.UsuarioRepository = UsuarioRepository;
     }
 
+    // abrir cadastro de aluno este metodo prepara o formulario para quem ainda nao entrou
     @GetMapping("/cadastrarAluno")
     public String CadastrarAluno(org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
@@ -54,20 +59,25 @@ public class cadastrarAlunoController {
         return "Usuarios/Aluno/cadastrarAluno";
     }
 
+    // verificar cadastro de aluno este metodo guarda os dados na sessao e inicia a confirmacao por email
     @PostMapping("/cadastrarAluno")
     public String VerificacaoRegistrar(@Valid @ModelAttribute("aluno") cadastrarAlunoDTO aluno, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
 
-        //Encriptador
+
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
+        // validar cadastro de aluno mostra os erros e reapresenta os campos invalidos
         if (result.hasErrors()) {
             logger.warn("Dados inválidos no cadastro do aluno. erros={}", result.getFieldErrors().stream()
                     .map(erro -> "%s: %s".formatted(erro.getField(), erro.getDefaultMessage()))
                     .toList());
+            // registro de avisos confere se esta habilitado ao verificar cadastro de aluno
             if (logger.isWarnEnabled()) {
+                // gravar historico ao verificar cadastro de aluno tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "VerificacaoRegistrar", null,
                             MessageFormatter.arrayFormat("Dados inválidos no cadastro do aluno. erros={}", new Object[]{result.getFieldErrors().stream()
@@ -93,6 +103,7 @@ public class cadastrarAlunoController {
         session.setAttribute("DataNasc", aluno.getDataNasc());
         session.setAttribute("Senha", encoder.encode(aluno.getSenha()));
 
+        // confirmar email do aluno envia o codigo quando habilitado ou segue diretamente ao cadastro verificado
         if (twoFactorEnabled) {
             String codigo = twoFactorService.gerarCodigo(aluno.getEmail().toLowerCase());
             emailService.enviarCodigo(aluno.getEmail().toLowerCase(), codigo, FinalidadeCodigoEmail.CADASTRO);
@@ -104,12 +115,15 @@ public class cadastrarAlunoController {
         }
     }
 
+    // cadastrar aluno verificado este metodo confere dados repetidos e grava o cadastro confirmado
     @GetMapping("/cadastrarAlunoVerificado")
     public String registrar(@ModelAttribute("aluno") cadastrarAlunoDTO aluno, BindingResult result, org.springframework.ui.Model model, HttpSession session) {
+        // evitar novo acesso retorna ao inicio quando o usuario ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
         }
 
+        // exigir aluno verificado retorna ao cadastro quando a confirmacao ainda nao aconteceu
         if (!"true".equals(session.getAttribute("verificado"))) {
             return "redirect:/cadastrarAluno";
         }
@@ -136,10 +150,13 @@ public class cadastrarAlunoController {
                 aluno.getTelefone()
         );
 
-        //Verificar duplicidade antes de tentar inserir
+
+        // impedir cadastro duplicado do aluno mostra os conflitos encontrados antes de salvar a conta
         if (!erros.isEmpty()) {
             logger.warn("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", erros);
+            // registro de avisos confere se esta habilitado ao cadastrar aluno verificado
             if (logger.isWarnEnabled()) {
+                // gravar historico ao cadastrar aluno verificado tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", cadastrarAlunoController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Cadastro recusado por dados duplicados. perfil=aluno motivos={}", new Object[]{erros}).getMessage(), null, null);
@@ -152,8 +169,9 @@ public class cadastrarAlunoController {
             return "Usuarios/Aluno/cadastrarAluno";
         }
 
+        // salvar novo aluno grava o cadastro e retorna ao formulario se o banco falhar
         try {
-            //Inserção de dados no BD
+
             UsuarioRepository.InsertCadastroUsuarioIntoBD(
                     "Aluno",
                     aluno.getRgm(),
@@ -165,7 +183,9 @@ public class cadastrarAlunoController {
             );
 
             logger.info("Sucesso ao cadastrar novo aluno com email: {}", aluno.getEmail());
+            // registro de informacoes confere se esta habilitado ao cadastrar aluno verificado
             if (logger.isInfoEnabled()) {
+                // gravar historico ao cadastrar aluno verificado tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "INFO", cadastrarAlunoController.class.getName(), "registrar", null,
                             MessageFormatter.arrayFormat("Sucesso ao cadastrar novo aluno com email: {}", new Object[]{aluno.getEmail()}).getMessage(), null, null);
@@ -177,7 +197,9 @@ public class cadastrarAlunoController {
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir aluno no banco com email: {}", aluno.getEmail(), e);
+            // registro de erros confere se esta habilitado ao cadastrar aluno verificado
             if (logger.isErrorEnabled()) {
+                // gravar historico ao cadastrar aluno verificado tenta salvar o registro no banco e informa falhas
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));

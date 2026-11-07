@@ -1,5 +1,7 @@
+// envio de formularios bloqueia repeticoes e mostra o andamento conforme a acao
+// preparar envio unico configura o bloqueio de formularios e a restauracao ao voltar
 (function () {
-    // Primeiro padrão que combinar com o endereço do formulário define o texto do botão.
+
     const TEXTOS = [
         [/\/excluir|\/remover|\/removerPessoas/i,           'Excluindo...'],
         [/\/denunciar/i,                                    'Enviando denúncia...'],
@@ -16,28 +18,38 @@
         [/\/reset/i,                                        'Enviando...']
     ];
 
-    // Formulários que baixam arquivo (a página não recarrega) não devem ser travados.
+
     const SEM_TRAVA = [/\/exportar/i];
 
+    // escolher texto de envio usa a mensagem do formulario ou uma mensagem conforme a acao
     function textoPara(form) {
+        // escolher texto de envio usa o texto definido no formulario quando existe
         if (form.dataset.textoEnvio) return form.dataset.textoEnvio;
         const caminho = new URL(form.action, window.location.href).pathname;
         for (const [padrao, texto] of TEXTOS) {
+            // identificar acao do formulario usa o texto correspondente ao caminho de envio
             if (padrao.test(caminho)) return texto;
         }
         return 'Enviando...';
     }
 
+    // bloquear envio repetido aceita o primeiro envio e impede novos envios do mesmo formulario
     document.addEventListener('submit', function (evento) {
         const form = evento.target;
+        // controlar envio unico ignora elementos que nao sao formularios
         if (!(form instanceof HTMLFormElement)) return;
+        // limitar bloqueio de envio aplica o controle apenas a formularios enviados por post
         if ((form.method || '').toLowerCase() !== 'post') return;
-        if (evento.defaultPrevented) return;      // cancelado por validação ou confirm()
+        // respeitar envio cancelado encerra quando outra validacao ja impediu o envio
+        if (evento.defaultPrevented) return;
 
         const caminho = new URL(form.action, window.location.href).pathname;
+        // conferir formulario sem trava verifica se a acao baixa arquivo e dispensa o bloqueio
+        // preservar formularios sem trava ignora os caminhos que dispensam bloqueio de envio
         if (SEM_TRAVA.some(function (p) { return p.test(caminho); })) return;
 
-        if (form.dataset.enviando === 'true') {   // 2º clique: bloqueia
+        // impedir envio repetido cancela o envio quando o formulario ja esta sendo enviado
+        if (form.dataset.enviando === 'true') {
             evento.preventDefault();
             return;
         }
@@ -45,10 +57,13 @@
 
         const texto = textoPara(form);
 
-        // desabilita depois que o navegador já montou os dados do formulário
+
+        // agendar bloqueio dos botoes desativa os controles depois da preparacao do envio
         setTimeout(function () {
+            // desativar botao enviado guarda o texto original e mostra a acao em andamento
             form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (botao) {
                 botao.disabled = true;
+                // mostrar envio no botao guarda o texto original e apresenta a acao em andamento
                 if (botao.tagName === 'BUTTON') {
                     botao.dataset.textoOriginal = botao.textContent;
                     botao.textContent = texto;
@@ -57,13 +72,18 @@
         }, 0);
     });
 
-    // voltar pelo botão "Voltar" do navegador não pode deixar o botão travado
+
+    // restaurar pagina anterior libera os formularios quando a pagina volta da memoria do navegador
     window.addEventListener('pageshow', function (evento) {
+        // restaurar pagina em cache ignora paginas que nao foram recuperadas do historico
         if (!evento.persisted) return;
+        // liberar formulario anterior remove a marca de envio e restaura seus botoes
         document.querySelectorAll('form[data-enviando]').forEach(function (form) {
             delete form.dataset.enviando;
+            // restaurar botao de envio habilita o controle e recupera o texto original
             form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (botao) {
                 botao.disabled = false;
+                // recuperar texto do botao restaura o texto guardado antes do envio
                 if (botao.dataset.textoOriginal) botao.textContent = botao.dataset.textoOriginal;
             });
         });

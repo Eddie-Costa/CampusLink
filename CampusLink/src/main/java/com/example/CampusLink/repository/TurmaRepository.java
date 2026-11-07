@@ -1,3 +1,4 @@
+// banco de turmas centraliza participantes responsabilidades e atividade recente
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.TurmaDTO;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// persistencia de turmas esta classe consulta vinculos e altera dados participacoes e historico de uso
 @Repository
 public class TurmaRepository {
 
@@ -28,6 +30,7 @@ public class TurmaRepository {
     @Autowired
     private DataSource dataSource;
 
+    // buscar uma turma do professor este metodo retorna um identificador entre suas participacoes e responsabilidades
     public String buscarPorIDTurma(String idProfessor) throws SQLException {
 
         String id = "";
@@ -39,6 +42,7 @@ public class TurmaRepository {
         stmt.setLong(2, Long.parseLong(idProfessor));
         ResultSet rs = stmt.executeQuery();
 
+        // buscar codigo da turma guarda o codigo quando encontra um resultado
         if (rs.next()) {
             id = rs.getString("id");
         }
@@ -49,16 +53,20 @@ public class TurmaRepository {
         return id;
     }
 
+    // buscar ultima turma do professor este metodo retorna o maior identificador entre os vinculos do professor
     public String buscarUltimaTurmaPorProfessor(String idProfessor) throws SQLException {
         String sql = "SELECT t.id FROM public.\"TURMAS\" t WHERE (? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])) OR t.id_proprietario = ?) ORDER BY t.id DESC LIMIT 1";
 
+        // buscar ultima turma do professor consulta a turma mais recente ligada ao professor
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, Long.parseLong(idProfessor));
             stmt.setLong(2, Long.parseLong(idProfessor));
 
+            // ler ultima turma do professor abre o resultado da consulta
             try (ResultSet rs = stmt.executeQuery()) {
+                // retornar ultima turma entrega o codigo da turma encontrada
                 if (rs.next()) {
                     return rs.getString("id");
                 }
@@ -68,19 +76,23 @@ public class TurmaRepository {
         return null;
     }
 
+    // listar turmas por perfil no banco este metodo consulta as participacoes do aluno ou do professor
     public List<TurmaDTO> buscarTurmasDoUsuario(String tipo, String id) throws SQLException {
 
         String sql;
 
+        // buscar turmas do aluno escolhe a consulta das turmas em que o aluno participa
         if (tipo.equalsIgnoreCase("aluno")) {
             sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE ? = ANY(t.id_alunos)";
             List<TurmaDTO> turmas = new ArrayList<>();
 
+            // consultar turmas do aluno prepara a busca com o codigo do aluno
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
                 stmt.setLong(1, Long.parseLong(id));
 
+                // listar turmas do aluno monta os dados das turmas encontradas
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         TurmaDTO turma = new TurmaDTO();
@@ -93,17 +105,21 @@ public class TurmaRepository {
             }
 
             return turmas;
-        } else if (tipo.equalsIgnoreCase("professor")) {
+        }
+        // buscar turmas do professor inclui participacao e turmas de sua propriedade
+        else if (tipo.equalsIgnoreCase("professor")) {
             sql = "SELECT t.id, t.nome_turma, t.descricao FROM public.\"TURMAS\" t WHERE (? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])) OR t.id_proprietario = ?)";
 
             List<TurmaDTO> turmas = new ArrayList<>();
 
+            // consultar turmas do professor informa seu codigo para os dois tipos de vinculo
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
                 stmt.setLong(1, Long.parseLong(id));
                 stmt.setLong(2, Long.parseLong(id));
 
+                // listar turmas do professor monta os dados das turmas encontradas
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         TurmaDTO turma = new TurmaDTO();
@@ -121,6 +137,7 @@ public class TurmaRepository {
         }
     }
 
+    // registrar atividade na turma este metodo grava a data da ultima alteracao feita pelo usuario
     public void registrarAlteracao(String email, Long idTurma) {
         String sql = "INSERT INTO public.\"TURMA_ATIVIDADE\" (id_usuario, id_turma) " +
                 "SELECT u.id, t.id FROM public.\"USUARIOS\" u, public.\"TURMAS\" t " +
@@ -130,6 +147,7 @@ public class TurmaRepository {
         executarRegistroDeAlteracao(sql, email, idTurma, "registrarAlteracao");
     }
 
+    // registrar atividade pelo material este metodo atualiza a atividade em todas as turmas do conteudo
     public void registrarAlteracaoPorConteudo(String email, Long idConteudo) {
         String sql = "INSERT INTO public.\"TURMA_ATIVIDADE\" (id_usuario, id_turma) " +
                 "SELECT u.id, turma.id_turma FROM public.\"USUARIOS\" u, public.\"CONTEUDOS\" c " +
@@ -141,11 +159,14 @@ public class TurmaRepository {
         executarRegistroDeAlteracao(sql, email, idConteudo, "registrarAlteracaoPorConteudo");
     }
 
+    // gravar atividade sem interromper a acao este metodo executa o registro e relata eventuais falhas
     private void executarRegistroDeAlteracao(String sql, String email, Long id, String operacao) {
+        // registrar acesso a turma ignora o registro sem email ou codigo da turma
         if (email == null || id == null) {
             return;
         }
 
+        // registrar acesso a turma tenta gravar o acesso e registra a falha da consulta
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -155,7 +176,9 @@ public class TurmaRepository {
 
         } catch (SQLException e) {
             logger.warn("Não foi possível registrar a alteração da turma. operacao={} id={}", operacao, id, e);
+            // registro de avisos confere se esta habilitado ao gravar atividade sem interromper a acao
             if (logger.isWarnEnabled()) {
+                // gravar historico ao gravar atividade sem interromper a acao tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), operacao, null,
                             MessageFormatter.arrayFormat("Não foi possível registrar a alteração da turma. id={}", new Object[]{id}).getMessage(), null, null);
@@ -166,6 +189,7 @@ public class TurmaRepository {
         }
     }
 
+    // listar turmas recentes no banco este metodo consulta as ultimas turmas alteradas pelo usuario ate o limite
     public List<Long> listarTurmasRecentes(String email, int limite) throws SQLException {
         String sql = "SELECT a.id_turma FROM public.\"TURMA_ATIVIDADE\" a " +
                 "JOIN public.\"USUARIOS\" u ON u.id = a.id_usuario " +
@@ -173,12 +197,14 @@ public class TurmaRepository {
 
         List<Long> ids = new ArrayList<>();
 
+        // buscar turmas recentes consulta os acessos do email com o limite informado
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             stmt.setInt(2, limite);
 
+            // listar turmas recentes guarda os codigos retornados pela consulta
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     ids.add(rs.getLong("id_turma"));
@@ -189,6 +215,7 @@ public class TurmaRepository {
         return ids;
     }
 
+    // escolher turmas recentes acessiveis este metodo cruza a atividade recente com as turmas atuais do usuario
     public List<TurmaDTO> recentesDentre(String email, List<TurmaDTO> turmasDoUsuario, int limite) throws SQLException {
         Map<Long, TurmaDTO> turmaPorId = new HashMap<>();
         turmasDoUsuario.forEach(turma -> turmaPorId.put(turma.getId(), turma));
@@ -200,6 +227,7 @@ public class TurmaRepository {
                 .toList();
     }
 
+    // ordenar nomes das turmas este metodo organiza os nomes pela ordem alfabetica em portugues
     public static List<TurmaDTO> ordenarPorNome(List<TurmaDTO> turmas) {
         java.text.Collator collator = java.text.Collator.getInstance(new java.util.Locale("pt", "BR"));
         collator.setStrength(java.text.Collator.PRIMARY);
@@ -209,6 +237,7 @@ public class TurmaRepository {
                 .toList();
     }
 
+    // listar turmas de varios alunos este metodo consulta e agrupa os vinculos por aluno
     public Map<Long, List<Long>> buscarTurmasDosAlunos(List<Long> idsAlunos) throws SQLException {
         String sql = "SELECT t.id AS id_turma, aluno.id_aluno FROM public.\"TURMAS\" t " +
                 "CROSS JOIN LATERAL unnest(t.id_alunos) AS aluno(id_aluno) " +
@@ -216,11 +245,13 @@ public class TurmaRepository {
 
         Map<Long, List<Long>> turmasPorAluno = new HashMap<>();
 
+        // buscar turmas dos alunos consulta os vinculos dos alunos informados
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setArray(1, conn.createArrayOf("bigint", idsAlunos.toArray()));
 
+            // agrupar turmas por aluno guarda as turmas de cada aluno encontrado
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     turmasPorAluno.computeIfAbsent(rs.getLong("id_aluno"), idAluno -> new ArrayList<>())
@@ -232,15 +263,19 @@ public class TurmaRepository {
         return turmasPorAluno;
     }
 
+    // buscar dados da turma este metodo consulta nome descricao e responsavel pelo identificador
     public TurmaDTO buscarTurmaPorId(String id) throws SQLException {
         String sql = "SELECT t.id, t.nome_turma, t.descricao, t.id_proprietario FROM public.\"TURMAS\" t WHERE t.id = ?";
 
+        // buscar turma por codigo prepara a consulta com o codigo informado
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, Long.parseLong(id));
 
+            // ler turma por codigo abre o resultado da consulta
             try (ResultSet rs = stmt.executeQuery()) {
+                // retornar turma encontrada monta os dados da turma quando a consulta encontra um registro
                 if (rs.next()) {
                     TurmaDTO turma = new TurmaDTO();
                     turma.setId(rs.getLong("id"));
@@ -255,11 +290,13 @@ public class TurmaRepository {
         return null;
     }
 
+    // editar turma no banco pelo responsavel este metodo atualiza nome e descricao apenas quando o professor e proprietario
     public boolean atualizarTurmaDoProprietario(String idTurma, String idProfessor,
                                                  String nomeTurma, String descricao) throws SQLException {
         String sql = "UPDATE public.\"TURMAS\" SET nome_turma = ?, descricao = ? " +
                 "WHERE id = ? AND id_proprietario = ?";
 
+        // editar turma do proprietario tenta atualizar os dados e informa se houve alteracao
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nomeTurma);
@@ -270,6 +307,7 @@ public class TurmaRepository {
         }
     }
 
+    // listar participantes da turma este metodo consulta alunos professores e responsavel em ordem de perfil e nome
     public List<TurmaDTO> buscarParticipantesDaTurma(String idTurma) throws SQLException {
         String sql = "SELECT participantes.nome, participantes.email, participantes.tipo_usuario FROM (" +
                 "SELECT u.nome AS nome, u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
@@ -288,12 +326,14 @@ public class TurmaRepository {
 
         List<TurmaDTO> participantes = new ArrayList<>();
 
+        // buscar participantes da turma consulta alunos e professores da turma
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, Long.parseLong(idTurma));
             stmt.setLong(2, Long.parseLong(idTurma));
 
+            // listar participantes da turma monta os dados das pessoas encontradas
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TurmaDTO participante = new TurmaDTO();
@@ -308,6 +348,7 @@ public class TurmaRepository {
         return participantes;
     }
 
+    // buscar sugestoes de participantes este metodo procura dez contas ativas por nome ou email ainda fora da turma
     public List<TurmaDTO> buscarSugestoesPessoasDaTurma(String termo, String idTurma) throws SQLException {
         String sql = "SELECT u.nome, u.email, "
                 + "CASE WHEN a.id IS NOT NULL THEN 'Aluno' ELSE 'Professor' END AS tipo_usuario "
@@ -327,6 +368,7 @@ public class TurmaRepository {
         List<TurmaDTO> sugestoes = new ArrayList<>();
         String padrao = "%" + termo.trim() + "%";
 
+        // buscar sugestoes da turma consulta pessoas pelo texto e pela turma informados
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, padrao);
@@ -334,6 +376,7 @@ public class TurmaRepository {
             stmt.setLong(3, Long.parseLong(idTurma));
             stmt.setLong(4, Long.parseLong(idTurma));
 
+            // listar sugestoes da turma monta os nomes emails e perfis encontrados
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TurmaDTO sugestao = new TurmaDTO();
@@ -348,38 +391,47 @@ public class TurmaRepository {
         return sugestoes;
     }
 
+    // delete turma no banco este metodo confere o proprietario e apaga os vinculos de participantes antes da turma
     public void excluirTurma(String idTurma, String idProfessor) throws SQLException {
         String sqlVerificarProprietario = "SELECT 1 FROM public.\"TURMAS\" WHERE id = ? AND id_proprietario = ?";
         String sqlDeleteAlunoTurma = "DELETE FROM public.\"ALUNO_TURMA\" WHERE id_turma = ?";
         String sqlDeleteProfessorTurma = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE id_turma = ?";
         String sqlDeleteTurma = "DELETE FROM public.\"TURMAS\" WHERE id = ?";
 
+        // delete turma tenta conferir o proprietario e apagar os vinculos e a turma
         try (Connection conn = dataSource.getConnection()) {
 
+            // conferir proprietario da turma consulta a turma pelo codigo do professor
             try (PreparedStatement stmtVerificar = conn.prepareStatement(sqlVerificarProprietario)) {
                 stmtVerificar.setLong(1, Long.parseLong(idTurma));
                 stmtVerificar.setLong(2, Long.parseLong(idProfessor));
 
+                // ler permissao para delete turma abre o resultado da consulta do proprietario
                 try (ResultSet rs = stmtVerificar.executeQuery()) {
+                    // bloquear delete turma avisa quando a turma nao pertence ao professor
                     if (!rs.next()) {
                         throw new SQLException("Você não é o proprietário desta turma.");
                     }
                 }
             }
 
+            // delete alunos da turma apaga os vinculos dos alunos com a turma
             try (PreparedStatement stmtAlunoTurma = conn.prepareStatement(sqlDeleteAlunoTurma)) {
                 stmtAlunoTurma.setLong(1, Long.parseLong(idTurma));
                 stmtAlunoTurma.executeUpdate();
             }
 
+            // delete professores da turma apaga os vinculos dos professores com a turma
             try (PreparedStatement stmtProfessorTurma = conn.prepareStatement(sqlDeleteProfessorTurma)) {
                 stmtProfessorTurma.setLong(1, Long.parseLong(idTurma));
                 stmtProfessorTurma.executeUpdate();
             }
 
+            // delete cadastro da turma executa a exclusao pelo codigo informado
             try (PreparedStatement stmtTurma = conn.prepareStatement(sqlDeleteTurma)) {
                 stmtTurma.setLong(1, Long.parseLong(idTurma));
 
+                // conferir delete turma avisa quando nenhuma turma foi apagada
                 if (stmtTurma.executeUpdate() == 0) {
                     throw new SQLException("Nenhuma turma foi removida.");
                 }
@@ -387,6 +439,7 @@ public class TurmaRepository {
         }
     }
 
+    // adicionar pessoa no banco da turma este metodo identifica o perfil pelo email e grava sua participacao
     public boolean inserirPessoaTurma(String email, String idTurma) throws SQLException {
         String sqlUsuario = "SELECT u.id, u.perfil FROM public.\"USUARIOS\" u WHERE u.email = ?";
         String sqlAluno = "SELECT a.id FROM public.\"ALUNOS\" a WHERE a.id_usuario = ?";
@@ -397,15 +450,20 @@ public class TurmaRepository {
         String sqlInsertProfessorTurma = "INSERT INTO public.\"PROFESSOR_TURMA\" (\"id_professor\", \"id_turma\") VALUES (?, ?)";
         String sqlBuscarCorrespondencia = "SELECT 1 FROM public.\"TURMAS\" t WHERE t.id = ? AND (? = ANY(COALESCE(t.id_alunos, ARRAY[]::bigint[])) OR ? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])))";
 
+        // adicionar pessoa na turma tenta localizar a pessoa e cadastrar seu vinculo
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmtUsuario = conn.prepareStatement(sqlUsuario)) {
 
             stmtUsuario.setString(1, email);
 
+            // ler pessoa para adicionar na turma confere o perfil e realiza as consultas do vinculo
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
+                // impedir cadastro sem usuario informa que o email nao foi encontrado
                 if (!rsUsuario.next()) {
                     logger.warn("[TurmaRepository.inserirPessoaTurma] Usuário não encontrado para o email informado.");
+                    // registro de avisos confere se esta habilitado ao adicionar pessoa no banco da turma
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                     "[TurmaRepository.inserirPessoaTurma] Usuário não encontrado para o email informado.", null, null);
@@ -423,17 +481,22 @@ public class TurmaRepository {
                 String sqlUpdate = "";
                 String sqlInsertRelacao = "";
 
+                // adicionar aluno na turma escolhe as consultas de cadastro do aluno
                 if (perfil.equalsIgnoreCase("alunos")) {
                     sqlBuscaEntidade = sqlAluno;
                     sqlUpdate = sqlUpdateAluno;
                     sqlInsertRelacao = sqlInsertAlunoTurma;
-                } else if (perfil.equalsIgnoreCase("professores")) {
+                }
+                // adicionar professor na turma escolhe as consultas de cadastro do professor
+                else if (perfil.equalsIgnoreCase("professores")) {
                     sqlBuscaEntidade = sqlProfessor;
                     sqlUpdate = sqlUpdateProfessor;
                     sqlInsertRelacao = sqlInsertProfessorTurma;
                 } else {
                     logger.warn("[TurmaRepository.inserirPessoaTurma] Perfil não suportado: {}", perfil);
+                    // registro de avisos confere se esta habilitado ao adicionar pessoa no banco da turma
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                     MessageFormatter.arrayFormat("[TurmaRepository.inserirPessoaTurma] Perfil não suportado: {}", new Object[]{perfil}).getMessage(), null, null);
@@ -446,15 +509,20 @@ public class TurmaRepository {
 
                 long entidadeId = -1;
 
+                // buscar pessoa pelo perfil consulta o codigo do aluno ou professor
                 try (PreparedStatement stmtEntidade = conn.prepareStatement(sqlBuscaEntidade)) {
                     stmtEntidade.setLong(1, usuarioId);
 
+                    // ler pessoa pelo perfil abre o resultado da busca pelo usuario
                     try (ResultSet rsEntidade = stmtEntidade.executeQuery()) {
+                        // identificar pessoa pelo perfil guarda o codigo encontrado e avisa quando nao encontra
                         if (rsEntidade.next()) {
                             entidadeId = rsEntidade.getLong("id");
                         } else {
                             logger.warn("[TurmaRepository.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            // registro de avisos confere se esta habilitado ao adicionar pessoa no banco da turma
                             if (logger.isWarnEnabled()) {
+                                // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                                 try {
                                     UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                             MessageFormatter.arrayFormat("[TurmaRepository.inserirPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", new Object[]{usuarioId}).getMessage(), null, null);
@@ -467,15 +535,20 @@ public class TurmaRepository {
                     }
                 }
 
+                // conferir vinculo com turma consulta se a pessoa ja participa da turma
                 try (PreparedStatement stmtCorrespondente = conn.prepareStatement(sqlBuscarCorrespondencia)) {
                     stmtCorrespondente.setLong(1, Long.parseLong(idTurma));
                     stmtCorrespondente.setLong(2, entidadeId);
                     stmtCorrespondente.setLong(3, entidadeId);
 
+                    // ler vinculo com turma abre o resultado da consulta de participacao
                     try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
+                        // impedir vinculo repetido informa que a pessoa ja participa da turma
                         if (rsCorrespondente.next()) {
                             logger.warn("[TurmaRepository.inserirPessoaTurma] Usuário já cadastrado na turma. usuarioId={} turmaId={}", usuarioId, idTurma);
+                            // registro de avisos confere se esta habilitado ao adicionar pessoa no banco da turma
                             if (logger.isWarnEnabled()) {
+                                // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                                 try {
                                     UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                             MessageFormatter.arrayFormat("[TurmaRepository.inserirPessoaTurma] Usuário já cadastrado na turma. usuarioId={} turmaId={}", new Object[]{usuarioId, idTurma}).getMessage(), null, null);
@@ -488,15 +561,19 @@ public class TurmaRepository {
                     }
                 }
 
+                // atualizar participantes da turma tenta acrescentar o codigo da pessoa na turma
                 try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate)) {
                     stmtUpdate.setLong(1, entidadeId);
                     stmtUpdate.setLong(2, Long.parseLong(idTurma));
 
                     int linhasAfetadas = stmtUpdate.executeUpdate();
 
+                    // conferir cadastro na turma avisa quando a lista de participantes nao foi atualizada
                     if (linhasAfetadas <= 0) {
                         logger.warn("[TurmaRepository.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        // registro de avisos confere se esta habilitado ao adicionar pessoa no banco da turma
                         if (logger.isWarnEnabled()) {
+                            // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                             try {
                                 UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                         MessageFormatter.arrayFormat("[TurmaRepository.inserirPessoaTurma] nenhuma linha foi afetada na turma {}.", new Object[]{idTurma}).getMessage(), null, null);
@@ -508,10 +585,12 @@ public class TurmaRepository {
                     }
                 }
 
+                // cadastrar vinculo com turma grava a relacao da pessoa com a turma
                 try (PreparedStatement stmtInsertRelacao = conn.prepareStatement(sqlInsertRelacao)) {
                     stmtInsertRelacao.setLong(1, entidadeId);
                     stmtInsertRelacao.setLong(2, Long.parseLong(idTurma));
 
+                    // definir cor do aluno usa verde ao cadastrar o vinculo do aluno com a turma
                     if (sqlInsertRelacao.equals(sqlInsertAlunoTurma)) {
                         stmtInsertRelacao.setString(3, "verde");
                     }
@@ -520,7 +599,9 @@ public class TurmaRepository {
                 }
 
                 logger.info("Participante adicionado à turma. turmaId={} usuarioId={} perfil={}", idTurma, usuarioId, perfil);
+                // registro de informacoes confere se esta habilitado ao adicionar pessoa no banco da turma
                 if (logger.isInfoEnabled()) {
+                    // gravar historico ao adicionar pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "INFO", TurmaRepository.class.getName(), "inserirPessoaTurma", null,
                                 MessageFormatter.arrayFormat("Participante adicionado à turma. turmaId={} usuarioId={} perfil={}", new Object[]{idTurma, usuarioId, perfil}).getMessage(), null, null);
@@ -533,6 +614,7 @@ public class TurmaRepository {
         }
     }
 
+    // delete pessoa no banco da turma este metodo remove os vinculos do participante e protege o professor responsavel
     public boolean revomerPessoaTurma(String email, String idTurma) throws SQLException {
         String sqlUsuario = "SELECT u.id, u.perfil FROM public.\"USUARIOS\" u WHERE u.email = ?";
         String sqlAluno = "SELECT a.id FROM public.\"ALUNOS\" a WHERE a.id_usuario = ?";
@@ -543,15 +625,20 @@ public class TurmaRepository {
         String sqlDeleteProfessorTurma = "DELETE FROM public.\"PROFESSOR_TURMA\" WHERE \"id_professor\" = ? AND \"id_turma\" = ?";
         String sqlBuscarCorrespondencia = "SELECT 1 FROM public.\"TURMAS\" t WHERE t.id = ? AND (? = ANY(COALESCE(t.id_alunos, ARRAY[]::bigint[])) OR ? = ANY(COALESCE(t.id_professores, ARRAY[]::bigint[])))";
 
+        // delete pessoa da turma tenta localizar a pessoa e apagar sua participacao
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmtUsuario = conn.prepareStatement(sqlUsuario)) {
 
             stmtUsuario.setString(1, email);
 
+            // ler pessoa para delete da turma confere o perfil e executa as consultas de exclusao
             try (ResultSet rsUsuario = stmtUsuario.executeQuery()) {
+                // impedir delete sem usuario informa que o email nao foi encontrado
                 if (!rsUsuario.next()) {
                     logger.warn("[TurmaRepository.revomerPessoaTurma] Usuário não encontrado para o email informado.");
+                    // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                     "[TurmaRepository.revomerPessoaTurma] Usuário não encontrado para o email informado.", null, null);
@@ -569,17 +656,22 @@ public class TurmaRepository {
                 String sqlUpdate = "";
                 String sqlDeleteRelacao = "";
 
+                // delete aluno da turma escolhe as consultas de exclusao do aluno
                 if (perfil.equalsIgnoreCase("alunos")) {
                     sqlBuscaEntidade = sqlAluno;
                     sqlUpdate = sqlUpdateAluno;
                     sqlDeleteRelacao = sqlDeleteAlunoTurma;
-                } else if (perfil.equalsIgnoreCase("professores")) {
+                }
+                // delete professor da turma escolhe as consultas de exclusao do professor
+                else if (perfil.equalsIgnoreCase("professores")) {
                     sqlBuscaEntidade = sqlProfessor;
                     sqlUpdate = sqlUpdateProfessor;
                     sqlDeleteRelacao = sqlDeleteProfessorTurma;
                 } else {
                     logger.warn("[TurmaRepository.revomerPessoaTurma] Perfil não suportado: {}", perfil);
+                    // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                     MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] Perfil não suportado: {}", new Object[]{perfil}).getMessage(), null, null);
@@ -592,15 +684,20 @@ public class TurmaRepository {
 
                 long entidadeId = -1;
 
+                // buscar pessoa para delete consulta o codigo do aluno ou professor pelo usuario
                 try (PreparedStatement stmtEntidade = conn.prepareStatement(sqlBuscaEntidade)) {
                     stmtEntidade.setLong(1, usuarioId);
 
+                    // ler pessoa para delete abre o resultado da busca pelo perfil
                     try (ResultSet rsEntidade = stmtEntidade.executeQuery()) {
+                        // identificar pessoa para delete guarda o codigo encontrado na tabela do perfil
                         if (rsEntidade.next()) {
                             entidadeId = rsEntidade.getLong("id");
                         } else {
                             logger.warn("[TurmaRepository.revomerPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", usuarioId);
+                            // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                             if (logger.isWarnEnabled()) {
+                                // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                                 try {
                                     UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                             MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] Nenhuma entidade encontrada na tabela específica para o idUsuario={}", new Object[]{usuarioId}).getMessage(), null, null);
@@ -612,9 +709,12 @@ public class TurmaRepository {
                     }
                 }
 
+                // cancelar delete da turma encerra quando nao encontra o aluno ou professor
                 if (entidadeId == -1) {
                     logger.warn("[TurmaRepository.revomerPessoaTurma] Encerrando porque entidadeId não foi encontrado.");
+                    // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                     "[TurmaRepository.revomerPessoaTurma] Encerrando porque entidadeId não foi encontrado.", null, null);
@@ -625,15 +725,20 @@ public class TurmaRepository {
                     return false;
                 }
 
+                // conferir participacao para delete consulta o vinculo da pessoa com a turma
                 try (PreparedStatement stmtCorrespondente = conn.prepareStatement(sqlBuscarCorrespondencia)) {
                     stmtCorrespondente.setLong(1, Long.parseLong(idTurma));
                     stmtCorrespondente.setLong(2, entidadeId);
                     stmtCorrespondente.setLong(3, entidadeId);
 
+                    // ler participacao para delete abre o resultado da consulta do vinculo
                     try (ResultSet rsCorrespondente = stmtCorrespondente.executeQuery()) {
+                        // cancelar delete sem vinculo informa que a pessoa nao participa da turma
                         if (!rsCorrespondente.next()) {
                             logger.warn("[TurmaRepository.revomerPessoaTurma] Usuário {} não está cadastrado na turma {}.", entidadeId, idTurma);
+                            // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                             if (logger.isWarnEnabled()) {
+                                // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                                 try {
                                     UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                             MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] Usuário {} não está cadastrado na turma {}.", new Object[]{entidadeId, idTurma}).getMessage(), null, null);
@@ -646,19 +751,26 @@ public class TurmaRepository {
                     }
                 }
 
+                // proteger professor proprietario confere a propriedade antes de excluir o professor da turma
                 if (perfil.equalsIgnoreCase("professores")) {
                     String sqlBuscarProprietario = "SELECT t.id_proprietario FROM public.\"TURMAS\" t WHERE t.id = ?";
 
+                    // buscar proprietario da turma consulta o codigo do professor responsavel
                     try (PreparedStatement stmtProprietario = conn.prepareStatement(sqlBuscarProprietario)) {
                         stmtProprietario.setLong(1, Long.parseLong(idTurma));
 
+                        // ler proprietario da turma abre o resultado da consulta de propriedade
                         try (ResultSet rsProprietario = stmtProprietario.executeQuery()) {
+                            // conferir professor proprietario compara o proprietario encontrado com o professor informado
                             if (rsProprietario.next()) {
                                 long idProprietario = rsProprietario.getLong("id_proprietario");
 
+                                // bloquear delete do proprietario impede a exclusao do professor responsavel pela turma
                                 if (entidadeId == idProprietario) {
                                     logger.warn("[TurmaRepository.revomerPessoaTurma] Bloqueada a remoção do professor administrador da turma {}.", idTurma);
+                                    // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                                     if (logger.isWarnEnabled()) {
+                                        // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                                         try {
                                             UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                                     MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] Bloqueada a remoção do professor administrador da turma {}.", new Object[]{idTurma}).getMessage(), null, null);
@@ -673,15 +785,19 @@ public class TurmaRepository {
                     }
                 }
 
+                // delete participante da turma atualiza a lista de participantes
                 try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate)) {
                     stmtUpdate.setLong(1, entidadeId);
                     stmtUpdate.setLong(2, Long.parseLong(idTurma));
 
                     int linhasAfetadas = stmtUpdate.executeUpdate();
 
+                    // conferir delete participante informa quando a lista da turma nao foi alterada
                     if (linhasAfetadas <= 0) {
                         logger.warn("[TurmaRepository.revomerPessoaTurma] nenhuma linha foi afetada na turma {}.", idTurma);
+                        // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                         if (logger.isWarnEnabled()) {
+                            // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                             try {
                                 UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                         MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] nenhuma linha foi afetada na turma {}.", new Object[]{idTurma}).getMessage(), null, null);
@@ -693,15 +809,19 @@ public class TurmaRepository {
                     }
                 }
 
+                // delete relacao com turma apaga o vinculo da pessoa com a turma
                 try (PreparedStatement stmtDeleteRelacao = conn.prepareStatement(sqlDeleteRelacao)) {
                     stmtDeleteRelacao.setLong(1, entidadeId);
                     stmtDeleteRelacao.setLong(2, Long.parseLong(idTurma));
 
                     int linhasRelacaoAfetadas = stmtDeleteRelacao.executeUpdate();
 
+                    // conferir delete relacao informa quando nenhum vinculo foi apagado
                     if (linhasRelacaoAfetadas <= 0) {
                         logger.warn("[TurmaRepository.revomerPessoaTurma] Nenhuma relação foi removida para entidade {} na turma {}.", entidadeId, idTurma);
+                        // registro de avisos confere se esta habilitado ao delete pessoa no banco da turma
                         if (logger.isWarnEnabled()) {
+                            // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                             try {
                                 UsuarioRepository.InserirLogsNoBD(null, "WARN", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                         MessageFormatter.arrayFormat("[TurmaRepository.revomerPessoaTurma] Nenhuma relação foi removida para entidade {} na turma {}.", new Object[]{entidadeId, idTurma}).getMessage(), null, null);
@@ -714,7 +834,9 @@ public class TurmaRepository {
                 }
 
                 logger.info("Participante removido da turma. turmaId={} usuarioId={} perfil={}", idTurma, usuarioId, perfil);
+                // registro de informacoes confere se esta habilitado ao delete pessoa no banco da turma
                 if (logger.isInfoEnabled()) {
+                    // gravar historico ao delete pessoa no banco da turma tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "INFO", TurmaRepository.class.getName(), "revomerPessoaTurma", null,
                                 MessageFormatter.arrayFormat("Participante removido da turma. turmaId={} usuarioId={} perfil={}", new Object[]{idTurma, usuarioId, perfil}).getMessage(), null, null);

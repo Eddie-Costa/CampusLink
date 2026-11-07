@@ -1,3 +1,4 @@
+// banco de conteudos centraliza materiais progresso e prazos
 
 package com.example.CampusLink.repository;
 
@@ -22,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+// persistencia de materiais esta classe filtra publicacoes e grava conclusoes remocoes e pedidos de revisao
 @Repository
 public class ConteudoRepository {
 
@@ -31,6 +33,7 @@ public class ConteudoRepository {
     private static final String URL_LIVRO_GOOGLE_BOOKS =
             "LOWER(COALESCE(\"url\", '')) ~ '^https?://(books|play)\\.google\\.com(/|$)'";
 
+    // preparar consulta de conteudos este construtor recebe o acesso ao banco
     public ConteudoRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -63,6 +66,7 @@ public class ConteudoRepository {
             )
             """;
 
+    // cadastrar conteudo no banco este metodo grava o material e recupera identificador data e situacao
     public void inserir(ConteudoDTO conteudo) throws SQLException {
         String sql = """
                 INSERT INTO public."CONTEUDOS"
@@ -71,6 +75,7 @@ public class ConteudoRepository {
                 RETURNING "id", "created_at", "status"
                 """;
 
+        // gravar conteudo prepara os dados do material e converte falhas de cadastro
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -87,13 +92,16 @@ public class ConteudoRepository {
                 stmt.setString(8, conteudo.getPrioridade());
                 stmt.setObject(9, conteudo.getDuracaoEstimadaMin(), Types.INTEGER);
 
+                // ler conteudo criado recupera os dados devolvidos pela gravacao e fecha o resultado ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
+                    // preencher conteudo criado guarda codigo situacao e data quando o banco devolve o registro
                     if (rs.next()) {
                         conteudo.setId(rs.getLong("id"));
                         conteudo.setStatus(rs.getString("status"));
 
                         Timestamp createdAt = rs.getTimestamp("created_at");
 
+                        // preencher data do conteudo converte a data recebida apenas quando ela existe
                         if (createdAt != null) {
                             conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -106,6 +114,7 @@ public class ConteudoRepository {
         }
     }
 
+    // listar materiais da turma no banco este metodo consulta os conteudos que nao foram removidos
     public List<ConteudoDTO> listarPorTurma(Long idTurma) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
 
@@ -117,11 +126,13 @@ public class ConteudoRepository {
                 ORDER BY "created_at" DESC
                 """;
 
+        // consultar conteudos da turma prepara o codigo da turma e converte falhas da busca
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idTurma);
 
+                // ler materiais da turma percorre os resultados e fecha a consulta ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         conteudos.add(montarConteudo(rs, idTurma));
@@ -135,6 +146,7 @@ public class ConteudoRepository {
 
         return conteudos;
     }
+    // listar materiais ativos do evento este metodo consulta os conteudos associados em ordem de criacao
     public List<ConteudoDTO> listarPorEvento(Long idEvento) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
 
@@ -148,11 +160,13 @@ public class ConteudoRepository {
                 ORDER BY c."created_at" ASC, c."id" ASC
                 """;
 
+        // consultar conteudos do evento prepara o codigo do compromisso e converte falhas da busca
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idEvento);
 
+                // ler materiais do evento monta a lista e fecha o resultado ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         conteudos.add(montarConteudo(rs, null));
@@ -167,9 +181,11 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // listar materiais de varios eventos este metodo agrupa os conteudos ativos por evento em uma consulta
     public Map<Long, List<ConteudoDTO>> listarPorEventos(List<Long> idsEventos) throws SQLException {
         Map<Long, List<ConteudoDTO>> conteudosPorEvento = new HashMap<>();
 
+        // evitar consulta sem eventos devolve o agrupamento vazio quando nao existem codigos
         if (idsEventos.isEmpty()) {
             return conteudosPorEvento;
         }
@@ -184,11 +200,13 @@ public class ConteudoRepository {
                 ORDER BY c."created_at" ASC, c."id" ASC
                 """;
 
+        // consultar materiais de varios eventos envia os codigos juntos e converte falhas da busca
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsEventos.toArray()));
 
+                // agrupar materiais consultados reune os resultados por evento e fecha a consulta ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         conteudosPorEvento.computeIfAbsent(rs.getLong("evento_id"), idEvento -> new ArrayList<>())
@@ -204,6 +222,7 @@ public class ConteudoRepository {
         return conteudosPorEvento;
     }
 
+    // buscar materiais por turma e texto este metodo filtra os conteudos por busca e tipo de material
     public List<ConteudoDTO> buscarPorTurma(Long idTurma, String termo, String tipo) throws SQLException {
 
         List<ConteudoDTO> conteudos = new ArrayList<>();
@@ -218,10 +237,12 @@ public class ConteudoRepository {
             AND "status" <> 'removido'
             """);
 
+        // aplicar busca textual inclui o filtro em portugues e ingles quando existe termo informado
         if (temTermo) {
             sql.append(" AND \"busca\" @@ (websearch_to_tsquery('portuguese', ?) || websearch_to_tsquery('english', ?)) ");
         }
 
+        // aplicar tipo de conteudo distingue videos livros links e outros tipos quando ha filtro
         if (temTipo) {
             switch (tipo) {
                 case "video" -> sql.append(" AND \"tipo\" = 'link' AND ").append(URL_VIDEO_YOUTUBE);
@@ -232,32 +253,38 @@ public class ConteudoRepository {
             }
         }
 
+        // ordenar busca textual usa relevancia quando existe termo ou apenas a data quando nao existe
         if (temTermo) {
             sql.append(" ORDER BY ts_rank(\"busca\", websearch_to_tsquery('portuguese', ?) || websearch_to_tsquery('english', ?)) DESC, \"created_at\" DESC");
         } else {
             sql.append(" ORDER BY \"created_at\" DESC");
         }
 
+        // consultar conteudos filtrados preenche os filtros da turma e converte falhas da busca
         try {
             jdbcTemplate.execute(sql.toString(), (PreparedStatementCallback<Void>) stmt -> {
 
                 int i = 1;
                 stmt.setLong(i++, idTurma);
 
+                // preencher termos da pesquisa envia o texto aos dois idiomas quando a busca esta ativa
                 if (temTermo) {
                     stmt.setString(i++, termo);
                     stmt.setString(i++, termo);
                 }
 
+                // preencher tipo simples envia o tipo quando ele nao depende da identificacao de video ou livro
                 if (temTipo && !tipo.equals("video") && !tipo.equals("livro")) {
                     stmt.setString(i++, tipo);
                 }
 
+                // preencher termos da ordenacao usa a busca nos dois idiomas para calcular a relevancia
                 if (temTermo) {
                     stmt.setString(i++, termo);
                     stmt.setString(i++, termo);
                 }
 
+                // ler busca da turma monta os materiais encontrados e fecha a consulta ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         conteudos.add(montarConteudo(rs, idTurma));
@@ -272,6 +299,7 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // listar materiais do autor no banco este metodo consulta conteudos e seus vinculos com turmas
     public List<ConteudoDTO> listarPorProfessor(Long idProfessor) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
 
@@ -287,11 +315,13 @@ public class ConteudoRepository {
                 ORDER BY c."created_at" DESC
                 """;
 
+        // consultar materiais do professor envia o codigo do autor e converte falhas da busca
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idProfessor);
 
+                // ler materiais pessoais monta conteudos e revisoes e fecha o resultado ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         ConteudoDTO conteudo = new ConteudoDTO();
@@ -300,6 +330,7 @@ public class ConteudoRepository {
 
                         Long idTurma = rs.getLong("turma_id");
 
+                        // preservar turma ausente evita tratar um vinculo vazio como codigo zero
                         if (rs.wasNull()) {
                             idTurma = null;
                         }
@@ -309,6 +340,7 @@ public class ConteudoRepository {
 
                         Timestamp createdAt = rs.getTimestamp("created_at");
 
+                        // preencher data do conteudo converte a data recebida apenas quando ela existe
                         if (createdAt != null) {
                             conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -327,6 +359,7 @@ public class ConteudoRepository {
 
                         Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
 
+                        // preencher data de revisao inclui a data do pedido quando ela existe
                         if (revisaoSolicitadaEm != null) {
                             conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
                         }
@@ -343,11 +376,12 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // listar pagina de materiais do professor este metodo retorna dez conteudos sem repetir os compartilhados
     public List<ConteudoDTO> listarPorProfessorPaginado(Long idProfessor, int pagina, String busca, String status) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
         long inicio = Math.max(0L, (long) pagina) * 10;
 
-        // cada conteudo aparece uma vez mesmo quando pertence a varias turmas
+
         String sql = """
                 SELECT c.*,
                     (SELECT MIN(t."id") FROM public."TURMAS" t
@@ -360,12 +394,14 @@ public class ConteudoRepository {
                 LIMIT 10 OFFSET ?
                 """;
 
+        // consultar pagina do professor aplica filtros e inicio da pagina e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 preencherFiltrosProfessor(stmt, idProfessor, busca, status);
                 stmt.setLong(7, inicio);
 
+                // ler pagina pessoal monta os materiais com o nome da turma e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Long idTurma = rs.getObject("turma_id", Long.class);
@@ -385,14 +421,17 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // contar materiais filtrados do professor este metodo consulta o total que atende a busca e a situacao
     public int contarFiltradosPorProfessor(Long idProfessor, String busca, String status) throws SQLException {
         String sql = "SELECT COUNT(*) AS quantidade FROM public.\"CONTEUDOS\" c " + SQL_FILTROS_PROFESSOR;
 
+        // contar busca pessoal aplica os filtros do professor e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
                 preencherFiltrosProfessor(stmt, idProfessor, busca, status);
 
+                // ler total pessoal recupera a quantidade encontrada e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     rs.next();
                     return rs.getInt("quantidade");
@@ -403,6 +442,7 @@ public class ConteudoRepository {
         }
     }
 
+    // contar situacoes dos materiais do professor este metodo consulta os totais de ativos suspensos e removidos
     public Map<String, Integer> contarPorProfessor(Long idProfessor) throws SQLException {
         Map<String, Integer> totais = new HashMap<>();
 
@@ -415,11 +455,13 @@ public class ConteudoRepository {
                 WHERE "id_professor" = ?
                 """;
 
+        // consultar resumo do professor busca os totais por situacao e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setLong(1, idProfessor);
 
+                // ler totais pessoais guarda total ativos suspensos e removidos e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     rs.next();
 
@@ -437,10 +479,12 @@ public class ConteudoRepository {
         return totais;
     }
 
+    // preencher filtros do professor este metodo normaliza busca e situacao para a consulta de materiais
     private void preencherFiltrosProfessor(PreparedStatement stmt, Long idProfessor, String busca, String status) throws SQLException {
         String buscaTexto = busca == null ? "" : busca.trim();
         String statusTexto = status == null ? "todos" : status.trim().toLowerCase(Locale.ROOT);
 
+        // normalizar situacao pessoal usa todas as situacoes quando o filtro nao e reconhecido
         if (!"ativo".equals(statusTexto) && !"suspenso_denuncia".equals(statusTexto) && !"removido".equals(statusTexto)) {
             statusTexto = "todos";
         }
@@ -453,7 +497,8 @@ public class ConteudoRepository {
         stmt.setString(6, buscaTexto);
     }
 
-    // lista dez conteudos por pagina para o administrador
+
+    // listar pagina administrativa de materiais este metodo retorna dez conteudos com nomes de professor e turmas
     public List<ConteudoDTO> listarTodosParaAdminPaginado(int pagina, String busca, String status) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
         long inicio = Math.max(0L, (long) pagina) * 10;
@@ -473,12 +518,14 @@ public class ConteudoRepository {
                 LIMIT 10 OFFSET ?
                 """;
 
+        // consultar pagina administrativa aplica busca situacao e inicio da pagina e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 preencherFiltrosAdmin(stmt, busca, status);
                 stmt.setLong(7, inicio);
 
+                // ler pagina administrativa monta conteudos professor e turma e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Long idTurma = rs.getObject("turma_id", Long.class);
@@ -498,7 +545,8 @@ public class ConteudoRepository {
         return conteudos;
     }
 
-    // conta os conteudos encontrados para montar a paginacao
+
+    // contar materiais filtrados da administracao este metodo consulta o total que atende a busca e a situacao
     public int contarFiltradosParaAdmin(String busca, String status) throws SQLException {
         String sql = """
                 SELECT COUNT(*) AS quantidade
@@ -507,11 +555,13 @@ public class ConteudoRepository {
                 LEFT JOIN public."USUARIOS" u ON u."id" = p."id_usuario"
                 """ + SQL_FILTROS_ADMIN;
 
+        // contar busca administrativa aplica os filtros de conteudo e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Integer>) stmt -> {
 
                 preencherFiltrosAdmin(stmt, busca, status);
 
+                // ler total administrativo recupera a quantidade encontrada e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     rs.next();
                     return rs.getInt("quantidade");
@@ -522,10 +572,12 @@ public class ConteudoRepository {
         }
     }
 
+    // preencher filtros administrativos de materiais este metodo normaliza as opcoes usadas na consulta
     private void preencherFiltrosAdmin(PreparedStatement stmt, String busca, String status) throws SQLException {
         String buscaTexto = busca == null ? "" : busca.trim();
         String statusTexto = status == null ? "todos" : status.trim().toLowerCase(Locale.ROOT);
 
+        // normalizar situacao administrativa usa todas as situacoes quando o filtro nao e reconhecido
         if (!"ativo".equals(statusTexto) && !"suspenso_denuncia".equals(statusTexto) && !"removido".equals(statusTexto)) {
             statusTexto = "todos";
         }
@@ -538,6 +590,7 @@ public class ConteudoRepository {
         stmt.setString(6, buscaTexto);
     }
 
+    // listar materiais aguardando analise este metodo consulta conteudos suspensos com revisao solicitada
     public List<ConteudoDTO> listarParaAnaliseAdmin() throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
 
@@ -553,8 +606,10 @@ public class ConteudoRepository {
                 ORDER BY c."revisao_solicitada_em" ASC, c."id" ASC
                 """;
 
+        // consultar materiais para analise busca conteudos pendentes e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                // ler fila de analise monta materiais com seus professores e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
@@ -572,6 +627,7 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // montar dados do conteudo este metodo organiza os campos consultados incluindo situacao e pedido de revisao
     private ConteudoDTO montarConteudo(ResultSet rs, Long idTurma) throws SQLException {
         ConteudoDTO conteudo = new ConteudoDTO();
 
@@ -581,6 +637,7 @@ public class ConteudoRepository {
 
         Timestamp createdAt = rs.getTimestamp("created_at");
 
+        // preencher data do conteudo converte a data recebida apenas quando ela existe
         if (createdAt != null) {
             conteudo.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
         }
@@ -598,6 +655,7 @@ public class ConteudoRepository {
 
         Timestamp revisaoSolicitadaEm = rs.getTimestamp("revisao_solicitada_em");
 
+        // preencher pedido de revisao converte a data somente quando existe solicitacao registrada
         if (revisaoSolicitadaEm != null) {
             conteudo.setRevisaoSolicitadaEm(revisaoSolicitadaEm.toInstant().atOffset(ZoneOffset.UTC));
         }
@@ -605,6 +663,7 @@ public class ConteudoRepository {
         return conteudo;
     }
 
+    // buscar autor do conteudo este metodo consulta o professor responsavel pelo material
     public Long buscarIdProfessor(Long idConteudo) throws SQLException {
         String sql = """
                 SELECT "id_professor"
@@ -612,12 +671,15 @@ public class ConteudoRepository {
                 WHERE "id" = ?
                 """;
 
+        // consultar autor do conteudo busca o professor pelo material e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Long>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
 
+                // ler autor encontrado recupera o codigo do professor e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
+                    // retornar professor do material devolve o codigo apenas quando a consulta encontrou um registro
                     if (rs.next()) {
                         return rs.getLong("id_professor");
                     }
@@ -629,6 +691,7 @@ public class ConteudoRepository {
         }
     }
 
+    // consultar situacao do conteudo este metodo busca o estado atual do material no banco
     public String buscarStatus(Long idConteudo) throws SQLException {
         String sql = """
                 SELECT "status"
@@ -636,12 +699,15 @@ public class ConteudoRepository {
                 WHERE "id" = ?
                 """;
 
+        // consultar situacao do material busca o estado do conteudo e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<String>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
 
+                // ler situacao encontrada recupera o estado e fecha a consulta ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
+                    // devolver situacao do conteudo usa o valor apenas quando a consulta encontrou um registro
                     if (rs.next()) {
                         return rs.getString("status");
                     }
@@ -653,6 +719,7 @@ public class ConteudoRepository {
         }
     }
 
+    // verificar vinculo do conteudo este metodo confere se o material nao removido pertence a turma
     public boolean conteudoPertenceTurma(Long idConteudo, Long idTurma) throws SQLException {
         String sql = """
                 SELECT COUNT(*) AS quantidade
@@ -662,13 +729,16 @@ public class ConteudoRepository {
                 AND "status" <> 'removido'
                 """;
 
+        // conferir material da turma consulta o vinculo pelos dois codigos e converte falhas
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
                 stmt.setLong(1, idConteudo);
                 stmt.setLong(2, idTurma);
 
+                // ler quantidade de vinculos consulta a contagem e fecha o resultado ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
+                    // confirmar vinculo encontrado considera valido quando a contagem recebida e maior que zero
                     if (rs.next()) {
                         return rs.getInt("quantidade") > 0;
                     }
@@ -716,6 +786,7 @@ public class ConteudoRepository {
         }
     }
 
+    // alterar situacao do conteudo este metodo grava o estado informado para o material
     public void atualizarStatus(Long idConteudo, String status) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"
@@ -723,6 +794,7 @@ public class ConteudoRepository {
                 WHERE "id" = ?
                 """;
 
+        // gravar situacao do conteudo atualiza o estado pelo codigo e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -736,6 +808,7 @@ public class ConteudoRepository {
         }
     }
 
+    // delete conteudo do autor no banco este metodo marca o material como removido e limpa o pedido de revisao
     public boolean removerConteudoProfessor(Long idConteudo, Long idProfessor) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"
@@ -746,6 +819,7 @@ public class ConteudoRepository {
                 AND "id_professor" = ?
                 """;
 
+        // delete conteudo do professor aplica a remocao com o codigo do autor e converte falhas
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
@@ -759,6 +833,7 @@ public class ConteudoRepository {
         }
     }
 
+    // reabrir conteudo no banco este metodo registra a reabertura feita pelo autor ou responsavel da turma
     public boolean reabrir(Long idConteudo, Long idProfessor, Long idTurma) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS" c
@@ -772,6 +847,7 @@ public class ConteudoRepository {
                                 AND t."id" = ANY(c."id_turma")))
                 """;
 
+        // gravar reabertura do conteudo aplica as restricoes de autor e turma e converte falhas
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
@@ -787,6 +863,7 @@ public class ConteudoRepository {
         }
     }
 
+    // cadastrar pedido de revisao este metodo marca o material suspenso do professor para analise
     public boolean solicitarRevisao(Long idConteudo, Long idProfessor) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"
@@ -797,6 +874,7 @@ public class ConteudoRepository {
                 AND "status" = 'suspenso_denuncia'
                 """;
 
+        // gravar pedido de revisao registra a solicitacao do professor e converte falhas do banco
         try {
             return jdbcTemplate.execute(sql, (PreparedStatementCallback<Boolean>) stmt -> {
 
@@ -810,6 +888,7 @@ public class ConteudoRepository {
         }
     }
 
+    // delete conteudo por identificador este metodo marca o material como removido sem apagar o registro
     public void excluir(Long id) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"
@@ -819,6 +898,7 @@ public class ConteudoRepository {
                 WHERE "id" = ?
                 """;
 
+        // delete conteudo no banco executa a remocao pelo codigo e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -831,6 +911,7 @@ public class ConteudoRepository {
         }
     }
 
+    // editar dados do conteudo este metodo atualiza titulo descricao endereco duracao e tipo
     public void atualizar(ConteudoDTO conteudo) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"
@@ -843,6 +924,7 @@ public class ConteudoRepository {
                 WHERE "id" = ?
                 """;
 
+        // gravar edicao do material atualiza titulo descricao endereco duracao e tipo e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -865,6 +947,7 @@ public class ConteudoRepository {
         }
     }
 
+    // gravar conclusao do aluno este metodo registra o material concluido sem repetir uma conclusao existente
     public void marcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
         String sql = """
                 INSERT INTO public."PROGRESSO_CONTEUDO" ("id_aluno", "id_conteudo")
@@ -872,6 +955,7 @@ public class ConteudoRepository {
                 ON CONFLICT ("id_aluno", "id_conteudo") DO NOTHING
                 """;
 
+        // registrar progresso concluido grava a conclusao do aluno e converte falhas do banco
         try {
             jdbcTemplate.update(sql, idAluno, idConteudo);
         } catch (DataAccessException e) {
@@ -879,6 +963,7 @@ public class ConteudoRepository {
         }
     }
 
+    // delete conclusao do aluno este metodo apaga a marcacao e deixa o material pendente
     public void desmarcarConcluido(Long idAluno, Long idConteudo) throws SQLException {
         String sql = """
                 DELETE FROM public."PROGRESSO_CONTEUDO"
@@ -886,6 +971,7 @@ public class ConteudoRepository {
                 AND "id_conteudo" = ?
                 """;
 
+        // desmarcar progresso concluido retira a conclusao do aluno e converte falhas do banco
         try {
             jdbcTemplate.update(sql, idAluno, idConteudo);
         } catch (DataAccessException e) {
@@ -893,6 +979,7 @@ public class ConteudoRepository {
         }
     }
 
+    // listar conclusoes do aluno na turma este metodo consulta os identificadores dos materiais concluidos
     public Set<Long> listarConcluidosDoAluno(Long idAluno, Long idTurma) throws SQLException {
         String sql = """
                 SELECT p."id_conteudo"
@@ -903,6 +990,7 @@ public class ConteudoRepository {
                 AND ? = ANY(c."id_turma")
                 """;
 
+        // consultar conclusoes da turma busca os materiais feitos pelo aluno e converte falhas
         try {
             return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, idAluno, idTurma));
         } catch (DataAccessException e) {
@@ -910,9 +998,11 @@ public class ConteudoRepository {
         }
     }
 
+    // listar conclusoes de varios alunos este metodo agrupa os materiais concluidos por aluno
     public Map<Long, Set<Long>> listarConcluidosDosAlunos(List<Long> idsAlunos) throws SQLException {
         Map<Long, Set<Long>> concluidosPorAluno = new HashMap<>();
 
+        // evitar busca sem alunos devolve o agrupamento vazio quando nao existem codigos
         if (idsAlunos.isEmpty()) {
             return concluidosPorAluno;
         }
@@ -923,11 +1013,13 @@ public class ConteudoRepository {
                 WHERE "id_aluno" = ANY(?)
                 """;
 
+        // consultar conclusoes em grupo envia os codigos dos alunos juntos e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
                 stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
 
+                // ler conclusoes agrupadas reune os materiais por aluno e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         concluidosPorAluno.computeIfAbsent(rs.getLong("id_aluno"), idAluno -> new HashSet<>())
@@ -943,9 +1035,11 @@ public class ConteudoRepository {
         return concluidosPorAluno;
     }
 
+    // buscar prazos encerrados este metodo encontra materiais sem evento futuro nem reabertura apos o ultimo prazo
     public Map<Long, LocalDateTime> listarPrazosEncerrados(List<Long> idsConteudos, LocalDateTime referencia) throws SQLException {
         Map<Long, LocalDateTime> prazoPorConteudo = new HashMap<>();
 
+        // evitar busca sem materiais devolve os prazos vazios quando nao existem conteudos
         if (idsConteudos.isEmpty()) {
             return prazoPorConteudo;
         }
@@ -962,6 +1056,7 @@ public class ConteudoRepository {
                 GROUP BY c."id", c."reaberto_em"
                 """;
 
+        // consultar prazos encerrados usa a data de referencia e os conteudos e converte falhas
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -969,11 +1064,13 @@ public class ConteudoRepository {
                 stmt.setTimestamp(2, Timestamp.valueOf(referencia));
                 stmt.setArray(3, stmt.getConnection().createArrayOf("bigint", idsConteudos.toArray()));
 
+                // ler prazos dos materiais filtra os resultados e fecha a consulta ao terminar
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Timestamp ultimoPrazo = rs.getTimestamp("ultimo_prazo");
                         Timestamp reabertoEm = rs.getTimestamp("reaberto_em");
 
+                        // ignorar prazo ainda disponivel descarta materiais sem prazo com evento futuro ou reabertos apos o prazo
                         if (ultimoPrazo == null || rs.getBoolean("tem_evento_futuro")
                                 || (reabertoEm != null && reabertoEm.after(ultimoPrazo))) {
                             continue;
@@ -990,9 +1087,11 @@ public class ConteudoRepository {
         return prazoPorConteudo;
     }
 
+    // somar duracao das conclusoes recentes este metodo calcula os minutos estimados dos materiais concluidos por aluno
     public Map<Long, Integer> minutosConcluidosRecentes(List<Long> idsAlunos, int dias, int duracaoPadraoMin) throws SQLException {
         Map<Long, Integer> minutosPorAluno = new HashMap<>();
 
+        // evitar soma sem alunos retorna os tempos vazios quando nao existem alunos informados
         if (idsAlunos.isEmpty()) {
             return minutosPorAluno;
         }
@@ -1007,6 +1106,7 @@ public class ConteudoRepository {
                 GROUP BY p."id_aluno"
                 """;
 
+        // consultar estudo recente aplica duracao padrao alunos e periodo e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
@@ -1014,6 +1114,7 @@ public class ConteudoRepository {
                 stmt.setArray(2, stmt.getConnection().createArrayOf("bigint", idsAlunos.toArray()));
                 stmt.setInt(3, dias);
 
+                // ler minutos por aluno guarda os tempos encontrados e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         minutosPorAluno.put(rs.getLong("id_aluno"), rs.getInt("minutos"));
@@ -1028,10 +1129,12 @@ public class ConteudoRepository {
         return minutosPorAluno;
     }
 
-    // preserva o contrato de erro usado pelos consumidores
+
+    // tratar erro do banco de conteudos este metodo recupera a falha original ou cria uma falha de consulta
     private SQLException converterErro(DataAccessException erro) {
         Throwable causa = erro;
         while (causa != null) {
+            // recuperar falha do banco devolve a causa original quando ela e uma falha de consulta
             if (causa instanceof SQLException sqlException) {
                 return sqlException;
             }

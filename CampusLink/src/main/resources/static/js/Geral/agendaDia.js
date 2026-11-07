@@ -1,6 +1,8 @@
+// agenda diaria organiza os eventos por horario e separa compromissos simultaneos
 const ALTURA_HORA_AGENDA = 44;
 const MINUTOS_DIA = 24 * 60;
 
+// formatar data da agenda mostra o dia da semana e a data por extenso
 function formatarDataExibicao(data) {
     const dataFormatada = new Date(`${data}T12:00:00`);
 
@@ -12,11 +14,14 @@ function formatarDataExibicao(data) {
     });
 }
 
+// formatar hora da agenda mostra horas e minutos no formato brasileiro
 function formatarHoraAgenda(data) {
     return data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// descrever horario do evento inclui as datas quando o evento atravessa o dia
 function descreverHorarioAgenda(evento) {
+    // mostrar horario da agenda exibe apenas os horarios quando o evento ocorre no mesmo dia
     if (evento.inicio.toDateString() === evento.fim.toDateString()) {
         return `${formatarHoraAgenda(evento.inicio)} – ${formatarHoraAgenda(evento.fim)}`;
     }
@@ -27,14 +32,17 @@ function descreverHorarioAgenda(evento) {
         `${evento.fim.toLocaleDateString('pt-BR', dataCurta)} ${formatarHoraAgenda(evento.fim)}`;
 }
 
+// listar eventos do dia recorta os horarios e ordena os eventos que ocupam a data escolhida
 function obterSegmentosDoDia(eventos, data) {
     const inicioDia = new Date(`${data}T00:00:00`);
     const fimDia = new Date(inicioDia.getTime() + MINUTOS_DIA * 60 * 1000);
 
     return eventos
+        // filtrar eventos do dia confere se o intervalo do evento cruza a data escolhida
         .filter(function (evento) {
             return evento.inicio && evento.fim && evento.inicio < fimDia && evento.fim > inicioDia;
         })
+        // recortar horario do evento limita o inicio e o fim aos minutos do dia
         .map(function (evento) {
             return {
                 evento: evento,
@@ -42,17 +50,21 @@ function obterSegmentosDoDia(eventos, data) {
                 fim: Math.min(MINUTOS_DIA, (evento.fim - inicioDia) / 60000)
             };
         })
+        // ordenar agenda compara o inicio dos eventos e desempata pela maior duracao
         .sort(function (segmentoA, segmentoB) {
             return segmentoA.inicio - segmentoB.inicio || segmentoB.fim - segmentoA.fim;
         });
 }
 
+// distribuir agenda separa eventos simultaneos em colunas
 function distribuirEmColunas(segmentos) {
     let grupo = [];
     let fimDasColunas = [];
     let fimDoGrupo = -1;
 
+    // fechar grupo da agenda registra as colunas ocupadas e prepara o proximo grupo
     function fecharGrupo() {
+        // contar colunas do grupo informa quantas colunas cada evento deve dividir
         grupo.forEach(function (segmento) {
             segmento.totalColunas = fimDasColunas.length;
         });
@@ -60,15 +72,19 @@ function distribuirEmColunas(segmentos) {
         fimDasColunas = [];
     }
 
+    // posicionar evento procura uma coluna livre e atualiza o grupo de horarios
     segmentos.forEach(function (segmento) {
+        // separar grupos da agenda fecha o grupo quando o proximo evento nao coincide com ele
         if (grupo.length > 0 && segmento.inicio >= fimDoGrupo) {
             fecharGrupo();
         }
 
+        // buscar coluna livre verifica se o evento anterior terminou antes do proximo
         let coluna = fimDasColunas.findIndex(function (fimColuna) {
             return fimColuna <= segmento.inicio;
         });
 
+        // organizar colunas da agenda cria uma coluna quando nenhuma existente esta livre
         if (coluna === -1) {
             coluna = fimDasColunas.length;
             fimDasColunas.push(segmento.fim);
@@ -84,6 +100,7 @@ function distribuirEmColunas(segmentos) {
     fecharGrupo();
 }
 
+// montar cartao da agenda define tamanho posicao prioridade e acesso aos detalhes do evento
 function criarCardEvento(segmento) {
     const evento = segmento.evento;
     const card = document.createElement('div');
@@ -103,6 +120,7 @@ function criarCardEvento(segmento) {
     horario.textContent = descreverHorarioAgenda(evento);
     card.title = `${evento.nome} · ${horario.textContent}`;
 
+    // abrir evento pela agenda torna o cartao acessivel e clicavel quando existe um codigo
     if (evento.id) {
         card.classList.add('agenda-evento-clicavel');
         card.dataset.idEvento = evento.id;
@@ -116,7 +134,9 @@ function criarCardEvento(segmento) {
     return card;
 }
 
+// montar agenda do dia desenha as horas e os eventos e retorna a primeira posicao ocupada
 function montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, eventos) {
+    // montar agenda diaria encerra quando faltam a grade ou os dados dos eventos
     if (!gradeHorarios || !dataEventosDia) {
         return 0;
     }
@@ -150,6 +170,7 @@ function montarAgendaDoDia(gradeHorarios, dataEventosDia, dataSelecionada, event
     const segmentos = obterSegmentosDoDia(eventos, dataSelecionada);
 
     distribuirEmColunas(segmentos);
+    // adicionar cartao da agenda coloca o evento na area de horarios
     segmentos.forEach(function (segmento) {
         areaEventos.appendChild(criarCardEvento(segmento));
     });

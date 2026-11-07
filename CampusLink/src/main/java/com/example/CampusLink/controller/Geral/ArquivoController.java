@@ -1,3 +1,4 @@
+// pagina de arquivos recebe pedidos de consulta envio download e exclusao
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
@@ -33,6 +34,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+// controle dos materiais enviados esta classe verifica o perfil antes de encaminhar as acoes dos arquivos
 @Controller
 @RequestMapping("/arquivos")
 public class ArquivoController {
@@ -47,6 +49,7 @@ public class ArquivoController {
     private final AlunoRepository alunoRepository;
     private final ProfessorRepository professorRepository;
 
+    // preparar controle de arquivos este construtor recebe os servicos de arquivos e conteudos
     public ArquivoController(
             ArquivoService arquivoService,
             ConteudoRepository conteudoRepository,
@@ -97,17 +100,21 @@ public class ArquivoController {
     }
 
 
-    /*
-     * pagina de materiais
-     */
+
+
+
+    // listar arquivos na tela este metodo mostra os materiais para quem esta conectado
     @GetMapping
     public String pagina(
             Model model,
             HttpSession session) throws SQLException {
 
+        // proteger pagina de arquivos envia usuarios sem login para a tela de acesso
         if (session.getAttribute("usuarioLogado") == null) {
             logger.warn("Acesso aos arquivos recusado: usuário não autenticado.");
+            // registro de avisos confere se esta habilitado ao listar arquivos na tela
             if (logger.isWarnEnabled()) {
+                // gravar historico ao listar arquivos na tela tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "pagina", null,
                             "Acesso aos arquivos recusado: usuário não autenticado.", null, null);
@@ -134,9 +141,10 @@ public class ArquivoController {
     }
 
 
-    /*
-     * upload
-     */
+
+
+
+    // enviar arquivo pela tela este metodo permite que o professor envie um material
     @PostMapping("/upload")
     public String upload(
             @RequestParam("arquivo")
@@ -152,6 +160,7 @@ public class ArquivoController {
 
             RedirectAttributes redirectAttributes) throws SQLException {
 
+        // restringir envio de materiais recusa o envio quando nao ha um professor com login completo
         if (!professorLogado(session)) {
 
             redirectAttributes.addFlashAttribute(
@@ -160,7 +169,9 @@ public class ArquivoController {
             );
 
             logger.warn("Upload recusado: usuário não é professor. conteudoId={}", idConteudo);
+            // registro de avisos confere se esta habilitado ao enviar arquivo pela tela
             if (logger.isWarnEnabled()) {
+                // gravar historico ao enviar arquivo pela tela tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "upload", null,
                             MessageFormatter.arrayFormat("Upload recusado: usuário não é professor. conteudoId={}", new Object[]{idConteudo}).getMessage(), null, null);
@@ -171,6 +182,7 @@ public class ArquivoController {
             return "redirect:/arquivos";
         }
 
+        // exigir conteudo do arquivo recusa envios sem conteudo ou de conteudos sem vinculo com o professor
         if (idConteudo == null) {
             redirectAttributes.addFlashAttribute("erro", "Informe o conteúdo ao qual o arquivo pertence.");
             return "redirect:/arquivos";
@@ -181,6 +193,7 @@ public class ArquivoController {
             return "redirect:/arquivos";
         }
 
+        // salvar material tenta guardar o arquivo e mostra sucesso ou o erro recebido
         try {
 
             arquivoService.salvar(
@@ -205,18 +218,22 @@ public class ArquivoController {
     }
 
 
-    /*
-     * download
-     */
+
+
+
+    // baixar arquivo pela tela este metodo verifica o acesso e entrega o arquivo para download
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> download(
             @PathVariable Long id,
             HttpSession session) {
 
+        // proteger download recusa a solicitacao quando nao existe usuario conectado
         if (session.getAttribute("usuarioLogado") == null) {
 
             logger.warn("Download recusado: usuário não autenticado. arquivoId={}", id);
+            // registro de avisos confere se esta habilitado ao baixar arquivo pela tela
             if (logger.isWarnEnabled()) {
+                // gravar historico ao baixar arquivo pela tela tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "download", null,
                             MessageFormatter.arrayFormat("Download recusado: usuário não autenticado. arquivoId={}", new Object[]{id}).getMessage(), null, null);
@@ -245,8 +262,10 @@ public class ArquivoController {
                     .build();
         }
 
+        // verificar conteudo do arquivo consulta a situacao quando o arquivo possui conteudo associado
         if (arquivo.getIdConteudo() != null) {
 
+            // consultar acesso ao material verifica a situacao do conteudo e retorna erro se a consulta falhar
             try {
 
                 if (!podeAcessar(session, arquivo.getIdConteudo())) {
@@ -264,6 +283,7 @@ public class ArquivoController {
                 Object tipoUsuario =
                         session.getAttribute("tipoUsuario");
 
+                // bloquear material indisponivel impede que alunos baixem conteudos que nao estao ativos
                 if ("aluno".equals(tipoUsuario)
                         && statusConteudo != null
                         && !"ativo".equalsIgnoreCase(statusConteudo)) {
@@ -310,15 +330,17 @@ public class ArquivoController {
     }
 
 
-    /*
-     * exclusao
-     */
+
+
+
+    // delete arquivo pela tela este metodo permite que o professor solicite a exclusao do material
     @PostMapping("/{id}/excluir")
     public String excluir(
             @PathVariable Long id,
             HttpSession session,
             RedirectAttributes redirectAttributes) throws SQLException {
 
+        // proteger delete arquivo recusa a exclusao quando nao ha um professor com login completo
         if (!professorLogado(session)) {
 
             redirectAttributes.addFlashAttribute(
@@ -327,7 +349,9 @@ public class ArquivoController {
             );
 
             logger.warn("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", id);
+            // registro de avisos confere se esta habilitado ao delete arquivo pela tela
             if (logger.isWarnEnabled()) {
+                // gravar historico ao delete arquivo pela tela tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), "excluir", null,
                             MessageFormatter.arrayFormat("Exclusão de arquivo recusada: usuário não é professor. arquivoId={}", new Object[]{id}).getMessage(), null, null);
@@ -338,6 +362,7 @@ public class ArquivoController {
             return "redirect:/arquivos";
         }
 
+        // conferir arquivo excluido recusa arquivos inexistentes ou de conteudos sem vinculo com o professor
         ArquivoDTO arquivoExcluido;
         try {
             arquivoExcluido = arquivoService.buscarPorId(id);
@@ -351,6 +376,7 @@ public class ArquivoController {
             return "redirect:/arquivos";
         }
 
+        // delete arquivo tenta excluir o material e mostra sucesso ou o erro recebido
         try {
 
             arquivoService.excluir(id);

@@ -1,3 +1,4 @@
+// referencia de conteudo permite usar os materiais nas operacoes de revisao
 package com.example.CampusLink.model;
 
 import jakarta.persistence.Column;
@@ -9,7 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// mapeia so o id de proposito: com ddl-auto=update, mapear colunas text como String faz o hibernate trocar o tipo para varchar(255)
+
+// identidade do material esta classe representa o identificador da tabela de conteudos
 @Entity
 @Table(name = "\"CONTEUDOS\"", schema = "public")
 @Getter

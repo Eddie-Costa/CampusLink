@@ -1,3 +1,4 @@
+// agenda administrativa disponibiliza o gerenciamento dos eventos da plataforma
 
 package com.example.CampusLink.controller.Usuarios.Admin;
 
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// controle administrativo de eventos esta classe valida turmas professores e materiais nos formularios
 @Controller
 public class AdminEventosController {
 
@@ -39,6 +41,7 @@ public class AdminEventosController {
     private final ConteudoService conteudoService;
     private final JdbcTemplate jdbcTemplate;
 
+    // preparar controle administrativo de eventos este construtor recebe os servicos de eventos turmas e conteudos
     public AdminEventosController(EventoService eventoService, AdminTurmaRepository adminTurmaRepository,
                                   ConteudoService conteudoService, JdbcTemplate jdbcTemplate) {
         this.eventoService = eventoService;
@@ -47,14 +50,17 @@ public class AdminEventosController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // lista todos os eventos cadastrados
+
+    // listar eventos administrativos este metodo carrega os eventos para a tela de administracao
     @GetMapping("/admin/eventos")
     public String listarEventos(HttpSession session, Model model) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
+        // listar eventos administrativos busca os compromissos e apresenta uma lista vazia se a consulta falhar
         try {
             List<Evento> eventos = eventoService.listarEventos();
             model.addAttribute("eventos", eventos);
@@ -68,14 +74,17 @@ public class AdminEventosController {
         return "Usuarios/Admin/eventosAdmin";
     }
 
-    // mostra o formulario para cadastrar eventos
+
+    // abrir cadastro administrativo de evento este metodo carrega as turmas disponiveis no formulario
     @GetMapping("/admin/eventos/cadastrar")
     public String exibirCadastroEvento(HttpSession session, Model model) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
+        // preparar turmas do evento consulta as opcoes e mostra lista vazia quando o banco falha
         try {
             model.addAttribute("turmas", adminTurmaRepository.listarTurmas());
 
@@ -88,20 +97,24 @@ public class AdminEventosController {
         return "Usuarios/Admin/cadastrarEventoAdmin";
     }
 
-    // busca os professores da turma escolhida
+
+    // listar professores para evento administrativo este metodo retorna apenas professores ativos da turma
     @GetMapping("/admin/eventos/professores")
     @ResponseBody
     public List<usuarioAdminDTO> listarProfessoresDaTurma(@RequestParam("turmaId") Long turmaId, HttpSession session) {
 
+        // proteger professores da turma retorna lista vazia para acesso sem permissao administrativa
         if (!ehAdministrador(session)) {
             return List.of();
         }
 
+        // consultar professores ativos busca os vinculos da turma e retorna vazio se a consulta falhar
         try {
             List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(turmaId);
             List<usuarioAdminDTO> professoresAtivos = new ArrayList<>();
 
             for (usuarioAdminDTO professor : professores) {
+                // incluir professor ativo aceita somente contas ativas na selecao de responsavel
                 if (professor.isStatus()) {
                     professoresAtivos.add(professor);
                 }
@@ -115,15 +128,18 @@ public class AdminEventosController {
         }
     }
 
-    // busca os conteudos da turma escolhida
+
+    // listar conteudos para evento administrativo este metodo carrega os materiais da turma escolhida
     @GetMapping("/admin/eventos/conteudos")
     @ResponseBody
     public List<ConteudoDTO> listarConteudosDaTurma(@RequestParam("turmaId") Long turmaId, HttpSession session) {
 
+        // proteger conteudos da turma retorna lista vazia para acesso sem permissao administrativa
         if (!ehAdministrador(session)) {
             return List.of();
         }
 
+        // consultar materiais da turma devolve os conteudos ou lista vazia se a busca falhar
         try {
             return conteudoService.listarPorTurma(turmaId);
 
@@ -133,7 +149,8 @@ public class AdminEventosController {
         }
     }
 
-    // cadastra o evento para a turma e professor selecionados
+
+    // cadastrar evento pela administracao este metodo valida os dados e vinculos antes de gravar
     @PostMapping("/admin/eventos/cadastrar")
     public String cadastrarEvento(
             @RequestParam("nome") String nome,
@@ -148,39 +165,47 @@ public class AdminEventosController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
         String voltarCadastro = "redirect:/admin/eventos/cadastrar";
 
+        // exigir nome no cadastro administrativo recusa um evento sem nome preenchido
         if (nome == null || nome.isBlank()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Informe o nome do evento.");
             return voltarCadastro;
         }
 
+        // validar tipo do novo evento recusa valores fora das opcoes permitidas
         if (!tipoValido(tipo)) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Selecione um tipo válido.");
             return voltarCadastro;
         }
 
         String erroHorario = EventoService.validarHorario(inicio, fim);
+        // validar horario do novo evento retorna ao cadastro com o motivo do intervalo invalido
         if (erroHorario != null) {
             redirectAttributes.addFlashAttribute("mensagemErro", erroHorario);
             return voltarCadastro;
         }
 
+        // cadastrar evento administrativo confere vinculos salva o evento e trata falhas de consulta ou gravacao
         try {
+            // exigir turma existente impede cadastrar evento em uma turma nao encontrada
             if (adminTurmaRepository.buscarTurmaPorId(turmaId) == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return voltarCadastro;
             }
 
+            // conferir professor do novo evento exige professor ativo vinculado a turma escolhida
             if (!professorPertenceATurma(turmaId, idProfessor)) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "O professor selecionado não está ativo ou não pertence à turma.");
                 return voltarCadastro;
             }
 
+            // conferir materiais do novo evento recusa conteudos que nao pertencem a turma
             if (!conteudosPertencemATurma(turmaId, conteudoIds)) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Um dos conteúdos selecionados não pertence à turma.");
                 return voltarCadastro;
@@ -206,18 +231,22 @@ public class AdminEventosController {
         }
     }
 
-    // mostra os dados do evento para edicao
+
+    // abrir edicao administrativa de evento este metodo carrega o evento e suas selecoes atuais
     @GetMapping("/admin/eventos/{idEvento}/editar")
     public String exibirEdicaoEvento(@PathVariable("idEvento") Long idEvento,
                                      HttpSession session, Model model, RedirectAttributes redirectAttributes) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
+        // preparar edicao do evento carrega dados e vinculos e retorna a lista quando a consulta falha
         try {
             Evento evento = eventoService.buscarEventoPorId(idEvento);
 
+            // localizar evento da edicao avisa quando o compromisso nao existe mais
             if (evento == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Evento não encontrado.");
                 return "redirect:/admin/eventos";
@@ -229,13 +258,14 @@ public class AdminEventosController {
                     WHERE id_evento = ?
                     """;
 
-            // busca os conteudos que ja estavam selecionados
+
             List<Long> conteudoIdsSelecionados = jdbcTemplate.queryForList(sql, Long.class, idEvento);
 
             List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(evento.getIdTurma());
             List<usuarioAdminDTO> professoresDisponiveis = new ArrayList<>();
 
             for (usuarioAdminDTO professor : professores) {
+                // preservar responsavel atual inclui professores ativos e tambem o responsavel ja salvo no evento
                 if (professor.isStatus() || professor.getIdPerfil().equals(evento.getIdProfessor())) {
                     professoresDisponiveis.add(professor);
                 }
@@ -256,7 +286,8 @@ public class AdminEventosController {
         }
     }
 
-    // salva as alteracoes realizadas pelo administrador
+
+    // editar evento pela administracao este metodo confere os dados e atualiza o evento com seus conteudos
     @PostMapping("/admin/eventos/{idEvento}/editar")
     public String editarEvento(
             @PathVariable("idEvento") Long idEvento,
@@ -272,49 +303,59 @@ public class AdminEventosController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
         String voltarEdicao = "redirect:/admin/eventos/" + idEvento + "/editar";
 
+        // exigir nome na edicao administrativa recusa o formulario quando o nome esta vazio
         if (nome == null || nome.isBlank()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Informe o nome do evento.");
             return voltarEdicao;
         }
 
+        // validar tipo na edicao recusa valores fora das opcoes permitidas
         if (!tipoValido(tipo)) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Selecione um tipo válido.");
             return voltarEdicao;
         }
 
+        // validar prioridade na edicao recusa niveis fora das opcoes permitidas
         if (!prioridadeValida(prioridade)) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Selecione uma prioridade válida.");
             return voltarEdicao;
         }
 
         String erroHorario = EventoService.validarHorario(inicio, fim);
+        // validar horario na edicao retorna ao formulario com o motivo do intervalo invalido
         if (erroHorario != null) {
             redirectAttributes.addFlashAttribute("mensagemErro", erroHorario);
             return voltarEdicao;
         }
 
+        // salvar edicao administrativa confere evento e vinculos e informa falhas de consulta ou gravacao
         try {
+            // exigir evento existente impede atualizar um compromisso que nao foi encontrado
             if (eventoService.buscarEventoPorId(idEvento) == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Evento não encontrado.");
                 return "redirect:/admin/eventos";
             }
 
+            // exigir turma na edicao impede salvar uma turma que nao existe
             if (adminTurmaRepository.buscarTurmaPorId(turmaId) == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Turma não encontrada.");
                 return voltarEdicao;
             }
 
+            // conferir professor na edicao exige professor ativo vinculado a turma escolhida
             if (!professorPertenceATurma(turmaId, idProfessor)) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "O professor selecionado não está ativo ou não pertence à turma.");
                 return voltarEdicao;
             }
 
+            // conferir materiais na edicao recusa conteudos que nao pertencem a turma
             if (!conteudosPertencemATurma(turmaId, conteudoIds)) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Um dos conteúdos selecionados não pertence à turma.");
                 return voltarEdicao;
@@ -340,15 +381,18 @@ public class AdminEventosController {
         }
     }
 
-    // exclui o evento selecionado pelo administrador
+
+    // delete evento pela administracao este metodo solicita a exclusao e informa o resultado na tela
     @PostMapping("/admin/eventos/{idEvento}/excluir")
     public String excluirEvento(@PathVariable("idEvento") Long idEvento, HttpSession session,
                                 RedirectAttributes redirectAttributes) {
 
+        // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
+        // delete evento administrativo tenta excluir o compromisso e mostra o resultado ou a falha
         try {
             eventoService.excluirEvento(idEvento);
 
@@ -363,12 +407,14 @@ public class AdminEventosController {
         return "redirect:/admin/eventos";
     }
 
-    // verifica se o professor esta ativo e participa da turma
+
+    // verificar professor do evento administrativo este metodo exige um professor ativo vinculado a turma
     private boolean professorPertenceATurma(Long turmaId, Long idProfessor) throws SQLException {
 
         List<usuarioAdminDTO> professores = adminTurmaRepository.listarProfessoresDaTurma(turmaId);
 
         for (usuarioAdminDTO professor : professores) {
+            // reconhecer professor vinculado confirma o codigo do professor e sua conta ativa
             if (idProfessor.equals(professor.getIdPerfil()) && professor.isStatus()) {
                 return true;
             }
@@ -377,9 +423,11 @@ public class AdminEventosController {
         return false;
     }
 
-    // verifica se os conteudos escolhidos pertencem a turma
+
+    // verificar conteudos do evento administrativo este metodo confere se todos pertencem a turma escolhida
     private boolean conteudosPertencemATurma(Long turmaId, List<Long> conteudoIds) {
 
+        // aceitar evento sem materiais considera valida uma selecao de conteudos vazia
         if (conteudoIds == null || conteudoIds.isEmpty()) {
             return true;
         }
@@ -391,12 +439,14 @@ public class AdminEventosController {
             boolean encontrado = false;
 
             for (ConteudoDTO conteudo : conteudosDaTurma) {
+                // localizar material da turma confirma o vinculo quando encontra o codigo selecionado
                 if (idConteudo != null && idConteudo.equals(conteudo.getId())) {
                     encontrado = true;
                     break;
                 }
             }
 
+            // recusar material nao encontrado interrompe a validacao se um conteudo nao pertence a turma
             if (!encontrado) {
                 return false;
             }
@@ -405,36 +455,43 @@ public class AdminEventosController {
         return true;
     }
 
+    // validar tipo de evento este metodo aceita prova trabalho apresentacao ou outro
     private boolean tipoValido(String tipo) {
         return "PROVA".equals(tipo) || "TRABALHO".equals(tipo)
                 || "APRESENTACAO".equals(tipo) || "OUTRO".equals(tipo);
     }
 
+    // validar prioridade de evento este metodo aceita prioridade alta media ou baixa
     private boolean prioridadeValida(String prioridade) {
         return "ALTA".equals(prioridade) || "MEDIA".equals(prioridade) || "BAIXA".equals(prioridade);
     }
 
-    // verifica se a sessao pertence a um administrador
+
+    // validar administrador dos eventos este metodo confere o perfil e o email da conta conectada
     private boolean ehAdministrador(HttpSession session) {
 
         Object tipoUsuario = session.getAttribute("tipoUsuario");
         Object usuarioLogado = session.getAttribute("usuarioLogado");
         Object emailSessao = session.getAttribute("email2FA");
 
+        // conferir perfil administrativo rejeita sessoes com outro tipo de usuario
         if (!"admin".equals(tipoUsuario)) {
             return false;
         }
 
+        // conferir dados administrativos rejeita um usuario que nao possui os dados de administrador
         if (!(usuarioLogado instanceof loginAdminDTO)) {
             return false;
         }
 
+        // conferir email da sessao rejeita valores que nao sao texto
         if (!(emailSessao instanceof String)) {
             return false;
         }
 
         loginAdminDTO admin = (loginAdminDTO) usuarioLogado;
 
+        // exigir email do administrador rejeita contas sem email preenchido
         if (admin.getEmail() == null || admin.getEmail().isBlank()) {
             return false;
         }

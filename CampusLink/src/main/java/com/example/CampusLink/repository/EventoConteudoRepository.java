@@ -1,3 +1,4 @@
+// banco de vinculos de materiais relaciona conteudos aos eventos
 package com.example.CampusLink.repository;
 
 import org.springframework.dao.DataAccessException;
@@ -8,17 +9,21 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.List;
 
+// associacoes dos eventos esta classe inclui substitui e remove os vinculos dos materiais
 @Repository
 public class EventoConteudoRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    // preparar vinculos de evento e conteudo este construtor recebe o acesso ao banco
     public EventoConteudoRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // liga um conteudo ao evento
+
+    // associar material ao evento este metodo grava um vinculo quando os dois identificadores existem
     public void associarConteudo(Long idEvento, Long idConteudo) throws SQLException {
+        // exigir codigos do vinculo encerra a associacao quando falta evento ou conteudo
         if (idEvento == null || idConteudo == null) {
             return;
         }
@@ -32,6 +37,7 @@ public class EventoConteudoRepository {
                 VALUES (?, ?)
                 """;
 
+        // associar material ao evento grava o vinculo pelos codigos e converte falhas do banco
         try {
             jdbcTemplate.update(sql, idEvento, idConteudo);
         } catch (DataAccessException e) {
@@ -39,8 +45,10 @@ public class EventoConteudoRepository {
         }
     }
 
-    // liga varios conteudos ao mesmo evento
+
+    // associar varios materiais ao evento este metodo grava os vinculos em conjunto sem repetir identificadores
     public void associarConteudos(Long idEvento, List<Long> idsConteudos) throws SQLException {
+        // ignorar associacao vazia encerra quando falta evento ou a lista de materiais esta vazia
         if (idEvento == null || idsConteudos == null || idsConteudos.isEmpty()) {
             return;
         }
@@ -54,6 +62,7 @@ public class EventoConteudoRepository {
                 VALUES (?, ?)
                 """;
 
+        // associar materiais em lote grava codigos distintos e preenchidos e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
                 List<Long> conteudos = idsConteudos.stream().filter(id -> id != null).distinct().toList();
@@ -70,8 +79,10 @@ public class EventoConteudoRepository {
         }
     }
 
-    // participa da transacao de atualizacao aberta pelo service
+
+    // substituir materiais do evento este metodo apaga os vinculos anteriores e inclui a nova selecao
     public void substituirConteudosDoEvento(Long idEvento, List<Long> idsConteudos) {
+        // exigir evento da substituicao recusa trocar materiais quando falta o codigo do evento
         if (idEvento == null) {
             throw new IllegalArgumentException("Informe o ID do evento");
         }
@@ -88,6 +99,7 @@ public class EventoConteudoRepository {
                 """;
 
         jdbcTemplate.update(sqlExcluir, idEvento);
+        // aceitar lista substituta vazia encerra sem adicionar materiais quando a nova selecao esta vazia
         if (idsConteudos == null || idsConteudos.isEmpty()) {
             return;
         }
@@ -98,8 +110,10 @@ public class EventoConteudoRepository {
         }
     }
 
-    // apaga as ligacoes do evento com os conteudos
+
+    // delete vinculos do evento este metodo apaga todas as associacoes de materiais do evento informado
     public void excluirAssociacoesDoEvento(Long idEvento) throws SQLException {
+        // exigir evento para limpar encerra a remocao dos vinculos quando falta o codigo
         if (idEvento == null) {
             return;
         }
@@ -109,6 +123,7 @@ public class EventoConteudoRepository {
                 WHERE id_evento = ?
                 """;
 
+        // delete associacoes do evento remove os vinculos do compromisso e converte falhas do banco
         try {
             jdbcTemplate.update(sql, idEvento);
         } catch (DataAccessException e) {
@@ -116,10 +131,12 @@ public class EventoConteudoRepository {
         }
     }
 
-    // preserva o contrato de erro usado pelo service
+
+    // tratar erro dos vinculos do evento este metodo recupera a falha original ou cria uma falha de consulta
     private SQLException converterErro(DataAccessException erro) {
         Throwable causa = erro;
         while (causa != null) {
+            // recuperar falha do banco devolve a causa original quando ela e uma falha de consulta
             if (causa instanceof SQLException sqlException) {
                 return sqlException;
             }

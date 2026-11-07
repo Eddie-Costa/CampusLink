@@ -1,3 +1,4 @@
+// formulario de nova senha define os campos usados na recuperacao de acesso
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados da troca de senha esta classe guarda email senha e confirmacao com regras de formato
 @Getter
 @Setter
 

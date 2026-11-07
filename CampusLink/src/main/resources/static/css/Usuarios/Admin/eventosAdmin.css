@@ -1,3 +1,4 @@
+/* estilo dos eventos administrativos organiza filtros tabela prioridades detalhes e botoes de acao */
 
 :root {
     --azul-campus: var(--campus-navy);
@@ -166,7 +167,7 @@ body {
     box-shadow: 0 0 0 3px rgba(17, 24, 63, 0.08);
 }
 
-/* tabela de eventos */
+
 .eventos-admin-card .table-responsive {
     overflow: visible;
 }
@@ -197,7 +198,7 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* distribui o espaco entre as colunas */
+
 .eventos-admin-tabela th:nth-child(1) {
     width: 13%;
 }
@@ -305,7 +306,7 @@ body {
     color: var(--azul-hover);
 }
 
-/* botoes de acoes */
+
 .eventos-admin-tabela td:last-child {
     white-space: nowrap;
 }
@@ -353,7 +354,7 @@ body {
     flex-shrink: 0;
 }
 
-/* botao detalhes */
+
 .evento-admin-detalhes-botao {
     list-style: none;
 }
@@ -368,13 +369,13 @@ body {
     color: var(--branco);
 }
 
-/* botao editar */
+
 .evento-admin-editar:hover {
     background-color: var(--azul-campus);
     color: var(--branco);
 }
 
-/* botao excluir */
+
 .evento-admin-acoes .btn-outline-danger {
     border-color: var(--vermelho);
     color: var(--vermelho);
@@ -386,7 +387,7 @@ body {
     color: var(--branco);
 }
 
-/* detalhes do evento */
+
 .evento-admin-detalhes-conteudo {
     position: absolute;
     top: calc(100% + 8px);
@@ -432,7 +433,7 @@ body {
     text-align: center;
 }
 
-/* ajustes para telas menores */
+
 @media (max-width: 1100px) {
     .eventos-admin-card-topo {
         align-items: flex-start;

@@ -1,3 +1,4 @@
+/* estilo dos conteudos administrativos organiza filtros cartoes detalhes e carregamento de mais itens */
 
 :root {
     --azul-campus: var(--campus-navy);
@@ -33,7 +34,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* estrutura da pagina */
+
 
 .conteudos-admin-page {
     padding: 40px 20px 64px;
@@ -45,7 +46,7 @@ body {
     margin: 0 auto;
 }
 
-/* cabecalho */
+
 
 .conteudos-admin-topo {
     display: flex;
@@ -117,7 +118,7 @@ body {
     color: var(--branco);
 }
 
-/* painel e filtros */
+
 
 .conteudos-admin-painel {
     margin-bottom: 22px;
@@ -224,7 +225,7 @@ body {
     color: #8993a5;
 }
 
-/* lista de conteudos */
+
 
 .conteudos-admin-lista {
     display: grid;
@@ -306,7 +307,7 @@ body {
     color: var(--cinza-texto);
 }
 
-/* informacoes do conteudo */
+
 
 .conteudo-admin-informacoes {
     display: grid;
@@ -338,7 +339,7 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* area de acoes */
+
 
 .conteudo-admin-acoes {
     margin-top: 18px;
@@ -409,7 +410,7 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* mensagem quando nao existem resultados */
+
 
 .conteudos-admin-vazio {
     padding: 38px 24px;
@@ -426,7 +427,7 @@ body {
     font-size: 15px;
 }
 
-/* paginacao */
+
 
 .conteudos-admin-paginacao {
     display: flex;
@@ -480,7 +481,7 @@ body {
     outline-offset: 3px;
 }
 
-/* telas menores */
+
 
 @media (max-width: 1000px) {
     .conteudos-admin-topo {

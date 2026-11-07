@@ -1,3 +1,4 @@
+// formulario de login de professor define os campos de acesso
 package com.example.CampusLink.dto.Professor;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados de entrada do professor esta classe guarda email senha e confirmacao com regras de formato
 @Getter
 @Setter
 

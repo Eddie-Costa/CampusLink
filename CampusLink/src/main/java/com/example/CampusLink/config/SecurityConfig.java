@@ -1,3 +1,4 @@
+// seguranca dos formularios configura o tratamento dos pedidos recebidos
 package com.example.CampusLink.config;
 
 import jakarta.servlet.DispatcherType;
@@ -9,17 +10,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
+// protecao dos pedidos esta classe prepara o codigo dos formularios e a pagina de login
 @Configuration
 public class SecurityConfig {
 
+    // configurar seguranca este metodo prepara a protecao dos formularios e libera o acesso as rotas
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        // Mantém o tratamento seguro do token CSRF.
+
         XorCsrfTokenRequestAttributeHandler csrfHandler =
                 new XorCsrfTokenRequestAttributeHandler();
 
-        // Carrega o token em cada requisição, antes de renderizar o HTML.
+
         csrfHandler.setCsrfRequestAttributeName(null);
 
         http

@@ -1,3 +1,4 @@
+// denuncias de materiais recebe os relatos enviados pelos alunos
 package com.example.CampusLink.controller.Geral;
 
 import org.slf4j.helpers.MessageFormatter;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.sql.SQLException;
 import java.util.List;
 
+// controle das denuncias esta classe verifica aluno turma e conteudo antes de registrar o motivo
 @Controller
 public class DenunciaController {
 
@@ -35,6 +37,7 @@ public class DenunciaController {
     private final TurmaRepository turmaRepository;
     private final ConteudoRepository conteudoRepository;
 
+    // preparar controle de denuncias este construtor recebe os dados usados para conferir aluno turma e conteudo
     public DenunciaController(
             DenunciaService denunciaService,
             AlunoRepository alunoRepository,
@@ -47,6 +50,7 @@ public class DenunciaController {
         this.conteudoRepository = conteudoRepository;
     }
 
+    // denunciar conteudo pela tela este metodo confere a participacao do aluno e registra o motivo
     @PostMapping("/turmas/{idTurma}/conteudos/{idConteudo}/denunciar")
     public String denunciarConteudo(
             @PathVariable Long idTurma,
@@ -56,10 +60,12 @@ public class DenunciaController {
             RedirectAttributes redirectAttributes
     ) {
 
+        // proteger denuncia exige login antes de receber uma denuncia de conteudo
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
 
+        // restringir denuncia permite o envio apenas pelo perfil de aluno
         if (session.getAttribute("tipoUsuario") == null ||
                 !"aluno".equalsIgnoreCase(
                         session.getAttribute("tipoUsuario").toString()
@@ -76,15 +82,18 @@ public class DenunciaController {
         String email =
                 (String) session.getAttribute("email2FA");
 
+        // exigir email da denuncia retorna ao login quando o email da sessao esta ausente
         if (email == null || email.isBlank()) {
             return "redirect:/login";
         }
 
+        // preparar denuncia confere aluno turma e conteudo e trata falhas na consulta ou no codigo
         try {
 
             String idAlunoTexto =
                     alunoRepository.buscarPorIDAluno(email);
 
+            // identificar aluno denunciante interrompe a denuncia quando nao encontra o codigo do aluno
             if (idAlunoTexto == null ||
                     idAlunoTexto.isBlank()) {
 
@@ -109,6 +118,7 @@ public class DenunciaController {
 
             for (TurmaDTO turma : turmasAluno) {
 
+                // localizar turma do aluno confirma o vinculo ao encontrar a turma solicitada
                 if (turma.getId() != null &&
                         turma.getId().equals(idTurma)) {
 
@@ -117,6 +127,7 @@ public class DenunciaController {
                 }
             }
 
+            // impedir denuncia fora da turma recusa alunos que nao participam da turma
             if (!alunoPertenceTurma) {
 
                 redirectAttributes.addFlashAttribute(
@@ -133,6 +144,7 @@ public class DenunciaController {
                             idTurma
                     );
 
+            // conferir conteudo denunciado recusa um material que nao pertence a turma informada
             if (!conteudoPertenceTurma) {
 
                 redirectAttributes.addFlashAttribute(
@@ -151,6 +163,7 @@ public class DenunciaController {
                             motivo
                     );
 
+            // confirmar denuncia registrada mostra a mensagem de sucesso quando o registro termina
             if ("sucesso".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
@@ -158,49 +171,63 @@ public class DenunciaController {
                         "Denúncia registrada com sucesso."
                 );
 
-            } else if ("suspenso".equals(resultado)) {
+            }
+            // informar suspensao do conteudo avisa que a denuncia levou o material para analise
+            else if ("suspenso".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemSucesso",
                         "Conteúdo suspenso para análise."
                 );
 
-            } else if ("duplicada".equals(resultado)) {
+            }
+            // impedir denuncia repetida avisa que o aluno ja denunciou o conteudo
+            else if ("duplicada".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
                         "Você já denunciou este conteúdo."
                 );
 
-            } else if ("motivo_vazio".equals(resultado)) {
+            }
+            // exigir motivo da denuncia pede uma justificativa quando o motivo esta vazio
+            else if ("motivo_vazio".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
                         "Informe o motivo da denúncia."
                 );
 
-            } else if ("conteudo_nao_encontrado".equals(resultado)) {
+            }
+            // informar conteudo ausente avisa que o material denunciado nao foi encontrado
+            else if ("conteudo_nao_encontrado".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
                         "Conteúdo não encontrado."
                 );
 
-            } else if ("conteudo_indisponivel".equals(resultado)) {
+            }
+            // informar denuncia indisponivel avisa que o material nao aceita denuncias nesta situacao
+            else if ("conteudo_indisponivel".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
                         "Este conteúdo não está disponível para denúncia."
                 );
 
-            } else if ("professor_nao_encontrado".equals(resultado)) {
+            }
+            // informar professor ausente avisa que nao foi possivel identificar o responsavel pelo conteudo
+            else if ("professor_nao_encontrado".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
                         "Não foi possível identificar o professor responsável."
                 );
 
-            } else if ("turma_sem_alunos".equals(resultado)) {
+            }
+            // informar alunos ausentes distingue falta de alunos de outras falhas da denuncia
+            else if ("turma_sem_alunos".equals(resultado)) {
 
                 redirectAttributes.addFlashAttribute(
                         "mensagemErro",
@@ -217,7 +244,9 @@ public class DenunciaController {
 
         } catch (SQLException | NumberFormatException e) {
             logger.error("Erro ao preparar denúncia. conteudoId={} turmaId={}", idConteudo, idTurma, e);
+            // registro de erros confere se esta habilitado ao denunciar conteudo pela tela
             if (logger.isErrorEnabled()) {
+                // gravar historico ao denunciar conteudo pela tela tenta salvar o registro no banco e informa falhas
                 try {
                     StringWriter excecaoLogBD = new StringWriter();
                     e.printStackTrace(new PrintWriter(excecaoLogBD));

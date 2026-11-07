@@ -1,3 +1,4 @@
+// dados de resposta organiza as mensagens do atendimento
 package com.example.CampusLink.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -7,6 +8,7 @@ import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
+// mensagem do chamado esta classe guarda autoria data e texto com limite de tamanho
 @Getter
 @Setter
 public class ChamadoRespostaDTO {

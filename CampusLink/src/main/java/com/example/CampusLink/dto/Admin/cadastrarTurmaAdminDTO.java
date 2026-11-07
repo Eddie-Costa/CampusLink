@@ -1,3 +1,4 @@
+// formulario administrativo de turma define os dados de criacao
 package com.example.CampusLink.dto.Admin;
 
 import jakarta.validation.constraints.NotBlank;
@@ -6,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados da nova turma esta classe exige nome e responsavel e permite informar a descricao
 @Getter
 @Setter
 public class cadastrarTurmaAdminDTO {

@@ -1,3 +1,4 @@
+<!-- materiais academicos apresenta envio listagem download e exclusao de arquivos -->
 <!DOCTYPE html>
 
 <html lang="pt-br"
@@ -22,7 +23,7 @@
 
 
 
-<!-- HEADER -->
+
 
 <div th:replace="~{fragments/header :: nav}">
 </div>
@@ -31,7 +32,7 @@
 <div class="container mt-4">
 
 
-    <!-- TÍTULO -->
+
 
     <div class="mb-4">
 
@@ -49,7 +50,7 @@
     </div>
 
 
-    <!-- MENSAGEM DE SUCESSO -->
+
 
     <div
             th:if="${sucesso}"
@@ -58,7 +59,7 @@
     </div>
 
 
-    <!-- MENSAGEM DE ERRO -->
+
 
     <div
             th:if="${erro}"
@@ -67,7 +68,7 @@
     </div>
 
 
-    <!-- UPLOAD - SOMENTE PROFESSOR -->
+
 
     <div
             th:if="${session.tipoUsuario == 'professor'}"
@@ -86,7 +87,7 @@
                     enctype="multipart/form-data">
 
 
-                <!-- CSRF -->
+
 
                 <input
                         type="hidden"
@@ -95,7 +96,7 @@
                         th:value="${_csrf.token}">
 
 
-                <!-- CONTEÚDO -->
+
 
                 <div class="mb-3">
 
@@ -126,7 +127,7 @@
                 </div>
 
 
-                <!-- ARQUIVO -->
+
 
                 <div class="mb-3">
 
@@ -161,7 +162,7 @@
                 </div>
 
 
-                <!-- BOTÃO -->
+
 
                 <button
                         type="submit"
@@ -178,7 +179,7 @@
     </div>
 
 
-    <!-- LISTAGEM DE MATERIAIS -->
+
 
     <div class="card shadow-sm">
 
@@ -228,13 +229,13 @@
                 <tbody>
 
 
-                <!-- ARQUIVOS EXISTENTES -->
+
 
                 <tr
                         th:each="arquivo : ${arquivos}">
 
 
-                    <!-- NOME -->
+
 
                     <td>
 
@@ -245,14 +246,14 @@
                     </td>
 
 
-                    <!-- TIPO -->
+
 
                     <td
                             th:text="${arquivo.mimeType}">
                     </td>
 
 
-                    <!-- TAMANHO -->
+
 
                     <td>
 
@@ -269,7 +270,7 @@
                     </td>
 
 
-                    <!-- DATA -->
+
 
                     <td>
 
@@ -284,12 +285,12 @@
                     </td>
 
 
-                    <!-- AÇÕES -->
+
 
                     <td class="text-end">
 
 
-                        <!-- DOWNLOAD -->
+
 
                         <a
                                 th:href="@{/arquivos/{id}/download(
@@ -302,7 +303,7 @@
                         </a>
 
 
-                        <!-- EXCLUSÃO SOMENTE PROFESSOR -->
+
 
                         <form
                                 th:if="${session.tipoUsuario == 'professor'}"
@@ -313,7 +314,7 @@
                                 class="d-inline form-excluir-arquivo">
 
 
-                            <!-- CSRF -->
+
 
                             <input
                                     type="hidden"
@@ -338,7 +339,7 @@
                 </tr>
 
 
-                <!-- CASO NÃO TENHA ARQUIVOS -->
+
 
                 <tr
                         th:if="${#lists.isEmpty(arquivos)}">

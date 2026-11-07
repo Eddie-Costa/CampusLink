@@ -1,4 +1,6 @@
+// lista administrativa de eventos filtra por nome turma tipo e situacao
 
+// preparar filtro de eventos configura busca por nome tipo e situacao
 document.addEventListener("DOMContentLoaded", function () {
 
     const campoBusca = document.getElementById("buscarEvento");
@@ -7,11 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const linhasEventos = document.querySelectorAll(".evento-admin-linha");
     const mensagemVazio = document.getElementById("nenhumEventoEncontrado");
 
+    // iniciar filtro de eventos exige os campos de busca tipo e situacao
     if (!campoBusca || !filtroTipo || !filtroStatus) {
         return;
     }
 
-    // filtra os eventos pelos campos selecionados
+
+    // filtrar eventos administrativos conta os resultados e controla a mensagem de lista vazia
     function filtrarEventos() {
 
         const busca = campoBusca.value.toLowerCase().trim();
@@ -20,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let eventosVisiveis = 0;
 
+        // comparar evento administrativo combina nome ou turma com tipo e situacao selecionados
         linhasEventos.forEach(function (linha) {
 
             const nomeEvento = (linha.getAttribute("data-nome") || "").toLowerCase();
@@ -35,12 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             linha.hidden = !mostrarEvento;
 
+            // contar eventos visiveis soma os eventos que correspondem aos filtros
             if (mostrarEvento) {
                 eventosVisiveis++;
             }
         });
 
-        // mostra a mensagem quando nenhum evento atende aos filtros
+
+        // mostrar busca de eventos vazia exibe o aviso quando o filtro oculta todos os registros existentes
         if (mensagemVazio) {
             mensagemVazio.hidden = eventosVisiveis > 0 || linhasEventos.length === 0;
         }

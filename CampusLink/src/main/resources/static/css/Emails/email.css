@@ -1,3 +1,4 @@
+/* estilo dos emails organiza marca mensagens codigos dados e botoes das comunicacoes */
 .email-pagina { margin: 0; padding: 0; background-color: #f4f6f9; font-family: Arial, Helvetica, sans-serif; color: #11183f; }
 .email-preheader { display: none; max-height: 0; overflow: hidden; opacity: 0; font-size: 1px; }
 .email-fundo { width: 100%; border-collapse: collapse; background-color: #f4f6f9; }

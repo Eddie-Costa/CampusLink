@@ -1,3 +1,4 @@
+// documento de atendimento gera o historico exportado dos chamados concluidos
 package com.example.CampusLink.service;
 
 import com.example.CampusLink.dto.ChamadoDTO;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HexFormat;
 
+// historico em pdf esta classe organiza mensagens paginas rodapes e o codigo de integridade do arquivo
 @Service
 public class ChamadoPdfService {
 
@@ -34,16 +36,20 @@ public class ChamadoPdfService {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss XXX")
             .withZone(ZoneId.of("America/Sao_Paulo"));
 
+    // gerar historico do chamado em pdf este metodo monta o documento completo de um atendimento concluido
     public byte[] gerar(ChamadoDTO chamado) {
+        // gerar pdf do chamado exige um chamado concluido com data de conclusao
         if (!"concluido".equals(chamado.getStatus()) || chamado.getConcluidoEm() == null) {
             throw new MailPreparationException("O PDF exige um chamado concluído.");
         }
+        // criar documento do chamado tenta montar e salvar o pdf com seus dados e mensagens
         try (PDDocument documento = new PDDocument(); ByteArrayOutputStream arquivo = new ByteArrayOutputStream()) {
             documento.getDocumentInformation().setTitle("CampusLink - Histórico do chamado #" + chamado.getId());
             documento.getDocumentInformation().setAuthor("CampusLink");
             documento.getDocumentInformation().setCreator("CampusLink - Canal de ajuda");
             documento.getDocumentInformation().setCreationDate(Calendar.getInstance());
             Pagina pagina = new Pagina(documento, chamado.getId());
+            // preencher pdf do chamado escreve os dados do atendimento e o historico das mensagens
             try (pagina) {
                 pagina.texto("Registro de atendimento", 22, true, AZUL);
                 pagina.texto("Chamado #" + chamado.getId() + " | Concluído", 12, true, DESTAQUE);
@@ -73,6 +79,7 @@ public class ChamadoPdfService {
                 pagina.texto("Sobre este registro", 11, true, AZUL);
                 pagina.texto("Documento gerado a partir dos dados registrados no CampusLink ao encerrar o atendimento. "
                         + "Os nomes correspondem ao cadastro consultado na emissão. Este arquivo não contém assinatura digital.", 9, false, TEXTO);
+                // explicar caracteres no pdf inclui o aviso sobre caracteres representados por codigo
                 if (pagina.caracteresRepresentados) {
                     pagina.texto("Caracteres sem representação na fonte e controles são identificados por seu código Unicode, no formato [U+XXXX].", 9, false, TEXTO);
                 }
@@ -85,7 +92,9 @@ public class ChamadoPdfService {
         }
     }
 
+    // calcular integridade do pdf este metodo gera um codigo para conferir o arquivo produzido
     public String sha256(byte[] arquivo) {
+        // calcular integridade do pdf tenta gerar o resumo usado para conferir o arquivo
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(arquivo));
         } catch (NoSuchAlgorithmException e) {
@@ -93,12 +102,15 @@ public class ChamadoPdfService {
         }
     }
 
+    // formatar identificador do historico este metodo mostra o numero ou indica que nao esta disponivel
     private static String id(Long valor) {
         return valor == null ? "indisponível" : valor.toString();
     }
 
+    // numerar paginas do historico este metodo inclui rodapes com chamado e total de paginas
     private void adicionarRodapes(PDDocument documento, Long idChamado, PDFont fonte) throws IOException {
         for (int i = 0; i < documento.getNumberOfPages(); i++) {
+            // adicionar rodape do pdf escreve o numero do chamado e a numeracao da pagina
             try (PDPageContentStream rodape = new PDPageContentStream(documento, documento.getPage(i), PDPageContentStream.AppendMode.APPEND, true, true)) {
                 rodape.setStrokingColor(new Color(220, 226, 236));
                 rodape.moveTo(48, 47);
@@ -109,6 +121,7 @@ public class ChamadoPdfService {
         }
     }
 
+    // escrever trecho no pdf este metodo desenha o texto na posicao com fonte tamanho e cor escolhidos
     private static void escrever(PDPageContentStream fluxo, PDFont fonte, String texto, float tamanho, Color cor, float x, float y) throws IOException {
         fluxo.beginText();
         fluxo.setFont(fonte, tamanho);
@@ -118,7 +131,8 @@ public class ChamadoPdfService {
         fluxo.endText();
     }
 
-    // cada geração tem suas próprias fontes e páginas, sem compartilhar estado entre envios
+
+    // pagina do documento esta classe controla fontes espacos quebras de linha e continuacao das mensagens
     private static class Pagina implements AutoCloseable {
         private final PDDocument documento;
         private final PDFont normal;
@@ -130,6 +144,7 @@ public class ChamadoPdfService {
         private String continuacao;
         private boolean caracteresRepresentados;
 
+        // preparar pagina do historico este construtor carrega fontes e logo e cria a primeira folha
         Pagina(PDDocument documento, Long idChamado) throws IOException {
             this.documento = documento;
             this.idChamado = idChamado;
@@ -139,7 +154,9 @@ public class ChamadoPdfService {
             novaPagina();
         }
 
+        // criar folha do historico este metodo desenha o cabecalho e indica a continuacao de mensagens
         private void novaPagina() throws IOException {
+            // fechar pagina anterior encerra a escrita da pagina antes de criar outra
             if (fluxo != null) fluxo.close();
             PDPage folha = new PDPage(PDRectangle.A4);
             documento.addPage(folha);
@@ -154,19 +171,25 @@ public class ChamadoPdfService {
             fluxo.addRect(0, 740, folha.getMediaBox().getWidth(), 4);
             fluxo.fill();
             y = 711;
+            // continuar mensagem no pdf repete o titulo quando a mensagem continua em outra pagina
             if (continuacao != null) {
                 escrever(fluxo, negrito, continuacao + " (continuação)", 9, DESTAQUE, 48, y);
                 y -= 24;
             }
         }
 
+        // separar trechos do historico este metodo reserva um espaco vertical abaixo do texto
         void espaco(float altura) { y -= altura; }
 
+        // reservar espaco na folha este metodo abre outra pagina quando o trecho nao cabe
         void reservar(float altura) throws IOException {
+            // reservar espaco no pdf cria outra pagina quando falta espaco para o bloco
             if (y - altura < 70) novaPagina();
         }
 
+        // escrever mensagem do atendimento este metodo inclui autor papel data e conteudo no historico
         void mensagem(String titulo, String autor, String papel, Long idAutor, OffsetDateTime data, String conteudo) throws IOException {
+            // iniciar mensagem no pdf cria outra pagina quando sobra pouco espaco
             if (y < 150) novaPagina();
             espaco(10);
             texto(titulo + " | " + papel, 11, true, DESTAQUE);
@@ -179,10 +202,12 @@ public class ChamadoPdfService {
             espaco(5);
         }
 
+        // distribuir texto no historico este metodo quebra linhas pelo espaco disponivel e cria paginas quando preciso
         void texto(String valor, float tamanho, boolean forte, Color cor) throws IOException {
             PDFont fonte = forte ? negrito : normal;
             String seguro = representavel(valor == null ? "" : valor, fonte);
             for (String paragrafo : seguro.split("\n", -1)) {
+                // escrever paragrafo vazio acrescenta o espaco de uma linha sem texto
                 if (paragrafo.isEmpty()) { espaco(tamanho * 1.5f); continue; }
                 int inicio = 0;
                 while (inicio < paragrafo.length()) {
@@ -192,12 +217,16 @@ public class ChamadoPdfService {
                     while (fim < paragrafo.length()) {
                         int proximo = fim + Character.charCount(paragrafo.codePointAt(fim));
                         float avancar = fonte.getStringWidth(paragrafo.substring(fim, proximo)) / 1000 * tamanho;
+                        // limitar largura do texto interrompe a linha quando ela ultrapassa a largura disponivel
                         if (largura + avancar > 499) break;
                         largura += avancar;
+                        // localizar espaco entre palavras guarda uma posicao para a quebra da linha
                         if (paragrafo.charAt(fim) == ' ') ultimoEspaco = fim;
                         fim = proximo;
                     }
+                    // quebrar linha entre palavras aproveita o ultimo espaco antes do limite
                     if (fim < paragrafo.length() && ultimoEspaco > inicio) fim = ultimoEspaco + 1;
+                    // continuar texto no pdf cria outra pagina ao atingir a margem inferior
                     if (y < 70) novaPagina();
                     escrever(fluxo, fonte, paragrafo.substring(inicio, fim), tamanho, cor, 48, y);
                     y -= tamanho * 1.5f;
@@ -206,13 +235,17 @@ public class ChamadoPdfService {
             }
         }
 
+        // representar caracteres no historico este metodo substitui simbolos indisponiveis na fonte por seus codigos
         private String representavel(String texto, PDFont fonte) throws IOException {
             StringBuilder resultado = new StringBuilder();
             String normalizado = texto.replace("\r\n", "\n").replace('\r', '\n').replace("\t", "    ");
             for (int codigo : normalizado.codePoints().toArray()) {
                 String caractere = new String(Character.toChars(codigo));
+                // preservar quebra de linha mantem a separacao dos paragrafos no texto
                 if (codigo == '\n') { resultado.append('\n'); continue; }
+                // representar caractere no pdf tenta usar a fonte e mostra o codigo quando ela nao aceita o caractere
                 try {
+                    // detectar caractere de controle encaminha caracteres de controle e formatacao para representacao por codigo
                     if (Character.isISOControl(codigo) || Character.getType(codigo) == Character.FORMAT) throw new IllegalArgumentException();
                     fonte.encode(caractere);
                     resultado.append(caractere);
@@ -224,7 +257,10 @@ public class ChamadoPdfService {
             return resultado.toString();
         }
 
+        // fechar pagina do historico este metodo encerra a escrita da folha atual
         @Override
-        public void close() throws IOException { if (fluxo != null) fluxo.close(); }
+        public void close() throws IOException {
+            // fechar escrita do pdf encerra o fluxo de escrita quando ele existe
+            if (fluxo != null) fluxo.close(); }
     }
 }

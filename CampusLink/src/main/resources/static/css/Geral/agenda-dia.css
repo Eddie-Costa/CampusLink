@@ -1,3 +1,4 @@
+/* estilo da agenda diaria posiciona horarios e cartoes de eventos conforme a prioridade */
 .eventos-dia-cabecalho {
     display: flex;
     align-items: flex-end;

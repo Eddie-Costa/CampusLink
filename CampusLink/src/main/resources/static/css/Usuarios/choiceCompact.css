@@ -1,4 +1,5 @@
-/* Compacta as páginas que permitem escolher o perfil de acesso. */
+/* estilo compacto da escolha ajusta os cartoes de perfil ao tamanho da tela */
+
 body.pagina-escolha {
     display: flex;
     flex-direction: column;

@@ -1,3 +1,4 @@
+// ciclo das sessoes acompanha a abertura e o encerramento dos acessos
 package com.example.CampusLink.config;
 
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// controle de sessoes esta classe guarda acessos ativos e consolida o historico ao desconectar
 @Component
 public class SessaoLogListener implements HttpSessionListener {
 
@@ -23,63 +25,81 @@ public class SessaoLogListener implements HttpSessionListener {
     private final UsuarioRepository UsuarioRepository;
     private final Map<String, HttpSession> sessoes = new ConcurrentHashMap<>();
 
+    // preparar registro de sessoes este construtor recebe o acesso ao historico de usuarios
     public SessaoLogListener(UsuarioRepository UsuarioRepository) {
         this.UsuarioRepository = UsuarioRepository;
     }
 
+    // acompanhar nova sessao este metodo guarda a sessao criada para permitir seu encerramento
     @Override
     public void sessionCreated(HttpSessionEvent event) {
         sessoes.put(event.getSession().getId(), event.getSession());
     }
 
+    // encerrar sessoes do usuario este metodo desconecta todas as sessoes do email informado
     public void encerrarSessoesDoUsuario(String email) {
         for (HttpSession session : sessoes.values()) {
+            // encerrar sessoes correspondentes identifica o usuario e ignora sessoes que ja foram invalidadas
             try {
                 Object usuario = session.getAttribute("usuarioLogado");
                 String emailSessao = null;
 
+                // identificar aluno da sessao usa o email do aluno para comparar as contas
                 if (usuario instanceof loginAlunoDTO aluno) {
                     emailSessao = aluno.getEmail();
-                } else if (usuario instanceof loginProfessorDTO professor) {
+                }
+                // identificar professor da sessao usa o email do professor para comparar as contas
+                else if (usuario instanceof loginProfessorDTO professor) {
                     emailSessao = professor.getEmail();
-                } else if (usuario instanceof loginAdminDTO admin) {
+                }
+                // identificar administrador da sessao usa o email do administrador para comparar as contas
+                else if (usuario instanceof loginAdminDTO admin) {
                     emailSessao = admin.getEmail();
                 }
 
+                // encerrar sessao do email invalida a sessao quando ela pertence a conta informada
                 if (email.equalsIgnoreCase(emailSessao)) {
                     session.invalidate();
                 }
             } catch (IllegalStateException ignored) {
-                // Uma sessão pode expirar enquanto as demais são encerradas.
+
             }
         }
     }
 
+    // finalizar historico da sessao este metodo remove a sessao e grava seu periodo de uso
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession();
         sessoes.values().remove(session);
         UUID sessaoLogId = (UUID) session.getAttribute("sessaoLogId");
+        // ignorar sessao sem codigo encerra o registro quando falta a identificacao do historico
         if (sessaoLogId == null) {
             return;
         }
 
-        // O listener tambem executa por timeout, sem uma requisicao ou MDC ativo.
+
         Object usuario = session.getAttribute("usuarioLogado");
         String email = null;
+        // ler aluno ao encerrar recupera o email do aluno para finalizar o historico
         if (usuario instanceof loginAlunoDTO aluno) {
             email = aluno.getEmail();
-        } else if (usuario instanceof loginProfessorDTO professor) {
+        }
+        // ler professor ao encerrar recupera o email do professor para finalizar o historico
+        else if (usuario instanceof loginProfessorDTO professor) {
             email = professor.getEmail();
-        } else if (usuario instanceof loginAdminDTO admin) {
+        }
+        // ler administrador ao encerrar recupera o email do administrador para finalizar o historico
+        else if (usuario instanceof loginAdminDTO admin) {
             email = admin.getEmail();
         }
 
+        // finalizar historico da sessao grava inicio fim e usuario e registra possiveis falhas
         try {
             UsuarioRepository.finalizarSessaoLog(sessaoLogId,
                     Instant.ofEpochMilli(session.getCreationTime()), Instant.now(), email);
         } catch (Exception e) {
-            // Uma falha no banco nao deve impedir que a sessao seja invalidada.
+
             logger.error("Erro ao consolidar historico da sessao. sessaoLogId={}", sessaoLogId, e);
         }
     }

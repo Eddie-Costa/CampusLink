@@ -1,3 +1,4 @@
+/* estilo do envio unico sinaliza visualmente os botoes bloqueados durante o envio */
 .submit-once-disabled {
     opacity: 0.65 !important;
     cursor: not-allowed !important;

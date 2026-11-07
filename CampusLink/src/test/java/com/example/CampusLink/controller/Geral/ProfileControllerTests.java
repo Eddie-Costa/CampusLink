@@ -1,3 +1,4 @@
+// verificacao de perfil exercita consulta exportacao e exclusao da propria conta
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.config.SecurityConfig;
@@ -40,6 +41,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// testes dos dados pessoais esta classe confere identidade protecao dos pedidos codigos e tratamento de falhas
 @WebMvcTest(ProfileController.class)
 @Import({SecurityConfig.class, TwoFactorService.class})
 class ProfileControllerTests {
@@ -52,6 +54,7 @@ class ProfileControllerTests {
     private MockHttpSession session;
     private DadosUsuarioDTO dados;
 
+    // preparar testes do perfil este metodo monta o titular e simula a consulta de seus dados
     @BeforeEach
     void preparar() throws Exception {
         session = new MockHttpSession();
@@ -73,6 +76,7 @@ class ProfileControllerTests {
         when(usuarios.consultarDadosPessoais("titular@example.com")).thenReturn(dados);
     }
 
+    // testar dados do titular na tela este teste confere a protecao do formulario e a ausencia de dados indevidos
     @Test
     void renderizaPerfilComCsrfESomenteDadosDoTitular() throws Exception {
         String html = mvc.perform(get("/profile").session(session))
@@ -86,6 +90,7 @@ class ProfileControllerTests {
         verify(usuarios).consultarDadosPessoais("titular@example.com");
     }
 
+    // testar perfil com vinculos este teste confere que o professor com materiais nao recebe a acao de exclusao
     @Test
     void renderizaProfessorComVinculosInformandoQueOMaterialPermanece() throws Exception {
         loginProfessorDTO professor = new loginProfessorDTO();
@@ -103,6 +108,7 @@ class ProfileControllerTests {
         preview("professor.html", html);
     }
 
+    // testar visitante no perfil este teste confere que dados e acoes exigem login
     @Test
     void visitanteNaoAcessaDadosNemAcoes() throws Exception {
         mvc.perform(get("/profile")).andExpect(redirectedUrl("/login"));
@@ -112,6 +118,7 @@ class ProfileControllerTests {
         verifyNoInteractions(usuarios, emails);
     }
 
+    // testar administrador no perfil pessoal este teste confere o redirecionamento das paginas e acoes para o painel
     @Test
     void administradorNaoAcessaPerfilNemAcoesDeDadosPessoais() throws Exception {
         loginAdminDTO admin = new loginAdminDTO();
@@ -129,6 +136,7 @@ class ProfileControllerTests {
         verifyNoInteractions(usuarios, emails);
     }
 
+    // testar protecao das acoes pessoais este teste exige envio de formulario com a protecao contra pedidos indevidos
     @ParameterizedTest
     @ValueSource(strings = {"exportar", "excluir", "excluir/confirmar", "excluir/cancelar"})
     void acoesExigemPostECsrf(String acao) throws Exception {
@@ -137,6 +145,7 @@ class ProfileControllerTests {
         verifyNoInteractions(usuarios, emails);
     }
 
+    // testar destinatario da exportacao este teste confere que o email enviado pelo navegador nao troca o titular
     @Test
     void exportacaoIgnoraDestinatarioFornecidoPeloCliente() throws Exception {
         mvc.perform(post("/profile/exportar").session(session).with(csrf()).param("email", "vitima@example.com"))
@@ -144,6 +153,7 @@ class ProfileControllerTests {
         verify(emails).enviarEmailDados(dados);
     }
 
+    // testar falha no email de dados este teste exige aviso de erro sem mensagem de sucesso
     @Test
     void falhaNoEmailNaoExibeSucesso() throws Exception {
         doThrow(new MailSendException("indisponivel")).when(emails).enviarEmailDados(dados);
@@ -151,6 +161,7 @@ class ProfileControllerTests {
                 .andExpect(flash().attributeExists("mensagemErro")).andExpect(flash().attributeCount(1));
     }
 
+    // testar vinculos antes da exclusao este teste impede envio de codigo quando existem responsabilidades
     @Test
     void vinculosNaoImpedemSolicitacaoDeExclusao() throws Exception {
         when(usuarios.possuiVinculosParaExclusao(42)).thenReturn(true);
@@ -159,6 +170,7 @@ class ProfileControllerTests {
         verify(emails).enviarCodigo(eq("titular@example.com"), anyString(), eq(FinalidadeCodigoEmail.EXCLUSAO_CONTA));
     }
 
+    // testar delete conta confirmado este teste valida a exclusao o registro e o encerramento das sessoes
     @Test
     void codigoCorretoEConfirmacaoExcluemContaEEncerramSessoes() throws Exception {
         String codigo = solicitarCodigo();
@@ -176,6 +188,7 @@ class ProfileControllerTests {
         assertTrue(session.isInvalid());
     }
 
+    // testar exclusao sem confirmacao este teste impede remover a conta sem pedido previo ou aceite explicito
     @Test
     void naoExcluiSemSolicitacaoOuSemConfirmacao() throws Exception {
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
@@ -186,6 +199,7 @@ class ProfileControllerTests {
         verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
+    // testar limites da exclusao este teste verifica a espera para reenvio e o bloqueio apos cinco codigos errados
     @Test
     void limitaTentativasEReenvios() throws Exception {
         solicitarCodigo();
@@ -201,11 +215,12 @@ class ProfileControllerTests {
         verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
+    // testar separacao dos codigos este teste impede usar codigo de login ou codigo de exclusao cancelado
     @Test
     void codigoDeLoginNaoPodeExcluirContaECancelamentoInvalidaCodigo() throws Exception {
         String codigo = solicitarCodigo();
         String login = TwoFactorService.gerarCodigo(dados.getEmail());
-        // Evita coincidência aleatória entre dois códigos válidos de seis dígitos.
+
         while (login.equals(codigo)) login = TwoFactorService.gerarCodigo(dados.getEmail());
         mvc.perform(post("/profile/excluir/confirmar").session(session).with(csrf())
                 .param("codigo", login).param("confirmar", "true")).andExpect(flash().attributeExists("mensagemErro"));
@@ -217,6 +232,7 @@ class ProfileControllerTests {
         verify(usuarios, never()).anonimizarDadosPessoais(anyLong(), anyString());
     }
 
+    // testar falha ao excluir conta este teste preserva a sessao e registra o erro sem declarar sucesso
     @Test
     void falhaNaExclusaoMantemSessaoSemDeclararSucesso() throws Exception {
         String codigo = solicitarCodigo();
@@ -229,6 +245,7 @@ class ProfileControllerTests {
         verifyNoInteractions(sessoes);
     }
 
+    // testar perfil de conta ausente este teste encerra a sessao quando o titular nao existe mais
     @Test
     void contaQueNaoExisteMaisNaoAcessaPerfil() throws Exception {
         when(usuarios.consultarDadosPessoais(anyString())).thenReturn(null);
@@ -236,6 +253,7 @@ class ProfileControllerTests {
         assertTrue(session.isInvalid());
     }
 
+    // solicitar codigo no teste este metodo executa o pedido e captura o codigo enviado ao titular
     private String solicitarCodigo() throws Exception {
         mvc.perform(post("/profile/excluir").session(session).with(csrf()))
                 .andExpect(redirectedUrl("/profile")).andExpect(flash().attributeExists("mensagemSucesso"));
@@ -244,7 +262,9 @@ class ProfileControllerTests {
         return codigo.getValue();
     }
 
+    // salvar previa do perfil este metodo grava a pagina de teste somente quando a opcao esta habilitada
     private void preview(String nome, String html) throws Exception {
+        // salvar previa do perfil grava o html apenas quando a opcao de previa esta habilitada
         if (Boolean.getBoolean("campuslink.profile.preview")) {
             Path pasta = Path.of("target", "profile-qa");
             Files.createDirectories(pasta);

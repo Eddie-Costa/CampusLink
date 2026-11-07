@@ -1,3 +1,4 @@
+// pesquisa de videos disponibiliza buscas e detalhes para a interface
 package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.YoutubeVideoDTO;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// controle de videos esta classe verifica a sessao e confere os identificadores antes das consultas
 @RestController
 public class YoutubeController {
 
@@ -29,9 +31,11 @@ public class YoutubeController {
     private static final int MAX_VIDEO_IDS_POR_REQUISICAO = 50;
     private final YoutubeService youtubeService;
 
+    // preparar consulta de videos este construtor recebe o servico de busca externa
     public YoutubeController(YoutubeService youtubeService) {
         this.youtubeService = youtubeService;
     }
+    // buscar videos pela tela este metodo consulta os resultados e informa a proxima pagina
     @Operation(
             tags = {"YouTube"},
             summary = "Buscar vídeos",
@@ -118,23 +122,27 @@ public class YoutubeController {
             @RequestParam(value = "pageToken", required = false) String pageToken,
             HttpSession session) {
 
+        // proteger consulta externa retorna uma lista vazia quando nao existe usuario conectado
         if (session.getAttribute("usuarioLogado") == null) {
             return ResponseEntity.ok(List.of());
         }
 
         YoutubeService.PaginaVideos pagina = youtubeService.buscarVideos(termo, pageToken);
         HttpHeaders headers = new HttpHeaders();
+        // indicar mais videos inclui o codigo da proxima pagina quando o provedor o informa
         if (pagina.nextPageToken() != null && !pagina.nextPageToken().isBlank()) {
             headers.set("X-Next-Page-Token", pagina.nextPageToken());
         }
         return ResponseEntity.ok().headers(headers).body(pagina.videos());
     }
 
+    // buscar detalhes dos videos pela tela este metodo confere os codigos e consulta os videos escolhidos
     @GetMapping("/youtube/detalhes")
     public ResponseEntity<List<YoutubeVideoDTO>> detalhes(
             @RequestParam("ids") List<String> videoIds,
             HttpSession session) {
 
+        // proteger consulta externa retorna uma lista vazia quando nao existe usuario conectado
         if (session.getAttribute("usuarioLogado") == null) {
             return ResponseEntity.ok(List.of());
         }
@@ -142,6 +150,7 @@ public class YoutubeController {
         List<String> idsUnicos = videoIds.stream()
                 .distinct()
                 .collect(Collectors.toList());
+        // validar consulta de videos recusa lista vazia quantidade excessiva ou codigos fora do formato
         if (idsUnicos.isEmpty()
                 || idsUnicos.size() > MAX_VIDEO_IDS_POR_REQUISICAO
                 || idsUnicos.stream().anyMatch(id -> !VIDEO_ID_PATTERN.matcher(id).matches())) {

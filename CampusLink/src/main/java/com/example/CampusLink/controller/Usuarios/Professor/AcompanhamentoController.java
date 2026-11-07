@@ -1,3 +1,4 @@
+// acompanhamento academico apresenta ao professor a situacao de seus alunos
 package com.example.CampusLink.controller.Usuarios.Professor;
 
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// controle de acompanhamento esta classe organiza riscos por turma evento e material
 @Controller
 @RequiredArgsConstructor
 public class AcompanhamentoController {
@@ -55,15 +57,18 @@ public class AcompanhamentoController {
     private final ConteudoRepository conteudoRepository;
     private final ViabilidadeService viabilidadeService;
 
+    // listar turmas para acompanhamento este metodo mostra as turmas do professor e as recentes
     @GetMapping("/acompanhamento")
     public String exibirAcompanhamento(Model model, HttpSession session) throws SQLException {
 
         String redirecionamento = verificarAcesso(session, "exibirAcompanhamento");
+        // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
         if (redirecionamento != null) {
             return redirecionamento;
         }
 
         String idProfessor = buscarIdProfessor(session);
+        // identificar professor autenticado retorna ao login quando o codigo do professor esta ausente
         if (idProfessor == null) {
             return "redirect:/login";
         }
@@ -76,6 +81,7 @@ public class AcompanhamentoController {
         return "Usuarios/Professor/acompanhamento";
     }
 
+    // acompanhar risco da turma este metodo reune os niveis dos alunos os materiais criticos e os atrasos
     @GetMapping("/acompanhamento/turma/{id}")
     public String exibirAcompanhamentoTurma(@PathVariable Long id,
                                             Model model,
@@ -85,17 +91,20 @@ public class AcompanhamentoController {
         long inicio = System.currentTimeMillis();
 
         String redirecionamento = verificarAcesso(session, "exibirAcompanhamentoTurma");
+        // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
         if (redirecionamento != null) {
             return redirecionamento;
         }
 
         String idProfessor = buscarIdProfessor(session);
+        // identificar professor autenticado retorna ao login quando o codigo do professor esta ausente
         if (idProfessor == null) {
             return "redirect:/login";
         }
 
         TurmaDTO turma = turmaDoProfessor(idProfessor, id);
 
+        // proteger acompanhamento da turma recusa a consulta quando o professor nao tem acesso
         if (turma == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não tem acesso a esta turma.");
             return "redirect:/acompanhamento";
@@ -129,19 +138,23 @@ public class AcompanhamentoController {
 
         for (usuarioAdminDTO aluno : alunos) {
             long atrasadosDoAluno = resultadosDaTurma(atrasadosPorAluno, aluno, id).size();
+            // destacar alunos atrasados inclui apenas alunos que possuem pendencias vencidas
             if (atrasadosDoAluno > 0) {
                 alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
             }
 
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
+                // reunir conteudos em risco conta alunos por material quando o nivel indica tempo insuficiente
                 if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())) {
                     tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
                     alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
                             .add(aluno.getIdPerfil());
                 }
 
+                // separar resumo do evento usa resultados sem conteudo para atualizar o total do evento
                 if (resultado.getIdConteudo() == null) {
                     Map<String, Long> contagemEvento = contagemPorEvento.get(resultado.getIdEvento());
+                    // contar nivel do evento acumula a situacao quando o evento possui contador preparado
                     if (contagemEvento != null) {
                         contagemEvento.merge(resultado.getNivel(), 1L, Long::sum);
                     }
@@ -149,6 +162,7 @@ public class AcompanhamentoController {
                 }
 
                 Map<Long, Map<String, Long>> contagemConteudos = contagemPorConteudo.get(resultado.getIdEvento());
+                // contar nivel do conteudo acumula a situacao apenas para materiais presentes no resumo
                 if (contagemConteudos != null && contagemConteudos.containsKey(resultado.getIdConteudo())) {
                     contagemConteudos.get(resultado.getIdConteudo()).merge(resultado.getNivel(), 1L, Long::sum);
                 }
@@ -173,6 +187,7 @@ public class AcompanhamentoController {
         return "Usuarios/Professor/acompanhamentoTurma";
     }
 
+    // acompanhar alunos do evento este metodo detalha conclusoes e riscos e ordena os alunos por gravidade
     @GetMapping("/acompanhamento/turma/{id}/evento/{idEvento}")
     public String exibirAcompanhamentoEvento(@PathVariable Long id,
                                              @PathVariable Long idEvento,
@@ -183,22 +198,26 @@ public class AcompanhamentoController {
         long inicio = System.currentTimeMillis();
 
         String redirecionamento = verificarAcesso(session, "exibirAcompanhamentoEvento");
+        // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
         if (redirecionamento != null) {
             return redirecionamento;
         }
 
         String idProfessor = buscarIdProfessor(session);
+        // identificar professor autenticado retorna ao login quando o codigo do professor esta ausente
         if (idProfessor == null) {
             return "redirect:/login";
         }
 
         TurmaDTO turma = turmaDoProfessor(idProfessor, id);
+        // proteger acompanhamento detalhado recusa a turma que nao esta entre os acessos do professor
         if (turma == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Você não tem acesso a esta turma.");
             return "redirect:/acompanhamento";
         }
 
         Evento evento = eventoRepository.findById(idEvento).orElse(null);
+        // conferir evento acompanhado exige que o evento exista e pertenca a turma escolhida
         if (evento == null || !id.equals(evento.getIdTurma())) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Evento não encontrado nesta turma.");
             return "redirect:/acompanhamento/turma/" + id;
@@ -221,6 +240,7 @@ public class AcompanhamentoController {
             String situacao = "sem_evento";
             long concluidos = 0;
 
+            // avaliar evento passado usa as conclusoes registradas para distinguir materiais feitos e atrasados
             if (eventoPassado) {
                 Set<Long> feitos = conteudosFeitosPorAluno.getOrDefault(aluno.getIdPerfil(), Set.of());
                 for (ConteudoDTO conteudo : conteudos) {
@@ -228,19 +248,23 @@ public class AcompanhamentoController {
                     niveis.put(conteudo.getId(), feito ? "concluido" : "atrasado");
                     concluidos += feito ? 1 : 0;
                 }
+                // definir situacao encerrada considera concluido apenas o evento com todos os conteudos feitos
                 if (!conteudos.isEmpty()) {
                     situacao = concluidos == conteudos.size() ? "concluido" : "atrasado";
                 }
             }
 
             for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
+                // filtrar resultado do evento ignora calculos de outros compromissos
                 if (!idEvento.equals(resultado.getIdEvento())) {
                     continue;
                 }
+                // separar situacao e materiais guarda o resumo do evento ou o nivel do conteudo identificado
                 if (resultado.getIdConteudo() == null) {
                     situacao = resultado.getNivel();
                 } else {
                     niveis.put(resultado.getIdConteudo(), resultado.getNivel());
+                    // contar material finalizado aumenta o progresso quando o conteudo esta concluido
                     if ("concluido".equals(resultado.getNivel())) {
                         concluidos++;
                     }
@@ -277,6 +301,7 @@ public class AcompanhamentoController {
         return "Usuarios/Professor/acompanhamentoEvento";
     }
 
+    // ordenar conteudos criticos este metodo prioriza os materiais com mais alunos em risco vermelho
     private List<Map<String, Object>> rankingCriticos(Map<Long, String> tituloPorConteudo,
                                                       Map<Long, Set<Long>> vermelhosPorConteudo) {
         List<Map<String, Object>> ranking = new ArrayList<>();
@@ -291,11 +316,14 @@ public class AcompanhamentoController {
         return ranking;
     }
 
+    // registrar tempo do acompanhamento este metodo guarda a duracao da consulta e o total de alunos
     private void registrarTempo(String operacao, Long idTurma, int quantidadeAlunos, long inicio) {
         long tempoMs = System.currentTimeMillis() - inicio;
 
         logger.info("Acompanhamento carregado. operacao={} turmaId={} alunos={} tempoMs={}", operacao, idTurma, quantidadeAlunos, tempoMs);
+        // registro de informacoes confere se esta habilitado ao registrar tempo do acompanhamento
         if (logger.isInfoEnabled()) {
+            // gravar historico ao registrar tempo do acompanhamento tenta salvar o registro no banco e informa falhas
             try {
                 UsuarioRepository.InserirLogsNoBD(null, "INFO", AcompanhamentoController.class.getName(), operacao, null,
                         MessageFormatter.arrayFormat("Acompanhamento carregado. operacao={} turmaId={} alunos={} tempoMs={}",
@@ -306,6 +334,7 @@ public class AcompanhamentoController {
         }
     }
 
+    // buscar turma do professor este metodo procura a turma entre os vinculos do professor
     private TurmaDTO turmaDoProfessor(String idProfessor, Long idTurma) throws SQLException {
         return turmaRepository.buscarTurmasDoUsuario("professor", idProfessor).stream()
                 .filter(turmaProfessor -> idTurma.equals(turmaProfessor.getId()))
@@ -313,10 +342,12 @@ public class AcompanhamentoController {
                 .orElse(null);
     }
 
+    // calcular risco dos participantes este metodo consulta a viabilidade de estudo dos alunos da turma
     private Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<usuarioAdminDTO> alunos) {
         return viabilidadeService.calcularParaAlunos(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
     }
 
+    // filtrar resultados da turma este metodo separa os riscos de um aluno na turma escolhida
     private List<ViabilidadeDTO> resultadosDaTurma(Map<Long, List<ViabilidadeDTO>> resultadosPorAluno,
                                                    usuarioAdminDTO aluno,
                                                    Long idTurma) {
@@ -325,26 +356,33 @@ public class AcompanhamentoController {
                 .toList();
     }
 
+    // iniciar contagem de riscos este metodo cria os contadores zerados para cada nivel
     private Map<String, Long> novaContagem() {
         Map<String, Long> contagem = new LinkedHashMap<>();
         NIVEIS.forEach(nivel -> contagem.put(nivel, 0L));
         return contagem;
     }
 
+    // buscar professor do acompanhamento este metodo consulta seu identificador pelo email conectado
     private String buscarIdProfessor(HttpSession session) throws SQLException {
         String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
         return idProfessor == null || idProfessor.isBlank() ? null : idProfessor;
     }
 
+    // validar acesso ao acompanhamento este metodo exige login e perfil de professor
     private String verificarAcesso(HttpSession session, String operacao) {
 
+        // exigir sessao verificada retorna ao login quando falta usuario ou email da verificacao
         if (session.getAttribute("usuarioLogado") == null || session.getAttribute("email2FA") == null) {
             return "redirect:/login";
         }
 
+        // restringir acompanhamento permite o acesso apenas pelo perfil de professor
         if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
             logger.warn("Acesso recusado ao acompanhamento: usuário não é professor.");
+            // registro de avisos confere se esta habilitado ao validar acesso ao acompanhamento
             if (logger.isWarnEnabled()) {
+                // gravar historico ao validar acesso ao acompanhamento tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", AcompanhamentoController.class.getName(), operacao, null,
                             "Acesso recusado ao acompanhamento: usuário não é professor.", null, null);

@@ -1,3 +1,4 @@
+<!-- cadastrar evento apresenta turma conteudos horarios e agenda ou o cadastro de disponibilidade do aluno -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -224,7 +225,7 @@
 
                 <h1 id="titulo-cadastro-aluno">Cadastrar Disponibilidade</h1>
 
-                <!-- formulario do aluno -->
+
                 <form class="event-form disponibilidade-form"
                       th:if="${session.tipoUsuario == 'aluno'}"
                       action="/eventos/cadastrar-disponibilidade"

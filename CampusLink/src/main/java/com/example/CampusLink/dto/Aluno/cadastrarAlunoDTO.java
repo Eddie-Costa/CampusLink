@@ -1,3 +1,4 @@
+// formulario de cadastro de aluno define os dados recebidos na inscricao
 package com.example.CampusLink.dto.Aluno;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dados do aluno inscrito esta classe valida rgm contato nascimento e senha
 @Getter
 @Setter
 

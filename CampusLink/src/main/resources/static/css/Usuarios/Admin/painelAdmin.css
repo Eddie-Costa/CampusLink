@@ -1,3 +1,4 @@
+/* estilo do painel administrativo organiza os cartoes de acesso as areas de gerenciamento */
 :root {
     --admin-azul: var(--campus-navy);
     --admin-azul-claro: var(--campus-navy-hover);

@@ -1,8 +1,10 @@
+// resumo administrativo de turma organiza os dados exibidos nas listagens
 package com.example.CampusLink.dto.Admin;
 
 import lombok.Getter;
 import lombok.Setter;
 
+// dados da turma na gestao esta classe guarda nome responsavel e quantidades de participantes
 @Getter
 @Setter
 public class turmaAdminDTO {

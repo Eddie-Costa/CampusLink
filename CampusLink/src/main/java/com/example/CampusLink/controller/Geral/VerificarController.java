@@ -1,3 +1,4 @@
+// confirmacao de email organiza os codigos usados em acesso cadastro e recuperacao
 
 package com.example.CampusLink.controller.Geral;
 
@@ -27,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
 
+// controle de verificacao esta classe confere codigos e encaminha cada fluxo apos a confirmacao
 @Controller
 public class VerificarController {
 
@@ -49,6 +51,7 @@ public class VerificarController {
     @Autowired
     private ProfessorRepository professorRepository;
 
+    // calcular tempos do codigo este metodo prepara a validade e a espera para reenvio na tela
     @ModelAttribute
     public void carregarTempos(HttpSession session, Model model) {
         String email = (String) session.getAttribute("email2FA");
@@ -60,16 +63,19 @@ public class VerificarController {
         model.addAttribute("tempoReenvio", String.format("%02d:%02d", reenvio / 60, reenvio % 60));
     }
 
+    // reenviar codigo de acesso este metodo respeita o intervalo e envia um novo codigo para a finalidade atual
     @PostMapping("/verificar/reenviar")
     public String reenviarCodigo(HttpSession session, RedirectAttributes redirectAttributes) {
         String email = (String) session.getAttribute("email2FA");
         Object fluxo = session.getAttribute("redirect");
+        // validar reenvio de codigo exige email preenchido e uma finalidade de verificacao conhecida
         if (email == null || email.isBlank()
                 || !("Login".equals(fluxo) || "Cadastro".equals(fluxo) || "ResetPassword".equals(fluxo))) {
             return "redirect:/login";
         }
 
         String codigo;
+        // respeitar espera de reenvio tenta gerar outro codigo e informa quando o prazo ainda nao terminou
         try {
             codigo = twoFactorService.reenviarCodigo(email);
         } catch (IllegalStateException e) {
@@ -77,6 +83,7 @@ public class VerificarController {
             return "redirect:/verificar";
         }
 
+        // reenviar codigo por email escolhe a finalidade da mensagem e invalida o codigo se o envio falhar
         try {
             FinalidadeCodigoEmail finalidade = switch (fluxo.toString()) {
                 case "Cadastro" -> FinalidadeCodigoEmail.CADASTRO;
@@ -92,14 +99,18 @@ public class VerificarController {
         return "redirect:/verificar";
     }
 
+    // abrir verificacao geral este metodo exige um email na sessao antes de mostrar o campo de codigo
     @GetMapping("/verificar")
     public String paginaVerificacao(HttpSession session) {
 
-        // verifica se o usuario passou pela pagina de login primeiro
+
+        // proteger pagina de verificacao retorna ao login quando falta o email que recebera o codigo
         if (session.getAttribute("email2FA") == null) {
             logger.warn("[LOGIN] email 2FA ausente - redirecionando para /login");
 
+            // registro de avisos confere se esta habilitado ao abrir verificacao geral
             if (logger.isWarnEnabled()) {
+                // gravar historico ao abrir verificacao geral tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacao", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /login", null, null);
@@ -114,14 +125,18 @@ public class VerificarController {
         return "Geral/verificar";
     }
 
+    // abrir verificacao do aluno este metodo retorna ao login do aluno quando falta o email
     @GetMapping("/verificarAluno")
     public String paginaVerificacaoAluno(HttpSession session) {
 
-        // verifica se o aluno passou pela pagina de login primeiro
+
+        // proteger verificacao do aluno retorna ao login do aluno quando falta o email
         if (session.getAttribute("email2FA") == null) {
             logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginAluno");
 
+            // registro de avisos confere se esta habilitado ao abrir verificacao do aluno
             if (logger.isWarnEnabled()) {
+                // gravar historico ao abrir verificacao do aluno tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAluno", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /loginAluno", null, null);
@@ -136,14 +151,18 @@ public class VerificarController {
         return "Geral/verificar";
     }
 
+    // abrir verificacao do professor este metodo retorna ao login do professor quando falta o email
     @GetMapping("/verificarProfessor")
     public String paginaVerificacaoProfessor(HttpSession session) {
 
-        // verifica se o professor passou pela pagina de login primeiro
+
+        // proteger verificacao do professor retorna ao login do professor quando falta o email
         if (session.getAttribute("email2FA") == null) {
             logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginProfessor");
 
+            // registro de avisos confere se esta habilitado ao abrir verificacao do professor
             if (logger.isWarnEnabled()) {
+                // gravar historico ao abrir verificacao do professor tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoProfessor", null,
                             "[LOGIN] email 2FA ausente - redirecionando para /loginProfessor", null, null);
@@ -158,14 +177,18 @@ public class VerificarController {
         return "Geral/verificar";
     }
 
+    // abrir verificacao do administrador este metodo retorna ao login administrativo quando falta o email
     @GetMapping("/verificarAdmin")
     public String paginaVerificacaoAdmin(HttpSession session) {
 
-        // verifica se o admin passou pela pagina de login primeiro
+
+        // proteger verificacao administrativa retorna ao login administrativo quando falta o email
         if (session.getAttribute("email2FA") == null) {
             logger.warn("[LOGIN] email 2FA ausente para administrador");
 
+            // registro de avisos confere se esta habilitado ao abrir verificacao do administrador
             if (logger.isWarnEnabled()) {
+                // gravar historico ao abrir verificacao do administrador tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAdmin", null,
                             "[LOGIN] email 2FA ausente para administrador", null, null);
@@ -180,24 +203,31 @@ public class VerificarController {
         return "Geral/verificar";
     }
 
+    // verificar codigo este metodo confirma o codigo e continua o login cadastro ou recuperacao de senha
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam String codigo, HttpSession session, Model model) throws SQLException {
 
+        // exigir finalidade do codigo retorna ao login quando falta email ou etapa de verificacao
         if (session.getAttribute("email2FA") == null || session.getAttribute("redirect") == null) {
             return "redirect:/login";
         }
 
+        // verificar codigo de acesso executa as etapas de autenticacao quando a finalidade e login
         if (session.getAttribute("redirect").equals("Login")) {
 
             String email = (String) session.getAttribute("email2FA");
 
-            // verifica se o email da sessao existe
+
+            // tratar acesso sem email escolhe a tela de login conforme o perfil informado
             if (email == null) {
 
+                // retornar ao acesso do aluno encaminha o aluno quando falta email para verificar
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
@@ -208,10 +238,14 @@ public class VerificarController {
 
                     return "redirect:/loginAluno";
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // retornar ao acesso do professor encaminha o professor quando falta email para verificar
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
@@ -222,10 +256,14 @@ public class VerificarController {
 
                     return "redirect:/loginProfessor";
 
-                } else if (session.getAttribute("tipoUsuario").equals("admin")) {
+                }
+                // retornar ao acesso administrativo encaminha o administrador quando falta email para verificar
+                else if (session.getAttribute("tipoUsuario").equals("admin")) {
                     logger.warn("[LOGIN] email 2FA invalido para administrador");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido para administrador", null, null);
@@ -238,42 +276,56 @@ public class VerificarController {
                 }
             }
 
+            // aceitar codigo de acesso cria a sessao autenticada quando o codigo e valido
             if (twoFactorService.validarCodigo(email, codigo)) {
 
                 session.removeAttribute("redirect");
+                // registrar contexto do aluno associa email e sessao ao registro do acesso confirmado
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     MDC.put("aluno", email);
                     MDC.put("sessionId", session.getId());
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // registrar contexto do professor associa email e sessao ao registro do acesso confirmado
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     MDC.put("professor", email);
                     MDC.put("sessionId", session.getId());
 
-                } else if (session.getAttribute("tipoUsuario").equals("admin")) {
+                }
+                // registrar contexto administrativo associa email e sessao ao registro do acesso confirmado
+                else if (session.getAttribute("tipoUsuario").equals("admin")) {
                     MDC.put("admin", email);
                     MDC.put("sessionId", session.getId());
                 }
 
-                // busca o usuario e cria a sessao
+
+                // carregar aluno autenticado busca a conta e guarda seus dados na sessao
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
                     session.setAttribute("usuarioLogado", aluno);
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // carregar professor autenticado busca a conta e guarda seus dados na sessao
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     loginProfessorDTO professor = professorRepository.buscarPorEmailProfessor(email);
                     session.setAttribute("usuarioLogado", professor);
 
-                } else if (session.getAttribute("tipoUsuario").equals("admin")) {
+                }
+                // carregar administrador autenticado busca a conta e guarda seus dados na sessao
+                else if (session.getAttribute("tipoUsuario").equals("admin")) {
                     loginAdminDTO admin = UsuarioRepository.buscarPorEmailAdmin(email);
                     session.setAttribute("usuarioLogado", admin);
                 }
 
                 session.setMaxInactiveInterval(900);
 
+                // confirmar login registrado informa o sucesso apenas quando a conta foi carregada
                 if (session.getAttribute("usuarioLogado") != null) {
                     logger.info("Login concluído. perfil={} email={} doisFatores=true", session.getAttribute("tipoUsuario"), email);
 
+                    // registro de informacoes confere se esta habilitado ao verificar codigo
                     if (logger.isInfoEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
                                     MessageFormatter.arrayFormat(
@@ -286,6 +338,7 @@ public class VerificarController {
                     }
                 }
 
+                // encaminhar acesso administrativo abre o painel depois da verificacao do administrador
                 if (session.getAttribute("tipoUsuario").equals("admin")) {
                     return "redirect:/admin/painel";
                 }
@@ -295,7 +348,9 @@ public class VerificarController {
 
             logger.warn("[LOGIN] codigo 2FA invalido no fluxo de login");
 
+            // registro de avisos confere se esta habilitado ao verificar codigo
             if (logger.isWarnEnabled()) {
+                // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                             "[LOGIN] codigo 2FA invalido no fluxo de login", null, null);
@@ -304,19 +359,25 @@ public class VerificarController {
                 }
             }
 
-        } else if (session.getAttribute("redirect").equals("ResetPassword")) {
+        }
+        // verificar recuperacao de senha identifica a conta quando o codigo serve para redefinir a senha
+        else if (session.getAttribute("redirect").equals("ResetPassword")) {
 
             String email = (String) session.getAttribute("email2FA");
 
             session.setAttribute("tipoUsuario", UsuarioRepository.buscarPorTipoUsuario(email));
 
-            // verifica se o email da sessao existe
+
+            // tratar recuperacao sem email escolhe o login conforme o perfil encontrado
             if (email == null) {
 
+                // retornar aluno na recuperacao encaminha o aluno ao login quando falta email
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
@@ -327,10 +388,14 @@ public class VerificarController {
 
                     return "redirect:/loginAluno";
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // retornar professor na recuperacao encaminha o professor ao login quando falta email
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
@@ -343,11 +408,14 @@ public class VerificarController {
                 }
             }
 
+            // aceitar codigo de recuperacao abre a redefinicao quando o codigo confere ou mostra o erro
             if (twoFactorService.validarCodigo(email, codigo)) {
                 session.removeAttribute("redirect");
                 logger.info("O usuário com email: {} passou na validação de token para Reset de senha", email);
 
+                // registro de informacoes confere se esta habilitado ao verificar codigo
                 if (logger.isInfoEnabled()) {
+                    // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "INFO", VerificarController.class.getName(), "verificarCodigo", null,
                                 MessageFormatter.arrayFormat(
@@ -359,11 +427,14 @@ public class VerificarController {
                     }
                 }
 
-                // busca o usuario para validar o tipo
+
+                // consultar aluno na recuperacao busca os dados quando a conta pertence a um aluno
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     loginAlunoDTO aluno = alunoRepository.buscarPorEmailAluno(email);
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // consultar professor na recuperacao busca os dados quando a conta pertence a um professor
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     loginProfessorDTO professor = professorRepository.buscarPorEmailProfessor(email);
                 }
 
@@ -375,7 +446,9 @@ public class VerificarController {
 
                 logger.warn("Codigo 2FA inválido inserido para o email: {}", email);
 
+                // registro de avisos confere se esta habilitado ao verificar codigo
                 if (logger.isWarnEnabled()) {
+                    // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                     try {
                         UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                 MessageFormatter.arrayFormat(
@@ -390,17 +463,23 @@ public class VerificarController {
                 return "Geral/verificar";
             }
 
-        } else if (session.getAttribute("redirect").equals("Cadastro")) {
+        }
+        // verificar codigo de cadastro segue a confirmacao de email para criar uma conta
+        else if (session.getAttribute("redirect").equals("Cadastro")) {
 
             String email = (String) session.getAttribute("email2FA");
 
-            // verifica se o email da sessao existe
+
+            // tratar cadastro sem email encaminha o usuario ao acesso do perfil informado
             if (email == null) {
 
+                // retornar aluno no cadastro encaminha o aluno ao login quando falta email
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
@@ -411,10 +490,14 @@ public class VerificarController {
 
                     return "redirect:/loginAluno";
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // retornar professor no cadastro encaminha o professor ao login quando falta email
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
 
+                    // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
+                        // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                                     "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
@@ -427,14 +510,18 @@ public class VerificarController {
                 }
             }
 
+            // confirmar email de cadastro encerra a etapa do codigo quando a verificacao e valida
             if (twoFactorService.validarCodigo(email, codigo)) {
 
                 session.removeAttribute("redirect");
+                // concluir verificacao do aluno marca o email confirmado e segue para salvar o cadastro
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
                     session.setAttribute("verificado", "true");
                     return "redirect:/cadastrarAlunoVerificado";
 
-                } else if (session.getAttribute("tipoUsuario").equals("professor")) {
+                }
+                // concluir verificacao do professor marca o email confirmado e segue para salvar o cadastro
+                else if (session.getAttribute("tipoUsuario").equals("professor")) {
                     session.setAttribute("verificado", "true");
                     return "redirect:/cadastrarProfessorVerificado";
                 }
@@ -445,7 +532,9 @@ public class VerificarController {
 
         logger.warn("Codigo 2FA inválido inserido para usuario com email: {}", session.getAttribute("email2FA"));
 
+        // registro de avisos confere se esta habilitado ao verificar codigo
         if (logger.isWarnEnabled()) {
+            // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
             try {
                 UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
                         MessageFormatter.arrayFormat(
