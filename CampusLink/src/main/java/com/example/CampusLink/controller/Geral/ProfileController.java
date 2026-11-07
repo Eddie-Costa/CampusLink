@@ -8,6 +8,7 @@ import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
+import com.example.CampusLink.service.TermosService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import com.example.CampusLink.dto.FinalidadeCodigoEmail;
@@ -45,6 +46,9 @@ public class ProfileController {
     @Autowired
     private SessaoLogListener sessaoLogListener;
 
+    @Autowired
+    private TermosService termosService;
+
     @GetMapping({"/profile", "/profile/dados"})
     public String profile(HttpSession session, Model model) throws SQLException {
         if (ehAdministrador(session)) {
@@ -60,6 +64,7 @@ public class ProfileController {
         model.addAttribute("dados", dados);
         model.addAttribute("possuiVinculos", UsuarioRepository.possuiVinculosParaExclusao(dados.getId()));
         model.addAttribute("exclusaoPendente", Boolean.TRUE.equals(session.getAttribute("exclusaoPendente")));
+        model.addAttribute("aceiteTermos", termosService.aceiteAtivo(dados.getId()));
         return "Geral/profile";
     }
 

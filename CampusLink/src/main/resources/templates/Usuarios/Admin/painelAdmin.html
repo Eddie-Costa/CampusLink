@@ -130,6 +130,21 @@
                     </a>
                 </article>
             </div>
+            <div class="col-md-6" th:if="${adminMaster}">
+                <article class="admin-card h-100">
+                    <div class="admin-card-topo">
+                        <h2>Termos de uso</h2>
+                    </div>
+
+                    <p class="admin-descricao">
+                        Publique novas versões dos termos e acompanhe quantos usuários aceitaram cada uma
+                    </p>
+
+                    <a th:href="@{/admin/termos}" class="btn btn-primary">
+                        Gerenciar termos
+                    </a>
+                </article>
+            </div>
 
         </section>
 

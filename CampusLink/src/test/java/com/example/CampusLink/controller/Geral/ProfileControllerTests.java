@@ -8,6 +8,8 @@ import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
 import com.example.CampusLink.dto.FinalidadeCodigoEmail;
+import com.example.CampusLink.service.ChamadoAcessoService;
+import com.example.CampusLink.service.TermosService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +47,8 @@ class ProfileControllerTests {
     @MockitoBean UsuarioRepository usuarios;
     @MockitoBean emailService emails;
     @MockitoBean SessaoLogListener sessoes;
+    @MockitoBean ChamadoAcessoService acessoChamados;
+    @MockitoBean TermosService termos;
     private MockHttpSession session;
     private DadosUsuarioDTO dados;
 

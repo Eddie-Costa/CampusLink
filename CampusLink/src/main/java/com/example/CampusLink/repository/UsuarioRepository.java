@@ -277,6 +277,14 @@ public class UsuarioRepository {
         String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" "
                 + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
 
+        String sqlAceiteTermos = """
+                INSERT INTO public."CONSENTIMENTOS" (id_usuario, tipo, id_termo, hash_sha256)
+                SELECT ?, 'termos_uso', id, hash_sha256
+                FROM public."TERMOS_VERSOES"
+                ORDER BY publicado_em DESC, id DESC
+                LIMIT 1
+                """;
+
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
@@ -304,6 +312,13 @@ public class UsuarioRepository {
                         stmt2.setLong(1, idUsuario);
                         stmt2.setString(2, IDENTIFICADOR);
                         stmt2.executeUpdate();
+                    }
+
+                    try (PreparedStatement stmt3 = conn.prepareStatement(sqlAceiteTermos)) {
+                        stmt3.setLong(1, idUsuario);
+                        if (stmt3.executeUpdate() == 0) {
+                            throw new SQLException("Nenhuma versão dos termos publicada para registrar o aceite.");
+                        }
                     }
                 }
             }

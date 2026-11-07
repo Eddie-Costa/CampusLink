@@ -1,5 +1,6 @@
 package com.example.CampusLink.dto.Aluno;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -39,4 +40,7 @@ public class cadastrarAlunoDTO {
             message = "Senha deve conter maiúscula, minúscula, número e caractere especial"
     )
     private String senha;
+
+    @AssertTrue(message = "É necessário aceitar os Termos de Uso")
+    private boolean termos;
 }

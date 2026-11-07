@@ -12,7 +12,7 @@
                 <li class="nav-item"><a th:href="@{/funcionalidades}" class="nav-link px-2">Funcionalidades</a></li>
                 <li class="nav-item"><a th:href="@{/sobre-nos}" class="nav-link px-2">Sobre Nós</a></li>
                 <li class="nav-item">
-                    <a th:href="@{/documentos/termos-v1.0.txt}" class="nav-link px-2"
+                    <a th:href="@{/termos}" class="nav-link px-2"
                        data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso</a>
                 </li>
             </ul>
@@ -28,7 +28,47 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div id="textoTermos" class="modal-body termos-documento"
-                     th:attr="data-url=@{/documentos/termos-v1.0.txt}" aria-live="polite">Carregando termos...</div>
+                     th:attr="data-url=@{/termos}" aria-live="polite">Carregando termos...</div>
+                <div class="modal-footer"
+                     th:if="${session.usuarioLogado != null and (session.tipoUsuario == 'aluno' or session.tipoUsuario == 'professor')}">
+                    <button type="button" class="btn btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#modalRevogarTermos">
+                        Revogar meu aceite
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRevogarTermos" class="modal fade" tabindex="-1" aria-labelledby="tituloRevogarTermos" aria-hidden="true"
+         th:if="${session.usuarioLogado != null and (session.tipoUsuario == 'aluno' or session.tipoUsuario == 'professor')}">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="tituloRevogarTermos" class="modal-title fs-5">Revogar meu aceite dos termos</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você pode revogar seu aceite a qualquer momento. Antes de confirmar, veja o que acontece:</p>
+                    <ul>
+                        <li>Você <strong>deixa de ter acesso</strong> ao CampusLink: turmas, conteúdos, calendário,
+                            score e chamados. Qualquer página levará você à tela dos termos.</li>
+                        <li>Sua conta e seus dados <strong>não são excluídos</strong>. Eles continuam guardados
+                            pelos prazos informados nos Termos.</li>
+                        <li>Se você for professor, suas turmas e conteúdos continuam disponíveis para os alunos.</li>
+                        <li>Enquanto não aceitar novamente, você ainda poderá <strong>exportar seus dados</strong>
+                            ou <strong>excluir sua conta</strong>.</li>
+                        <li>Para voltar a usar a plataforma, basta <strong>ler e aceitar novamente</strong> a versão
+                            atual dos termos.</li>
+                        <li>A data e a hora do seu aceite e da revogação ficam registradas, como exige a LGPD.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form th:action="@{/termos/revogar}" method="post" data-submit-once>
+                        <button type="submit" class="btn btn-danger">Entendi, revogar meu aceite</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

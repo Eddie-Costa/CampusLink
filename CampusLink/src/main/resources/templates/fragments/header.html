@@ -133,7 +133,7 @@
                             <a class="dropdown-item" th:href="@{/ajuda}">Canal de ajuda</a>
                             <a class="dropdown-item" th:href="@{/meus-chamados}">Meus chamados</a>
                             <hr class="dropdown-divider">
-                            <a class="dropdown-item" th:href="@{/documentos/termos-v1.0.txt}"
+                            <a class="dropdown-item" th:href="@{/termos}"
                                data-bs-toggle="modal" data-bs-target="#modalTermos">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></svg>
                                 Termos de Uso
@@ -154,6 +154,14 @@
                 </div>
 
             </header>
+        </div>
+        <div class="alert alert-warning rounded-0 mb-0 py-2 border-0 border-bottom" role="status"
+             th:if="${session.termosPendentes == true and session.usuarioLogado != null}">
+            <div class="container px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <span>Você precisa aceitar os Termos de Uso para usar as funcionalidades do CampusLink.
+                    Sua conta e seus dados continuam guardados.</span>
+                <a th:href="@{/termos/aceite}" class="btn btn-sm btn-warning">Ler e aceitar os termos</a>
+            </div>
         </div>
         <script>
             (() => {

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Termos de uso | CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/conteudosDenunciados.css}">
+    <style>
+        .termo-hash {
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .termo-texto {
+            max-height: 360px;
+            margin: 12px 0 0;
+            padding: 12px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background: #f6f7fb;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+
+        .termo-editor {
+            min-height: 420px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: nav}"></div>
+
+<main class="admin-page">
+    <div class="admin-container">
+
+        <header class="admin-topo">
+            <div>
+                <p class="admin-etiqueta">Administração · somente administrador master</p>
+                <h1>Termos de uso</h1>
+                <p>Versões publicadas não podem ser alteradas. Para mudar o texto, publique uma nova versão.</p>
+            </div>
+
+            <a th:href="@{/admin/painel}" class="btn btn-outline-primary">Voltar ao início</a>
+        </header>
+
+        <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
+
+        <div class="admin-resumo">
+            <strong th:text="${#lists.size(versoes)}">0</strong>
+            <span>versões publicadas</span>
+        </div>
+
+        <section class="admin-lista" aria-label="Versões publicadas">
+            <article th:each="termo, estado : ${versoes}" class="admin-card">
+
+                <div class="admin-card-topo">
+                    <h2 th:text="${'Versão ' + termo.versao()}">Versão 1.0</h2>
+                    <span class="admin-status" th:text="${estado.first ? 'Em vigor' : 'Anterior'}">Em vigor</span>
+                </div>
+
+                <div class="admin-informacoes">
+                    <div>
+                        <span>Publicada em</span>
+                        <strong th:text="${#temporals.format(termo.publicadoEm(), 'dd/MM/yyyy HH:mm')}">28/09/2026</strong>
+                    </div>
+                    <div>
+                        <span>Aceites registrados</span>
+                        <strong th:text="${termo.aceites()}">0</strong>
+                    </div>
+                </div>
+
+                <p class="admin-descricao mb-0">
+                    SHA-256: <span class="termo-hash" th:text="${termo.hashSha256()}">hash</span>
+                </p>
+
+                <details class="admin-denuncias">
+                    <summary>Ver texto desta versão</summary>
+                    <div class="termo-texto" th:text="${termo.conteudo()}">Texto</div>
+                </details>
+            </article>
+        </section>
+
+        <section class="admin-card mt-4" aria-labelledby="tituloNovaVersao">
+            <div class="admin-card-topo">
+                <h2 id="tituloNovaVersao">Publicar nova versão</h2>
+            </div>
+
+            <p class="admin-descricao">
+                O texto abaixo começa com a versão em vigor. Edite o que for necessário e informe o novo número de versão.
+            </p>
+
+            <form th:action="@{/admin/termos}" method="post" data-submit-once>
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <label for="versao" class="form-label">Número da versão</label>
+                <input id="versao" name="versao" class="form-control mb-3" type="text" required maxlength="20"
+                       pattern="\d{1,4}(\.\d{1,4}){0,3}" placeholder="Ex.: 1.1" th:value="${versao}">
+
+                <label for="conteudo" class="form-label">Texto dos termos</label>
+                <textarea id="conteudo" name="conteudo" class="form-control termo-editor mb-3" required
+                          maxlength="100000" th:text="${conteudo}"></textarea>
+
+                <div class="form-check mb-3">
+                    <input id="confirmar" name="confirmar" value="true" class="form-check-input" type="checkbox" required>
+                    <label for="confirmar" class="form-check-label">
+                        Entendo que a nova versão entra em vigor imediatamente, não poderá ser alterada depois
+                        e que todos os alunos e professores precisarão aceitá-la no próximo acesso.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Publicar nova versão</button>
+            </form>
+        </section>
+
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

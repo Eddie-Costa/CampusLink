@@ -21,7 +21,9 @@
 
     <div class="profile-layout" th:if="${dados != null}">
         <aside class="profile-card profile-identity" aria-label="Sua conta">
-            <div class="profile-avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(dados.nome, 0, 1))}">U</div>
+            <div class="profile-avatar" aria-hidden="true"
+                 th:text="${#strings.toUpperCase(#strings.substring(dados.nome, 0, 1))}">U
+            </div>
             <h2 th:text="${dados.nome}">Nome</h2>
             <span class="profile-badge" th:text="${dados.tipoConta}">Aluno</span>
             <p class="profile-email" th:text="${dados.email}"></p>
@@ -30,6 +32,7 @@
                 <a th:href="@{/meus-chamados}">Meus chamados</a>
                 <a th:href="@{/ajuda}">Canal de ajuda</a>
                 <a href="#exportar-dados">Exportar dados</a>
+                <a href="#termos-uso">Termos de uso</a>
                 <a href="#excluir-conta">Excluir conta</a>
             </nav>
             <a th:href="@{/logout}" class="profile-logout">Sair da conta</a>
@@ -71,30 +74,58 @@
                     </div>
                 </dl>
                 <p class="profile-note">Para corrigir informações ou fazer outras solicitações sobre seus dados,
-                    utilize o canal informado nos <button type="button" class="btn btn-link p-0 align-baseline"
-                    data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso</button>.</p>
+                    utilize o canal informado nos
+                    <button type="button" class="btn btn-link p-0 align-baseline"
+                            data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso
+                    </button>
+                    .
+                </p>
             </section>
 
             <section id="exportar-dados" class="profile-card">
                 <span class="profile-eyebrow">UMA CÓPIA PARA VOCÊ</span>
                 <h2>Exportar meus dados</h2>
-                <p class="profile-description">Receba por e-mail uma cópia das informações cadastrais exibidas acima.</p>
+                <p class="profile-description">Receba por e-mail uma cópia das informações cadastrais exibidas
+                    acima.</p>
                 <p class="profile-note">O envio será feito somente para <strong th:text="${dados.email}"></strong>.</p>
                 <form th:action="@{/profile/exportar}" method="post" data-submit-once>
                     <button type="submit" class="btn profile-primary">Enviar dados por e-mail</button>
                 </form>
             </section>
 
+            <section id="termos-uso" class="profile-card">
+                <span class="profile-eyebrow">SEU ACEITE</span>
+                <h2>Termos de uso</h2>
+                <p class="profile-description" th:if="${aceiteTermos != null}"
+                   th:text="${'Você aceitou a versão ' + aceiteTermos.versao() + ' em ' + #temporals.format(aceiteTermos.aceitoEm(), 'dd/MM/yyyy') + ' às ' + #temporals.format(aceiteTermos.aceitoEm(), 'HH:mm') + '.'}">
+                    Você aceitou a versão 1.0 em 04/11/2026 às 20:00.
+                </p>
+                <p class="profile-note" th:if="${aceiteTermos != null}"
+                   th:text="${'Código de integridade do termo aceito (SHA-256): ' + aceiteTermos.hashSha256()}">SHA-256</p>
+                <p class="profile-description">
+                    Você pode revogar seu aceite a qualquer momento. Sua conta e seus dados <strong>não</strong> serão
+                    excluídos, mas não será possível usar o CampusLink até aceitar os termos novamente.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-secondary"
+                            data-bs-toggle="modal" data-bs-target="#modalTermos">Ler os termos</button>
+                    <button type="button" class="btn btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#modalRevogarTermos">Revogar meu aceite</button>
+                </div>
+            </section>
+
             <section id="excluir-conta" class="profile-card profile-danger">
                 <span class="profile-eyebrow">ENCERRAMENTO DA CONTA</span>
                 <h2>Excluir minha conta</h2>
                 <p class="profile-description">A exclusão remove seu cadastro, suas participações em turmas,
-                    disponibilidades e denúncias vinculadas. Você perderá o acesso à conta. Esta ação não pode ser desfeita.</p>
+                    disponibilidades e denúncias vinculadas. Você perderá o acesso à conta. Esta ação não pode ser
+                    desfeita.</p>
                 <p class="profile-note">Registros de segurança e cópias de segurança seguem os critérios de conservação
                     informados nos Termos de Uso. A exportação acima contém somente os dados cadastrais.</p>
                 <div th:if="${possuiVinculos}" class="alert alert-warning">
                     <p>Antes de excluir sua conta, remova ou transfira as turmas sob sua responsabilidade,
-                        seus materiais e seus eventos. Se precisar de ajuda com esses vínculos, utilize o canal dos Termos de Uso.</p>
+                        seus materiais e seus eventos. Se precisar de ajuda com esses vínculos, utilize o canal dos
+                        Termos de Uso.</p>
                     <div class="d-flex flex-wrap gap-3">
                         <a th:href="@{/turmas}">Ver turmas</a>
                         <a th:href="@{/meus-conteudos}">Ver materiais</a>
@@ -102,10 +133,13 @@
                     </div>
                 </div>
                 <th:block th:unless="${possuiVinculos}">
-                    <p class="profile-note">Para sua segurança, confirme a exclusão com um código enviado ao e-mail da conta.</p>
+                    <p class="profile-note">Para sua segurança, confirme a exclusão com um código enviado ao e-mail da
+                        conta.</p>
                     <form th:action="@{/profile/excluir}" method="post" data-submit-once>
                         <button type="submit" class="btn btn-outline-danger"
-                                th:text="${exclusaoPendente} ? 'Reenviar código de exclusão' : 'Solicitar código de exclusão'">Solicitar código de exclusão</button>
+                                th:text="${exclusaoPendente} ? 'Reenviar código de exclusão' : 'Solicitar código de exclusão'">
+                            Solicitar código de exclusão
+                        </button>
                     </form>
                     <div class="profile-confirmation" th:if="${exclusaoPendente}">
                         <form th:action="@{/profile/excluir/confirmar}" method="post" data-submit-once>
@@ -113,10 +147,13 @@
                             <input id="codigoExclusao" name="codigo" class="form-control profile-code" type="text"
                                    inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"
                                    required aria-describedby="ajudaCodigo">
-                            <p id="ajudaCodigo" class="profile-note mt-2">O código vale por cinco minutos. Aguarde dois minutos entre reenvios.</p>
+                            <p id="ajudaCodigo" class="profile-note mt-2">O código vale por cinco minutos. Aguarde dois
+                                minutos entre reenvios.</p>
                             <div class="form-check my-3">
-                                <input id="confirmarExclusao" class="form-check-input" name="confirmar" type="checkbox" value="true" required>
-                                <label for="confirmarExclusao" class="form-check-label">Entendo as consequências e quero excluir minha conta.</label>
+                                <input id="confirmarExclusao" class="form-check-input" name="confirmar" type="checkbox"
+                                       value="true" required>
+                                <label for="confirmarExclusao" class="form-check-label">Entendo as consequências e quero
+                                    excluir minha conta.</label>
                             </div>
                             <button type="submit" class="btn btn-danger">Confirmar exclusão da conta</button>
                         </form>
