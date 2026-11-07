@@ -1,6 +1,10 @@
 package com.example.CampusLink.controller.Geral;
 
+import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
+import com.example.CampusLink.dto.Professor.loginProfessorDTO;
+import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.repository.ConteudoRepository;
+import com.example.CampusLink.repository.ProfessorRepository;
 import com.example.CampusLink.dto.ArquivoDTO;
 import com.example.CampusLink.service.ArquivoService;
 import com.example.CampusLink.repository.UsuarioRepository;
@@ -26,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/arquivos")
@@ -38,13 +44,56 @@ public class ArquivoController {
 
     private final ArquivoService arquivoService;
     private final ConteudoRepository conteudoRepository;
+    private final AlunoRepository alunoRepository;
+    private final ProfessorRepository professorRepository;
 
     public ArquivoController(
             ArquivoService arquivoService,
-            ConteudoRepository conteudoRepository) {
+            ConteudoRepository conteudoRepository,
+            AlunoRepository alunoRepository,
+            ProfessorRepository professorRepository) {
 
         this.arquivoService = arquivoService;
         this.conteudoRepository = conteudoRepository;
+        this.alunoRepository = alunoRepository;
+        this.professorRepository = professorRepository;
+    }
+
+    private boolean podeAcessar(HttpSession session, Long idConteudo) throws SQLException {
+        if (idConteudo == null) {
+            return false;
+        }
+
+        Object usuario = session.getAttribute("usuarioLogado");
+        String tipo = null;
+        String idUsuario = null;
+        if (usuario instanceof loginAlunoDTO aluno && "aluno".equals(session.getAttribute("tipoUsuario"))) {
+            tipo = "aluno";
+            idUsuario = alunoRepository.buscarPorIDAluno(aluno.getEmail());
+        } else if (usuario instanceof loginProfessorDTO professor && "professor".equals(session.getAttribute("tipoUsuario"))) {
+            tipo = "professor";
+            idUsuario = professorRepository.buscarPorIDProfessor(professor.getEmail());
+        }
+
+        return idUsuario != null && !idUsuario.isBlank()
+                && conteudoRepository.usuarioTemAcessoAoConteudo(idConteudo, tipo, Long.parseLong(idUsuario));
+    }
+
+    private void registrarRecusa(String operacao, Long idArquivo, Long idConteudo) {
+        logger.warn("[{}] acesso a arquivo recusado: usuário sem vínculo. arquivoId={} conteudoId={}", operacao, idArquivo, idConteudo);
+        if (logger.isWarnEnabled()) {
+            try {
+                UsuarioRepository.InserirLogsNoBD(null, "WARN", ArquivoController.class.getName(), operacao, null,
+                        MessageFormatter.arrayFormat("[{}] acesso a arquivo recusado: usuário sem vínculo. arquivoId={} conteudoId={}", new Object[]{operacao, idArquivo, idConteudo}).getMessage(), null, null);
+            } catch (Exception erroLogBD) {
+                logger.error("Erro ao gravar log no banco.", erroLogBD);
+            }
+        }
+    }
+
+    private boolean professorLogado(HttpSession session) {
+        return session.getAttribute("usuarioLogado") instanceof loginProfessorDTO
+                && "professor".equals(session.getAttribute("tipoUsuario"));
     }
 
 
@@ -54,7 +103,7 @@ public class ArquivoController {
     @GetMapping
     public String pagina(
             Model model,
-            HttpSession session) {
+            HttpSession session) throws SQLException {
 
         if (session.getAttribute("usuarioLogado") == null) {
             logger.warn("Acesso aos arquivos recusado: usuário não autenticado.");
@@ -69,9 +118,16 @@ public class ArquivoController {
             return "redirect:/login";
         }
 
+        List<ArquivoDTO> visiveis = new ArrayList<>();
+        for (ArquivoDTO arquivo : arquivoService.listarTodos()) {
+            if (podeAcessar(session, arquivo.getIdConteudo())) {
+                visiveis.add(arquivo);
+            }
+        }
+
         model.addAttribute(
                 "arquivos",
-                arquivoService.listarTodos()
+                visiveis
         );
 
         return "Geral/arquivos";
@@ -94,10 +150,9 @@ public class ArquivoController {
 
             HttpSession session,
 
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) throws SQLException {
 
-        if (!"professor".equals(
-                session.getAttribute("tipoUsuario"))) {
+        if (!professorLogado(session)) {
 
             redirectAttributes.addFlashAttribute(
                     "erro",
@@ -113,6 +168,16 @@ public class ArquivoController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            return "redirect:/arquivos";
+        }
+
+        if (idConteudo == null) {
+            redirectAttributes.addFlashAttribute("erro", "Informe o conteúdo ao qual o arquivo pertence.");
+            return "redirect:/arquivos";
+        }
+        if (!podeAcessar(session, idConteudo)) {
+            registrarRecusa("upload", null, idConteudo);
+            redirectAttributes.addFlashAttribute("erro", "Você não tem acesso a este conteúdo.");
             return "redirect:/arquivos";
         }
 
@@ -164,12 +229,32 @@ public class ArquivoController {
                     .build();
         }
 
-        ArquivoDTO arquivo =
-                arquivoService.buscarPorId(id);
+        ArquivoDTO arquivo;
+        try {
+            arquivo = arquivoService.buscarPorId(id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(404)
+                    .build();
+        }
+
+        if (arquivo.getIdConteudo() == null) {
+            registrarRecusa("download", id, null);
+            return ResponseEntity
+                    .status(403)
+                    .build();
+        }
 
         if (arquivo.getIdConteudo() != null) {
 
             try {
+
+                if (!podeAcessar(session, arquivo.getIdConteudo())) {
+                    registrarRecusa("download", id, arquivo.getIdConteudo());
+                    return ResponseEntity
+                            .status(403)
+                            .build();
+                }
 
                 String statusConteudo =
                         conteudoRepository.buscarStatus(
@@ -232,10 +317,9 @@ public class ArquivoController {
     public String excluir(
             @PathVariable Long id,
             HttpSession session,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) throws SQLException {
 
-        if (!"professor".equals(
-                session.getAttribute("tipoUsuario"))) {
+        if (!professorLogado(session)) {
 
             redirectAttributes.addFlashAttribute(
                     "erro",
@@ -251,6 +335,19 @@ public class ArquivoController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            return "redirect:/arquivos";
+        }
+
+        ArquivoDTO arquivoExcluido;
+        try {
+            arquivoExcluido = arquivoService.buscarPorId(id);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", "Arquivo não encontrado.");
+            return "redirect:/arquivos";
+        }
+        if (!podeAcessar(session, arquivoExcluido.getIdConteudo())) {
+            registrarRecusa("excluir", id, arquivoExcluido.getIdConteudo());
+            redirectAttributes.addFlashAttribute("erro", "Você não tem acesso a este arquivo.");
             return "redirect:/arquivos";
         }
 

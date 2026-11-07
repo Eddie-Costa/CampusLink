@@ -367,6 +367,7 @@ public class VerificarController {
                     loginProfessorDTO professor = professorRepository.buscarPorEmailProfessor(email);
                 }
 
+                session.setAttribute(ResetPaswordController.SESSAO_RESET_LIBERADO, email);
                 return "redirect:/ResetPassword";
 
             } else {

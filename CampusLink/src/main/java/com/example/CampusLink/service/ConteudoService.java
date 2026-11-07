@@ -386,6 +386,14 @@ public class ConteudoService {
         }
     }
 
+    public boolean pertenceATurma(Long idConteudo, Long idTurma) {
+        try {
+            return conteudoRepository.conteudoPertenceTurma(idConteudo, idTurma);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível verificar a turma do conteúdo.", e);
+        }
+    }
+
     public void excluir(Long id) {
         try {
             conteudoRepository.excluir(id);

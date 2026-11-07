@@ -24,6 +24,8 @@ import java.sql.SQLException;
 @Controller
 public class ResetPaswordController {
 
+    public static final String SESSAO_RESET_LIBERADO = "resetSenhaLiberadoPara";
+
     private static final Logger logger = LoggerFactory.getLogger(ResetPaswordController.class);
 
     @Autowired
@@ -46,8 +48,17 @@ public class ResetPaswordController {
     @PostMapping("/ResetVerification")
     public String ResetVerification(@Valid @ModelAttribute("usuario") redefinirSenhaDTO usuarioDTO, BindingResult result, Model model, HttpSession session){
 
-        String email = usuarioDTO.getEmail();
+        if (session.getAttribute("usuarioLogado") != null) {
+            return "redirect:/profile";
+        }
+        if (result.hasFieldErrors("email")) {
+            model.addAttribute("mensagemDeErro", result.getFieldError("email").getDefaultMessage());
+            return "Geral/ResetPassword_Verification";
+        }
 
+        String email = usuarioDTO.getEmail().trim().toLowerCase();
+
+        session.removeAttribute(SESSAO_RESET_LIBERADO);
         session.setAttribute("email2FA", email);
         session.setAttribute("redirect", "ResetPassword");
 
@@ -75,7 +86,7 @@ public class ResetPaswordController {
     @GetMapping("/ResetPassword")
     public String ResetPasword(HttpSession session){
 
-        if(session.getAttribute("email2FA") == null){
+        if (resetLiberado(session) == null) {
             return "redirect:/ResetPassword_Verification";
         }
 
@@ -86,10 +97,19 @@ public class ResetPaswordController {
     public String Reset(@Valid @ModelAttribute("usuario") redefinirSenhaDTO usuarioDTO, BindingResult result, Model model, HttpSession session) throws SQLException {
 
 
-        String email = (String) session.getAttribute("email2FA");
+        String email = resetLiberado(session);
+        if (email == null) {
+            return "redirect:/ResetPassword_Verification";
+        }
         String senha = usuarioDTO.getSenha();
 
-        if (!usuarioDTO.getSenha().equals(usuarioDTO.getConfirmarSenha())) {
+        if (result.hasFieldErrors("senha") || senha == null) {
+            model.addAttribute("mensagemDeErro", result.hasFieldErrors("senha")
+                    ? result.getFieldError("senha").getDefaultMessage() : "Informe a nova senha.");
+            return "Geral/ResetPassword";
+        }
+
+        if (!senha.equals(usuarioDTO.getConfirmarSenha())) {
             model.addAttribute("mensagemDeErro", "As senhas não coincidem");
             return "Geral/ResetPassword";
         }
@@ -98,6 +118,9 @@ public class ResetPaswordController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         UsuarioRepository.UpdateSenhaUsuario(encoder.encode(senha), email);
+        session.removeAttribute(SESSAO_RESET_LIBERADO);
+        session.removeAttribute("email2FA");
+        session.removeAttribute("tipoUsuario");
 
         logger.info("A senha foi resetada para o email: {}", email);
         if (logger.isInfoEnabled()) {
@@ -110,5 +133,14 @@ public class ResetPaswordController {
         }
 
         return "redirect:/login";
+    }
+
+    private String resetLiberado(HttpSession session) {
+        Object liberadoPara = session.getAttribute(SESSAO_RESET_LIBERADO);
+        Object email = session.getAttribute("email2FA");
+        if (liberadoPara instanceof String emailLiberado && emailLiberado.equals(email)) {
+            return emailLiberado;
+        }
+        return null;
     }
 }

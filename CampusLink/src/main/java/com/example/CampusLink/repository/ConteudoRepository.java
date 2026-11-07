@@ -680,6 +680,42 @@ public class ConteudoRepository {
         }
     }
 
+    public boolean usuarioTemAcessoAoConteudo(Long idConteudo, String tipoUsuario, Long idUsuario) throws SQLException {
+        String sql;
+        Object[] parametros;
+
+        if ("aluno".equals(tipoUsuario)) {
+            sql = """
+                    SELECT EXISTS (
+                        SELECT 1 FROM public."CONTEUDOS" c
+                        JOIN public."TURMAS" t ON t."id" = ANY(c."id_turma")
+                        WHERE c."id" = ? AND ? = ANY(t."id_alunos")
+                    )
+                    """;
+            parametros = new Object[]{idConteudo, idUsuario};
+        } else if ("professor".equals(tipoUsuario)) {
+            sql = """
+                    SELECT EXISTS (
+                        SELECT 1 FROM public."CONTEUDOS" c
+                        LEFT JOIN public."TURMAS" t ON t."id" = ANY(c."id_turma")
+                        WHERE c."id" = ?
+                        AND (c."id_professor" = ?
+                             OR ? = ANY(COALESCE(t."id_professores", ARRAY[]::bigint[]))
+                             OR t."id_proprietario" = ?)
+                    )
+                    """;
+            parametros = new Object[]{idConteudo, idUsuario, idUsuario, idUsuario};
+        } else {
+            return false;
+        }
+
+        try {
+            return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, parametros));
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
     public void atualizarStatus(Long idConteudo, String status) throws SQLException {
         String sql = """
                 UPDATE public."CONTEUDOS"

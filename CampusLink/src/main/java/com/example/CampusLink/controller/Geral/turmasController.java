@@ -89,9 +89,22 @@ public class turmasController {
     public String ambienteTurma(@PathVariable String id,
                                 @RequestParam(required = false) String q,
                                 @RequestParam(required = false) String tipo,
-                                Model model, HttpSession session) throws SQLException {
+                                Model model, HttpSession session,
+                                RedirectAttributes redirectAttributes) throws SQLException {
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
+        }
+
+        Long idTurma;
+        try {
+            idTurma = Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return "redirect:/turmas";
+        }
+
+        if (!participaDaTurma(session, idTurma, "ambienteTurma")) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
+            return "redirect:/turmas";
         }
 
         model.addAttribute("idTurma", id);
@@ -196,6 +209,38 @@ public class turmasController {
         }
     }
 
+    private boolean participaDaTurma(HttpSession session, Long idTurma, String operacao) throws SQLException {
+        Object tipo = session.getAttribute("tipoUsuario");
+        Object email = session.getAttribute("email2FA");
+        String idUsuario = null;
+
+        if (idTurma != null && email != null) {
+            if ("aluno".equals(tipo)) {
+                idUsuario = alunoRepository.buscarPorIDAluno(email.toString());
+            } else if ("professor".equals(tipo)) {
+                idUsuario = professorRepository.buscarPorIDProfessor(email.toString());
+            }
+        }
+
+        boolean participa = idUsuario != null && !idUsuario.isBlank()
+                && turmaRepository.buscarTurmasDoUsuario(tipo.toString(), idUsuario).stream()
+                .anyMatch(turma -> idTurma.equals(turma.getId()));
+
+        if (!participa) {
+            logger.warn("[{}] acesso negado: usuário não participa da turma {}.", operacao, idTurma);
+            if (logger.isWarnEnabled()) {
+                try {
+                    UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), operacao, null,
+                            MessageFormatter.arrayFormat("[{}] acesso negado: usuário não participa da turma {}.", new Object[]{operacao, idTurma}).getMessage(), null, null);
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+        }
+
+        return participa;
+    }
+
     private boolean professorPodeGerenciarParticipantes(TurmaDTO turma,
                                                         List<TurmaDTO> participantes,
                                                         String emailProfessor) throws SQLException {
@@ -254,7 +299,7 @@ public class turmasController {
         if (result.hasErrors()) {
             model.addAttribute("turmaEdicao", turmaEdicao);
             model.addAttribute("abrirModalEditarTurma", true);
-            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
+            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session, redirectAttributes);
         }
 
         boolean atualizada = turmaRepository.atualizarTurmaDoProprietario(
@@ -282,7 +327,8 @@ public class turmasController {
                                 BindingResult result,
                                 @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
                                 HttpSession session,
-                                Model model) throws SQLException {
+                                Model model,
+                                RedirectAttributes redirectAttributes) throws SQLException {
 
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
@@ -298,6 +344,10 @@ public class turmasController {
                 }
             }
             return "redirect:/turmas/" + id;
+        }
+        if (!participaDaTurma(session, id, "criarConteudo")) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
+            return "redirect:/turmas";
         }
         if (result.hasErrors()) {
             model.addAttribute("abrirModalAdicionarConteudo", true);
@@ -357,6 +407,13 @@ public class turmasController {
     @PostMapping("/criarTurma")
     public String criarTurma(@Valid @ModelAttribute("turma") TurmaDTO turmaDTO, BindingResult result, HttpSession session, Model model, RedirectAttributes redirectAttributes) throws SQLException {
 
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            return "redirect:/turmas";
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("abrirModalCriarTurma", true);
             return "Geral/turmas";
@@ -376,6 +433,10 @@ public class turmasController {
         }
 
         String idProfessor = professorRepository.buscarPorIDProfessor(session.getAttribute("email2FA").toString());
+        if (idProfessor == null || idProfessor.isBlank()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível identificar o professor.");
+            return "redirect:/turmas";
+        }
 
         //Insere turma no banco de dados
         professorRepository.InsertTurmasIntoBD(turmaDTO.getNomeTurma(), turmaDTO.getDescricao(), idProfessor);
@@ -401,7 +462,8 @@ public class turmasController {
     @PostMapping("/turmas/{id}/conteudos/{idConteudo}/excluir")
     public String excluirConteudo(@PathVariable Long id,
                                   @PathVariable Long idConteudo,
-                                  HttpSession session) {
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) throws SQLException {
 
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
@@ -417,6 +479,15 @@ public class turmasController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            return "redirect:/turmas/" + id;
+        }
+
+        if (!participaDaTurma(session, id, "excluirConteudo")) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
+            return "redirect:/turmas";
+        }
+        if (!conteudoService.pertenceATurma(idConteudo, id)) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não pertence a esta turma.");
             return "redirect:/turmas/" + id;
         }
 
@@ -507,7 +578,8 @@ public class turmasController {
                                  BindingResult result,
                                  @RequestParam(value = "arquivo", required = false) MultipartFile arquivo,
                                  HttpSession session,
-                                 Model model) throws SQLException {
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) throws SQLException {
 
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
@@ -523,6 +595,15 @@ public class turmasController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
+            return "redirect:/turmas/" + id;
+        }
+
+        if (!participaDaTurma(session, id, "editarConteudo")) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Você não participa desta turma.");
+            return "redirect:/turmas";
+        }
+        if (!conteudoService.pertenceATurma(idConteudo, id)) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Este conteúdo não pertence a esta turma.");
             return "redirect:/turmas/" + id;
         }
 
@@ -738,7 +819,7 @@ public class turmasController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
+            return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session, redirectAttributes);
         }
 
         boolean pessoaAdicionada = turmaRepository.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
@@ -751,7 +832,7 @@ public class turmasController {
         }
 
         model.addAttribute("abrirModalParticipantes", true);
-        return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session);
+        return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session, redirectAttributes);
     }
 
     @PostMapping("/excluirTurma")
