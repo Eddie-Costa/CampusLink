@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-// dados do novo usuario esta classe limita o perfil a aluno ou professor e valida dados pessoais e senha
+// dados do novo usuario esta classe valida perfil identificador nome contato dados pessoais e senha
 @Getter
 @Setter
 public class cadastrarUsuarioAdminDTO {
@@ -17,11 +17,15 @@ public class cadastrarUsuarioAdminDTO {
     @Pattern(regexp = "^(Aluno|Professor)$", message = "Perfil inválido")
     private String perfil;
 
-    @Size(max = 11, message = "O identificador deve ter no máximo 11 caracteres")
+    // RGM e matricula devem conter exatamente 11 digitos, como nos cadastros de aluno e professor
+    @Size(min = 11, max = 11, message = "O RGM ou matrícula deve ter exatamente 11 números")
+    @Pattern(regexp = "^\\d{11}$", message = "O RGM ou matrícula deve ter exatamente 11 números")
     @NotBlank(message = "O RGM ou matrícula é obrigatório")
     private String identificador;
 
-    @Size(max = 50, message = "O nome deve ter no máximo 50 caracteres")
+    // nome deve conter apenas letras e espacos e ter entre 2 e 50 caracteres
+    @Size(min = 2, max = 50, message = "O nome deve ter entre 2 e 50 caracteres")
+    @Pattern(regexp = "^[a-zA-Z\\s]{2,50}$", message = "O nome deve conter apenas letras e espaços")
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
 
@@ -30,7 +34,9 @@ public class cadastrarUsuarioAdminDTO {
     @Email(message = "E-mail inválido")
     private String email;
 
-    @Size(max = 13, message = "O telefone deve ter no máximo 13 caracteres")
+    // telefone deve conter 10 ou 11 digitos, seguindo o formato dos cadastros existentes
+    @Size(min = 10, max = 11, message = "O telefone deve ter entre 10 e 11 números")
+    @Pattern(regexp = "^\\d{10,11}$", message = "O telefone deve conter apenas números")
     @NotBlank(message = "O telefone é obrigatório")
     private String telefone;
 

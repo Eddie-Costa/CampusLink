@@ -54,7 +54,8 @@
                 <div class="cadastro-admin-campo">
                     <label for="identificador">RGM ou matrícula</label>
 
-                    <input id="identificador" th:field="*{identificador}" type="text" maxlength="11" required>
+                    <input id="identificador" th:field="*{identificador}" type="text"
+                           inputmode="numeric" minlength="11" maxlength="11" pattern="^\d{11}$" required>
 
                     <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('identificador')}" th:errors="*{identificador}"></div>
                 </div>
@@ -62,7 +63,8 @@
                 <div class="cadastro-admin-campo">
                     <label for="nome">Nome</label>
 
-                    <input id="nome" th:field="*{nome}" type="text" maxlength="50" required>
+                    <input id="nome" th:field="*{nome}" type="text"
+                           minlength="2" maxlength="50" pattern="^[a-zA-Z\s]{2,50}$" required>
 
                     <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
                 </div>
@@ -78,7 +80,8 @@
                 <div class="cadastro-admin-campo">
                     <label for="telefone">Telefone</label>
 
-                    <input id="telefone" th:field="*{telefone}" type="text" maxlength="13" required>
+                    <input id="telefone" th:field="*{telefone}" type="text"
+                           inputmode="numeric" minlength="10" maxlength="11" pattern="^\d{10,11}$" required>
 
                     <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></div>
                 </div>
