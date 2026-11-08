@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.slf4j.helpers.MessageFormatter;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -88,6 +90,14 @@ public class cadastrarProfessorController {
                 }
             }
             model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
+            return "Usuarios/Professor/cadastrarProfessor";
+        }
+
+        // validar data de nascimento rejeita datas inexistentes antes de guardar os dados na sessao
+        try {
+            LocalDate.parse(professor.getDataNasc());
+        } catch (DateTimeParseException e) {
+            model.addAttribute("mensagemDeErro", "Informe uma data de nascimento válida.");
             return "Usuarios/Professor/cadastrarProfessor";
         }
 

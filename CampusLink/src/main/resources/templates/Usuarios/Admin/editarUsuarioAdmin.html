@@ -47,7 +47,8 @@
 
                 <div class="editar-admin-campo">
                     <label for="nome">Nome</label>
-                    <input id="nome" name="nome" type="text" th:value="${usuario.nome}" required>
+                    <input id="nome" name="nome" type="text" th:value="${usuario.nome}"
+                           minlength="2" maxlength="50" pattern="^[a-zA-Z\s]{2,50}$" required>
                 </div>
 
                 <div class="editar-admin-campo">
@@ -55,17 +56,20 @@
                         Identificador
                     </label>
 
-                    <input id="identificador" name="identificador" type="text" th:value="${usuario.identificador}" required>
+                    <input id="identificador" name="identificador" type="text" th:value="${usuario.identificador}"
+                           minlength="11" maxlength="11" pattern="^\d{11}$" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email" th:value="${usuario.email}" required>
+                    <input id="email" name="email" type="email" th:value="${usuario.email}"
+                           minlength="5" maxlength="100" required>
                 </div>
 
                 <div class="editar-admin-campo">
                     <label for="telefone">Telefone</label>
-                    <input id="telefone" name="telefone" type="text" th:value="${usuario.telefone}" required>
+                    <input id="telefone" name="telefone" type="text" th:value="${usuario.telefone}"
+                           inputmode="numeric" minlength="10" maxlength="11" pattern="^\d{10,11}$" required>
                 </div>
 
                 <div class="editar-admin-campo">

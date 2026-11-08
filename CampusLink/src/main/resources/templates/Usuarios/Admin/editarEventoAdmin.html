@@ -93,7 +93,8 @@
                     <label for="descricaoEvento">Descrição</label>
 
                     <textarea id="descricaoEvento" name="descricao" class="cadastrar-evento-admin-textarea"
-                              rows="4" placeholder="Descreva o evento (opcional)" th:text="${evento.descricao}"></textarea>
+                              rows="4" maxlength="255" placeholder="Descreva o evento (opcional)"
+                              th:text="${evento.descricao}"></textarea>
 
                 </div>
 

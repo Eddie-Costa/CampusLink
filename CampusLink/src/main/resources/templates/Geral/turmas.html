@@ -56,11 +56,14 @@
                             <div class="modal-body">
 
                                 <label for="nomeTurma" class="form-label">Nome da turma</label>
-                                <input id="nomeTurma" type="text" class="form-control" th:field="*{nomeTurma}" placeholder="Ex: Engenharia de Software" required>
+                                <input id="nomeTurma" type="text" class="form-control" th:field="*{nomeTurma}"
+                                       maxlength="100" required placeholder="Ex: Engenharia de Software">
                                 <div class="erro-campo" th:if="${#fields.hasErrors('nomeTurma')}" th:errors="*{nomeTurma}"></div>
 
                                 <label for="descricaoTurma" class="form-label mt-3">Descrição da turma</label>
-                                <textarea id="descricaoTurma" class="form-control" th:field="*{descricao}" rows="3" placeholder="Descreva a turma, objetivos, conteúdo ou observações..."></textarea>
+                                <textarea id="descricaoTurma" class="form-control" th:field="*{descricao}"
+                                          maxlength="1000" rows="3"
+                                          placeholder="Descreva a turma, objetivos, conteúdo ou observações..."></textarea>
                             </div>
 
                             <div class="modal-footer">

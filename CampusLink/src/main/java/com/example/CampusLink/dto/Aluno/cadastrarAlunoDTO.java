@@ -15,27 +15,32 @@ import lombok.Setter;
 
 
 public class cadastrarAlunoDTO {
-    @Size(max = 11, message = "O rgm deve ter no minimo 11 caracteres")
+    @Size(min = 11, max = 11, message = "O RGM deve ter exatamente 11 números")
+    @Pattern(regexp = "^\\d{11}$", message = "O RGM deve ter exatamente 11 números")
     @NotBlank(message = "O rgm é obrigatório")
     private String rgm;
 
-    @Size(max = 50, message = "O nome deve ter no maximo 50 caracteres")
+    @Size(min = 2, max = 50, message = "O nome deve ter entre 2 e 50 caracteres")
+    @Pattern(regexp = "^[a-zA-Z\\s]{2,50}$", message = "O nome deve conter apenas letras e espaços")
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
 
-    @Size(max = 100, message = "O e-mail deve ter no maximo 100 caracteres")
+    @Size(min = 5, max = 100, message = "O e-mail deve ter entre 5 e 100 caracteres")
     @NotBlank(message = "O e-mail é obrigatório")
     @Email(message = "E-mail inválido")
     private String email;
 
-    @Size(max = 13, message = "O telefone deve ter no maximo 13 caracteres")
+    @Size(min = 10, max = 11, message = "O telefone deve ter entre 10 e 11 números")
+    @Pattern(regexp = "^\\d{10,11}$", message = "O telefone deve conter apenas números")
     @NotBlank(message = "O telefone é obrigatório")
     private String telefone;
 
-    @Size(max = 10, message = "A Data de nascimento deve ter no maximo 10 caracteres")
+    @Size(min = 10, max = 10, message = "Informe uma data de nascimento válida")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Informe uma data de nascimento válida")
     @NotBlank(message = "A Data de nascimento é obrigatória")
     private String dataNasc;
 
+    @NotBlank(message = "A senha é obrigatória")
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!]).*$",

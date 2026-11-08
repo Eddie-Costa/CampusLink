@@ -172,9 +172,10 @@ public class AdminEventosController {
 
         String voltarCadastro = "redirect:/admin/eventos/cadastrar";
 
-        // exigir nome no cadastro administrativo recusa um evento sem nome preenchido
-        if (nome == null || nome.isBlank()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Informe o nome do evento.");
+        String erroTexto = EventoService.validarTextoEvento(nome, descricao, 150);
+        // validar textos no cadastro administrativo limita nome e descricao antes de salvar
+        if (erroTexto != null) {
+            redirectAttributes.addFlashAttribute("mensagemErro", erroTexto);
             return voltarCadastro;
         }
 
@@ -310,9 +311,10 @@ public class AdminEventosController {
 
         String voltarEdicao = "redirect:/admin/eventos/" + idEvento + "/editar";
 
-        // exigir nome na edicao administrativa recusa o formulario quando o nome esta vazio
-        if (nome == null || nome.isBlank()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Informe o nome do evento.");
+        String erroTexto = EventoService.validarTextoEvento(nome, descricao, 150);
+        // validar textos na edicao administrativa limita nome e descricao antes de atualizar
+        if (erroTexto != null) {
+            redirectAttributes.addFlashAttribute("mensagemErro", erroTexto);
             return voltarEdicao;
         }
 

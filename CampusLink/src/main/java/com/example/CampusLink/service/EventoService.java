@@ -35,6 +35,26 @@ public class EventoService {
     private final EventoRepository eventoRepository;
     private final EventoConteudoRepository eventoConteudoRepository;
 
+    // validar texto do evento exige titulo preenchido e limita os textos recebidos
+    public static String validarTextoEvento(String nome, String descricao, int limiteNome) {
+        // exigir titulo do evento recusa um nome ausente ou em branco
+        if (nome == null || nome.isBlank()) {
+            return "Informe o nome do evento.";
+        }
+
+        // limitar titulo do evento recusa nomes acima do tamanho permitido pela tela
+        if (nome.length() > limiteNome) {
+            return "O nome do evento deve ter no máximo " + limiteNome + " caracteres.";
+        }
+
+        // limitar descricao do evento recusa textos acima do limite usado pelos formularios
+        if (descricao != null && descricao.length() > 255) {
+            return "A descrição do evento deve ter no máximo 255 caracteres.";
+        }
+
+        return null;
+    }
+
     // validar horario do evento este metodo exige termino posterior ao inicio e no mesmo dia
     public static String validarHorario(LocalDateTime inicio, LocalDateTime fim) {
         // validar horario do evento exige que o fim seja depois do inicio

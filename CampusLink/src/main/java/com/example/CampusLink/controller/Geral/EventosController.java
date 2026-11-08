@@ -198,10 +198,10 @@ public class EventosController {
             return "redirect:/eventos/cadastrar";
         }
 
-        // exigir nome do evento pede o nome quando o texto esta ausente ou vazio
-        if (nome == null || nome.isBlank()) {
-
-            redirectAttributes.addFlashAttribute("erro", "Informe o nome do evento");
+        String erroTexto = EventoService.validarTextoEvento(nome, descricao, 255);
+        // validar textos do evento retorna ao formulario quando titulo ou descricao excedem os limites
+        if (erroTexto != null) {
+            redirectAttributes.addFlashAttribute("erro", erroTexto);
             return "redirect:/eventos/cadastrar";
         }
 

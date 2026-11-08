@@ -18,6 +18,7 @@ public class editarTurmaAdminDTO {
     @Size(max = 100, message = "O nome da turma deve ter no máximo 100 caracteres")
     private String nomeTurma;
 
+    @Size(max = 1000, message = "A descrição da turma deve ter no máximo 1000 caracteres")
     private String descricao;
 
     @NotNull(message = "Selecione o professor responsável")

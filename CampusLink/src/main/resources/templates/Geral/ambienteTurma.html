@@ -225,7 +225,7 @@
 
                             <label for="descricaoTurmaEdicao" class="form-label">Descrição da turma</label>
                             <textarea id="descricaoTurmaEdicao" class="form-control" rows="4"
-                                      th:field="*{descricao}"
+                                      th:field="*{descricao}" maxlength="1000"
                                       placeholder="Descreva a turma, objetivos, conteúdo ou observações..."></textarea>
                         </div>
                         <div class="modal-footer">
@@ -257,7 +257,7 @@
 
                             <label for="descricaoTurmaEdicao" class="form-label">Descrição da turma</label>
                             <textarea id="descricaoTurmaEdicao" class="form-control" rows="4"
-                                      th:field="*{descricao}"
+                                      th:field="*{descricao}" maxlength="1000"
                                       placeholder="Descreva a turma, objetivos, conteúdo ou observações..."></textarea>
                         </div>
                         <div class="modal-footer">
@@ -630,7 +630,9 @@
                     <div class="campo-duracao-editar">
                         <label class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input type="text" name="duracaoEstimada" class="form-control mb-3"
-                               th:value="${conteudo.duracaoEstimada}">
+                               th:value="${conteudo.duracaoEstimada}"
+                               pattern="(?:\d+|\d+:\d{2}(?::\d{2})?|\d+\s*(?:[hH]|[hH][oO][rR][aA]|[hH][oO][rR][aA][sS]|[mM][iI][nN]|[mM][iI][nN][uU][tT][oO]|[mM][iI][nN][uU][tT][oO][sS]))"
+                               title="Use minutos, horas ou o formato MM:SS ou HH:MM:SS">
                     </div>
 
                     <div class="campo-arquivo-editar" style="display: none;">
@@ -834,7 +836,9 @@
                     <div id="campoDuracao">
                         <label for="duracaoEstimada" class="form-label">Tempo estimado para realizar o conteúdo</label>
                         <input id="duracaoEstimada" type="text" class="form-control mb-3"
-                               th:field="*{duracaoEstimada}" placeholder="Ex: 30 (minutos), 15 min, 2 horas ou 1:30:00">
+                               th:field="*{duracaoEstimada}" placeholder="Ex: 30, 15 min, 2 horas ou 1:30:00"
+                               pattern="(?:\d+|\d+:\d{2}(?::\d{2})?|\d+\s*(?:[hH]|[hH][oO][rR][aA]|[hH][oO][rR][aA][sS]|[mM][iI][nN]|[mM][iI][nN][uU][tT][oO]|[mM][iI][nN][uU][tT][oO][sS]))"
+                               title="Use minutos, horas ou o formato MM:SS ou HH:MM:SS">
                     </div>
 
                     <div id="campoArquivo">

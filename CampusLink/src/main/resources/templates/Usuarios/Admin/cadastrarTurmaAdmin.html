@@ -49,7 +49,8 @@
 
                     <label for="nomeTurma">Nome da turma</label>
 
-                    <input type="text" id="nomeTurma" class="cadastrar-turma-admin-input" th:field="*{nomeTurma}" placeholder="Ex: Engenharia de Software 8B">
+                    <input type="text" id="nomeTurma" class="cadastrar-turma-admin-input" th:field="*{nomeTurma}"
+                           maxlength="100" required placeholder="Ex: Engenharia de Software 8B">
 
                     <div class="cadastrar-turma-admin-erro" th:if="${#fields.hasErrors('nomeTurma')}" th:errors="*{nomeTurma}">
                         Erro
@@ -61,7 +62,8 @@
 
                     <label for="descricao">Descrição</label>
 
-                    <textarea id="descricao" class="cadastrar-turma-admin-textarea" th:field="*{descricao}" placeholder="Digite uma descrição para a turma"></textarea>
+                    <textarea id="descricao" class="cadastrar-turma-admin-textarea" th:field="*{descricao}"
+                              maxlength="1000" placeholder="Digite uma descrição para a turma"></textarea>
 
                 </div>
 
@@ -69,7 +71,7 @@
 
                     <label for="idProprietario">Professor responsável</label>
 
-                    <select id="idProprietario" class="cadastrar-turma-admin-select" th:field="*{idProprietario}">
+                    <select id="idProprietario" class="cadastrar-turma-admin-select" th:field="*{idProprietario}" required>
 
                         <option value="">Selecione um professor</option>
 

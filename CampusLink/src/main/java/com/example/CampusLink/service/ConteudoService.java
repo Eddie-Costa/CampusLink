@@ -33,6 +33,8 @@ public class ConteudoService {
     private static final Logger logger = LoggerFactory.getLogger(ConteudoService.class);
 
     private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
+    private static final String MENSAGEM_DURACAO_INVALIDA =
+            "Informe uma duração válida em minutos, horas ou no formato MM:SS ou HH:MM:SS.";
 
     private final ConteudoRepository conteudoRepository;
     private final ArquivoService arquivoService;
@@ -693,7 +695,7 @@ public class ConteudoService {
         }
     }
 
-    // converter duracao em minutos este metodo interpreta numeros horas e tempos separados por dois pontos
+    // converter duracao em minutos interpreta os formatos aceitos e rejeita valores que nao podem ser convertidos
     private Integer converterDuracaoEmMinutos(String texto) {
         // converter duracao ignora texto ausente ou vazio
         if (texto == null || texto.isBlank()) {
@@ -702,41 +704,50 @@ public class ConteudoService {
 
         String valor = texto.trim().toLowerCase(Locale.ROOT);
 
-        // calcular minutos tenta converter a duracao e retorna vazio quando o numero e invalido
+        // calcular minutos converte a duracao e informa quando o valor excede o limite aceito
         try {
-            int minutos;
+            long minutos;
 
             // ler duracao em minutos usa o numero inteiro informado
             if (valor.matches("\\d+")) {
-                minutos = Integer.parseInt(valor);
+                minutos = Long.parseLong(valor);
             }
             // ler duracao com horas converte horas minutos e segundos para minutos arredondados para cima
             else if (valor.matches("\\d+:\\d{2}:\\d{2}")) {
                 String[] partes = valor.split(":");
-                int segundos = Integer.parseInt(partes[0]) * 3600 + Integer.parseInt(partes[1]) * 60 + Integer.parseInt(partes[2]);
-                minutos = (int) Math.ceil(segundos / 60.0);
+                long segundos = Math.addExact(
+                        Math.addExact(Math.multiplyExact(Long.parseLong(partes[0]), 3600L),
+                                Math.multiplyExact(Long.parseLong(partes[1]), 60L)),
+                        Long.parseLong(partes[2]));
+                minutos = segundos / 60 + (segundos % 60 == 0 ? 0 : 1);
             }
             // ler duracao com segundos converte minutos e segundos para minutos arredondados para cima
             else if (valor.matches("\\d+:\\d{2}")) {
                 String[] partes = valor.split(":");
-                int segundos = Integer.parseInt(partes[0]) * 60 + Integer.parseInt(partes[1]);
-                minutos = (int) Math.ceil(segundos / 60.0);
+                long segundos = Math.addExact(
+                        Math.multiplyExact(Long.parseLong(partes[0]), 60L),
+                        Long.parseLong(partes[1]));
+                minutos = segundos / 60 + (segundos % 60 == 0 ? 0 : 1);
             }
             // ler duracao em horas multiplica a quantidade de horas por sessenta
             else if (valor.matches("\\d+\\s*(h|hora|horas)")) {
-                minutos = Integer.parseInt(valor.replaceAll("\\D", "")) * 60;
+                minutos = Math.multiplyExact(Long.parseLong(valor.replaceAll("\\D", "")), 60L);
             }
             // ler duracao com unidade de minutos extrai o numero informado
             else if (valor.matches("\\d+\\s*(min|minuto|minutos)")) {
-                minutos = Integer.parseInt(valor.replaceAll("\\D", ""));
+                minutos = Long.parseLong(valor.replaceAll("\\D", ""));
             } else {
-                return null;
+                throw new IllegalArgumentException(MENSAGEM_DURACAO_INVALIDA);
             }
 
-            return minutos > 0 ? minutos : null;
+            // exigir duracao positiva e representavel impede gravar valores invalidos ou excedidos
+            if (minutos <= 0 || minutos > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(MENSAGEM_DURACAO_INVALIDA);
+            }
 
-        } catch (NumberFormatException e) {
-            return null;
+            return (int) minutos;
+        } catch (NumberFormatException | ArithmeticException e) {
+            throw new IllegalArgumentException(MENSAGEM_DURACAO_INVALIDA, e);
         }
     }
 

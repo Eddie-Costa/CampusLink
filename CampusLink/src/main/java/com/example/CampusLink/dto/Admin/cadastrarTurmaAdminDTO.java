@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-// dados da nova turma esta classe exige nome e responsavel e permite informar a descricao
+// dados da nova turma esta classe exige nome e responsavel e limita a descricao
 @Getter
 @Setter
 public class cadastrarTurmaAdminDTO {
@@ -16,6 +16,7 @@ public class cadastrarTurmaAdminDTO {
     @Size(max = 100, message = "O nome da turma deve ter no máximo 100 caracteres")
     private String nomeTurma;
 
+    @Size(max = 1000, message = "A descrição da turma deve ter no máximo 1000 caracteres")
     private String descricao;
 
     @NotNull(message = "Selecione o professor responsável")

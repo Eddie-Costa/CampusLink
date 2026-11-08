@@ -302,7 +302,8 @@ public class AdminUsuariosController {
     @PostMapping("/admin/usuarios/{idUsuario}/editar")
     public String salvarEdicaoUsuario(
             @PathVariable Long idUsuario,
-            @ModelAttribute("usuario") usuarioAdminDTO usuario,
+            @Valid @ModelAttribute("usuario") usuarioAdminDTO usuario,
+            BindingResult bindingResult,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttributes
@@ -341,11 +342,18 @@ public class AdminUsuariosController {
             usuario.setStatus(usuarioAtual.isStatus());
             usuario.setMaster(usuarioAtual.isMaster());
 
-            String erroCampos = validarCampos(usuario);
+            // corrigir dados administrativos reapresenta o formulario com a primeira regra violada
+            if (bindingResult.hasErrors()) {
+                model.addAttribute("mensagemErro", bindingResult.getFieldError().getDefaultMessage());
+                model.addAttribute("usuario", usuario);
 
-            // corrigir campos do usuario reapresenta os dados com o primeiro erro de preenchimento
-            if (erroCampos != null) {
-                model.addAttribute("mensagemErro", erroCampos);
+                return "Usuarios/Admin/editarUsuarioAdmin";
+            }
+
+            String erroData = validarDataNascimento(usuario);
+            // corrigir data administrativa rejeita datas inexistentes antes de atualizar a conta
+            if (erroData != null) {
+                model.addAttribute("mensagemErro", erroData);
                 model.addAttribute("usuario", usuario);
 
                 return "Usuarios/Admin/editarUsuarioAdmin";
@@ -691,34 +699,8 @@ public class AdminUsuariosController {
         }
     }
 
-    // validar campos do usuario este metodo confere dados obrigatorios e a data de nascimento
-    private String validarCampos(usuarioAdminDTO usuario) {
-
-        // exigir nome do usuario devolve um aviso quando o nome esta ausente ou vazio
-        if (usuario.getNome() == null || usuario.getNome().isBlank()) {
-            return "Informe o nome do usuário.";
-        }
-
-        // exigir identificacao academica pede o rgm ou a matricula quando o campo esta vazio
-        if (usuario.getIdentificador() == null || usuario.getIdentificador().isBlank()) {
-            return "Informe o RGM ou matrícula.";
-        }
-
-        // exigir email do usuario devolve um aviso quando o email nao foi preenchido
-        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) {
-            return "Informe o e-mail.";
-        }
-
-        // exigir telefone do usuario devolve um aviso quando o telefone nao foi preenchido
-        if (usuario.getTelefone() == null || usuario.getTelefone().isBlank()) {
-            return "Informe o telefone.";
-        }
-
-        // exigir nascimento do usuario devolve um aviso quando a data nao foi preenchida
-        if (usuario.getDataNasc() == null || usuario.getDataNasc().isBlank()) {
-            return "Informe a data de nascimento.";
-        }
-
+    // validar data de nascimento interpreta a data informada e recusa dias inexistentes
+    private String validarDataNascimento(usuarioAdminDTO usuario) {
         // validar formato do nascimento tenta interpretar a data e informa um valor invalido
         try {
             LocalDate.parse(usuario.getDataNasc());
