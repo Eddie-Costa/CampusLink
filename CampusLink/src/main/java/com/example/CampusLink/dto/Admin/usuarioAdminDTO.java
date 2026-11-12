@@ -24,7 +24,7 @@ public class usuarioAdminDTO {
 
     @NotBlank(message = "Informe o nome do usuário.")
     @Size(min = 2, max = 50, message = "O nome deve ter entre 2 e 50 caracteres.")
-    @Pattern(regexp = "^[a-zA-Z\\s]{2,50}$", message = "O nome deve conter apenas letras e espaços.")
+    @Pattern(regexp = "^\\p{L}+([ '\\-]\\p{L}+)*$", message = "O nome deve conter apenas letras, com ou sem acento, espaços, apóstrofo ou hífen.")
     private String nome;
 
     @NotBlank(message = "Informe o e-mail.")
