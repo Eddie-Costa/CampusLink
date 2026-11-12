@@ -9,6 +9,7 @@ import com.example.CampusLink.dto.TermoVersaoDTO;
 import com.example.CampusLink.service.ChamadoAcessoService;
 import com.example.CampusLink.service.TermosService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // testes das regras de acesso esta classe simula visitantes alunos professores e administradores em cada area
+@Tag("integration")
 @WebMvcTest(TermosController.class)
 @Import(SecurityConfig.class)
 class SecurityConfigTests {
