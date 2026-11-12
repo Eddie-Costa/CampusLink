@@ -121,7 +121,7 @@ class PerfilDadosTests {
     @Test
     void consultaDadosCadastraisDeAlunoEProfessor() throws Exception {
         var aluno = usuarios.consultarDadosPessoais("ALUNO@example.com");
-        assertEquals("12345678901", aluno.getIdentificador());
+        assertEquals("falha-intencional", aluno.getIdentificador());
         assertEquals("Aluno", aluno.getTipoConta());
         assertEquals("Matrícula", usuarios.consultarDadosPessoais("professor@example.com").getRotuloIdentificador());
         assertNull(usuarios.consultarDadosPessoais("inexistente@example.com"));

@@ -138,7 +138,7 @@ public class cadastrarProfessorController {
             return "redirect:/cadastrarProfessor";
         }
 
-        professor.setMatricula(session.getAttribute("Matricula").toString());
+        professor.setMatricula(session.getAttribute("Matricula").toString());;
         professor.setNome(session.getAttribute("Nome").toString());
         professor.setEmail(session.getAttribute("Email").toString());
         professor.setTelefone(session.getAttribute("Telefone").toString());
