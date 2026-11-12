@@ -230,7 +230,7 @@
 
                                     <strong>Duração estimada</strong>
 
-                                    <p th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : 'Não informada'}">
+                                    <p th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? (conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada) : 'Não informada'}">
                                         Duração
                                     </p>
 

@@ -25,7 +25,7 @@
 
         <div class="conteudo-card mb-4">
             <h1 class="conteudo-nome m-0" th:text="${turma.nomeTurma}">Turma #1</h1>
-            <span class="conteudo-meta" th:text="${totalAlunos + ' alunos'}">30 alunos</span>
+            <span class="conteudo-meta" th:text="${totalAlunos + (totalAlunos == 1 ? ' aluno' : ' alunos')}">30 alunos</span>
         </div>
 
         <div class="d-flex flex-wrap gap-2 mb-4">

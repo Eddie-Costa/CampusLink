@@ -310,7 +310,7 @@
 
                     <div class="conteudo-meta">
                         <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
-                              th:text="${conteudo.duracaoEstimada}">Tempo</span>
+                              th:text="${(conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada)}">Tempo</span>
 
                         <a th:if="${conteudo.url != null and !conteudo.url.isBlank()}"
                            th:href="${conteudo.url}"
@@ -455,7 +455,7 @@
                             </strong>
                             <span class="conteudo-midia-detalhes"
                                   th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Vídeo do YouTube'}"
-                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : ''}">
+                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? (conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada) : ''}">
                                 Duração
                             </span>
                             <span class="conteudo-midia-livro-autor"

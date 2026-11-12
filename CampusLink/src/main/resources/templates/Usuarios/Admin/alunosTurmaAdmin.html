@@ -92,7 +92,7 @@
 
                 <h2>Alunos vinculados</h2>
 
-                <span class="alunos-turma-admin-total" th:text="${#lists.size(alunos) + ' alunos'}">
+                <span class="alunos-turma-admin-total" th:text="${#lists.size(alunos) + (#lists.size(alunos) == 1 ? ' aluno' : ' alunos')}">
                     0 alunos
                 </span>
 
