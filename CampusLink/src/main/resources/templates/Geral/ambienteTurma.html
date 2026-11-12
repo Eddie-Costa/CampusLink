@@ -183,7 +183,7 @@
             
             <button type="button" class="acao-turma" data-bs-toggle="modal"
                     data-bs-target="#solicitarDominioModal">
-                Solicitar Domínio
+                Solicitar site
             </button>
 
             <button type="button" class="acao-turma participantes-turma" data-bs-toggle="modal"
@@ -597,7 +597,9 @@
                         <label class="form-label">URL</label>
                         <input type="text" name="url" class="form-control mb-3" th:value="${dados.url}">
                         <div class="form-text mb-3">
-                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                            O link precisa ser de um site liberado pelo administrador. Precisa de outro site?
+                            <button type="button" class="btn btn-link p-0 align-baseline solicitar-site-atalho"
+                                    th:if="${session.tipoUsuario == 'professor'}">Solicitar site</button>
                         </div>
                     </div>
 
@@ -676,7 +678,7 @@
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="solicitarDominioTitulo">Solicitar Domínio</h2>
+                <h2 class="modal-title fs-5" id="solicitarDominioTitulo">Pedir liberação de um site</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
 
@@ -688,16 +690,17 @@
                            th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                     <p class="form-text">
-                        Links só podem ser de domínios autorizados. Se o site que você quer usar
-                        não estiver liberado, solicite aqui e o administrador vai analisar.
+                        Para proteger os alunos, os materiais só aceitam links de sites liberados pelo
+                        administrador. Cole o link do material e nós pedimos a liberação do site inteiro.
                     </p>
 
-                    <label for="dominioSolicitado" class="form-label">Domínio</label>
+                    <label for="dominioSolicitado" class="form-label">Link ou endereço do site</label>
                     <input id="dominioSolicitado" name="dominio" type="text" class="form-control mb-1"
-                           placeholder="Ex: exemplo.com.br" maxlength="253" required>
+                           placeholder="Ex: https://www.khanacademy.org/math" maxlength="253" required>
                     <div class="form-text mb-3">
-                        Informe só o endereço do site. Se colar um link inteiro, usaremos apenas o domínio.
+                        Pode colar o link completo do material. A liberação vale para todas as páginas do site.
                     </div>
+                    <div id="previaSiteSolicitado" class="form-text mb-3" aria-live="polite" hidden></div>
 
                     <label for="justificativaDominio" class="form-label">Por que esse site é necessário? (opcional)</label>
                     <textarea id="justificativaDominio" name="justificativa" class="form-control mb-3"
@@ -714,8 +717,8 @@
                         <table class="table table-sm align-middle mb-0">
                             <thead>
                             <tr>
-                                <th scope="col">Domínio</th>
-                                <th scope="col">Status</th>
+                                <th scope="col">Site</th>
+                                <th scope="col">Situação</th>
                                 <th scope="col">Resposta do administrador</th>
                             </tr>
                             </thead>
@@ -723,9 +726,9 @@
                             <tr th:each="s : ${solicitacoesDominio}">
                                 <td th:text="${s.dominio}">exemplo.com</td>
                                 <td>
-                                    <span class="badge text-bg-warning" th:if="${s.status == 'pendente'}">Em análise</span>
-                                    <span class="badge text-bg-success" th:if="${s.status == 'aprovado'}">Aprovado</span>
-                                    <span class="badge text-bg-danger" th:if="${s.status == 'rejeitado'}">Rejeitado</span>
+                                    <span class="badge text-bg-warning" th:if="${s.status == 'pendente'}">Aguardando análise</span>
+                                    <span class="badge text-bg-success" th:if="${s.status == 'aprovado'}">Liberado</span>
+                                    <span class="badge text-bg-danger" th:if="${s.status == 'rejeitado'}">Recusado</span>
                                 </td>
                                 <td th:text="${s.comentarioAdmin != null ? s.comentarioAdmin : '-'}">Resposta</td>
                             </tr>
@@ -801,7 +804,9 @@
                         <div class="erro-campo" th:if="${#fields.hasErrors('url')}"
                              th:errors="*{url}"></div>
                         <div class="form-text mb-3">
-                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                            O link precisa ser de um site liberado pelo administrador. Precisa de outro site?
+                            <button type="button" class="btn btn-link p-0 align-baseline solicitar-site-atalho"
+                                    th:if="${session.tipoUsuario == 'professor'}">Solicitar site</button>
                         </div>
                     </div>
 
@@ -936,7 +941,7 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Geral/ambienteTurma.js(v=20261024-1)}"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js(v=20261111-1)}"></script>
 
 </body>
 </html>

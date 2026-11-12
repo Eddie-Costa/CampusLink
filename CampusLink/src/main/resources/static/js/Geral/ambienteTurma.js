@@ -536,6 +536,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function recarregarTurmaAoFechar(modalElement) {
         // recarregar turma abre o endereco da turma sem os dados temporarios do formulario
         modalElement.addEventListener('hidden.bs.modal', function () {
+            // manter pagina ao pedir site evita a recarga quando a janela fecha para abrir o pedido de site
+            if (modalElement.dataset.trocandoParaSite === 'true') {
+                delete modalElement.dataset.trocandoParaSite;
+                return;
+            }
             const partes = window.location.pathname.match(/\/turmas\/(\d+)/);
             // recarregar turma volta ao endereco da turma depois de fechar a janela
             if (partes) {
@@ -1247,4 +1252,83 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+});
+
+// pedido de site mostra qual site sera liberado e abre o pedido a partir dos formularios de material
+document.addEventListener('DOMContentLoaded', function () {
+    const modalSite = document.getElementById('solicitarDominioModal');
+    const campoSite = document.getElementById('dominioSolicitado');
+    const previa = document.getElementById('previaSiteSolicitado');
+
+    // exigir pedido de site ignora a configuracao para quem nao e professor
+    if (!modalSite || !campoSite) return;
+
+    const SITE_VALIDO = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+    // extrair site do link este metodo repete a limpeza feita pelo servidor ao receber o pedido
+    function extrairSite(texto) {
+        let site = texto.trim().toLowerCase();
+        site = site.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');
+        site = site.replace(/[/?#].*$/, '');
+        // recusar usuario no link avisa que o endereco nao pode ter usuario ou senha
+        if (site.includes('@')) return { erro: 'Informe apenas o link do site, sem usuário ou senha.' };
+        site = site.replace(/:\d+$/, '').replace(/^www\./, '').replace(/\.$/, '');
+        // conferir formato do site informa quando o texto ainda nao parece um site
+        if (!SITE_VALIDO.test(site)) return { erro: 'Ainda não parece um link de site. Ex: https://www.exemplo.com.br' };
+        return { site: site };
+    }
+
+    // atualizar previa este metodo mostra o site que sera liberado enquanto o professor digita
+    function atualizarPrevia() {
+        // exigir area da previa ignora a atualizacao quando ela nao existe
+        if (!previa) return;
+        const texto = campoSite.value.trim();
+        previa.replaceChildren();
+        // esconder previa vazia oculta a mensagem quando o campo esta em branco
+        if (!texto) {
+            previa.hidden = true;
+            return;
+        }
+        const resultado = extrairSite(texto);
+        // mostrar resultado exibe o site encontrado ou a orientacao de formato
+        if (resultado.site) {
+            const destaque = document.createElement('strong');
+            destaque.textContent = resultado.site;
+            previa.append('Será liberado: ', destaque, ' (vale para todas as páginas do site)');
+            previa.classList.remove('text-danger');
+        } else {
+            previa.textContent = resultado.erro;
+            previa.classList.add('text-danger');
+        }
+        previa.hidden = false;
+    }
+
+    campoSite.addEventListener('input', atualizarPrevia);
+
+    // abrir pedido pelo material copia o link digitado e troca a janela do material pela do pedido de site
+    document.querySelectorAll('.solicitar-site-atalho').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            const areaLink = botao.closest('.campo-link-editar, #campoLink');
+            const campoLink = areaLink ? areaLink.querySelector('input') : null;
+            const modalAtual = botao.closest('.modal');
+
+            // preencher pedido usa o link do material quando o professor ja digitou um
+            if (campoLink && campoLink.value.trim()) {
+                campoSite.value = campoLink.value.trim();
+            }
+            atualizarPrevia();
+
+            const abrirPedido = function () {
+                bootstrap.Modal.getOrCreateInstance(modalSite).show();
+            };
+            // trocar janela fecha o material antes de abrir o pedido para nao empilhar janelas
+            if (modalAtual) {
+                modalAtual.dataset.trocandoParaSite = 'true';
+                modalAtual.addEventListener('hidden.bs.modal', abrirPedido, { once: true });
+                bootstrap.Modal.getOrCreateInstance(modalAtual).hide();
+            } else {
+                abrirPedido();
+            }
+        });
+    });
 });

@@ -42,7 +42,7 @@ public class DominioService {
             // impedir dominio repetido rejeita dominio autorizado ou com pedido pendente
             if (dominioRepository.existePendenteOuAprovado(dominio)) {
                 throw new IllegalArgumentException(
-                        "O domínio " + dominio + " já está autorizado ou já possui uma solicitação em análise.");
+                        "O site " + dominio + " já está liberado ou já tem um pedido em análise.");
             }
 
             dominioDTO.setDominio(dominio);
@@ -56,7 +56,7 @@ public class DominioService {
             // tratar dominio duplicado informa quando o banco recusa uma solicitacao repetida
             if ("23505".equals(e.getSQLState())) {
                 throw new IllegalArgumentException(
-                        "O domínio " + dominio + " já está autorizado ou já possui uma solicitação em análise.");
+                        "O site " + dominio + " já está liberado ou já tem um pedido em análise.");
             }
             logger.error("Erro ao solicitar domínio. professorId={}", idProfessor, e);
             throw new RuntimeException("Não foi possível registrar a solicitação.", e);
@@ -94,7 +94,7 @@ public class DominioService {
             return dominioRepository.listarAprovados();
         } catch (SQLException e) {
             logger.error("Erro ao listar domínios autorizados.", e);
-            throw new RuntimeException("Não foi possível listar os domínios autorizados.", e);
+            throw new RuntimeException("Não foi possível listar os sites liberados.", e);
         }
     }
 
@@ -126,7 +126,7 @@ public class DominioService {
 
             // tratar aprovacao duplicada informa que outra solicitacao ja autorizou o dominio
             if ("23505".equals(e.getSQLState())) {
-                throw new IllegalArgumentException("Esse domínio já está autorizado por outra solicitação.");
+                throw new IllegalArgumentException("Esse site já foi liberado em outra solicitação.");
             }
             logger.error("Erro ao analisar solicitação de domínio. id={}", id, e);
             throw new RuntimeException("Não foi possível analisar a solicitação.", e);
@@ -154,7 +154,7 @@ public class DominioService {
 
         // validar dominio solicitado exige um endereco preenchido
         if (entrada == null || entrada.isBlank()) {
-            throw new IllegalArgumentException("Informe o domínio que deseja solicitar.");
+            throw new IllegalArgumentException("Informe o link ou o endereço do site.");
         }
 
         String d = entrada.trim().toLowerCase();
@@ -164,7 +164,7 @@ public class DominioService {
 
         // validar endereco do dominio rejeita entradas com usuario ou senha
         if (d.contains("@")) {
-            throw new IllegalArgumentException("Informe apenas o domínio, sem usuário ou senha.");
+            throw new IllegalArgumentException("Informe apenas o link do site, sem usuário ou senha.");
         }
 
         d = d.replaceFirst(":\\d+$", "");
@@ -174,7 +174,7 @@ public class DominioService {
         // conferir formato do dominio rejeita enderecos fora do formato aceito
         if (!DOMINIO_VALIDO.matcher(d).matches()) {
             throw new IllegalArgumentException(
-                    "Domínio inválido. Use um formato como exemplo.com ou exemplo.com.br.");
+                    "Endereço inválido. Cole o link do site, por exemplo https://www.exemplo.com.br.");
         }
 
         return d;

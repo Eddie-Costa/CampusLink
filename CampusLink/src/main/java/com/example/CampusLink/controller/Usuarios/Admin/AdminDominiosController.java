@@ -54,7 +54,7 @@ public class AdminDominiosController {
 
         } catch (RuntimeException e) {
             logger.error("erro ao carregar domínios", e);
-            model.addAttribute("mensagemErro", "Não foi possível carregar as solicitações de domínio.");
+            model.addAttribute("mensagemErro", "Não foi possível carregar os pedidos de site.");
             model.addAttribute("pendentes", new ArrayList<DominioDTO>());
             model.addAttribute("aprovados", new ArrayList<DominioDTO>());
         }
@@ -100,7 +100,7 @@ public class AdminDominiosController {
         try {
             dominioService.analisar(id, aprovar, comentarioAdmin);
             redirectAttributes.addFlashAttribute("mensagemSucesso",
-                    aprovar ? "Domínio aprovado." : "Solicitação rejeitada.");
+                    aprovar ? "Site liberado." : "Pedido recusado.");
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
