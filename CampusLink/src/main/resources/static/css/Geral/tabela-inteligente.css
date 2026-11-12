@@ -1,0 +1,149 @@
+/* tabela inteligente estiliza os cabecalhos ordenaveis e o modo cartao das tabelas no celular */
+
+/* botao do cabecalho ocupa a celula e mostra a seta da ordem atual */
+.tabela-ordenar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.tabela-ordenar:hover,
+.tabela-ordenar:focus-visible {
+    color: var(--rd-accent, #2d9ce5);
+    outline: none;
+}
+
+.tabela-ordenar-seta {
+    display: inline-block;
+    width: 8px;
+    height: 12px;
+    opacity: 0.35;
+    background:
+        linear-gradient(135deg, transparent 50%, currentColor 50%) top / 8px 5px no-repeat,
+        linear-gradient(45deg, currentColor 50%, transparent 50%) bottom / 8px 5px no-repeat;
+}
+
+th[aria-sort="ascending"] .tabela-ordenar-seta {
+    opacity: 1;
+    background: linear-gradient(135deg, transparent 50%, currentColor 50%) top / 8px 5px no-repeat;
+}
+
+th[aria-sort="descending"] .tabela-ordenar-seta {
+    opacity: 1;
+    background: linear-gradient(45deg, currentColor 50%, transparent 50%) bottom / 8px 5px no-repeat;
+}
+
+th[aria-sort="ascending"] .tabela-ordenar,
+th[aria-sort="descending"] .tabela-ordenar {
+    color: var(--rd-accent, #2d9ce5);
+}
+
+/* modo cartao no celular troca colunas por blocos com o nome de cada campo */
+@media (max-width: 700px) {
+    main table.tabela-cartoes,
+    main table.tabela-cartoes tbody,
+    main table.tabela-cartoes tr,
+    main table.tabela-cartoes td {
+        display: block;
+        width: 100%;
+    }
+
+    main table.tabela-cartoes {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    main table.tabela-cartoes td {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    main table.tabela-cartoes thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    main table.tabela-cartoes tbody tr {
+        margin: 0 0 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--rd-borda, #e1e7f0);
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px -20px rgba(17, 24, 63, 0.6);
+    }
+
+    main table.tabela-cartoes tbody tr[style*="display: none"] {
+        display: none;
+    }
+
+    main table.tabela-cartoes td {
+        display: grid !important;
+        grid-template-columns: minmax(96px, 38%) minmax(0, 1fr);
+        column-gap: 12px;
+        row-gap: 0;
+        align-items: center;
+        justify-items: end;
+        min-height: 0;
+        padding: 7px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px dashed #e8edf5 !important;
+        text-align: right;
+        overflow-wrap: anywhere;
+        white-space: normal !important;
+    }
+
+    main table.tabela-cartoes td:last-child {
+        border-bottom: 0 !important;
+    }
+
+    main table.tabela-cartoes td[data-rotulo]::before {
+        content: attr(data-rotulo);
+        grid-column: 1;
+        grid-row: 1 / span 20;
+        justify-self: start;
+        color: var(--rd-texto-suave, #667085);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    main table.tabela-cartoes td[data-rotulo] > * {
+        grid-column: 2;
+        margin: 2px 0;
+        max-width: 100%;
+    }
+
+    main table.tabela-cartoes td[data-rotulo] > div,
+    main table.tabela-cartoes td[data-rotulo] > form {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    main table.tabela-cartoes td:not([data-rotulo]) {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        text-align: center;
+    }
+
+    main .table-responsive:has(> table.tabela-cartoes) {
+        overflow: visible;
+    }
+}
