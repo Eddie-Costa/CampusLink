@@ -689,3 +689,110 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* botao secundario tambem funciona como botao de formulario */
+button.acesso-botao-secundario {
+    width: 100%;
+    background: #ffffff;
+}
+
+button.acesso-botao-secundario:disabled {
+    color: #a3abba !important;
+    border-color: #e3e8f1;
+    background: #f7f9fc;
+    cursor: not-allowed;
+}
+
+/* painel do administrador usa um degrade mais escuro para diferenciar a area restrita */
+.acesso-lateral-admin {
+    background: linear-gradient(135deg, #0b1030 0%, var(--campus-navy, #11183f) 60%, #22337a 130%);
+}
+
+/* codigo de verificacao mostra seis caixas grandes para os digitos */
+.codigo-inputs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.codigo-digit {
+    width: 100%;
+    height: 60px;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--campus-navy, #11183f);
+    border-radius: var(--acesso-raio);
+    border: 1.5px solid var(--acesso-campo-borda);
+    background: var(--acesso-campo-fundo);
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.codigo-digit:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--campus-accent, #2d9ce5);
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.15);
+}
+
+/* contador da validade mostra o tempo restante e uma barra que diminui */
+.contadores-2fa {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: var(--acesso-raio);
+    background: var(--acesso-campo-fundo);
+    border: 1.5px solid var(--acesso-campo-borda);
+}
+
+.contador-2fa {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--campus-muted, #667085);
+    font-size: 0.9rem;
+}
+
+.contador-2fa strong {
+    font-size: 1.1rem;
+    color: var(--campus-navy, #11183f);
+    font-variant-numeric: tabular-nums;
+}
+
+.barra-validade {
+    width: 100%;
+    height: 6px;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e3e8f1;
+    appearance: none;
+}
+
+.barra-validade::-webkit-progress-bar {
+    background: #e3e8f1;
+}
+
+.barra-validade::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--campus-accent, #2d9ce5), #22337a);
+    border-radius: 999px;
+}
+
+.barra-validade::-moz-progress-bar {
+    background: linear-gradient(90deg, var(--campus-accent, #2d9ce5), #22337a);
+}
+
+.codigo-expirado .contador-2fa strong {
+    color: #be123c;
+}
+
+@media (max-width: 575.98px) {
+    .codigo-digit {
+        height: 50px;
+        font-size: 1.3rem;
+    }
+
+    .codigo-inputs {
+        gap: 6px;
+    }
+}
