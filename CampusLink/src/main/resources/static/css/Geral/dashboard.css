@@ -190,3 +190,16 @@
     .dashboard-class > a, .dashboard-section > summary, .dashboard-chart > summary { transition: none; transform: none; }
     .dashboard-page .btn-primary:hover { transform: none; }
 }
+
+/* visual moderno aplica o degrade da marca no titulo e nos indicadores principais */
+.dashboard-heading h1 {
+    background: linear-gradient(120deg, #11183f, #22337a 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.dashboard-metric { position: relative; overflow: hidden; border-top: 0; border-radius: 20px; }
+.dashboard-metric::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%)); }
+.dashboard-metric strong { font-weight: 800; letter-spacing: -0.02em; }

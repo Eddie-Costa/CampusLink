@@ -119,3 +119,9 @@ body {
     .chat-compositor { padding: 14px 12px; gap: 10px; }
     .chat-compositor .btn { font-size: 13px; }
 }
+
+/* visual moderno usa o degrade da marca no topo da conversa e nas mensagens enviadas */
+.chamados-topo h1 { font-weight: 800; letter-spacing: -0.02em; }
+.chat-cabecalho { background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%)); }
+.chat-avatar { background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35); }
+.chat-enviada .chat-balao { background: linear-gradient(135deg, #11183f, #22337a); box-shadow: 0 12px 22px -16px rgba(17, 24, 63, 0.9); }
