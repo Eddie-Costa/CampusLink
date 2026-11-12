@@ -185,3 +185,51 @@
     border-radius: 999px;
     border-color: rgba(255, 255, 255, 0.35);
 }
+
+/* dia atual ganha contorno azul e etiqueta para o usuario se localizar no mes */
+.day-cell.dia-hoje {
+    background: linear-gradient(180deg, rgba(45, 156, 229, 0.12), #ffffff 70%);
+    box-shadow: inset 0 0 0 2px var(--rd-accent, #2d9ce5);
+}
+
+.day-cell.dia-hoje .day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--rd-accent, #2d9ce5);
+    color: #ffffff;
+}
+
+/* atalho para voltar ao mes atual */
+.botao-hoje {
+    padding: 6px 16px;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--rd-navy, #11183f);
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.botao-hoje:hover,
+.botao-hoje:focus-visible {
+    border-color: var(--rd-accent, #2d9ce5);
+    color: var(--rd-accent, #2d9ce5);
+    outline: none;
+}
+
+.botao-hoje[hidden] {
+    display: none;
+}
+
+/* dia sem horas cadastradas mostra marcador neutro em vez do verde */
+.disponibilidade-marcador.sem-disponibilidade {
+    background: #eef1f6 !important;
+    color: #8a94a6 !important;
+    box-shadow: none !important;
+}
