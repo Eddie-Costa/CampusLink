@@ -1,0 +1,85 @@
+/* resumo das turmas mostra descricao progresso do aluno e numeros do professor nos cartoes */
+
+.turma-card {
+    gap: 6px;
+}
+
+.turma-descricao {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--rd-texto-suave, #667085);
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+/* barra de progresso do aluno */
+.turma-progresso {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.turma-progresso-barra {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8edf5;
+}
+
+.turma-progresso-barra span {
+    display: block;
+    height: 100%;
+    min-width: 4px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #22337a, #2d9ce5);
+    transition: width 0.4s ease;
+}
+
+.turma-progresso-texto {
+    color: var(--rd-texto-suave, #667085);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* numeros do professor em pilulas */
+.turma-numeros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.turma-numeros span {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: var(--rd-navy-2, #22337a);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* cartoes crescem conforme o conteudo para caber descricao e numeros sem cortar */
+main .lista-turmas {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-auto-rows: auto;
+}
+
+main .lista-turmas .turma-card {
+    height: auto;
+    min-height: 200px;
+    justify-content: flex-start;
+}
+
+main .lista-turmas .turma-card .turma-icon {
+    margin-bottom: auto;
+    flex-shrink: 0;
+}
+
+main .lista-turmas .turma-card .turma-nome {
+    margin-top: 18px;
+}
