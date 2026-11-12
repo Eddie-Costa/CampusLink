@@ -946,3 +946,161 @@ main.container > p {
     outline: 3px solid #5fa8d3;
     outline-offset: 2px;
 }
+/* visual moderno do ambiente da turma troca o painel escuro por um cartao branco com titulo em degrade */
+.turmas-page {
+    background: #ffffff;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 28px;
+    box-shadow: var(--rd-sombra-forte, 0 24px 50px -20px rgba(17, 24, 63, 0.35));
+    padding-top: 92px;
+}
+
+.turmas-page::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 150px;
+    border-radius: 28px 28px 0 0;
+    background:
+        radial-gradient(600px 180px at 20% 0%, rgba(45, 156, 229, 0.14), transparent 70%),
+        radial-gradient(500px 160px at 90% 0%, rgba(108, 123, 255, 0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.turmas-page > * {
+    position: relative;
+}
+
+.turmas-page > h1 {
+    position: absolute;
+    border: 0;
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    box-shadow: 0 16px 30px -14px rgba(17, 24, 63, 0.7);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding: 12px 36px;
+}
+
+main.container > p,
+.sem-conteudos {
+    color: var(--rd-texto-suave, #667085);
+}
+
+.acao-turma,
+.voltar-turmas.acao-turma {
+    background: #ffffff;
+    color: var(--rd-navy, #11183f);
+    border: 1.5px solid var(--rd-borda, #e1e7f0);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    min-height: 38px;
+    box-shadow: 0 1px 2px rgba(17, 24, 63, 0.05);
+}
+
+.acao-turma:hover,
+.voltar-turmas.acao-turma:hover {
+    background: #f7f9fd;
+    color: var(--rd-navy, #11183f);
+    border-color: var(--rd-navy, #11183f);
+}
+
+.btn.btn-danger {
+    border-radius: 999px;
+    min-height: 38px;
+    font-size: 0.82rem;
+    background: #e11d48;
+    box-shadow: 0 10px 20px -12px rgba(225, 29, 72, 0.7);
+}
+
+.turmas-page .conteudo-card {
+    background: #fafbfe;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    box-shadow: none;
+    border-radius: 18px;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.turmas-page .conteudo-card:hover {
+    background: #ffffff;
+    border-color: rgba(45, 156, 229, 0.4);
+    box-shadow: 0 18px 30px -22px rgba(17, 24, 63, 0.45);
+}
+
+.lista-conteudos::-webkit-scrollbar-thumb {
+    background-color: #c3ccdb;
+}
+
+.campus-modal .modal-header {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+}
+
+.campus-modal .modal-header .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+}
+
+.status-conteudo {
+    border-radius: 999px;
+}
+
+/* busca e filtro de conteudos ganham fundo claro e borda para aparecer no cartao branco */
+.busca-conteudos input[type="search"],
+.busca-conteudos select {
+    height: 48px;
+    border: 1.5px solid var(--rd-borda, #e1e7f0);
+    border-radius: 14px;
+    background-color: var(--rd-campo, #f5f7fb);
+    color: var(--rd-texto, #1d2433);
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.busca-conteudos input[type="search"] {
+    padding-left: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 15px center;
+}
+
+.busca-conteudos input[type="search"]:focus,
+.busca-conteudos select:focus {
+    outline: none;
+    background-color: #ffffff;
+    border-color: var(--rd-accent, #2d9ce5);
+    box-shadow: var(--rd-foco, 0 0 0 4px rgba(45, 156, 229, 0.18));
+}
+
+.busca-conteudos button {
+    border: 1.5px solid var(--rd-borda, #e1e7f0);
+    border-radius: 14px;
+    height: 48px;
+}
+
+/* botoes pequenos dos materiais viram pilulas com contorno */
+.conteudo-excluir {
+    border: 1.5px solid var(--rd-borda, #e1e7f0) !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: var(--rd-navy, #11183f) !important;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.conteudo-excluir:hover {
+    border-color: var(--rd-navy, #11183f) !important;
+    background: #f7f9fd !important;
+}
+
+.conteudo-alternar-detalhes {
+    background: #ffffff;
+    border-color: var(--rd-borda, #e1e7f0);
+}
+
+/* celular coloca o botao de voltar no fluxo para nao cobrir a descricao */
+@media (max-width: 767.98px) {
+    .voltar-turmas {
+        position: static;
+        margin-bottom: 14px;
+    }
+
+    .turmas-page {
+        padding-top: 64px;
+    }
+}
