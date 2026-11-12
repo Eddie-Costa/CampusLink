@@ -7,7 +7,7 @@
     <title>Meus Conteúdos</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css(v=20261018-1)}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css(v=20261112-1)}">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
     <div class="meus-conteudos-container">
 
         <div class="titulo-pagina">
-            <h1>Meus Conteúdos</h1>
+            <h1><span class="texto-degrade">Meus Conteúdos</span></h1>
             <p>Veja todos os conteúdos que você cadastrou nas suas turmas</p>
         </div>
 
@@ -142,7 +142,7 @@
                                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                                 <button type="submit" class="botao-remover" title="Remover conteúdo" aria-label="Remover conteúdo">
-                                    🗑
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                                 </button>
                             </form>
 
