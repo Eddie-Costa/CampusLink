@@ -36,7 +36,7 @@ class TermosServiceTests {
     // testar hash conhecido este teste confere o sha-256 de um texto de referencia
     @Test
     void calculaSha256ConhecidoEmHexadecimal() {
-        assertEquals("falha-intencional", TermosService.calcularHash("abc"));
+        assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", TermosService.calcularHash("abc"));
     }
 
     // testar termo integro este teste confere que o texto que bate com o hash e devolvido
