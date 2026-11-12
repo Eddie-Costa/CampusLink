@@ -54,7 +54,7 @@
 
         <div class="admin-resumo">
             <strong th:text="${#lists.size(versoes)}">0</strong>
-            <span>versões publicadas</span>
+            <span th:text="${#lists.size(versoes) == 1 ? 'versão publicada' : 'versões publicadas'}">versões publicadas</span>
         </div>
 
         <section class="admin-lista" aria-label="Versões publicadas">

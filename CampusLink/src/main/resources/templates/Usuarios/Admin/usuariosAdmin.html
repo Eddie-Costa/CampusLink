@@ -37,7 +37,7 @@
         <section class="usuarios-admin-card">
             <div class="usuarios-admin-card-topo">
                 <h2>Usuários cadastrados</h2>
-                <span class="usuarios-admin-total" th:text="${#lists.size(usuarios) + ' usuários'}">0 usuários</span>
+                <span class="usuarios-admin-total" th:text="${#lists.size(usuarios) + (#lists.size(usuarios) == 1 ? ' usuário' : ' usuários')}">0 usuários</span>
             </div>
 
             <div class="usuarios-admin-busca">

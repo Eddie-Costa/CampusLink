@@ -103,7 +103,7 @@
                 <h2>Professores vinculados</h2>
 
                 <span class="professores-turma-admin-total"
-                      th:text="${#lists.size(professores) + ' professores'}">
+                      th:text="${#lists.size(professores) + (#lists.size(professores) == 1 ? ' professor' : ' professores')}">
                     0 professores
                 </span>
 

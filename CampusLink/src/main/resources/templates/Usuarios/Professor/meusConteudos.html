@@ -186,7 +186,7 @@
                             <span class="informacao-titulo">Duração</span>
 
                             <span class="informacao-valor"
-                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : 'Não informada'}">
+                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? (conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada) : 'Não informada'}">
                                 Duração
                             </span>
                         </div>
@@ -227,7 +227,7 @@
                                 </strong>
                                 <span class="conteudo-midia-detalhes"
                                       th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'video'}"
-                                      th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : ''}">
+                                      th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? (conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada) : ''}">
                                     Duração
                                 </span>
                                 <span class="conteudo-midia-livro-autor"

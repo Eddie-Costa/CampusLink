@@ -26,7 +26,7 @@
                 <span class="conteudo-meta" th:text="${turma.nomeTurma}">Turma #1</span>
                 <span class="selo-risco risco-atrasado mt-2" th:if="${eventoPassado}">Evento encerrado</span>
             </div>
-            <span class="conteudo-meta" th:text="${#lists.size(alunos) + ' alunos'}">30 alunos</span>
+            <span class="conteudo-meta" th:text="${#lists.size(alunos) + (#lists.size(alunos) == 1 ? ' aluno' : ' alunos')}">30 alunos</span>
         </div>
 
         <div class="sem-turmas" th:if="${#lists.isEmpty(alunos)}">

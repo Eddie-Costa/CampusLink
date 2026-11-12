@@ -32,7 +32,7 @@
 
         <div class="admin-resumo">
             <strong th:text="${#lists.size(conteudos)}">0</strong>
-            <span>solicitações aguardando análise</span>
+            <span th:text="${#lists.size(conteudos) == 1 ? 'solicitação aguardando análise' : 'solicitações aguardando análise'}">solicitações aguardando análise</span>
         </div>
 
         <p th:if="${#lists.isEmpty(conteudos)}" class="admin-vazio">
