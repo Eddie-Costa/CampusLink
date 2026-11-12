@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css}">
     <link rel="stylesheet" th:href="@{/css/Geral/agenda-dia.css}">
-    <link rel="stylesheet" th:href="@{/css/Geral/agenda-moderna.css(v=20261112-1)}">
+    <link rel="stylesheet" th:href="@{/css/Geral/agenda-moderna.css(v=20261112-3)}">
 </head>
 
 <body>
@@ -45,6 +45,8 @@
             <button type="button" id="mesProximo" class="calendar-button" aria-label="Próximo mês">
                 ›
             </button>
+
+            <button type="button" id="voltarHoje" class="botao-hoje" hidden title="Voltar para o mês atual">Hoje</button>
 
             <label class="month-selector" for="seletorMes">
                 Escolher mês:
@@ -482,7 +484,7 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:src="@{/js/Geral/agendaDia.js}"></script>
-<script th:src="@{/js/Geral/calendario-eventos.js}"></script>
+<script th:src="@{/js/Geral/calendario-eventos.js(v=20261112-3)}"></script>
 
 </body>
 </html>

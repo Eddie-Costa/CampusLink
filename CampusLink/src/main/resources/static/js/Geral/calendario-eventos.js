@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const seletorMes = document.getElementById('seletorMes');
     const mesAnterior = document.getElementById('mesAnterior');
     const mesProximo = document.getElementById('mesProximo');
+    const voltarHoje = document.getElementById('voltarHoje');
 
     const quantidadePrioridadeAlta = document.getElementById('quantidadePrioridadeAlta');
     const quantidadePrioridadeMedia = document.getElementById('quantidadePrioridadeMedia');
@@ -140,8 +141,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const marcador = document.createElement('span');
 
         marcador.classList.add('disponibilidade-marcador');
-        marcador.textContent = `Disponibilidade ${disponibilidade.horas}h`;
-        marcador.title = `${disponibilidade.horas} horas disponíveis`;
+        // diferenciar dia sem horas deixa o marcador discreto quando nada foi cadastrado
+        if (Number(disponibilidade.horas) > 0) {
+            marcador.textContent = `${disponibilidade.horas}h livres`;
+            marcador.title = `${disponibilidade.horas} horas disponíveis`;
+        } else {
+            marcador.classList.add('sem-disponibilidade');
+            marcador.textContent = 'Sem horas';
+            marcador.title = 'Nenhuma hora disponível cadastrada neste dia';
+        }
 
         return marcador;
     }
@@ -613,6 +621,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             celula.appendChild(numeroDia);
 
+            // destacar dia atual marca a celula de hoje para o usuario se localizar no mes
+            if (data.getTime() === inicioDeHoje.getTime()) {
+                celula.classList.add('dia-hoje');
+                celula.setAttribute('aria-current', 'date');
+                celula.setAttribute('aria-label', `Hoje, ${dia} de ${meses[mesAtual]} de ${anoAtual}`);
+            }
+
             // identificar dia passado aplica o estilo das datas anteriores a hoje
             if (data < inicioDeHoje) {
                 celula.classList.add('dia-passado');
@@ -625,8 +640,42 @@ document.addEventListener('DOMContentLoaded', function () {
             calendario.appendChild(celula);
         }
 
+        // exibir atalho para hoje mostra o botao apenas quando outro mes esta na tela
+        if (voltarHoje) {
+            voltarHoje.hidden = mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear();
+        }
+
         atualizarResumoPrioridades();
     }
+
+    // voltar ao mes atual configura o atalho que leva o calendario para hoje
+    if (voltarHoje) {
+        voltarHoje.addEventListener('click', function () {
+            mesAtual = hoje.getMonth();
+            anoAtual = hoje.getFullYear();
+
+            atualizarCalendario();
+        });
+    }
+
+    // trocar mes pelo teclado usa as setas quando o foco nao esta em um campo
+    document.addEventListener('keydown', function (evento) {
+        const alvo = evento.target;
+        const digitando = alvo && (alvo.closest('input, select, textarea, [contenteditable="true"]'));
+        const modalAberto = document.querySelector('.modal.show, .event-modal:not([hidden])');
+
+        // ignorar atalho evita trocar o mes enquanto o usuario digita ou usa um modal
+        if (digitando || modalAberto || evento.altKey || evento.ctrlKey || evento.metaKey) {
+            return;
+        }
+
+        // aplicar atalho reaproveita os botoes de navegacao ja existentes
+        if (evento.key === 'ArrowLeft' && mesAnterior) {
+            mesAnterior.click();
+        } else if (evento.key === 'ArrowRight' && mesProximo) {
+            mesProximo.click();
+        }
+    });
 
     // navegar ao mes anterior configura o botao para recuar o calendario
     if (mesAnterior) {
