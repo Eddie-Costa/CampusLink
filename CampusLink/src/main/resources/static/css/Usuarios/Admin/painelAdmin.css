@@ -131,3 +131,25 @@ body {
         font-size: 27px;
     }
 }
+/* numeros do painel mostram totais e destacam o que aguarda o administrador */
+.painel-numero {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #22337a;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.painel-numero-alerta {
+    background: #fff4e5;
+    color: #b45309;
+    box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.25);
+}
+
+.painel-numero-ok {
+    background: #e8f7ef;
+    color: #0f7a4a;
+}

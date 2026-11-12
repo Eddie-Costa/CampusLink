@@ -7,7 +7,7 @@
     <title>Painel Administrativo | CampusLink</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/painelAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/painelAdmin.css(v=20261112-1)}">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
 </head>
 
@@ -32,7 +32,10 @@
 
             <div class="col-md-6">
                 <article class="admin-card h-100">
-                    <div class="admin-card-topo"><h2>Chamados</h2></div>
+                    <div class="admin-card-topo"><h2>Chamados</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:classappend="${resumoPainel.get('chamados_abertos') > 0 ? 'painel-numero-alerta' : 'painel-numero-ok'}"
+                              th:text="${resumoPainel.get('chamados_abertos') == 0 ? 'Em dia' : resumoPainel.get('chamados_abertos') + (resumoPainel.get('chamados_abertos') == 1 ? ' aberto' : ' abertos')}"></span></div>
                     <p class="admin-descricao">Responda às dúvidas dos usuários e conclua os atendimentos resolvidos</p>
                     <a th:href="@{/admin/chamados}" class="btn btn-primary">Gerenciar chamados</a>
                 </article>
@@ -42,6 +45,8 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Usuários</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:text="${resumoPainel.get('usuarios_ativos') + (resumoPainel.get('usuarios_ativos') == 1 ? ' ativo' : ' ativos')}"></span>
                     </div>
 
                     <p class="admin-descricao">
@@ -58,6 +63,8 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Turmas</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:text="${resumoPainel.get('turmas') + (resumoPainel.get('turmas') == 1 ? ' turma' : ' turmas')}"></span>
                     </div>
 
                     <p class="admin-descricao">
@@ -74,6 +81,8 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Conteúdos</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:text="${resumoPainel.get('conteudos_ativos') + (resumoPainel.get('conteudos_ativos') == 1 ? ' ativo' : ' ativos')}"></span>
                     </div>
 
                     <p class="admin-descricao">
@@ -90,6 +99,8 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Eventos</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:text="${resumoPainel.get('eventos_ativos') + (resumoPainel.get('eventos_ativos') == 1 ? ' ativo' : ' ativos')}"></span>
                     </div>
 
                     <p class="admin-descricao">
@@ -106,6 +117,9 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Análise de conteúdos</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:classappend="${resumoPainel.get('analises_pendentes') > 0 ? 'painel-numero-alerta' : 'painel-numero-ok'}"
+                              th:text="${resumoPainel.get('analises_pendentes') == 0 ? 'Em dia' : resumoPainel.get('analises_pendentes') + (resumoPainel.get('analises_pendentes') == 1 ? ' aguardando' : ' aguardando')}"></span>
                     </div>
 
                     <p class="admin-descricao">
@@ -121,6 +135,9 @@
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
                         <h2>Domínios autorizados</h2>
+                        <span class="painel-numero" th:if="${resumoPainel != null}"
+                              th:classappend="${resumoPainel.get('dominios_pendentes') > 0 ? 'painel-numero-alerta' : 'painel-numero-ok'}"
+                              th:text="${resumoPainel.get('dominios_pendentes') == 0 ? 'Em dia' : resumoPainel.get('dominios_pendentes') + (resumoPainel.get('dominios_pendentes') == 1 ? ' pendente' : ' pendentes')}"></span>
                     </div>
 
                     <p class="admin-descricao">
