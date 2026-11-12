@@ -27,6 +27,8 @@ import com.example.CampusLink.repository.UsuarioRepository;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.helpers.MessageFormatter;
 import com.example.CampusLink.service.DominioService;
+import com.example.CampusLink.repository.DashboardRepository;
+import com.example.CampusLink.dto.DashboardFiltro;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +65,9 @@ public class turmasController {
     @Autowired
     private DominioService dominioService;
 
+    @Autowired
+    private DashboardRepository dashboardRepository;
+
     // listar minhas turmas este metodo carrega as turmas do usuario e destaca as usadas recentemente
     @GetMapping("/turmas")
     public String Turmas(Model model, HttpSession session) throws SQLException {
@@ -88,8 +93,45 @@ public class turmasController {
         model.addAttribute("turmas", TurmaRepository.ordenarPorNome(turmas));
         model.addAttribute("turmasRecentes",
                 turmaRepository.recentesDentre(session.getAttribute("email2FA").toString(), turmas, 5));
+        model.addAttribute("resumoTurmas", resumirTurmas(tipoUsuario.toLowerCase(Locale.ROOT),
+                session.getAttribute("email2FA").toString()));
 
         return "Geral/turmas";
+    }
+
+    // resumir turmas do usuario este metodo reaproveita as consultas do dashboard para mostrar numeros nos cartoes
+    private Map<Long, Map<String, Object>> resumirTurmas(String tipoUsuario, String email) {
+        Map<Long, Map<String, Object>> resumo = new HashMap<>();
+
+        // ignorar perfil sem resumo devolve mapa vazio para quem nao e aluno nem professor
+        if (!"aluno".equals(tipoUsuario) && !"professor".equals(tipoUsuario)) {
+            return resumo;
+        }
+
+        // consultar resumo protege a listagem para que uma falha nos numeros nao esconda as turmas
+        try {
+            Long id = dashboardRepository.buscarIdentidade(email, tipoUsuario);
+
+            // ignorar usuario sem identidade devolve mapa vazio quando o vinculo nao foi encontrado
+            if (id == null) {
+                return resumo;
+            }
+
+            var parametros = dashboardRepository.parametros(tipoUsuario, id,
+                    new DashboardFiltro("todos", 0, "todos", "todos"));
+            List<Map<String, Object>> linhas = "aluno".equals(tipoUsuario)
+                    ? dashboardRepository.turmasAluno(parametros)
+                    : dashboardRepository.turmasProfessor(parametros);
+
+            // indexar resumo guarda cada linha pelo id da turma para o template
+            for (Map<String, Object> linha : linhas) {
+                resumo.put(((Number) linha.get("id")).longValue(), linha);
+            }
+        } catch (RuntimeException e) {
+            logger.warn("Nao foi possivel resumir as turmas do usuario", e);
+        }
+
+        return resumo;
     }
 
     // abrir ambiente da turma este metodo reune participantes conteudos arquivos e permissoes para a tela

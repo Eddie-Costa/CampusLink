@@ -49,6 +49,7 @@ class TurmasAcessoTests {
     @MockitoBean ConteudoService conteudos;
     @MockitoBean ArquivoService arquivos;
     @MockitoBean DominioService dominios;
+    @MockitoBean com.example.CampusLink.repository.DashboardRepository dashboard;
     @MockitoBean SessaoLogListener sessoes;
     @MockitoBean ChamadoAcessoService acessoChamados;
     @MockitoBean TermosService termos;
