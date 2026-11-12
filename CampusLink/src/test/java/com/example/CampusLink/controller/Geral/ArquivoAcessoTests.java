@@ -14,6 +14,7 @@ import com.example.CampusLink.service.ArquivoService;
 import com.example.CampusLink.service.ChamadoAcessoService;
 import com.example.CampusLink.service.TermosService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // testes dos arquivos esta classe simula tentativas de acessar arquivos de turmas alheias
+@Tag("integration")
 @WebMvcTest(ArquivoController.class)
 @Import(SecurityConfig.class)
 class ArquivoAcessoTests {

@@ -16,6 +16,7 @@ import com.example.CampusLink.service.ConteudoService;
 import com.example.CampusLink.service.DominioService;
 import com.example.CampusLink.service.TermosService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 // testes das turmas esta classe simula a troca do id da turma na url e acoes em turmas alheias
+@Tag("integration")
 @WebMvcTest(turmasController.class)
 @Import(SecurityConfig.class)
 class TurmasAcessoTests {

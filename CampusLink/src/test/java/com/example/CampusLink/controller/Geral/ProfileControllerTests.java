@@ -15,6 +15,7 @@ import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -42,6 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // testes dos dados pessoais esta classe confere identidade protecao dos pedidos codigos e tratamento de falhas
+@Tag("integration")
 @WebMvcTest(ProfileController.class)
 @Import({SecurityConfig.class, TwoFactorService.class})
 class ProfileControllerTests {

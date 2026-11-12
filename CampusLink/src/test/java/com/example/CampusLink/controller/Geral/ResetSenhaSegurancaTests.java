@@ -10,6 +10,7 @@ import com.example.CampusLink.service.TermosService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 // testes do esqueci a senha esta classe simula tentativas de trocar a senha de outra conta
+@Tag("integration")
 @WebMvcTest(ResetPaswordController.class)
 @Import(SecurityConfig.class)
 class ResetSenhaSegurancaTests {

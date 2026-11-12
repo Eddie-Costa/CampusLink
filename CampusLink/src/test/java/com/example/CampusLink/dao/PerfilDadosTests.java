@@ -6,6 +6,8 @@ import com.example.CampusLink.service.SupabaseStorageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.springframework.test.context.jdbc.Sql;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 // testes da limpeza de contas esta classe confere vinculos impedimentos e cancelamento de gravacoes incompletas
+@Tag("integration")
+@Sql(scripts = "/schema-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @SpringBootTest
 class PerfilDadosTests {
     @Autowired DataSource dataSource;
