@@ -1,0 +1,187 @@
+/* agenda moderna troca as celulas escuras do calendario por cartoes claros e padroniza paineis e botoes */
+
+/* dias do calendario ficam brancos com borda fina e destaque ao passar o mouse */
+.day-cell,
+.day-cell.tem-evento,
+.day-cell.tem-disponibilidade {
+    background: #ffffff;
+    color: var(--rd-navy, #11183f);
+    box-shadow: inset 0 0 0 1px #edf1f7;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.day-cell:not(.dia-passado):not(.adjacent-month):hover {
+    background: #f5faff;
+    box-shadow: inset 0 0 0 1.5px rgba(45, 156, 229, 0.45);
+}
+
+.day-cell.dia-passado {
+    background: #f6f8fb;
+    color: #a3abba;
+}
+
+.day-cell.adjacent-month,
+.day-cell.calendar-empty {
+    background: #fafbfd;
+    color: #c0c7d4;
+}
+
+.day-number {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.day-add {
+    border-color: #c9d3e3 !important;
+    color: #8a94a6 !important;
+    background: #ffffff;
+    transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.day-cell:hover .day-add {
+    border-color: var(--rd-accent, #2d9ce5) !important;
+    color: var(--rd-accent, #2d9ce5) !important;
+    background: rgba(45, 156, 229, 0.08);
+}
+
+/* nomes dos dias da semana ficam discretos em caixa alta */
+.calendar-weekday {
+    background: #f7f9fc !important;
+    color: var(--rd-texto-suave, #667085) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* botoes de mes anterior e seguinte usam o degrade da marca */
+.calendar-button {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    box-shadow: 0 10px 18px -10px rgba(17, 24, 63, 0.7);
+}
+
+.calendar-button:hover,
+.calendar-button:focus-visible {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    transform: translateY(-1px);
+    outline: none;
+    box-shadow: var(--rd-foco, 0 0 0 4px rgba(45, 156, 229, 0.18));
+}
+
+/* paineis laterais de prioridades e resumo ficam brancos com cantos grandes */
+.prioridades-resumo {
+    background: #ffffff;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 22px;
+    box-shadow: var(--rd-sombra, 0 8px 24px -12px rgba(17, 24, 63, 0.18));
+}
+
+.prioridades-resumo h2 {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--rd-navy, #11183f);
+}
+
+.prioridade-resumo-item {
+    background: #f7f9fc;
+    border-radius: 12px;
+}
+
+.prioridade-resumo-total {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    border-radius: 12px;
+    box-shadow: 0 10px 18px -12px rgba(17, 24, 63, 0.7);
+}
+
+/* itens de prioridade do aluno viram cartoes claros com borda que acende ao passar o mouse */
+.prioridade-item {
+    background: #f7f9fc;
+    color: var(--rd-navy, #11183f);
+    border: 1px solid var(--rd-borda, #e1e7f0);
+}
+
+.prioridade-item:hover,
+.prioridade-item:focus-visible {
+    background: #ffffff;
+    color: var(--rd-navy, #11183f);
+    border-color: rgba(45, 156, 229, 0.45);
+    box-shadow: 0 14px 24px -18px rgba(17, 24, 63, 0.5);
+}
+
+/* bloco de disponibilidade fica branco com faixa verde a esquerda */
+.disponibilidade-resumo {
+    background: #ffffff;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-left: 5px solid #10b981;
+    border-radius: 22px;
+    box-shadow: var(--rd-sombra, 0 8px 24px -12px rgba(17, 24, 63, 0.18));
+}
+
+.disponibilidade-resumo h2 {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* botoes secundarios da agenda seguem o padrao novo */
+.botao-alternar-conteudos {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    border: 0;
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.botao-refazer:hover,
+.botao-refazer:focus-visible {
+    background: var(--rd-navy, #11183f);
+}
+
+#confirmarRefazerModal .modal-header {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+}
+
+#confirmarRefazerModal .modal-header .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+}
+
+/* editor de eventos continua escuro mas troca o roxo pelo azul da marca */
+.teams-salvar {
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2d9ce5, #22337a);
+    box-shadow: 0 10px 20px -12px rgba(45, 156, 229, 0.9);
+}
+
+.teams-salvar:hover:not(:disabled),
+.teams-salvar:focus-visible {
+    background: linear-gradient(135deg, #46aef0, #2d3f8f);
+}
+
+.evento-teams #conteudosRelacionados option:checked,
+.evento-teams #conteudosRelacionados option.conteudo-vencido:checked,
+.seletor-turma-opcao[aria-selected="true"] {
+    border-color: #2d9ce5;
+    background: #2d9ce5;
+}
+
+.seletor-turma-opcao:hover,
+.seletor-turma-opcao.ativa {
+    background: rgba(45, 156, 229, 0.22);
+}
+
+/* moldura do editor ganha cantos maiores e sombra profunda */
+.evento-teams {
+    border-radius: 22px;
+    background: linear-gradient(160deg, #11183f, #141d4a 60%, #172757);
+    box-shadow: 0 40px 80px -30px rgba(10, 14, 40, 0.75);
+}
+
+.teams-barra,
+.teams-painel {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.evento-teams .teams-titulo {
+    border-radius: 999px;
+    border-color: rgba(255, 255, 255, 0.35);
+}
