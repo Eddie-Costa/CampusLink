@@ -30,6 +30,30 @@
         <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
         <link rel="stylesheet" th:href="@{/css/profileMenu.css}">
         <link rel="stylesheet" th:href="@{/css/Geral/submit-once.css(v=20261017-1)}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+        <link rel="stylesheet" th:href="@{/css/redesign.css(v=20261112-1)}">
+        <script>
+            // destacar pagina atual marca no menu o link que corresponde ao endereco aberto
+            document.addEventListener('DOMContentLoaded', function () {
+                var caminho = window.location.pathname;
+                var melhor = null;
+                document.querySelectorAll('.site-header-nav ul.nav .nav-link').forEach(function (link) {
+                    var destino = new URL(link.href, window.location.origin).pathname;
+                    // escolher link mais especifico prefere o endereco mais longo que comeca o caminho atual
+                    if (destino !== '/' && (caminho === destino || caminho.startsWith(destino + '/'))
+                            && (!melhor || destino.length > melhor.destino.length)) {
+                        melhor = { link: link, destino: destino };
+                    }
+                });
+                // marcar link encontrado aplica o destaque e informa a pagina atual para leitores de tela
+                if (melhor) {
+                    melhor.link.classList.add('active');
+                    melhor.link.setAttribute('aria-current', 'page');
+                }
+            });
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
         <script th:src="@{/js/Geral/envioUnico.js}" defer></script>
 
