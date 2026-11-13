@@ -135,7 +135,9 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">Nenhum usuário cadastrado</td>
+                        <td colspan="7" class="usuarios-admin-vazio">
+                            <div th:replace="~{fragments/vazio :: vazio('usuario', 'Nenhum usuário cadastrado', 'Cadastre alunos e professores para começar a montar as turmas.', 'Cadastrar usuário', @{/admin/usuarios/cadastrar})}"></div>
+                        </td>
                     </tr>
 
                     <tr id="nenhumResultado" th:if="${not #lists.isEmpty(usuarios)}">

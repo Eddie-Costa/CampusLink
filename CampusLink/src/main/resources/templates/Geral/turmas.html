@@ -78,9 +78,10 @@
                 </div>
             </div>
         </div>
-        <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
-            <p>Você ainda não está em nenhuma turma.</p>
-        </div>
+        <th:block th:if="${#lists.isEmpty(turmas)}">
+            <th:block th:if="${session.tipoUsuario != 'professor'}"><div th:replace="~{fragments/vazio :: vazio('turma', 'Você ainda não está em nenhuma turma', 'Quando um professor ou a coordenação adicionar você a uma turma, ela aparece aqui com os conteúdos e eventos.', 'Pedir ajuda', @{/ajuda})}"></div></th:block>
+            <th:block th:if="${session.tipoUsuario == 'professor'}"><div th:replace="~{fragments/vazio :: vazio('turma', 'Crie sua primeira turma', 'Use o botão Criar Turma acima para começar a publicar conteúdos e eventos para os seus alunos.', null, null)}"></div></th:block>
+        </th:block>
 
         <th:block th:unless="${turmasRecentes == null or #lists.isEmpty(turmasRecentes)}">
             <h2 class="h5 fw-bold mb-3">Recentes</h2>
