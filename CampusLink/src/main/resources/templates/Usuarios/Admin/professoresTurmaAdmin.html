@@ -23,7 +23,7 @@
         <div class="professores-turma-admin-topo">
 
             <div>
-                <p class="professores-turma-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, 'Turmas', @{/admin/turmas}, ${turma.nomeTurma}, @{/admin/turmas/{id}/editar(id=${turma.id})}, 'Professores')}"></nav>
                 <h1>Professores da turma</h1>
 
                 <p>
@@ -34,9 +34,6 @@
                 </p>
             </div>
 
-            <a th:href="@{/admin/turmas}" class="professores-turma-admin-voltar">
-                Voltar para turmas
-            </a>
 
         </div>
 

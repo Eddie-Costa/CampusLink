@@ -17,7 +17,7 @@
 <main class="turmas-page">
     <div class="turmas-container turmas-container-larga">
 
-        <a class="voltar-turmas" th:href="@{/acompanhamento/turma/{id}(id=${turma.id})}">← Voltar à turma</a>
+        <nav th:replace="~{fragments/trilha :: trilha('Acompanhamento', @{/acompanhamento}, ${turma.nomeTurma}, @{/acompanhamento/turma/{id}(id=${turma.id})}, null, null, ${evento.nome})}"></nav>
 
         <div class="conteudo-card mb-4">
             <div>

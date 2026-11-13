@@ -12,7 +12,7 @@
 <body>
 <div th:replace="~{fragments/header :: nav}"></div>
 <main class="chamados-page chat-page" id="chamado-chat" th:attr="data-admin=${administrador},data-conversa-url=${administrador ? '/admin/chamados/' + chamado.id + '/conversa' : '/meus-chamados/' + chamado.id + '/conversa'}">
-    <a th:href="${administrador} ? @{/admin/chamados} : @{/meus-chamados}" class="chat-voltar">← Voltar aos chamados</a>
+    <nav th:replace="~{fragments/trilha :: trilha('Chamados', (${administrador} ? @{/admin/chamados} : @{/meus-chamados}), null, null, null, null, ${'Chamado #' + chamado.id})}"></nav>
     <div class="alert alert-success" role="status" th:if="${mensagemSucesso}" th:text="${mensagemSucesso}"></div>
     <div class="alert alert-warning" role="status" th:if="${mensagemAviso}" th:text="${mensagemAviso}"></div>
     <div class="alert alert-danger" role="alert" th:if="${mensagemErro}" th:text="${mensagemErro}"></div>

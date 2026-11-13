@@ -17,7 +17,7 @@
 <main class="turmas-page">
     <div class="turmas-container">
 
-        <a class="voltar-turmas" th:href="@{/score}">← Voltar ao score</a>
+        <nav th:replace="~{fragments/trilha :: trilha('Score', @{/score}, null, null, null, null, ${turma.nomeTurma})}"></nav>
 
         <div class="conteudo-card mb-4">
             <h1 class="conteudo-nome m-0" th:text="${turma.nomeTurma}">Turma #1</h1>

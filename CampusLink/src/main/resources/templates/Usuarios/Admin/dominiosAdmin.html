@@ -18,12 +18,11 @@
 
         <header class="admin-topo">
             <div>
-                <p class="admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Domínios autorizados')}"></nav>
                 <h1>Domínios autorizados</h1>
                 <p>Analise as solicitações dos professores e veja os domínios já liberados para links</p>
             </div>
 
-            <a th:href="@{/admin/painel}" class="btn btn-outline-primary">Voltar ao início</a>
         </header>
 
         <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>

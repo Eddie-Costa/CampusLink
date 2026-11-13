@@ -24,7 +24,7 @@
         <div class="conteudos-admin-topo">
 
             <div>
-                <p class="conteudos-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Conteúdos')}"></nav>
                 <h1>Gerenciar conteúdos</h1>
                 <p>Consulte os conteúdos cadastrados pelos professores no CampusLink.</p>
             </div>
@@ -35,9 +35,6 @@
                     Conteúdos denunciados
                 </a>
 
-                <a th:href="@{/admin/painel}" class="conteudos-admin-voltar">
-                    Voltar para o painel
-                </a>
 
             </div>
 

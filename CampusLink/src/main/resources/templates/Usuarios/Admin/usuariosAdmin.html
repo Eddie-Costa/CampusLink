@@ -20,14 +20,13 @@
 
         <header class="usuarios-admin-topo">
             <div>
-                <p class="usuarios-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Usuários')}"></nav>
                 <h1>Gerenciar usuários</h1>
                 <p>Visualize e gerencie os alunos, professores e administradores do CampusLink</p>
             </div>
 
             <div class="usuarios-admin-topo-acoes">
                 <a th:href="@{/admin/usuarios/cadastrar}" class="usuarios-admin-cadastrar">+ Cadastrar usuário</a>
-                <a th:href="@{/admin/painel}" class="usuarios-admin-voltar">Voltar</a>
             </div>
         </header>
 
