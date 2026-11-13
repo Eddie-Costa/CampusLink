@@ -24,7 +24,7 @@
         <div class="eventos-admin-topo">
 
             <div>
-                <p class="eventos-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Eventos')}"></nav>
                 <h1>Gerenciar eventos</h1>
                 <p>Consulte e gerencie os eventos cadastrados no CampusLink.</p>
             </div>
@@ -35,9 +35,6 @@
                     + Cadastrar evento
                 </a>
 
-                <a th:href="@{/admin/painel}" class="eventos-admin-voltar">
-                    Voltar para o painel
-                </a>
 
             </div>
 

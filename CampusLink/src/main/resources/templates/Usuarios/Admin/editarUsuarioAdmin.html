@@ -20,12 +20,11 @@
 
         <header class="editar-admin-topo">
             <div>
-                <p class="editar-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, 'Usuários', @{/admin/usuarios}, null, null, 'Editar usuário')}"></nav>
                 <h1>Editar usuário</h1>
                 <p>Atualize as informações do aluno ou professor</p>
             </div>
 
-            <a th:href="@{/admin/usuarios}" class="editar-admin-voltar">Voltar</a>
         </header>
 
         <div th:if="${mensagemErro}" class="alert alert-danger editar-admin-mensagem" th:text="${mensagemErro}"></div>
