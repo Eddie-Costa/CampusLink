@@ -86,7 +86,11 @@
                             <div class="usuario-acoes">
                                 <a th:if="${not ehAdmin}" th:href="@{/admin/usuarios/{idUsuario}/editar(idUsuario=${usuario.idUsuario})}" class="usuario-botao usuario-botao-editar">Editar</a>
 
-                                <form th:if="${usuario.status and (not ehAdmin or podeRetirar)}" th:action="@{/admin/usuarios/{idUsuario}/desativar(idUsuario=${usuario.idUsuario})}" method="post">
+                                <form th:if="${usuario.status and (not ehAdmin or podeRetirar)}" th:action="@{/admin/usuarios/{idUsuario}/desativar(idUsuario=${usuario.idUsuario})}" method="post"
+                                      data-confirmar-titulo="Desativar usuário?"
+                                      data-confirmar="A pessoa não conseguirá entrar no CampusLink até ser ativada novamente."
+                                      data-confirmar-botao="Desativar"
+                                      th:attr="data-confirmar-item=${usuario.nome}">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button type="submit" class="usuario-botao usuario-botao-desativar">Desativar</button>
                                 </form>

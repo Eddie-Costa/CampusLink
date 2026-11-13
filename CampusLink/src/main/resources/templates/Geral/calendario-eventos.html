@@ -221,6 +221,9 @@
                             </div>
 
                             <form class="form-excluir-evento"
+                                  data-confirmar-titulo="Excluir evento?"
+                                  data-confirmar="O evento sairá da agenda dos alunos. Esta ação não pode ser desfeita."
+                                  data-confirmar-botao="Excluir"
                                   th:if="${session.tipoUsuario == 'professor'}"
                                   th:action="@{/eventos/excluir}"
                                   method="post">

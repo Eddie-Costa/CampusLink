@@ -183,7 +183,11 @@
 
                             <form th:if="${turma.idProprietario == null || turma.idProprietario != professor.idPerfil}"
                                   th:action="@{/admin/turmas/{idTurma}/professores/{idProfessor}/remover(idTurma=${turma.id}, idProfessor=${professor.idPerfil})}"
-                                  method="post">
+                                  method="post"
+                                  data-confirmar-titulo="Remover professor da turma?"
+                                  data-confirmar="O professor deixará de gerenciar esta turma."
+                                  data-confirmar-botao="Remover"
+                                  th:attr="data-confirmar-item=${professor.nome}">
 
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 

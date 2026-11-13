@@ -168,7 +168,11 @@
 
                     <form th:action="@{/admin/conteudos-denunciados/{idConteudo}/reprovar(idConteudo=${conteudo.id})}"
                           method="post"
-                          class="admin-reprovar-form">
+                          class="admin-reprovar-form"
+                          data-confirmar-titulo="Reprovar conteúdo?"
+                          data-confirmar="O conteúdo será removido e o professor receberá o motivo informado."
+                          data-confirmar-botao="Reprovar"
+                          th:attr="data-confirmar-item=${conteudo.titulo}">
 
                         <input type="hidden"
                                th:if="${_csrf != null}"

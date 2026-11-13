@@ -855,18 +855,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // configurar delete evento associa a confirmacao aos formularios de exclusao
-    document.querySelectorAll('.form-excluir-evento').forEach(function (form) {
-        // confirmar delete evento impede a exclusao quando a pessoa cancela
-        form.addEventListener('submit', function (event) {
-            const confirmar = confirm('Deseja realmente excluir este evento?');
-
-            // cancelar acao nao confirmada impede o envio quando a pessoa recusa a confirmacao
-            if (!confirmar) {
-                event.preventDefault();
-            }
-        });
-    });
 
     const confirmarRefazerModal = document.getElementById('confirmarRefazerModal');
     const formRefazerConteudo = document.getElementById('formRefazerConteudo');
