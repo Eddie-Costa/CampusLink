@@ -84,7 +84,11 @@
 
                     <form th:action="@{/admin/dominios/{id}/rejeitar(id=${dominio.id})}"
                           method="post"
-                          class="admin-reprovar-form">
+                          class="admin-reprovar-form"
+                          data-confirmar-titulo="Rejeitar domínio?"
+                          data-confirmar="O professor receberá o motivo informado e o domínio não será liberado."
+                          data-confirmar-botao="Rejeitar"
+                          th:attr="data-confirmar-item=${dominio.dominio}">
 
                         <input type="hidden" th:if="${_csrf != null}"
                                th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

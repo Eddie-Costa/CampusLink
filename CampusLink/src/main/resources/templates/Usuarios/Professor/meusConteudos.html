@@ -137,6 +137,10 @@
                             </th:block>
 
                             <form class="form-remover-conteudo" method="post" th:if="${conteudo.status != 'removido'}"
+                                  data-confirmar-titulo="Remover conteúdo?"
+                                  data-confirmar="O conteúdo deixará de aparecer para os alunos das turmas."
+                                  data-confirmar-botao="Remover"
+                                  th:attr="data-confirmar-item=${conteudo.titulo}"
                                   th:action="@{/meus-conteudos/{idConteudo}/remover(idConteudo=${conteudo.id})}">
 
                                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

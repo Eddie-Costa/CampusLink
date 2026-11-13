@@ -312,16 +312,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    // confirmar delete conteudo cancela a remocao quando a pessoa nao confirma
-    listaConteudos.addEventListener('submit', function (event) {
-        // confirmar delete material identifica o envio do formulario de exclusao
-        if (event.target.matches('.form-remover-conteudo')) {
-            // cancelar delete material impede o envio quando a exclusao nao foi confirmada
-            if (!confirm('Tem certeza que deseja remover este conteúdo?')) {
-                event.preventDefault();
-            }
-        }
-    });
 
     // alternar detalhes dos meus conteudos mostra ou oculta a area e atualiza a descricao do botao
     listaConteudos.addEventListener('click', function (event) {

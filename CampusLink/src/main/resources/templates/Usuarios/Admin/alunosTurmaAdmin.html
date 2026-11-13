@@ -153,7 +153,11 @@
 
                         <td>
 
-                            <form th:action="@{/admin/turmas/{idTurma}/alunos/{idAluno}/remover(idTurma=${turma.id}, idAluno=${aluno.idPerfil})}" method="post">
+                            <form th:action="@{/admin/turmas/{idTurma}/alunos/{idAluno}/remover(idTurma=${turma.id}, idAluno=${aluno.idPerfil})}" method="post"
+                                  data-confirmar-titulo="Remover aluno da turma?"
+                                  data-confirmar="O aluno perderá o acesso aos conteúdos e eventos desta turma."
+                                  data-confirmar-botao="Remover"
+                                  th:attr="data-confirmar-item=${aluno.nome}">
 
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 

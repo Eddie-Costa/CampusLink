@@ -83,7 +83,10 @@
                                                       th:action="@{/removerPessoas}" method="post"
                                                       class="form-remover-participante"
                                                       data-submit-once
-                                                      th:attr="data-nome=${participante.nomePessoa}">
+                                                      data-confirmar-titulo="Remover participante?"
+                                                      data-confirmar="A pessoa perderá o acesso aos conteúdos e eventos desta turma."
+                                                      data-confirmar-botao="Remover"
+                                                      th:attr="data-nome=${participante.nomePessoa},data-confirmar-item=${participante.nomePessoa}">
                                                     <input type="hidden" name="id" th:value="${turma.id}">
                                                     <input type="hidden" name="emailPessoa"
                                                            th:value="${participante.emailPessoa}">
@@ -198,7 +201,11 @@
 
 
             <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
-                  method="post" class="form-excluir-turma" data-submit-once>
+                  method="post" class="form-excluir-turma" data-submit-once
+                  data-confirmar-titulo="Excluir turma?"
+                  data-confirmar="Todos os alunos e professores vinculados também serão removidos. Esta ação não pode ser desfeita."
+                  data-confirmar-botao="Excluir turma"
+                  th:attr="data-confirmar-item=${turma.nomeTurma}">
                 <input type="hidden" th:field="*{id}"/>
                 <button type="submit" class="btn btn-danger">Excluir Turma</button>
             </form>

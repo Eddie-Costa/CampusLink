@@ -573,51 +573,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    const formExcluirTurma = document.querySelector('.form-excluir-turma');
-
-    // confirmar delete turma configura a confirmacao antes de enviar o formulario
-    if (formExcluirTurma) {
-        // confirmar delete turma pede confirmacao antes de excluir a turma e seus vinculos
-        formExcluirTurma.addEventListener('submit', function (event) {
-            const confirmar = confirm(
-                'Tem certeza que deseja excluir esta turma? Isso removerá também todos os alunos e professores vinculados a ela.'
-            );
-
-            // cancelar acao nao confirmada impede o envio quando a pessoa recusa a confirmacao
-            if (!confirmar) {
-                event.preventDefault();
-            }
-        });
-    }
-
-    // configurar remocao de participante prepara a confirmacao de cada formulario
-    document.querySelectorAll('.form-remover-participante').forEach(function (form) {
-        // confirmar delete participante pede confirmacao com o nome da pessoa antes de remover o vinculo
-        form.addEventListener('submit', function (event) {
-            const nome = form.dataset.nome || 'este participante';
-            const confirmar = confirm(
-                `Tem certeza que deseja remover ${nome} desta turma? Esta ação não pode ser desfeita.`
-            );
-
-            // cancelar acao nao confirmada impede o envio quando a pessoa recusa a confirmacao
-            if (!confirmar) {
-                event.preventDefault();
-            }
-        });
-    });
-
-    // configurar confirmacao de formulario associa a mensagem definida na pagina ao envio
-    document.querySelectorAll('form[data-confirmar]').forEach(function (form) {
-        // confirmar acao do formulario impede o envio quando a pessoa cancela a mensagem
-        form.addEventListener('submit', function (event) {
-            const confirmar = confirm(form.dataset.confirmar);
-
-            // cancelar acao nao confirmada impede o envio quando a pessoa recusa a confirmacao
-            if (!confirmar) {
-                event.preventDefault();
-            }
-        });
-    });
 });
 
 
