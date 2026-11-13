@@ -4,7 +4,15 @@
 <body>
 <div th:fragment="footer" class="container site-footer-container">
     <link rel="stylesheet" th:href="@{/css/termos.css}">
-    <footer class="pt-3 pb-2 mt-4 mb-0">
+    <link rel="stylesheet" th:href="@{/css/Geral/rodape.css(v='r1')}">
+    <!-- rodape compacto mostra em uma linha apenas os links uteis para quem ja entrou no sistema -->
+    <footer class="rodape-compacto" th:if="${session.usuarioLogado != null}">
+        <span>© <span th:text="${#dates.year(#dates.createNow())}">2026</span> CampusLink</span>
+        <a th:href="@{/termos}" data-bs-toggle="modal" data-bs-target="#modalTermos">Termos de Uso</a>
+        <a th:if="${session.tipoUsuario == 'aluno' or session.tipoUsuario == 'professor'}" th:href="@{/ajuda}">Ajuda</a>
+    </footer>
+
+    <footer class="pt-3 pb-2 mt-4 mb-0" th:unless="${session.usuarioLogado != null}">
         <nav aria-label="Navegação do rodapé">
             <ul class="nav justify-content-center border-bottom pb-3 mb-3">
                 <li class="nav-item">

@@ -1,0 +1,32 @@
+/* rodape compacto para usuarios conectados ocupa uma unica linha discreta */
+.rodape-compacto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 0;
+    margin: 32px 0 0;
+    padding: 18px 0 22px;
+    border-top: 1px solid var(--rd-borda, #e1e7f0);
+    color: var(--rd-texto-suave, #667085);
+    font-size: 0.85rem;
+}
+
+.rodape-compacto > * + *::before {
+    content: "·";
+    margin: 0 10px;
+    color: #a3abba;
+}
+
+.rodape-compacto a {
+    color: var(--rd-texto-suave, #667085);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rodape-compacto a:hover,
+.rodape-compacto a:focus-visible {
+    color: var(--rd-accent, #2d9ce5);
+    text-decoration: underline;
+    outline: none;
+}
