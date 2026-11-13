@@ -205,7 +205,7 @@
                     <tr th:if="${#lists.isEmpty(professores)}">
 
                         <td colspan="7" class="professores-turma-admin-vazio">
-                            Nenhum professor está vinculado a esta turma
+                            <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhum professor nesta turma', 'Use o campo de adicionar professor, acima, para vincular quem vai acompanhar a turma.', null, null)}"></div>
                         </td>
                     </tr>
                     </tbody>

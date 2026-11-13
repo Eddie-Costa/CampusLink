@@ -170,7 +170,7 @@
                     <tr th:if="${#lists.isEmpty(alunos)}">
 
                         <td colspan="6" class="alunos-turma-admin-vazio">
-                            Nenhum aluno está vinculado a esta turma
+                            <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhum aluno nesta turma', 'Use o campo Adicionar aluno à turma, acima, para vincular o primeiro aluno.', null, null)}"></div>
                         </td>
 
                     </tr>

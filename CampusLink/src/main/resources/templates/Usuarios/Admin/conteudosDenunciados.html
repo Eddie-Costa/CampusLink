@@ -35,9 +35,7 @@
             <span th:text="${#lists.size(conteudos) == 1 ? 'solicitação aguardando análise' : 'solicitações aguardando análise'}">solicitações aguardando análise</span>
         </div>
 
-        <p th:if="${#lists.isEmpty(conteudos)}" class="admin-vazio">
-            Nenhum conteúdo está aguardando análise.
-        </p>
+        <th:block th:if="${#lists.isEmpty(conteudos)}"><div th:replace="~{fragments/vazio :: vazio('ok', 'Tudo em dia', 'Nenhum conteúdo está aguardando análise neste momento.', 'Ver todos os conteúdos', @{/admin/conteudos})}"></div></th:block>
 
         <section th:if="${!#lists.isEmpty(conteudos)}" class="admin-lista" aria-label="Conteúdos aguardando análise">
 

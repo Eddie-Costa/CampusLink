@@ -152,7 +152,7 @@
                     <tr th:if="${#lists.isEmpty(turmas)}">
 
                         <td colspan="6" class="turmas-admin-vazio">
-                            Nenhuma turma cadastrada
+                            <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhuma turma cadastrada', 'Crie a primeira turma e depois vincule os alunos e professores.', 'Cadastrar turma', @{/admin/turmas/cadastrar})}"></div>
                         </td>
 
                     </tr>

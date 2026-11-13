@@ -78,7 +78,7 @@
             <div id="listaConteudos" class="lista-conteudos">
                 <div class="sem-conteudos" th:if="${#lists.isEmpty(conteudos)}">
                     <span th:if="${totalFiltrados > 0}">Não há conteúdos nesta página</span>
-                    <span th:if="${totalFiltrados == 0 and busca.isEmpty() and statusSelecionado == 'todos'}">Você ainda não cadastrou nenhum conteúdo</span>
+                    <th:block th:if="${totalFiltrados == 0 and busca.isEmpty() and statusSelecionado == 'todos'}"><div th:replace="~{fragments/vazio :: vazio('conteudo', 'Você ainda não cadastrou nenhum conteúdo', 'Os conteúdos são publicados dentro de cada turma. Abra uma turma para adicionar o primeiro material.', 'Ir para minhas turmas', @{/turmas})}"></div></th:block>
                     <span th:if="${totalFiltrados == 0 and (!busca.isEmpty() or statusSelecionado != 'todos')}">Nenhum conteúdo encontrado</span>
                 </div>
 

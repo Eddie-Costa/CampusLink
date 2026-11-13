@@ -22,9 +22,7 @@
 <main class="turmas-page">
     <div class="turmas-container">
 
-        <div class="sem-turmas" th:if="${#lists.isEmpty(turmas)}">
-            <p>Você ainda não está em nenhuma turma.</p>
-        </div>
+        <th:block th:if="${#lists.isEmpty(turmas)}"><div th:replace="~{fragments/vazio :: vazio('turma', 'Você ainda não está em nenhuma turma', 'Quando um professor ou a coordenação adicionar você a uma turma, ela aparece aqui com os conteúdos e eventos.', 'Pedir ajuda', @{/ajuda})}"></div></th:block>
 
         <th:block th:unless="${#lists.isEmpty(turmas)}">
             <div class="conteudo-card mb-4">

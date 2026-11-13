@@ -237,7 +237,7 @@
 
                     <tr th:if="${#lists.isEmpty(eventos)}">
                         <td colspan="8" class="eventos-admin-vazio">
-                            Nenhum evento cadastrado
+                            <div th:replace="~{fragments/vazio :: vazio('evento', 'Nenhum evento cadastrado', 'Eventos como provas e entregas aparecem no calendário dos alunos da turma.', 'Cadastrar evento', @{/admin/eventos/cadastrar})}"></div>
                         </td>
                     </tr>
 

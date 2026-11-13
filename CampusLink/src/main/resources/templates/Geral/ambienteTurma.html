@@ -293,9 +293,10 @@
             <span th:if="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
                 Nenhum conteúdo encontrado para essa busca.
             </span>
-                        <span th:unless="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
-                Essa turma ainda não possui conteúdos cadastrados.
-            </span>
+                        <th:block th:unless="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
+                            <th:block th:if="${isProfessorTurma}"><div th:replace="~{fragments/vazio :: vazio('conteudo', 'Nenhum conteúdo publicado ainda', 'Adicione o primeiro material da turma. Ele aparece para os alunos e entra no plano de estudos deles.', null, null)}"></div></th:block>
+                            <th:block th:if="${!isProfessorTurma}"><div th:replace="~{fragments/vazio :: vazio('conteudo', 'O professor ainda não publicou conteúdos', 'Assim que houver materiais, eles aparecem aqui e entram no seu plano de estudos.', 'Ver meu plano de estudos', @{/eventos})}"></div></th:block>
+                        </th:block>
                 </div>
 
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
