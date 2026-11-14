@@ -489,12 +489,13 @@ h1, .h1 {
 /* cartao de turma fica branco com selo de icone em degrade e sobe ao passar o mouse */
 .lista-turmas {
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    grid-auto-rows: 200px;
+    grid-auto-rows: minmax(200px, auto);
     gap: 20px;
 }
 
+/* cartao cresce com o conteudo para o nome da turma nao ser espremido ate sumir */
 .turma-card {
-    height: 200px;
+    min-height: 200px;
     align-items: flex-start;
     justify-content: space-between;
     text-align: left;
@@ -505,6 +506,10 @@ h1, .h1 {
     box-shadow: var(--rd-sombra);
     position: relative;
     overflow: hidden;
+}
+
+.turma-card > * {
+    flex-shrink: 0;
 }
 
 .turma-card::after {
