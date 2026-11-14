@@ -2671,6 +2671,10 @@ html[data-tema="escuro"] .sobre-final {
     border-color: #2c3658 !important;
 }
 
+html[data-tema="escuro"] .home-final h2,
+html[data-tema="escuro"] .funcionalidades-final h2,
+html[data-tema="escuro"] .sobre-final h2 { color: #e6e9f2 !important; }
+
 html[data-tema="escuro"] .home-final p,
 html[data-tema="escuro"] .funcionalidades-final p,
 html[data-tema="escuro"] .sobre-final p { color: #a3abc4 !important; }
