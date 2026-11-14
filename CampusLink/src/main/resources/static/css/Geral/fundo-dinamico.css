@@ -29,7 +29,8 @@ body {
     width: 560px;
     height: 560px;
     background: #2d9ce5;
-    translate: 0 calc(var(--rolagem, 0) * 320px);
+    /* azul comeca no topo e termina no fundo da tela: deslocamento = altura da tela - 200px */
+    translate: 0 calc(var(--rolagem, 0) * (100vh - 200px));
 }
 
 .fundo-dinamico span:nth-child(2) {
@@ -38,7 +39,8 @@ body {
     width: 500px;
     height: 500px;
     background: #7c5cff;
-    translate: 0 calc(var(--rolagem, 0) * -420px);
+    /* lilas comeca no fundo e termina no topo da tela */
+    translate: 0 calc(var(--rolagem, 0) * (100px - 100vh));
     animation-duration: 34s;
     animation-delay: -8s;
 }
@@ -70,8 +72,8 @@ body:has(.acesso-fundo) .fundo-dinamico { display: none; }
 
 @media (max-width: 600px) {
     .fundo-dinamico span { filter: blur(60px); }
-    .fundo-dinamico span:nth-child(1) { width: 340px; height: 340px; }
-    .fundo-dinamico span:nth-child(2) { width: 300px; height: 300px; }
+    .fundo-dinamico span:nth-child(1) { width: 340px; height: 340px; translate: 0 calc(var(--rolagem, 0) * (100vh + 20px)); }
+    .fundo-dinamico span:nth-child(2) { width: 300px; height: 300px; translate: 0 calc(var(--rolagem, 0) * (-100vh - 100px)); }
     .fundo-dinamico span:nth-child(3) { width: 240px; height: 240px; }
 }
 
