@@ -66,12 +66,9 @@
 /* cartoes crescem conforme o conteudo para caber descricao e numeros sem cortar */
 main .lista-turmas {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    grid-auto-rows: auto;
 }
 
 main .lista-turmas .turma-card {
-    height: auto;
-    min-height: 200px;
     justify-content: flex-start;
 }
 
