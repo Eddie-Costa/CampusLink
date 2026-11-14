@@ -2499,7 +2499,7 @@ html[data-tema="escuro"] body {
     color: #e6e9f2;
 }
 
-/* cabecalho fica translucido escuro e o logo ganha uma base clara para continuar legivel */
+/* cabecalho fica translucido escuro e o logo fica mais claro com brilho azul para continuar legivel */
 html[data-tema="escuro"] .site-header-nav,
 html[data-tema="escuro"] .site-header-nav > .container,
 html[data-tema="escuro"] .site-header-nav header {
@@ -2508,9 +2508,7 @@ html[data-tema="escuro"] .site-header-nav header {
 }
 
 html[data-tema="escuro"] .site-header-nav img[alt="CampusLink logo"] {
-    padding: 4px 8px;
-    border-radius: 12px;
-    background: #f5f7fb;
+    filter: brightness(1.6) drop-shadow(0 0 6px rgba(45, 156, 229, 0.45));
 }
 
 html[data-tema="escuro"] .site-header-nav .nav-link { color: #c8cfe0 !important; }
