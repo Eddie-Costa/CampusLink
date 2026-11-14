@@ -103,6 +103,10 @@ html[data-tema="escuro"] .disponibilidade-resumo {
     border: 1px solid var(--rd-borda, #2c3658);
 }
 
+html[data-tema="escuro"] .day-cell.dia-hoje {
+    background: linear-gradient(180deg, rgba(45, 156, 229, 0.12), #161d38 70%);
+}
+
 html[data-tema="escuro"] .botao-hoje {
     border: 1px solid var(--rd-borda, #2c3658);
     background-color: #161d38;
@@ -352,6 +356,10 @@ html[data-tema="escuro"] .eventos-fundo h2 {
     color: #e6e9f2;
 }
 
+html[data-tema="escuro"] .evento-item-fundo {
+    background-color: #161d38;
+}
+
 html[data-tema="escuro"] .evento-item-fundo h3 {
     color: #e6e9f2;
 }
@@ -422,6 +430,10 @@ html[data-tema="escuro"] .month-selector {
 html[data-tema="escuro"] .month-selector input {
     background-color: #161d38;
     color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridades-resumo {
+    background-color: #161d38;
 }
 
 html[data-tema="escuro"] .prioridades-resumo h2 {
@@ -893,6 +905,9 @@ html[data-tema="escuro"] .sobre-bloco p {
 html[data-tema="escuro"] .home-final,
 html[data-tema="escuro"] .funcionalidades-final,
 html[data-tema="escuro"] .sobre-final {
+    background: radial-gradient(500px 220px at 100% 0%, rgba(45, 156, 229, 0.18), transparent 70%),
+        radial-gradient(420px 200px at 0% 100%, rgba(108, 123, 255, 0.14), transparent 70%),
+        #161d38 !important;
     border: 1px solid var(--rd-borda, #2c3658) !important;
 }
 
@@ -1003,6 +1018,7 @@ html[data-tema="escuro"] .sugestao-turma-vazia {
 }
 
 html[data-tema="escuro"] .sem-turmas {
+    background-color: #161d38;
     color: #e6e9f2;
 }
 
@@ -2076,6 +2092,10 @@ html[data-tema="escuro"] .campo-acao:focus-visible {
     color: #e6e9f2;
 }
 
+html[data-tema="escuro"] .acesso-botao:disabled {
+    background-color: #1c2446;
+}
+
 html[data-tema="escuro"] .acesso-botao-secundario {
     color: #e6e9f2 !important;
 }
@@ -2093,6 +2113,15 @@ html[data-tema="escuro"] .acesso-perfil label strong {
 }
 
 html[data-tema="escuro"] .acesso-perfil-icone {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .acesso-forca {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .acesso-requisitos li {
     background-color: #1c2446;
     color: #a3abc4;
 }
@@ -2290,6 +2319,12 @@ html[data-tema="escuro"] .site-footer-container .text-body-secondary {
     color: #a3abc4 !important;
 }
 
+html[data-tema="escuro"] .btn-primary:disabled,
+html[data-tema="escuro"] .btn-dark:disabled,
+html[data-tema="escuro"] .btn-campus:disabled {
+    background-color: #1c2446 !important;
+}
+
 html[data-tema="escuro"] .btn-outline-primary,
 html[data-tema="escuro"] .btn-outline-dark,
 html[data-tema="escuro"] .btn-outline-secondary,
@@ -2369,6 +2404,10 @@ html[data-tema="escuro"] .page-link {
     color: #e6e9f2;
 }
 
+html[data-tema="escuro"] .progress {
+    background-color: #1c2446;
+}
+
 html[data-tema="escuro"] .busca-turma {
     border: 1.5px solid #2c3658;
     color: #e6e9f2;
@@ -2431,6 +2470,7 @@ html[data-tema="escuro"] .conteudo-card .botao-compacto {
 }
 
 html[data-tema="escuro"] .sem-turmas {
+    background-color: #161d38;
     color: #a3abc4;
 }
 
@@ -2638,3 +2678,8 @@ html[data-tema="escuro"] .sobre-final p { color: #a3abc4 !important; }
 /* textos dentro dos paineis azuis continuam claros */
 html[data-tema="escuro"] .painel-item p,
 html[data-tema="escuro"] .sobre-painel p { color: #c8cfe0 !important; }
+
+/* utilitarios do bootstrap usados direto nos templates tambem escurecem */
+html[data-tema="escuro"] .bg-white { background-color: #161d38 !important; }
+html[data-tema="escuro"] .bg-light { background-color: #1c2446 !important; }
+html[data-tema="escuro"] .text-dark { color: #e6e9f2 !important; }
