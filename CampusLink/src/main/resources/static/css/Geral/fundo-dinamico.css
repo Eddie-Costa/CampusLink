@@ -1,4 +1,4 @@
-/* fundo dinamico desenha manchas de luz desfocadas que flutuam devagar atras de todo o conteudo */
+/* fundo dinamico desenha manchas de luz desfocadas que flutuam devagar e acompanham a rolagem da pagina */
 
 /* contexto proprio no body deixa o fundo acima da cor da pagina e abaixo de todo o conteudo */
 body {
@@ -18,7 +18,8 @@ body {
     border-radius: 50%;
     filter: blur(80px);
     opacity: 0.22;
-    will-change: transform;
+    will-change: transform, translate;
+    transition: translate 0.4s ease-out;
     animation: fundo-flutuar 28s ease-in-out infinite alternate;
 }
 
@@ -28,6 +29,7 @@ body {
     width: 560px;
     height: 560px;
     background: #2d9ce5;
+    translate: 0 calc(var(--rolagem, 0) * 320px);
 }
 
 .fundo-dinamico span:nth-child(2) {
@@ -36,6 +38,7 @@ body {
     width: 500px;
     height: 500px;
     background: #7c5cff;
+    translate: 0 calc(var(--rolagem, 0) * -420px);
     animation-duration: 34s;
     animation-delay: -8s;
 }
@@ -47,6 +50,7 @@ body {
     height: 380px;
     background: #22d3ee;
     opacity: 0.14;
+    translate: calc(var(--rolagem, 0) * -260px) calc(var(--rolagem, 0) * -120px);
     animation-duration: 40s;
     animation-delay: -16s;
 }
@@ -73,5 +77,5 @@ body:has(.acesso-fundo) .fundo-dinamico { display: none; }
 
 /* quem pediu menos movimento no sistema ve o fundo parado */
 @media (prefers-reduced-motion: reduce) {
-    .fundo-dinamico span { animation: none; }
+    .fundo-dinamico span { animation: none; translate: none !important; }
 }
