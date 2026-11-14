@@ -75,7 +75,26 @@ body:has(.acesso-fundo) .fundo-dinamico { display: none; }
     .fundo-dinamico span:nth-child(3) { width: 240px; height: 240px; }
 }
 
-/* quem pediu menos movimento no sistema ve o fundo parado */
+/* movimento reduzido pelo botao do cabecalho ou pelo sistema deixa o fundo parado */
+html[data-movimento="reduzido"] .fundo-dinamico span { animation: none; translate: none !important; transition: none; }
+
 @media (prefers-reduced-motion: reduce) {
-    .fundo-dinamico span { animation: none; translate: none !important; }
+    html:not([data-movimento="normal"]) .fundo-dinamico span { animation: none; translate: none !important; }
 }
+
+/* botao reduzir movimento torna animacoes e transicoes do site instantaneas */
+html[data-movimento="reduzido"] *,
+html[data-movimento="reduzido"] *::before,
+html[data-movimento="reduzido"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* icone do botao ganha um risco quando o movimento esta reduzido */
+.movimento-alternar .movimento-risco { display: none; }
+.movimento-alternar[aria-pressed="true"] .movimento-risco { display: inline; }
+.movimento-alternar[aria-pressed="true"] { color: #2d9ce5; border-color: rgba(45, 156, 229, 0.5); }
+html[data-tema="escuro"] .movimento-alternar { color: #c8cfe0; }
+html[data-tema="escuro"] .movimento-alternar[aria-pressed="true"] { color: #7cc0f2; }
