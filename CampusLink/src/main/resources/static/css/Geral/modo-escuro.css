@@ -2687,3 +2687,10 @@ html[data-tema="escuro"] .sobre-painel p { color: #c8cfe0 !important; }
 html[data-tema="escuro"] .bg-white { background-color: #161d38 !important; }
 html[data-tema="escuro"] .bg-light { background-color: #1c2446 !important; }
 html[data-tema="escuro"] .text-dark { color: #e6e9f2 !important; }
+
+/* so a tela da turma usa turmas-page como cartao, as listas de turmas score e acompanhamento deixam o fundo da pagina aparecer */
+html[data-tema="escuro"] main.turmas-page:not(.container) {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
