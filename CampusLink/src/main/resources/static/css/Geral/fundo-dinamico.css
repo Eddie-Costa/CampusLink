@@ -1,0 +1,77 @@
+/* fundo dinamico desenha manchas de luz desfocadas que flutuam devagar atras de todo o conteudo */
+
+/* contexto proprio no body deixa o fundo acima da cor da pagina e abaixo de todo o conteudo */
+body {
+    isolation: isolate;
+}
+
+.fundo-dinamico {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fundo-dinamico span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.22;
+    will-change: transform;
+    animation: fundo-flutuar 28s ease-in-out infinite alternate;
+}
+
+.fundo-dinamico span:nth-child(1) {
+    top: -180px;
+    left: -140px;
+    width: 560px;
+    height: 560px;
+    background: #2d9ce5;
+}
+
+.fundo-dinamico span:nth-child(2) {
+    right: -160px;
+    bottom: -200px;
+    width: 500px;
+    height: 500px;
+    background: #7c5cff;
+    animation-duration: 34s;
+    animation-delay: -8s;
+}
+
+.fundo-dinamico span:nth-child(3) {
+    top: 38%;
+    left: 52%;
+    width: 380px;
+    height: 380px;
+    background: #22d3ee;
+    opacity: 0.14;
+    animation-duration: 40s;
+    animation-delay: -16s;
+}
+
+/* no modo escuro as manchas brilham um pouco mais sobre o azul noite */
+html[data-tema="escuro"] .fundo-dinamico span { opacity: 0.32; }
+html[data-tema="escuro"] .fundo-dinamico span:nth-child(3) { opacity: 0.2; }
+
+@keyframes fundo-flutuar {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(90px, 70px) scale(1.12); }
+    100% { transform: translate(-70px, 110px) scale(0.94); }
+}
+
+/* telas de acesso ja possuem fundo decorativo proprio */
+body:has(.acesso-fundo) .fundo-dinamico { display: none; }
+
+@media (max-width: 600px) {
+    .fundo-dinamico span { filter: blur(60px); }
+    .fundo-dinamico span:nth-child(1) { width: 340px; height: 340px; }
+    .fundo-dinamico span:nth-child(2) { width: 300px; height: 300px; }
+    .fundo-dinamico span:nth-child(3) { width: 240px; height: 240px; }
+}
+
+/* quem pediu menos movimento no sistema ve o fundo parado */
+@media (prefers-reduced-motion: reduce) {
+    .fundo-dinamico span { animation: none; }
+}

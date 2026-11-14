@@ -57,5 +57,15 @@
     });
 
     // atualizar botoes depois do carregamento corrige o texto acessivel dos botoes criados depois do script
-    document.addEventListener('DOMContentLoaded', () => aplicar(lerEscolha()));
+    document.addEventListener('DOMContentLoaded', () => {
+        aplicar(lerEscolha());
+        // criar fundo dinamico coloca as manchas animadas direto no body para ficarem atras de todo o conteudo
+        if (!document.querySelector('.fundo-dinamico')) {
+            const fundo = document.createElement('div');
+            fundo.className = 'fundo-dinamico';
+            fundo.setAttribute('aria-hidden', 'true');
+            fundo.innerHTML = '<span></span><span></span><span></span>';
+            document.body.prepend(fundo);
+        }
+    });
 })();
