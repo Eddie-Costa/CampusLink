@@ -218,6 +218,14 @@
 .sobre-final h2 {
     font-weight: 800 !important;
     letter-spacing: -0.02em;
+    color: var(--rd-navy, #11183f) !important;
+}
+
+/* texto do bloco final fica escuro porque o fundo deixou de ser azul */
+.home-final p,
+.funcionalidades-final p,
+.sobre-final p {
+    color: var(--rd-texto-suave, #667085) !important;
 }
 
 /* entrada suave aparece de baixo para cima ao abrir a pagina */
