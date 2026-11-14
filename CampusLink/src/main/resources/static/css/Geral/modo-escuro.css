@@ -2486,7 +2486,6 @@ html[data-tema="escuro"] {
     --rd-texto-suave: #a3abc4;
     --campus-surface: #1c2446;
     --campus-surface-alt: #1c2446;
-    --campus-border: #2c3658;
     --campus-muted: #a3abc4;
     --bs-body-bg: #0d1226;
     --bs-body-color: #e6e9f2;
@@ -2624,3 +2623,20 @@ html[data-tema="escuro"] main .chamados-topo h1 {
     background-clip: text;
     color: transparent;
 }
+
+/* caixas de chamada das paginas publicas trocam o degrade branco por uma superficie escura */
+html[data-tema="escuro"] .home-final,
+html[data-tema="escuro"] .funcionalidades-final,
+html[data-tema="escuro"] .sobre-final {
+    background: radial-gradient(500px 220px at 90% 0%, rgba(45, 156, 229, 0.18), transparent 70%),
+                linear-gradient(135deg, #161d38, #1c2446) !important;
+    border-color: #2c3658 !important;
+}
+
+html[data-tema="escuro"] .home-final p,
+html[data-tema="escuro"] .funcionalidades-final p,
+html[data-tema="escuro"] .sobre-final p { color: #a3abc4 !important; }
+
+/* textos dentro dos paineis azuis continuam claros */
+html[data-tema="escuro"] .painel-item p,
+html[data-tema="escuro"] .sobre-painel p { color: #c8cfe0 !important; }
