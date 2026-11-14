@@ -60,12 +60,29 @@
     document.addEventListener('DOMContentLoaded', () => {
         aplicar(lerEscolha());
         // criar fundo dinamico coloca as manchas animadas direto no body para ficarem atras de todo o conteudo
-        if (!document.querySelector('.fundo-dinamico')) {
-            const fundo = document.createElement('div');
+        let fundo = document.querySelector('.fundo-dinamico');
+        if (!fundo) {
+            fundo = document.createElement('div');
             fundo.className = 'fundo-dinamico';
             fundo.setAttribute('aria-hidden', 'true');
             fundo.innerHTML = '<span></span><span></span><span></span>';
             document.body.prepend(fundo);
         }
+
+        // acompanhar rolagem informa ao css quanto da pagina ja foi percorrido para mover as luzes
+        let agendado = false;
+        const atualizarRolagem = () => {
+            const total = document.documentElement.scrollHeight - window.innerHeight;
+            fundo.style.setProperty('--rolagem', total > 0 ? (window.scrollY / total).toFixed(3) : '0');
+            agendado = false;
+        };
+        window.addEventListener('scroll', () => {
+            // limitar atualizacoes a uma por quadro evita trabalho extra durante a rolagem
+            if (!agendado) {
+                agendado = true;
+                requestAnimationFrame(atualizarRolagem);
+            }
+        }, { passive: true });
+        atualizarRolagem();
     });
 })();
