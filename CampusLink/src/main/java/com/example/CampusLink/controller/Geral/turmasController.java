@@ -589,8 +589,12 @@ public class turmasController {
             return "redirect:/turmas/" + id;
         }
 
-        conteudoService.excluir(idConteudo);
+        // retirar desta turma mantem o conteudo nas outras turmas e so exclui de vez quando era a ultima
+        boolean continuaEmOutras = conteudoService.retirarDaTurma(idConteudo, id);
         registrarAlteracao(session, id);
+        redirectAttributes.addFlashAttribute("mensagemSucesso", continuaEmOutras
+                ? "Conteúdo retirado desta turma. Ele continua nas outras turmas."
+                : "Conteúdo excluído.");
 
         return "redirect:/turmas/" + id;
     }

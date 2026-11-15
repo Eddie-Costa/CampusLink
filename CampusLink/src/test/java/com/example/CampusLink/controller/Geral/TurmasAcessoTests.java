@@ -110,7 +110,7 @@ class TurmasAcessoTests {
 
         mvc.perform(post("/turmas/1/conteudos/99/excluir").session(session).with(csrf()))
                 .andExpect(redirectedUrl("/turmas/1"));
-        verify(conteudos).excluir(99L);
+        verify(conteudos).retirarDaTurma(99L, 1L);
     }
 
     // testar professor de fora da turma este teste confere que ele nao cria conteudo

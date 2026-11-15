@@ -29,9 +29,11 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 // controle de meus conteudos esta classe aplica filtros e permite remover reabrir e pedir revisao
 @Controller
@@ -110,6 +112,9 @@ public class MeusConteudosController {
             }
 
             model.addAttribute("conteudos", conteudos);
+            // listar turmas do professor permite escolher em quais turmas cada conteudo aparece
+            model.addAttribute("turmasDoProfessor",
+                    TurmaRepository.ordenarPorNome(turmaRepository.buscarTurmasDoUsuario("professor", idProfessorTexto)));
             model.addAttribute("prazosEncerrados",
                     conteudoService.listarPrazosEncerrados(conteudos.stream().map(ConteudoDTO::getId).toList()));
             adicionarInformacoesMidia(model, conteudos);
@@ -344,6 +349,59 @@ public class MeusConteudosController {
             }
 
             redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível remover o conteúdo.");
+        }
+
+        return "redirect:/meus-conteudos";
+    }
+
+    // escolher turmas do conteudo este metodo grava em quais turmas do professor o mesmo conteudo aparece
+    @PostMapping("/meus-conteudos/{idConteudo}/turmas")
+    public String escolherTurmas(
+            @PathVariable Long idConteudo,
+            @RequestParam(value = "idsTurmas", required = false) List<Long> idsTurmas,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        // exigir usuario conectado retorna ao login quando a sessao nao possui usuario
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+
+        // restringir area do professor retorna ao inicio quando a sessao pertence a outro perfil
+        if (!"professor".equals(session.getAttribute("tipoUsuario"))) {
+            return "redirect:/home";
+        }
+
+        String email = (String) session.getAttribute("email2FA");
+        // exigir email de acesso retorna ao login quando o email esta ausente ou vazio
+        if (email == null || email.isBlank()) {
+            return "redirect:/login";
+        }
+
+        // gravar turmas do conteudo identifica o professor aplica as turmas marcadas e informa o resultado
+        try {
+            String idProfessorTexto = professorRepository.buscarPorIDProfessor(email);
+            // exigir professor cadastrado retorna ao inicio quando nao encontra o codigo do professor
+            if (idProfessorTexto == null || idProfessorTexto.isBlank()) {
+                return "redirect:/home";
+            }
+
+            Set<Long> turmasDoProfessor = new HashSet<>();
+            turmaRepository.buscarTurmasDoUsuario("professor", idProfessorTexto).forEach(turma -> turmasDoProfessor.add(turma.getId()));
+
+            List<Long> turmas = conteudoService.escolherTurmas(idConteudo, Long.parseLong(idProfessorTexto),
+                    idsTurmas == null ? List.of() : idsTurmas, turmasDoProfessor);
+            // marcar atividade das turmas faz a turma aparecer entre as recentes de quem participa
+            turmas.forEach(turma -> turmaRepository.registrarAlteracao(email, turma));
+            redirectAttributes.addFlashAttribute("mensagemSucesso", turmas.size() == 1
+                    ? "Turmas do conteúdo salvas. Ele aparece em 1 turma."
+                    : "Turmas do conteúdo salvas. Ele aparece em " + turmas.size() + " turmas.");
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        } catch (SQLException | RuntimeException e) {
+            logger.error("Erro ao escolher turmas do conteúdo. conteudoId={}", idConteudo, e);
+            redirectAttributes.addFlashAttribute("mensagemErro", "Não foi possível salvar as turmas do conteúdo.");
         }
 
         return "redirect:/meus-conteudos";

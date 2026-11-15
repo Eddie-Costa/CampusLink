@@ -7,7 +7,7 @@
     <title>Meus Conteúdos</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css(v=20261112-1)}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Professor/meusConteudos.css(v=20261115-1)}">
 </head>
 
 <body>
@@ -169,12 +169,41 @@
                     </div>
 
                     <div class="conteudo-informacoes">
-                        <div class="informacao">
-                            <span class="informacao-titulo">Turma</span>
+                        <div class="informacao informacao-turmas">
+                            <span class="informacao-titulo" th:text="${#lists.size(conteudo.idsTurmas) > 1 ? 'Turmas' : 'Turma'}">Turma</span>
 
                             <span class="informacao-valor" th:text="${conteudo.nomeTurma != null ? conteudo.nomeTurma : 'Turma não encontrada'}">
                                 Turma
                             </span>
+
+                            <!-- escolher turmas deixa o mesmo conteudo aparecer em varias turmas do professor sem criar copias -->
+                            <details class="escolher-turmas"
+                                     th:if="${conteudo.status != 'removido' and turmasDoProfessor != null and #lists.size(turmasDoProfessor) > 1}">
+                                <summary class="botao-analise">Escolher turmas</summary>
+
+                                <form th:action="@{/meus-conteudos/{idConteudo}/turmas(idConteudo=${conteudo.id})}" method="post">
+                                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                                    <fieldset>
+                                        <legend class="escolher-turmas-legenda">Em quais turmas este conteúdo aparece</legend>
+                                        <p class="escolher-turmas-ajuda">É o mesmo conteúdo em todas as turmas marcadas: editar muda em todas.</p>
+
+                                        <div class="escolher-turmas-lista">
+                                            <div class="form-check" th:each="turmaProfessor : ${turmasDoProfessor}">
+                                                <input class="form-check-input" type="checkbox" name="idsTurmas"
+                                                       th:value="${turmaProfessor.id}"
+                                                       th:id="'turmaConteudo-' + ${conteudo.id} + '-' + ${turmaProfessor.id}"
+                                                       th:checked="${#lists.contains(conteudo.idsTurmas, turmaProfessor.id)}">
+                                                <label class="form-check-label"
+                                                       th:for="'turmaConteudo-' + ${conteudo.id} + '-' + ${turmaProfessor.id}"
+                                                       th:text="${turmaProfessor.nomeTurma}">Turma</label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <button type="submit" class="btn btn-campus btn-sm">Salvar turmas</button>
+                                </form>
+                            </details>
                         </div>
 
                         <div class="informacao">

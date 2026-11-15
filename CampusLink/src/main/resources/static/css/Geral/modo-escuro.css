@@ -2707,3 +2707,43 @@ html[data-tema="escuro"] .logs-container .form-text,
 html[data-tema="escuro"] .logs-container .text-secondary {
     color: #a3abc4 !important;
 }
+
+/* escolher turmas em meus conteudos usa as mesmas cores das informacoes do cartao */
+html[data-tema="escuro"] .escolher-turmas-legenda {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .escolher-turmas-ajuda {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .escolher-turmas-lista {
+    border-color: #2c3658;
+}
+
+/* avisos amarelos usam fundo escuro com texto dourado no lugar do creme claro */
+html[data-tema="escuro"] .alert-warning {
+    background-color: #2b2410;
+    border-color: #5c4a12;
+    color: #fcd34d;
+}
+
+/* aceite dos termos usa a superficie escura no cartao e nas informacoes do termo */
+html[data-tema="escuro"] .aceite-cartao {
+    background: #161d38;
+    border-color: #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .aceite-cabecalho h1 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .aceite-meta {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .aceite-texto {
+    background: #1c2446;
+    color: #e6e9f2;
+}

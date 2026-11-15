@@ -22,6 +22,9 @@ public class ConteudoDTO {
 
     private Long idTurma;
 
+    // turmas onde o mesmo conteudo aparece, tambem recebe as turmas marcadas no formulario
+    private List<Long> idsTurmas = new ArrayList<>();
+
     private Long idProfessor;
 
     private OffsetDateTime createdAt;
