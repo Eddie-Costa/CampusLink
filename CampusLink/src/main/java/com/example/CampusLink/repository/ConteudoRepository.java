@@ -1001,6 +1001,48 @@ public class ConteudoRepository {
         }
     }
 
+    // contar materiais ativos e concluidos por turma este metodo responde todas as turmas do aluno em uma unica consulta
+    public Map<Long, long[]> contarAtivosEConcluidosPorTurma(Long idAluno, List<Long> idsTurmas) throws SQLException {
+        Map<Long, long[]> contagens = new HashMap<>();
+
+        // evitar busca sem turmas devolve o agrupamento vazio quando o aluno nao participa de turmas
+        if (idsTurmas.isEmpty()) {
+            return contagens;
+        }
+
+        String sql = """
+                SELECT x."id_turma", count(*) AS total, count(p."id_conteudo") AS concluidos
+                FROM public."CONTEUDOS" c
+                CROSS JOIN LATERAL (SELECT DISTINCT unnest(c."id_turma") AS "id_turma") x
+                LEFT JOIN public."PROGRESSO_CONTEUDO" p
+                    ON p."id_conteudo" = c."id" AND p."id_aluno" = ?
+                WHERE c."status" = 'ativo'
+                AND x."id_turma" = ANY(?)
+                GROUP BY x."id_turma"
+                """;
+
+        // consultar contagens por turma envia as turmas juntas e converte falhas
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+
+                stmt.setLong(1, idAluno);
+                stmt.setArray(2, stmt.getConnection().createArrayOf("bigint", idsTurmas.toArray()));
+
+                // ler contagens agrupadas guarda o total e os concluidos de cada turma
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        contagens.put(rs.getLong("id_turma"), new long[]{rs.getLong("total"), rs.getLong("concluidos")});
+                    }
+                }
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+
+        return contagens;
+    }
+
     // listar conclusoes de varios alunos este metodo agrupa os materiais concluidos por aluno
     public Map<Long, Set<Long>> listarConcluidosDosAlunos(List<Long> idsAlunos) throws SQLException {
         Map<Long, Set<Long>> concluidosPorAluno = new HashMap<>();

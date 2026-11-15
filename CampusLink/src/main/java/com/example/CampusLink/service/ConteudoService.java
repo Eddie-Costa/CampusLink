@@ -30,6 +30,10 @@ public class ConteudoService {
     @Autowired
     private UsuarioRepository UsuarioRepository;
 
+    // calculo de viabilidade e avisado quando o aluno muda uma conclusao
+    @Autowired
+    private ViabilidadeService viabilidadeService;
+
     private static final Logger logger = LoggerFactory.getLogger(ConteudoService.class);
 
     private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
@@ -603,6 +607,11 @@ public class ConteudoService {
                 conteudoRepository.desmarcarConcluido(idAluno, idConteudo);
             }
 
+            // esquecer calculo guardado faz o score e o plano mostrarem a conclusao na hora
+            if (viabilidadeService != null) {
+                viabilidadeService.esquecerAluno(idAluno);
+            }
+
             logger.info("Conclusão de conteúdo alterada. alunoId={} conteudoId={} concluido={}", idAluno, idConteudo, concluido);
 
             // registro de informacoes confere se esta habilitado ao alterar conclusao validada
@@ -664,6 +673,34 @@ public class ConteudoService {
             }
 
             throw new RuntimeException("Não foi possível listar os conteúdos concluídos.", e);
+        }
+    }
+
+    // contar progresso das turmas pelo servico este metodo resume total e concluidos de todas as turmas do aluno de uma vez
+    public Map<Long, long[]> contarAtivosEConcluidosPorTurma(Long idAluno, List<Long> idsTurmas) {
+        // contar progresso das turmas consulta as contagens agrupadas e trata falhas
+        try {
+            return conteudoRepository.contarAtivosEConcluidosPorTurma(idAluno, idsTurmas);
+
+        } catch (SQLException e) {
+            logger.error("Erro ao contar conteúdos das turmas. alunoId={}", idAluno, e);
+
+            // registro de erros confere se esta habilitado ao contar progresso das turmas pelo servico
+            if (logger.isErrorEnabled()) {
+                // gravar historico ao contar progresso das turmas tenta salvar o registro no banco e informa falhas
+                try {
+                    StringWriter excecaoLogBD = new StringWriter();
+                    e.printStackTrace(new PrintWriter(excecaoLogBD));
+
+                    UsuarioRepository.InserirLogsNoBD(null, "ERROR", ConteudoService.class.getName(), "contarAtivosEConcluidosPorTurma", null,
+                            MessageFormatter.arrayFormat("Erro ao contar conteúdos das turmas. alunoId={}", new Object[]{idAluno}).getMessage(), null, excecaoLogBD.toString());
+
+                } catch (Exception erroLogBD) {
+                    logger.error("Erro ao gravar log no banco.", erroLogBD);
+                }
+            }
+
+            throw new RuntimeException("Não foi possível contar os conteúdos das turmas.", e);
         }
     }
 

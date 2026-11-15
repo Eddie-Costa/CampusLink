@@ -26,7 +26,8 @@
           data-tipo-usuario=""
           data-url-cadastro="/eventos/cadastrar"
           th:data-tipo-usuario="${session.tipoUsuario}"
-          th:data-url-cadastro="@{/eventos/cadastrar}">
+          th:data-url-cadastro="@{/eventos/cadastrar}"
+          th:data-mes="${mesCalendario}">
 
         <div class="popup-sucesso" th:if="${mensagem}" th:text="${mensagem}" role="alert"></div>
         <div class="alert alert-danger alert-dismissible fade show alerta-flutuante" th:if="${erro}" role="alert">
@@ -129,6 +130,11 @@
                         </a>
                     </li>
                 </ul>
+
+                <p class="prioridades-vazio" th:if="${prioridadesRestantes > 0}"
+                   th:text="${'E mais ' + prioridadesRestantes + ' conteúdos com prioridade. Veja cada turma no Score.'}">
+                    E mais 5 conteúdos com prioridade.
+                </p>
 
             </aside>
 

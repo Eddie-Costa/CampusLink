@@ -25,6 +25,10 @@ public class DisponibilidadeService {
     @Autowired
     private UsuarioRepository UsuarioRepository;
 
+    // calculo de viabilidade e avisado quando o aluno muda as horas disponiveis
+    @Autowired
+    private ViabilidadeService viabilidadeService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(DisponibilidadeService.class);
     private final DisponibilidadeRepository disponibilidadeRepository;
@@ -57,6 +61,11 @@ public class DisponibilidadeService {
 
 
             Disponibilidade disponibilidadeSalva = disponibilidadeRepository.save(disponibilidade);
+
+            // esquecer calculo guardado faz o plano de estudos usar as novas horas na hora
+            if (viabilidadeService != null) {
+                viabilidadeService.esquecerAluno(idAluno);
+            }
 
             logger.info("Disponibilidade salva. id={} alunoId={} data={} horas={}", disponibilidadeSalva.getId(), idAluno, data, horasDisponiveis);
             // registro de informacoes confere se esta habilitado ao salvar horas disponiveis

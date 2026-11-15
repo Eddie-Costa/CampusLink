@@ -64,6 +64,11 @@
                 </a>
             </div>
 
+            <p class="conteudo-meta mb-4" th:if="${prioridadesRestantes > 0}"
+               th:text="${'E mais ' + prioridadesRestantes + ' conteúdos com prioridade. Abra cada turma para ver todos.'}">
+                E mais 5 conteúdos com prioridade.
+            </p>
+
             <h2 class="h5 fw-bold mb-3">Minhas turmas</h2>
         </th:block>
 
@@ -87,6 +92,13 @@
                 </span>
             </a>
         </div>
+
+        <nav class="d-flex justify-content-center align-items-center gap-3 mt-4" th:if="${totalPaginas > 1}"
+             aria-label="Páginas das turmas">
+            <a class="btn btn-outline-primary btn-sm" th:if="${pagina > 1}" th:href="@{/score(pagina=${pagina - 1})}">Anterior</a>
+            <span class="small" th:text="${'Página ' + pagina + ' de ' + totalPaginas + ' · ' + totalTurmas + ' turmas'}">Página 1 de 2</span>
+            <a class="btn btn-outline-primary btn-sm" th:if="${pagina < totalPaginas}" th:href="@{/score(pagina=${pagina + 1})}">Próxima</a>
+        </nav>
 
     </div>
 </main>

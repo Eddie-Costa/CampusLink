@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 // viabilidade de estudo esta classe calcula riscos atrasos prioridades e distribuicao de horas por aluno
 @Service
@@ -47,6 +49,8 @@ public class ViabilidadeService {
 
     private static final int TETO_DIARIO_HORAS = 8;
     private static final int DURACAO_PADRAO_MIN = 60;
+    // quantidade de prioridades mostrada nas telas, as demais aparecem apenas como total
+    public static final int PRIORIDADES_NA_TELA = 10;
 
     private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM");
@@ -57,13 +61,73 @@ public class ViabilidadeService {
     private final TurmaRepository turmaRepository;
     private final DisponibilidadeRepository disponibilidadeRepository;
 
+    // quantos dias a frente o planejamento considera, zero considera todos os eventos futuros
+    @Value("${campuslink.viabilidade.horizonte-dias:90}")
+    private int horizonteDias;
+
+    // calculo recente de cada aluno fica guardado por pouco tempo para as telas nao refazerem tudo a cada acesso
+    private static final long VALIDADE_CALCULO_MS = 60_000;
+    private static final int MAXIMO_CALCULOS = 100;
+    private final Map<Long, CalculoGuardado> calculos = new ConcurrentHashMap<>();
+
+    // calculo guardado este registro reune o momento do calculo os riscos e o plano de um aluno
+    private record CalculoGuardado(long criadoEm, List<ViabilidadeDTO> riscos, List<SessaoEstudoDTO> plano) {
+    }
+
     // calcular risco do aluno este metodo consulta a viabilidade de estudo de um unico aluno
     public List<ViabilidadeDTO> calcularParaAluno(Long idAluno) {
-        return calcularParaAlunos(List.of(idAluno)).getOrDefault(idAluno, List.of());
+        return calculoDo(idAluno).riscos();
+    }
+
+    // esquecer calculo do aluno este metodo descarta o calculo guardado para a proxima tela refletir a mudanca na hora
+    public void esquecerAluno(Long idAluno) {
+        calculos.remove(idAluno);
+    }
+
+    // buscar calculo do aluno este metodo reaproveita o calculo recente ou carrega os dados uma vez para riscos e plano
+    private CalculoGuardado calculoDo(Long idAluno) {
+        long agora = System.currentTimeMillis();
+        CalculoGuardado guardado = calculos.get(idAluno);
+
+        // reaproveitar calculo recente evita carregar e recalcular os dados do aluno a cada tela
+        if (guardado != null && agora - guardado.criadoEm() < VALIDADE_CALCULO_MS) {
+            return guardado;
+        }
+
+        // calcular riscos e plano tenta carregar os dados do aluno uma unica vez para os dois resultados
+        try {
+            LocalDate hoje = LocalDate.now(FUSO);
+            DadosAlunos dados = carregar(List.of(idAluno), hoje);
+            List<Evento> eventos = dados.eventosDo(idAluno);
+
+            CalculoGuardado novo = new CalculoGuardado(agora,
+                    calcular(idAluno, hoje, eventos, dados.conteudosPorEvento(), dados.concluidosDo(idAluno), dados.horasDo(idAluno)),
+                    planejar(hoje, eventos, dados.conteudosPorEvento(), dados.concluidosDo(idAluno), dados.horasDo(idAluno)));
+
+            // limitar memoria dos calculos descarta os vencidos antes de guardar um novo
+            if (calculos.size() >= MAXIMO_CALCULOS) {
+                calculos.values().removeIf(calculo -> agora - calculo.criadoEm() >= VALIDADE_CALCULO_MS);
+                // shortcut: com todos ainda validos a guarda recomeca vazia; trocar por remocao do mais antigo se houver muitos alunos ao mesmo tempo
+                if (calculos.size() >= MAXIMO_CALCULOS) {
+                    calculos.clear();
+                }
+            }
+            calculos.put(idAluno, novo);
+            return novo;
+
+        } catch (SQLException e) {
+            registrarErro("calcularParaAluno", "Erro ao calcular viabilidade e plano. alunos={}", List.of(idAluno), e);
+            throw new RuntimeException("Não foi possível calcular a viabilidade do aluno.", e);
+        }
     }
 
     // calcular risco de varios alunos este metodo carrega os dados em conjunto e avalia cada participante
     public Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<Long> idsAlunos) {
+        return calcularParaAlunosAte(idsAlunos, null);
+    }
+
+    // calcular risco ate uma data este metodo ignora eventos posteriores, que nao mudam o risco dos eventos anteriores
+    public Map<Long, List<ViabilidadeDTO>> calcularParaAlunosAte(List<Long> idsAlunos, LocalDate ultimoDia) {
         Map<Long, List<ViabilidadeDTO>> resultadoPorAluno = new HashMap<>();
 
         // calcular viabilidade ignora a consulta quando nao existem alunos
@@ -77,7 +141,12 @@ public class ViabilidadeService {
             DadosAlunos dados = carregar(idsAlunos, hoje);
 
             for (Long idAluno : idsAlunos) {
-                resultadoPorAluno.put(idAluno, calcular(idAluno, hoje, dados.eventosDo(idAluno), dados.conteudosPorEvento(),
+                List<Evento> eventos = dados.eventosDo(idAluno);
+                // cortar eventos depois do ultimo dia pedido reduz o calculo sem alterar os eventos anteriores
+                if (ultimoDia != null) {
+                    eventos = eventos.stream().filter(evento -> !evento.getInicio().toLocalDate().isAfter(ultimoDia)).toList();
+                }
+                resultadoPorAluno.put(idAluno, calcular(idAluno, hoje, eventos, dados.conteudosPorEvento(),
                         dados.concluidosDo(idAluno), dados.horasDo(idAluno)));
             }
 
@@ -121,7 +190,8 @@ public class ViabilidadeService {
                     conteudoRepository.listarPrazosEncerrados(new ArrayList<>(idsConteudos), agora);
 
             for (Long idAluno : idsAlunos) {
-                List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
+                // conjunto de turmas deixa a busca de cada evento instantanea mesmo com muitas turmas
+                Set<Long> turmasAluno = new HashSet<>(turmasPorAluno.getOrDefault(idAluno, List.of()));
                 Set<Long> concluidos = concluidosPorAluno.getOrDefault(idAluno, Set.of());
                 Set<Long> jaListados = new HashSet<>();
                 List<ViabilidadeDTO> atrasados = new ArrayList<>();
@@ -196,20 +266,9 @@ public class ViabilidadeService {
         }
     }
 
-    // gerar plano do aluno este metodo carrega eventos materiais e disponibilidade para distribuir os estudos
+    // gerar plano do aluno este metodo distribui os estudos usando o mesmo calculo guardado dos riscos
     public List<SessaoEstudoDTO> gerarPlano(Long idAluno) {
-        // gerar plano de estudos tenta carregar os dados do aluno e distribuir suas sessoes
-        try {
-            LocalDate hoje = LocalDate.now(FUSO);
-            DadosAlunos dados = carregar(List.of(idAluno), hoje);
-
-            return planejar(hoje, dados.eventosDo(idAluno), dados.conteudosPorEvento(),
-                    dados.concluidosDo(idAluno), dados.horasDo(idAluno));
-
-        } catch (SQLException e) {
-            registrarErro("gerarPlano", "Erro ao gerar plano de estudos. alunos={}", List.of(idAluno), e);
-            throw new RuntimeException("Não foi possível gerar o plano de estudos.", e);
-        }
+        return calculoDo(idAluno).plano();
     }
 
     // distribuir plano de estudos este metodo ocupa horas livres sugere horas extras e aponta o que nao cabe
@@ -444,7 +503,7 @@ public class ViabilidadeService {
 
         // listar eventos do aluno carregado este metodo separa os eventos ligados as turmas do participante
         List<Evento> eventosDo(Long idAluno) {
-            List<Long> turmasAluno = turmasPorAluno.getOrDefault(idAluno, List.of());
+            Set<Long> turmasAluno = new HashSet<>(turmasPorAluno.getOrDefault(idAluno, List.of()));
             return eventos.stream().filter(evento -> turmasAluno.contains(evento.getIdTurma())).toList();
         }
 
@@ -466,10 +525,18 @@ public class ViabilidadeService {
         Set<Long> idsTurmas = new HashSet<>();
         turmasPorAluno.values().forEach(idsTurmas::addAll);
 
-        List<Evento> eventos = idsTurmas.isEmpty()
-                ? List.of()
-                : eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
-                idsTurmas, "ATIVO", LocalDateTime.now(FUSO));
+        LocalDateTime agora = LocalDateTime.now(FUSO);
+        List<Evento> eventos;
+        // buscar eventos futuros considera so o horizonte configurado ou todos quando o horizonte e zero
+        if (idsTurmas.isEmpty()) {
+            eventos = List.of();
+        } else if (horizonteDias > 0) {
+            eventos = eventoRepository.findByIdTurmaInAndStatusAndInicioBetweenOrderByInicioAsc(
+                    idsTurmas, "ATIVO", agora, agora.plusDays(horizonteDias));
+        } else {
+            eventos = eventoRepository.findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
+                    idsTurmas, "ATIVO", agora);
+        }
 
         Map<Long, List<ConteudoDTO>> conteudosPorEvento =
                 conteudoRepository.listarPorEventos(eventos.stream().map(Evento::getId).toList());

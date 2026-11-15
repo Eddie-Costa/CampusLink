@@ -1406,7 +1406,8 @@ html[data-tema="escuro"] .conteudos-admin-vazio p {
     color: #a3abc4;
 }
 
-html[data-tema="escuro"] .conteudos-admin-paginacao p {
+html[data-tema="escuro"] .conteudos-admin-paginacao p,
+html[data-tema="escuro"] .eventos-admin-paginacao p {
     color: #e6e9f2;
 }
 

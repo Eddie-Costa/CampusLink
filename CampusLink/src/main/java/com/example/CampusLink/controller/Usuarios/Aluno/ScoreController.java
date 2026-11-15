@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
@@ -38,6 +39,7 @@ public class ScoreController {
     private UsuarioRepository UsuarioRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreController.class);
+    private static final int TURMAS_POR_PAGINA = 12;
 
     private final AlunoRepository alunoRepository;
     private final TurmaRepository turmaRepository;
@@ -46,7 +48,8 @@ public class ScoreController {
 
     // consultar progresso do aluno este metodo reune conclusoes prioridades e ritmo de estudo por turma
     @GetMapping("/score")
-    public String exibirScore(Model model, HttpSession session) throws SQLException {
+    public String exibirScore(Model model, HttpSession session,
+                              @RequestParam(value = "pagina", defaultValue = "1") int pagina) throws SQLException {
 
         String redirecionamento = verificarAcesso(session, "exibirScore");
         // seguir restricao de acesso retorna o destino indicado pela verificacao anterior
@@ -67,21 +70,33 @@ public class ScoreController {
         Map<Long, String> nomeTurmaPorId = new HashMap<>();
         turmas.forEach(turma -> nomeTurmaPorId.put(turma.getId(), turma.getNomeTurma()));
 
+        // paginar turmas mostra poucas turmas por vez e conta apenas as turmas da pagina
+        int totalPaginas = Math.max(1, (turmas.size() + TURMAS_POR_PAGINA - 1) / TURMAS_POR_PAGINA);
+        pagina = Math.min(Math.max(1, pagina), totalPaginas);
+        List<TurmaDTO> turmasDaPagina = turmas.subList((pagina - 1) * TURMAS_POR_PAGINA,
+                Math.min(turmas.size(), pagina * TURMAS_POR_PAGINA));
+
+        // contar todas as turmas da pagina em uma consulta evita duas consultas por turma do aluno
+        Map<Long, long[]> contagens = conteudoService.contarAtivosEConcluidosPorTurma(idAluno,
+                turmasDaPagina.stream().map(TurmaDTO::getId).toList());
         Map<Long, Long> concluidosPorTurma = new HashMap<>();
         Map<Long, Integer> totalPorTurma = new HashMap<>();
-        for (TurmaDTO turma : turmas) {
-            List<ConteudoDTO> ativos = listarAtivos(turma.getId());
-            Set<Long> concluidos = conteudoService.listarConcluidosDoAluno(idAluno, turma.getId());
-
-            totalPorTurma.put(turma.getId(), ativos.size());
-            concluidosPorTurma.put(turma.getId(), ativos.stream().filter(conteudo -> concluidos.contains(conteudo.getId())).count());
+        for (TurmaDTO turma : turmasDaPagina) {
+            long[] contagem = contagens.getOrDefault(turma.getId(), new long[]{0, 0});
+            totalPorTurma.put(turma.getId(), (int) contagem[0]);
+            concluidosPorTurma.put(turma.getId(), contagem[1]);
         }
 
-        model.addAttribute("turmas", turmas);
+        List<ViabilidadeDTO> prioridades = viabilidadeService.listarPrioridades(resultados);
+        model.addAttribute("turmas", turmasDaPagina);
+        model.addAttribute("pagina", pagina);
+        model.addAttribute("totalPaginas", totalPaginas);
+        model.addAttribute("totalTurmas", turmas.size());
         model.addAttribute("proximoEventoPorTurma", proximoEventoPorTurma);
         model.addAttribute("concluidosPorTurma", concluidosPorTurma);
         model.addAttribute("totalPorTurma", totalPorTurma);
-        model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
+        model.addAttribute("prioridades", prioridades.subList(0, Math.min(ViabilidadeService.PRIORIDADES_NA_TELA, prioridades.size())));
+        model.addAttribute("prioridadesRestantes", Math.max(0, prioridades.size() - ViabilidadeService.PRIORIDADES_NA_TELA));
         model.addAttribute("nomeTurmaPorId", nomeTurmaPorId);
         model.addAttribute("ritmo", montarRitmo(idAluno, resultados));
 

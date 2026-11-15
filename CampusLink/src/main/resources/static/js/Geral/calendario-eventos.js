@@ -107,8 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const hoje = new Date();
     const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
-    let mesAtual = hoje.getMonth();
-    let anoAtual = hoje.getFullYear();
+    // mes carregado pelo servidor e o unico com eventos na pagina, os outros meses sao pedidos ao servidor
+    const mesCarregado = pagina && /^\d{4}-\d{2}$/.test(pagina.dataset.mes || '') ? pagina.dataset.mes : '';
+
+    let mesAtual = mesCarregado ? Number(mesCarregado.slice(5, 7)) - 1 : hoje.getMonth();
+    let anoAtual = mesCarregado ? Number(mesCarregado.slice(0, 4)) : hoje.getFullYear();
 
 
     // formatar data da navegacao monta ano mes e dia usando a data local
@@ -516,6 +519,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function atualizarCalendario() {
         // atualizar calendario exige a grade o titulo do mes e o seletor
         if (!calendario || !mesExibido || !seletorMes) {
+            return;
+        }
+
+        const mesPedido = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+        // trocar de mes pede ao servidor apenas os eventos do mes escolhido
+        if (mesCarregado && mesPedido !== mesCarregado) {
+            window.location.href = `${window.location.pathname}?mes=${mesPedido}`;
             return;
         }
 
