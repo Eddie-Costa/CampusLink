@@ -94,13 +94,13 @@ public class UrlValidaValidator implements ConstraintValidator<UrlValida, String
         try {
             autorizado = dominioService.hostAutorizado(host);
         } catch (RuntimeException e) {
-            return falhar(context, "Não foi possível verificar o domínio agora. Tente novamente.");
+            return falhar(context, "Não foi possível verificar o site agora. Tente novamente.");
         }
 
         // exigir dominio autorizado orienta solicitar liberacao quando o dominio nao e permitido
         if (!autorizado) {
-            return falhar(context, "O domínio " + host.toLowerCase()
-                    + " não está autorizado. Feche e use o botão \"Solicitar Domínio\" para pedir a liberação.");
+            return falhar(context, "O site " + host.toLowerCase()
+                    + " ainda não está liberado. Feche e use o botão \"Solicitar site\" para pedir a liberação.");
         }
         return true;
     }

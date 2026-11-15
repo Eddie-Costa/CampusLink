@@ -134,18 +134,18 @@
             <div class="col-md-6">
                 <article class="admin-card h-100">
                     <div class="admin-card-topo">
-                        <h2>Domínios autorizados</h2>
+                        <h2>Sites liberados</h2>
                         <span class="painel-numero" th:if="${resumoPainel != null}"
                               th:classappend="${resumoPainel.get('dominios_pendentes') > 0 ? 'painel-numero-alerta' : 'painel-numero-ok'}"
                               th:text="${resumoPainel.get('dominios_pendentes') == 0 ? 'Em dia' : resumoPainel.get('dominios_pendentes') + (resumoPainel.get('dominios_pendentes') == 1 ? ' pendente' : ' pendentes')}"></span>
                     </div>
 
                     <p class="admin-descricao">
-                        Analise as solicitações de novos domínios feitas pelos professores
+                        Analise os pedidos de novos sites feitos pelos professores
                     </p>
 
                     <a th:href="@{/admin/dominios}" class="btn btn-primary">
-                        Ver domínios
+                        Ver sites
                     </a>
                 </article>
             </div>

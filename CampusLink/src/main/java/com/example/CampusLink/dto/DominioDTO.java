@@ -15,8 +15,8 @@ public class DominioDTO {
 
     private Long id;
 
-    @NotBlank(message = "Informe o domínio que deseja solicitar")
-    @Size(max = 253, message = "O domínio deve ter no máximo 253 caracteres")
+    @NotBlank(message = "Informe o link ou o endereço do site")
+    @Size(max = 253, message = "O endereço do site deve ter no máximo 253 caracteres")
     private String dominio;
 
 
