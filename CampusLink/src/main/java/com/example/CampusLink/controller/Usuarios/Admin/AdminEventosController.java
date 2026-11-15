@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,18 +24,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 // controle administrativo de eventos esta classe valida turmas professores e materiais nos formularios
 @Controller
 public class AdminEventosController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminEventosController.class);
+    private static final int EVENTOS_POR_PAGINA = 25;
+    private static final Set<String> TIPOS_EVENTO = Set.of("PROVA", "TRABALHO", "APRESENTACAO", "OUTRO");
+    private static final Set<String> STATUS_EVENTO = Set.of("ATIVO", "CANCELADO", "CONCLUIDO");
 
     private final EventoService eventoService;
     private final AdminTurmaRepository adminTurmaRepository;
@@ -51,24 +59,92 @@ public class AdminEventosController {
     }
 
 
-    // listar eventos administrativos este metodo carrega os eventos para a tela de administracao
+    // listar eventos administrativos este metodo aplica busca tipo situacao e paginacao e pode devolver apenas as linhas
     @GetMapping("/admin/eventos")
-    public String listarEventos(HttpSession session, Model model) {
+    public String listarEventos(
+            HttpSession session,
+            Model model,
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "busca", defaultValue = "") String busca,
+            @RequestParam(value = "tipo", defaultValue = "") String tipo,
+            @RequestParam(value = "status", defaultValue = "") String status,
+            @RequestParam(value = "fragmento", defaultValue = "false") boolean fragmento
+    ) {
 
         // exigir administrador retorna ao inicio quando a sessao nao comprova o acesso administrativo
         if (!ehAdministrador(session)) {
             return "redirect:/home";
         }
 
-        // listar eventos administrativos busca os compromissos e apresenta uma lista vazia se a consulta falhar
+        pagina = Math.max(0, pagina);
+        String termo = busca == null ? "" : busca.trim();
+        String tipoFiltro = tipo == null ? "" : tipo.trim().toUpperCase(Locale.ROOT);
+        String statusFiltro = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+
+        // corrigir filtros usa todos os tipos e situacoes quando o valor recebido nao e reconhecido
+        if (!TIPOS_EVENTO.contains(tipoFiltro)) {
+            tipoFiltro = "";
+        }
+        if (!STATUS_EVENTO.contains(statusFiltro)) {
+            statusFiltro = "";
+        }
+
+        model.addAttribute("busca", termo);
+        model.addAttribute("tipoSelecionado", tipoFiltro);
+        model.addAttribute("statusSelecionado", statusFiltro);
+
+        // listar eventos administrativos filtra no servidor e envia so uma pagina para a tela nao carregar todos os eventos
         try {
-            List<Evento> eventos = eventoService.listarEventos();
-            model.addAttribute("eventos", eventos);
+            List<Evento> todos = eventoService.listarEventos();
+            String termoMinusculo = termo.toLowerCase(Locale.ROOT);
+            String tipoBuscado = tipoFiltro;
+            String statusBuscado = statusFiltro;
+
+            // os mais recentes primeiro mantem uma ordem fixa para mostrar mais sem repetir nem pular eventos
+            List<Evento> filtrados = todos.stream()
+                    .filter(evento -> termoMinusculo.isEmpty()
+                            || (evento.getNome() != null && evento.getNome().toLowerCase(Locale.ROOT).contains(termoMinusculo))
+                            || (evento.getNomeTurma() != null && evento.getNomeTurma().toLowerCase(Locale.ROOT).contains(termoMinusculo)))
+                    .filter(evento -> tipoBuscado.isEmpty() || tipoBuscado.equalsIgnoreCase(evento.getTipo()))
+                    .filter(evento -> statusBuscado.isEmpty() || statusBuscado.equalsIgnoreCase(evento.getStatus()))
+                    .sorted(Comparator.comparing(Evento::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+
+            int totalPaginas = Math.max(1, (filtrados.size() + EVENTOS_POR_PAGINA - 1) / EVENTOS_POR_PAGINA);
+
+            // limitar pagina consultada usa a ultima pagina quando o numero pedido ultrapassa os resultados
+            if (pagina >= totalPaginas) {
+                pagina = totalPaginas - 1;
+            }
+
+            int inicio = pagina * EVENTOS_POR_PAGINA;
+            int fim = Math.min(filtrados.size(), inicio + EVENTOS_POR_PAGINA);
+
+            model.addAttribute("eventos", filtrados.subList(inicio, fim));
+            model.addAttribute("totalEventos", todos.size());
+            model.addAttribute("totalFiltrados", filtrados.size());
+            model.addAttribute("proximaPagina", pagina + 1);
+            model.addAttribute("temMais", fim < filtrados.size());
+
+            // responder apenas linhas devolve somente o corpo da tabela quando a busca vem do proprio navegador
+            if (fragmento) {
+                return "Usuarios/Admin/eventosAdmin :: linhasEventos";
+            }
 
         } catch (RuntimeException e) {
             logger.error("erro ao carregar eventos para o administrador", e);
+
+            // informar falha das linhas retorna erro ao navegador quando o carregamento parcial falha
+            if (fragmento) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possível carregar os eventos.", e);
+            }
+
             model.addAttribute("mensagemErro", "Não foi possível carregar os eventos.");
             model.addAttribute("eventos", new ArrayList<Evento>());
+            model.addAttribute("totalEventos", 0);
+            model.addAttribute("totalFiltrados", 0);
+            model.addAttribute("proximaPagina", 1);
+            model.addAttribute("temMais", false);
         }
 
         return "Usuarios/Admin/eventosAdmin";

@@ -61,21 +61,24 @@ public class DashboardRepository {
         return jdbc.queryForList(TURMAS + "SELECT id, nome_turma AS nome FROM turmas ORDER BY nome_turma, id", p);
     }
 
+    // o ultimo prazo de cada material e calculado uma vez so, em vez de uma subconsulta por material
     private static final String CONTEUDOS_ALUNO = TURMAS + """
+            , prazos AS (
+                SELECT ec.id_conteudo, max(e.data_hora) AS ultimo_prazo
+                FROM public."EVENTO_CONTEUDO" ec
+                JOIN public."EVENTOS" e ON e.id = ec.id_evento
+                JOIN public."TURMAS" te ON te.id = e.id_turma
+                WHERE upper(e.status) = 'ATIVO' AND :pessoa = ANY(te.id_alunos)
+                GROUP BY ec.id_conteudo
+            )
             , conteudos AS (
                 SELECT c.id, c.id_turma, c.titulo, p.concluido_em,
-                    p.concluido_em IS NULL AND EXISTS (
-                        SELECT 1 FROM public."EVENTO_CONTEUDO" ec
-                        JOIN public."EVENTOS" e ON e.id = ec.id_evento
-                        WHERE ec.id_conteudo = c.id AND upper(e.status) = 'ATIVO'
-                            AND EXISTS (SELECT 1 FROM public."TURMAS" t
-                                WHERE t.id = e.id_turma AND :pessoa = ANY(t.id_alunos))
-                        HAVING max(e.data_hora) < :agora
-                            AND (c.reaberto_em IS NULL OR c.reaberto_em AT TIME ZONE 'America/Sao_Paulo' <= max(e.data_hora))
-                    ) AS atrasado
+                    p.concluido_em IS NULL AND COALESCE(pr.ultimo_prazo < :agora
+                        AND (c.reaberto_em IS NULL OR c.reaberto_em AT TIME ZONE 'America/Sao_Paulo' <= pr.ultimo_prazo), false) AS atrasado
                 FROM public."CONTEUDOS" c
                 LEFT JOIN public."PROGRESSO_CONTEUDO" p ON p.id_conteudo = c.id AND p.id_aluno = :pessoa
-                WHERE c.status = 'ativo' AND EXISTS (SELECT 1 FROM turmas t WHERE t.id = ANY(c.id_turma))
+                LEFT JOIN prazos pr ON pr.id_conteudo = c.id
+                WHERE c.status = 'ativo' AND c.id_turma && ARRAY(SELECT id FROM turmas)
             )
             """;
 
@@ -108,9 +111,56 @@ public class DashboardRepository {
         return jdbc.queryForList(CONTEUDOS_ALUNO + """
                 SELECT t.id, t.nome_turma AS nome, count(c.id) AS conteudos,
                     count(c.concluido_em) AS concluidos
-                FROM turmas t LEFT JOIN conteudos c ON t.id = ANY(c.id_turma)
+                FROM turmas t LEFT JOIN (
+                    SELECT DISTINCT cc.id, x.id_turma, cc.concluido_em
+                    FROM conteudos cc CROSS JOIN LATERAL unnest(cc.id_turma) AS x(id_turma)
+                ) c ON c.id_turma = t.id
                 GROUP BY t.id, t.nome_turma ORDER BY t.nome_turma, t.id LIMIT 20
                 """, p);
+    }
+
+    // resumir turmas da lista este metodo conta alunos conteudos eventos e conclusoes de todas as turmas da tela em uma consulta
+    public Map<Long, Map<String, Object>> resumoDaListaDeTurmas(String tipo, long pessoa, List<Long> idsTurmas) {
+        Map<Long, Map<String, Object>> resumo = new java.util.HashMap<>();
+
+        // ignorar lista vazia evita consulta sem turmas
+        if (idsTurmas.isEmpty()) {
+            return resumo;
+        }
+
+        List<Map<String, Object>> linhas = jdbc.queryForList("""
+                WITH conteudos AS (
+                    SELECT x.id_turma,
+                        count(*) FILTER (WHERE c.status <> 'removido') AS visiveis,
+                        count(*) FILTER (WHERE c.status = 'ativo') AS ativos,
+                        count(p.id_conteudo) FILTER (WHERE c.status = 'ativo') AS concluidos
+                    FROM public."CONTEUDOS" c
+                    CROSS JOIN LATERAL (SELECT DISTINCT unnest(c.id_turma) AS id_turma) x
+                    LEFT JOIN public."PROGRESSO_CONTEUDO" p
+                        ON :tipo = 'aluno' AND p.id_conteudo = c.id AND p.id_aluno = :pessoa
+                    WHERE x.id_turma IN (:ids)
+                    GROUP BY x.id_turma
+                ), eventos AS (
+                    SELECT id_turma, count(*) AS eventos FROM public."EVENTOS"
+                    WHERE id_turma IN (:ids) AND upper(status) = 'ATIVO' GROUP BY id_turma
+                )
+                SELECT t.id, COALESCE(cardinality(t.id_alunos), 0) AS alunos,
+                    COALESCE(c.visiveis, 0) AS visiveis, COALESCE(c.ativos, 0) AS ativos,
+                    COALESCE(c.concluidos, 0) AS concluidos, COALESCE(e.eventos, 0) AS eventos
+                FROM public."TURMAS" t
+                LEFT JOIN conteudos c ON c.id_turma = t.id
+                LEFT JOIN eventos e ON e.id_turma = t.id
+                WHERE t.id IN (:ids)
+                """, new MapSqlParameterSource().addValue("tipo", tipo).addValue("pessoa", pessoa).addValue("ids", idsTurmas));
+
+        for (Map<String, Object> linha : linhas) {
+            // montar numeros do cartao mostra progresso ao aluno e os totais da turma ao professor
+            Map<String, Object> numeros = "aluno".equals(tipo)
+                    ? Map.of("conteudos", linha.get("ativos"), "concluidos", linha.get("concluidos"))
+                    : Map.of("alunos", linha.get("alunos"), "conteudos", linha.get("visiveis"), "eventos", linha.get("eventos"));
+            resumo.put(((Number) linha.get("id")).longValue(), numeros);
+        }
+        return resumo;
     }
 
     private static final String EVENTOS = TURMAS + """

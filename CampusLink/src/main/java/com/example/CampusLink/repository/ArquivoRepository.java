@@ -4,6 +4,7 @@ package com.example.CampusLink.repository;
 import com.example.CampusLink.dto.ArquivoDTO;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -11,7 +12,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 // persistencia de anexos esta classe consulta e altera os dados que apontam para o armazenamento
@@ -93,6 +96,34 @@ public class ArquivoRepository {
         // consultar material recente busca o ultimo arquivo do conteudo e converte falhas do banco
         try {
             return jdbcTemplate.query(sql, rs -> rs.next() ? montarArquivo(rs) : null, idConteudo.longValue());
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // buscar ultimos arquivos de varios conteudos este metodo retorna o anexo mais recente de cada material em uma consulta
+    public Map<Long, ArquivoDTO> buscarMaisRecentesPorConteudos(List<Long> idsConteudos) throws SQLException {
+        Map<Long, ArquivoDTO> arquivos = new HashMap<>();
+
+        // ignorar lista vazia evita consulta sem conteudos
+        if (idsConteudos.isEmpty()) {
+            return arquivos;
+        }
+
+        String sql = """
+            SELECT DISTINCT ON ("id_conteudo") *
+            FROM public."ARQUIVOS"
+            WHERE "id_conteudo" = ANY(?)
+            ORDER BY "id_conteudo", "created_at" DESC, "id" DESC
+            """;
+        // consultar materiais recentes envia todos os conteudos juntos e converte falhas do banco
+        try {
+            jdbcTemplate.query(sql, (PreparedStatementSetter) stmt ->
+                    stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsConteudos.toArray())), rs -> {
+                ArquivoDTO arquivo = montarArquivo(rs);
+                arquivos.put(rs.getLong("id_conteudo"), arquivo);
+            });
+            return arquivos;
         } catch (DataAccessException e) {
             throw converterErro(e);
         }

@@ -132,20 +132,20 @@ public class VerificarController {
 
         // proteger verificacao do aluno retorna ao login do aluno quando falta o email
         if (session.getAttribute("email2FA") == null) {
-            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginAluno");
+            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /login");
 
             // registro de avisos confere se esta habilitado ao abrir verificacao do aluno
             if (logger.isWarnEnabled()) {
                 // gravar historico ao abrir verificacao do aluno tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoAluno", null,
-                            "[LOGIN] email 2FA ausente - redirecionando para /loginAluno", null, null);
+                            "[LOGIN] email 2FA ausente - redirecionando para /login", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
 
-            return "redirect:/loginAluno";
+            return "redirect:/login";
         }
 
         return "Geral/verificar";
@@ -158,20 +158,20 @@ public class VerificarController {
 
         // proteger verificacao do professor retorna ao login do professor quando falta o email
         if (session.getAttribute("email2FA") == null) {
-            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /loginProfessor");
+            logger.warn("[LOGIN] email 2FA ausente - redirecionando para /login");
 
             // registro de avisos confere se esta habilitado ao abrir verificacao do professor
             if (logger.isWarnEnabled()) {
                 // gravar historico ao abrir verificacao do professor tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "paginaVerificacaoProfessor", null,
-                            "[LOGIN] email 2FA ausente - redirecionando para /loginProfessor", null, null);
+                            "[LOGIN] email 2FA ausente - redirecionando para /login", null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
 
-            return "redirect:/loginProfessor";
+            return "redirect:/login";
         }
 
         return "Geral/verificar";
@@ -223,38 +223,38 @@ public class VerificarController {
 
                 // retornar ao acesso do aluno encaminha o aluno quando falta email para verificar
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginAluno";
+                    return "redirect:/login";
 
                 }
                 // retornar ao acesso do professor encaminha o professor quando falta email para verificar
                 else if (session.getAttribute("tipoUsuario").equals("professor")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginProfessor";
+                    return "redirect:/login";
 
                 }
                 // retornar ao acesso administrativo encaminha o administrador quando falta email para verificar
@@ -373,38 +373,38 @@ public class VerificarController {
 
                 // retornar aluno na recuperacao encaminha o aluno ao login quando falta email
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginAluno";
+                    return "redirect:/login";
 
                 }
                 // retornar professor na recuperacao encaminha o professor ao login quando falta email
                 else if (session.getAttribute("tipoUsuario").equals("professor")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginProfessor";
+                    return "redirect:/login";
                 }
             }
 
@@ -475,38 +475,38 @@ public class VerificarController {
 
                 // retornar aluno no cadastro encaminha o aluno ao login quando falta email
                 if (session.getAttribute("tipoUsuario").equals("aluno")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginAluno");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginAluno", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginAluno";
+                    return "redirect:/login";
 
                 }
                 // retornar professor no cadastro encaminha o professor ao login quando falta email
                 else if (session.getAttribute("tipoUsuario").equals("professor")) {
-                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /loginProfessor");
+                    logger.warn("[LOGIN] email 2FA invalido - redirecionando para /login");
 
                     // registro de avisos confere se esta habilitado ao verificar codigo
                     if (logger.isWarnEnabled()) {
                         // gravar historico ao verificar codigo tenta salvar o registro no banco e informa falhas
                         try {
                             UsuarioRepository.InserirLogsNoBD(null, "WARN", VerificarController.class.getName(), "verificarCodigo", null,
-                                    "[LOGIN] email 2FA invalido - redirecionando para /loginProfessor", null, null);
+                                    "[LOGIN] email 2FA invalido - redirecionando para /login", null, null);
                         } catch (Exception erroLogBD) {
                             logger.error("Erro ao gravar log no banco.", erroLogBD);
                         }
                     }
 
-                    return "redirect:/loginProfessor";
+                    return "redirect:/login";
                 }
             }
 

@@ -498,3 +498,58 @@ body {
         width: 100%;
     }
 }
+
+/* paginacao segue o mesmo visual da lista de conteudos do administrador */
+.eventos-admin-paginacao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 26px 0 10px;
+}
+
+.eventos-admin-paginacao p {
+    margin: 0;
+    color: var(--azul-campus);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.eventos-admin-mostrar-mais {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 170px;
+    min-height: 42px;
+    padding: 10px 22px;
+    border: 1px solid var(--azul-campus);
+    border-radius: 22px;
+    background-color: var(--azul-campus);
+    color: var(--branco);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.eventos-admin-mostrar-mais:hover {
+    background-color: var(--azul-hover);
+    border-color: var(--azul-hover);
+}
+
+.eventos-admin-mostrar-mais:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.eventos-admin-mostrar-mais:focus-visible {
+    outline: 3px solid #7e94ce;
+    outline-offset: 2px;
+}
+
+#corpoEventos[aria-busy="true"] {
+    opacity: 0.6;
+}

@@ -3,6 +3,7 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${'Acompanhamento - ' + evento.nome}">Acompanhamento do evento</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
@@ -16,7 +17,7 @@
 <main class="turmas-page">
     <div class="turmas-container turmas-container-larga">
 
-        <a class="voltar-turmas" th:href="@{/acompanhamento/turma/{id}(id=${turma.id})}">← Voltar à turma</a>
+        <nav th:replace="~{fragments/trilha :: trilha('Acompanhamento', @{/acompanhamento}, ${turma.nomeTurma}, @{/acompanhamento/turma/{id}(id=${turma.id})}, null, null, ${evento.nome})}"></nav>
 
         <div class="conteudo-card mb-4">
             <div>
@@ -25,7 +26,7 @@
                 <span class="conteudo-meta" th:text="${turma.nomeTurma}">Turma #1</span>
                 <span class="selo-risco risco-atrasado mt-2" th:if="${eventoPassado}">Evento encerrado</span>
             </div>
-            <span class="conteudo-meta" th:text="${#lists.size(alunos) + ' alunos'}">30 alunos</span>
+            <span class="conteudo-meta" th:text="${#lists.size(alunos) + (#lists.size(alunos) == 1 ? ' aluno' : ' alunos')}">30 alunos</span>
         </div>
 
         <div class="sem-turmas" th:if="${#lists.isEmpty(alunos)}">
@@ -77,5 +78,6 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script th:src="@{/js/Geral/tabela-inteligente.js(v=20261112-2)}"></script>
 </body>
 </html>

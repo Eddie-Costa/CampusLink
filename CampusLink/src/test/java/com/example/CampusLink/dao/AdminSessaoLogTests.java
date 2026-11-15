@@ -44,6 +44,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,8 +105,8 @@ class AdminSessaoLogTests {
                 }
             }
         }
-        sql("CREATE TEMP TABLE \"USUARIOS\" (id bigint PRIMARY KEY, email text NOT NULL)");
-        sql("INSERT INTO pg_temp.\"USUARIOS\" VALUES (41, '" + EMAIL + "')");
+        sql("CREATE TEMP TABLE \"USUARIOS\" (id bigint PRIMARY KEY, email text NOT NULL, nome text)");
+        sql("INSERT INTO pg_temp.\"USUARIOS\" VALUES (41, '" + EMAIL + "', 'Maria Administradora')");
 
         Connection isolada = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
                 new Class<?>[]{Connection.class}, (proxy, method, args) -> {
@@ -212,6 +215,79 @@ class AdminSessaoLogTests {
         verificarTodosEventosNoHistorico(sessaoId, historico);
     }
 
+    @Test
+    void consultaSomenteSessoesEncerradasEConsolidadasComDetalhes() throws Exception {
+        UUID ativa = UUID.randomUUID();
+        usuarios.InserirLogsNoBD(ativa, "INFO", "Teste", "consulta", null, "Sessão ainda ativa", null, null);
+        assertNull(usuarios.buscarSessaoEncerrada(ativa));
+        assertEquals(0, usuarios.contarSessoesEncerradas("", null, null, null, null, null));
+
+        UUID encerrada = criarSessaoEncerrada("2026-11-12T03:00:00Z", "2026-11-12T03:30:00Z");
+        var lista = usuarios.listarSessoesEncerradas(0, "", null, null, null, null, null);
+        assertEquals(1, lista.size());
+        assertEquals(encerrada, lista.getFirst().getSessaoLogId());
+        assertNull(lista.getFirst().getLogCompleto());
+        var detalhe = usuarios.buscarSessaoEncerrada(encerrada);
+        assertEquals("Maria Administradora", detalhe.getNomeUsuario());
+        assertEquals(41L, detalhe.getUsuarioId());
+        assertEquals(0, detalhe.getInicio().getHour());
+        assertEquals("0h 30min 00s", detalhe.getDuracao());
+        assertTrue(detalhe.getLogCompleto().contains("Historico consolidado"));
+
+        sql("UPDATE pg_temp.\"LOGS_SESSOES\" SET historico_gerado_em = NULL WHERE sessao_log_id = '" + encerrada + "'");
+        assertNull(usuarios.buscarSessaoEncerrada(encerrada));
+    }
+
+    @Test
+    void pesquisaNomeIdsDatasHorariosECombinaFiltrosNoPostgres() throws Exception {
+        UUID id = criarSessaoEncerrada("2026-11-12T03:00:00Z", "2026-11-12T03:30:00Z");
+        criarSessaoEncerrada("2026-11-13T02:59:59Z", "2026-11-13T03:29:59Z");
+        criarSessaoEncerrada("2026-11-13T03:00:00Z", "2026-11-13T03:30:00Z");
+        for (String busca : new String[]{"mArIa", "41", id.toString(), "12/11/2026", "2026-11-12", "00:30"}) {
+            assertTrue(usuarios.contarSessoesEncerradas(busca, null, null, null, null, null) > 0, busca);
+        }
+        LocalDate dia = LocalDate.of(2026, 11, 12);
+        assertEquals(2, usuarios.contarSessoesEncerradas("Maria", 41L, dia, dia, 30, 30));
+        assertEquals(2, usuarios.listarSessoesEncerradas(0, "Maria", 41L, dia, dia, 30, 30).size());
+        assertEquals(0, usuarios.contarSessoesEncerradas("Maria", 99L, dia, dia, null, null));
+        assertEquals(0, usuarios.contarSessoesEncerradas("", null, null, null, 31, null));
+        assertEquals(0, usuarios.contarSessoesEncerradas("", null, null, null, null, 29));
+        assertEquals(0, usuarios.contarSessoesEncerradas("' OR 1=1 --", null, null, null, null, null));
+        assertEquals(0, usuarios.contarSessoesEncerradas("%", null, null, null, null, null));
+    }
+
+    @Test
+    void paginaNoBancoOrdenaPorFimEPreservaSessoesSemUsuario() throws Exception {
+        sql("""
+                INSERT INTO pg_temp."LOGS_SESSOES"
+                    (sessao_log_id, usuario_id, inicio, fim, status, log_completo, historico_gerado_em)
+                SELECT gen_random_uuid(), NULL, '2026-11-12 12:00:00+00'::timestamptz,
+                       '2026-11-12 12:00:00+00'::timestamptz + n * interval '1 minute',
+                       'ENCERRADA', 'Ocorrência de teste', now()
+                FROM generate_series(1, 12) n
+                """);
+        var primeira = usuarios.listarSessoesEncerradas(0, "", null, null, null, null, null);
+        var segunda = usuarios.listarSessoesEncerradas(1, "", null, null, null, null, null);
+        assertEquals(12, usuarios.contarSessoesEncerradas("", null, null, null, null, null));
+        assertEquals(10, primeira.size());
+        assertEquals(2, segunda.size());
+        assertTrue(primeira.getLast().getFim().isAfter(segunda.getFirst().getFim()));
+        assertEquals(12, primeira.getFirst().getFim().getMinute());
+        assertNull(primeira.getFirst().getUsuarioId());
+        assertNull(primeira.getFirst().getNomeUsuario());
+        var ids = new HashSet<UUID>();
+        primeira.forEach(sessao -> ids.add(sessao.getSessaoLogId()));
+        segunda.forEach(sessao -> ids.add(sessao.getSessaoLogId()));
+        assertEquals(12, ids.size());
+    }
+
+    private UUID criarSessaoEncerrada(String inicio, String fim) throws SQLException {
+        UUID id = UUID.randomUUID();
+        usuarios.InserirLogsNoBD(id, "INFO", "Teste", "consulta", null, "Consulta de turma", null, null);
+        usuarios.finalizarSessaoLog(id, Instant.parse(inicio), Instant.parse(fim), EMAIL);
+        return id;
+    }
+
     // autenticar administrador no teste este metodo simula login com ou sem codigo por email
     private void autenticar(boolean doisFatores) throws Exception {
         loginAdminDTO admin = new loginAdminDTO();
@@ -226,9 +302,12 @@ class AdminSessaoLogTests {
         ReflectionTestUtils.setField(login, "twoFactorService", new TwoFactorService());
         ReflectionTestUtils.setField(login, "emailService", emails);
         ReflectionTestUtils.setField(login, "twoFactorEnabled", doisFatores);
+        // requisicao com a mesma sessao permite ao login trocar o id da sessao como acontece no servidor
+        MockHttpServletRequest pedidoLogin = new MockHttpServletRequest();
+        pedidoLogin.setSession(session);
         requisicao("/gestao/login-admin", () -> assertEquals(
                 doisFatores ? "redirect:/verificarAdmin" : "redirect:/admin/painel",
-                login.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"), new ExtendedModelMap(), session)));
+                login.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"), new ExtendedModelMap(), session, pedidoLogin)));
         // testar segundo fator confirma o codigo enviado antes de validar o acesso administrativo
         if (doisFatores) {
             ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);

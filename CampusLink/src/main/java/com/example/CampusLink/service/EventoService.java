@@ -18,7 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -141,9 +147,7 @@ public class EventoService {
 
             List<Evento> eventos = eventoRepository.findAll();
 
-            for (Evento evento : eventos) {
-                preencherDetalhesDoEvento(evento);
-            }
+            preencherDetalhesDosEventos(eventos);
 
             logger.debug("Eventos encontrados quantidade={}", eventos.size());
 
@@ -178,6 +182,27 @@ public class EventoService {
                 }
             }
 
+            throw e;
+        }
+    }
+
+
+    // listar eventos das turmas no periodo este metodo consulta so os eventos visiveis na janela e completa turma e materiais
+    public List<Evento> listarEventosDasTurmasNoPeriodo(Collection<Long> idsTurmas, LocalDateTime inicio, LocalDateTime fim) {
+
+        // ignorar consulta sem turmas devolve lista vazia quando a pessoa nao participa de turmas
+        if (idsTurmas == null || idsTurmas.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // listar eventos do periodo consulta a janela e preenche os detalhes de todos os eventos de uma vez
+        try {
+            List<Evento> eventos = eventoRepository.buscarDasTurmasNoPeriodo(idsTurmas, inicio, fim);
+            preencherDetalhesDosEventos(eventos);
+            return eventos;
+
+        } catch (DataAccessException e) {
+            logger.error("Erro ao buscar eventos do periodo inicio={} fim={}", inicio, fim, e);
             throw e;
         }
     }
@@ -324,6 +349,49 @@ public class EventoService {
             }
 
             throw new RuntimeException("Erro ao excluir evento", e);
+        }
+    }
+
+
+    // completar detalhes da lista este metodo busca turmas e materiais de todos os eventos em duas consultas em vez de duas por evento
+    private void preencherDetalhesDosEventos(List<Evento> eventos) {
+
+        // completar lista vazia nao consulta o banco
+        if (eventos == null || eventos.isEmpty()) {
+            return;
+        }
+
+        Set<Long> idsTurmas = new HashSet<>();
+        Set<Long> idsEventos = new HashSet<>();
+        for (Evento evento : eventos) {
+            // separar codigos guarda apenas turmas e eventos informados
+            if (evento.getIdTurma() != null) {
+                idsTurmas.add(evento.getIdTurma());
+            }
+            if (evento.getId() != null) {
+                idsEventos.add(evento.getId());
+            }
+        }
+
+        Map<Long, String> nomesTurmas = new HashMap<>();
+        // buscar nomes das turmas consulta todas as turmas da lista de uma vez
+        if (!idsTurmas.isEmpty()) {
+            for (Object[] linha : eventoRepository.buscarNomesTurmas(idsTurmas)) {
+                nomesTurmas.put(((Number) linha[0]).longValue(), (String) linha[1]);
+            }
+        }
+
+        Map<Long, List<String>> conteudosPorEvento = new HashMap<>();
+        // buscar materiais dos eventos consulta os titulos de todos os eventos de uma vez mantendo a ordem alfabetica
+        if (!idsEventos.isEmpty()) {
+            for (Object[] linha : eventoRepository.buscarConteudosDosEventos(idsEventos)) {
+                conteudosPorEvento.computeIfAbsent(((Number) linha[0]).longValue(), id -> new ArrayList<>()).add((String) linha[1]);
+            }
+        }
+
+        for (Evento evento : eventos) {
+            evento.setNomeTurma(evento.getIdTurma() != null ? nomesTurmas.get(evento.getIdTurma()) : null);
+            evento.setNomesConteudos(evento.getId() != null ? conteudosPorEvento.getOrDefault(evento.getId(), List.of()) : List.of());
         }
     }
 

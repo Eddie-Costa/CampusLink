@@ -1384,3 +1384,13 @@ button.evento-marcador:focus-visible {
         flex: none;
     }
 }
+
+/* celular troca o texto que ficava cortado nos marcadores por uma versao curta e inteira */
+@media (max-width: 575.98px) {
+    .evento-marcador[data-curto],
+    .estudo-marcador[data-curto],
+    .disponibilidade-marcador[data-curto] { font-size: 0 !important; text-overflow: clip; }
+    .evento-marcador[data-curto]::after,
+    .estudo-marcador[data-curto]::after,
+    .disponibilidade-marcador[data-curto]::after { content: attr(data-curto); font-size: 11px; font-weight: 700; }
+}

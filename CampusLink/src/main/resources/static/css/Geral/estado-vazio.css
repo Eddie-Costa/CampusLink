@@ -1,0 +1,66 @@
+/* estado vazio centraliza icone titulo explicacao e botao do proximo passo */
+.estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 32px 20px;
+    border: 1.5px dashed #d5deeb;
+    border-radius: 20px;
+    background: #fbfcfe;
+    color: var(--rd-navy, #11183f);
+    text-align: center;
+    white-space: normal;
+}
+
+.estado-vazio-icone {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 6px;
+    border-radius: 18px;
+    background: #e3f2fd;
+    color: #2d9ce5;
+}
+
+.estado-vazio-icone svg { width: 28px; height: 28px; }
+
+.estado-vazio-titulo {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.estado-vazio-texto {
+    max-width: 440px;
+    margin: 0;
+    color: var(--rd-texto-suave, #667085);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.estado-vazio-acao {
+    margin-top: 10px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #22337a, #2d9ce5);
+    color: #ffffff !important;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 12px 22px -14px rgba(17, 24, 63, 0.8);
+}
+
+.estado-vazio-acao:hover,
+.estado-vazio-acao:focus-visible {
+    filter: brightness(1.1);
+    outline: none;
+}
+
+/* estado positivo usa verde para filas de analise que estao em dia */
+.estado-vazio-ok { border-color: #bfe8d4; background: #f6fcf9; }
+.estado-vazio-ok .estado-vazio-icone { background: #e3f6ec; color: #10b981; }
+
+/* celula de tabela vazia remove o espaco extra ao redor do estado */
+td > .estado-vazio { margin: 6px 0; }

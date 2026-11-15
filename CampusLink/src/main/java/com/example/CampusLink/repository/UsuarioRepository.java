@@ -2,6 +2,7 @@
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
+import com.example.CampusLink.dto.Admin.SessaoLogDTO;
 import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
@@ -21,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +32,124 @@ import java.util.UUID;
 // persistencia de contas esta classe grava perfis senhas sessoes e exclusoes com seus vinculos
 @Repository
 public class UsuarioRepository {
+
+    // o historico usa instantes; consultas e tela usam o mesmo horario de Brasilia
+    public static final ZoneId FUSO_LOGS = ZoneId.of("America/Sao_Paulo");
+    private static final String SQL_SESSOES_ENCERRADAS = """
+            FROM public."LOGS_SESSOES" s
+            LEFT JOIN public."USUARIOS" u ON u.id = s.usuario_id
+            WHERE s.status = 'ENCERRADA' AND s.fim IS NOT NULL
+              AND s.historico_gerado_em IS NOT NULL
+            """;
+
+    // consultar apenas os resumos evita carregar o texto completo durante a paginacao
+    public List<SessaoLogDTO> listarSessoesEncerradas(int pagina, String busca, Long usuarioId,
+            LocalDate dataInicial, LocalDate dataFinal, Integer duracaoMin, Integer duracaoMax) throws SQLException {
+        List<Object> parametros = new ArrayList<>();
+        String sql = "SELECT s.sessao_log_id, s.usuario_id, u.nome, s.inicio, s.fim "
+                + filtrosSessoes(busca, usuarioId, dataInicial, dataFinal, duracaoMin, duracaoMax, parametros)
+                + " ORDER BY s.fim DESC, s.sessao_log_id DESC LIMIT 10 OFFSET ?";
+        parametros.add((long) pagina * 10);
+        List<SessaoLogDTO> sessoes = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            preencherParametrosSessoes(stmt, parametros);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) sessoes.add(lerSessaoLog(rs));
+            }
+        }
+        return sessoes;
+    }
+
+    // contar sessoes encerradas este metodo usa os mesmos filtros da lista para calcular o total de paginas
+    public long contarSessoesEncerradas(String busca, Long usuarioId, LocalDate dataInicial,
+            LocalDate dataFinal, Integer duracaoMin, Integer duracaoMax) throws SQLException {
+        List<Object> parametros = new ArrayList<>();
+        String sql = "SELECT COUNT(*) "
+                + filtrosSessoes(busca, usuarioId, dataInicial, dataFinal, duracaoMin, duracaoMax, parametros);
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            preencherParametrosSessoes(stmt, parametros);
+            try (ResultSet rs = stmt.executeQuery()) {
+                rs.next();
+                return rs.getLong(1);
+            }
+        }
+    }
+
+    // o detalhe tambem exige encerramento e consolidacao mesmo quando acessado pela URL
+    public SessaoLogDTO buscarSessaoEncerrada(UUID id) throws SQLException {
+        String sql = "SELECT s.sessao_log_id, s.usuario_id, u.nome, s.inicio, s.fim, s.log_completo "
+                + SQL_SESSOES_ENCERRADAS + " AND s.sessao_log_id = ?";
+        try (Connection conn = dataSource.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next()) return null;
+                SessaoLogDTO sessao = lerSessaoLog(rs);
+                sessao.setLogCompleto(rs.getString("log_completo"));
+                return sessao;
+            }
+        }
+    }
+
+    // compartilhar os filtros mantem a contagem e a lista com os mesmos resultados
+    private String filtrosSessoes(String busca, Long usuarioId, LocalDate dataInicial, LocalDate dataFinal,
+            Integer duracaoMin, Integer duracaoMax, List<Object> parametros) {
+        StringBuilder sql = new StringBuilder(SQL_SESSOES_ENCERRADAS);
+        // pesquisar texto procura nome codigos e datas no horario de brasilia
+        if (busca != null && !busca.isBlank()) {
+            sql.append("""
+                    AND POSITION(LOWER(?) IN LOWER(CONCAT_WS(' ', u.nome, s.usuario_id::text, s.sessao_log_id::text,
+                        to_char(s.inicio AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI:SS'),
+                        to_char(s.fim AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI:SS'),
+                        to_char(s.inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD'),
+                        to_char(s.fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD')))) > 0
+                    """);
+            parametros.add(busca.trim());
+        }
+        // filtrar usuario limita ao codigo informado
+        if (usuarioId != null) {
+            sql.append(" AND s.usuario_id = ?");
+            parametros.add(usuarioId);
+        }
+        // filtrar inicio do periodo comeca no primeiro instante do dia em brasilia
+        if (dataInicial != null) {
+            sql.append(" AND COALESCE(s.inicio, s.fim) >= ?");
+            parametros.add(Timestamp.from(dataInicial.atStartOfDay(FUSO_LOGS).toInstant()));
+        }
+        // filtrar fim do periodo inclui o dia final inteiro
+        if (dataFinal != null) {
+            sql.append(" AND COALESCE(s.inicio, s.fim) < ?");
+            parametros.add(Timestamp.from(dataFinal.plusDays(1).atStartOfDay(FUSO_LOGS).toInstant()));
+        }
+        // filtrar duracao minima converte minutos em segundos
+        if (duracaoMin != null) {
+            sql.append(" AND EXTRACT(EPOCH FROM (s.fim - s.inicio)) >= ?");
+            parametros.add(duracaoMin.longValue() * 60);
+        }
+        // filtrar duracao maxima converte minutos em segundos
+        if (duracaoMax != null) {
+            sql.append(" AND EXTRACT(EPOCH FROM (s.fim - s.inicio)) <= ?");
+            parametros.add(duracaoMax.longValue() * 60);
+        }
+        return sql.toString();
+    }
+
+    // preencher parametros este metodo envia os valores dos filtros na mesma ordem em que foram montados
+    private void preencherParametrosSessoes(PreparedStatement stmt, List<Object> parametros) throws SQLException {
+        for (int i = 0; i < parametros.size(); i++) stmt.setObject(i + 1, parametros.get(i));
+    }
+
+    // ler sessao este metodo converte a linha do banco em dto com horarios de brasilia
+    private SessaoLogDTO lerSessaoLog(ResultSet rs) throws SQLException {
+        SessaoLogDTO sessao = new SessaoLogDTO();
+        sessao.setSessaoLogId(rs.getObject("sessao_log_id", UUID.class));
+        sessao.setUsuarioId(rs.getObject("usuario_id", Long.class));
+        sessao.setNomeUsuario(rs.getString("nome"));
+        Timestamp inicio = rs.getTimestamp("inicio");
+        Timestamp fim = rs.getTimestamp("fim");
+        if (inicio != null) sessao.setInicio(inicio.toInstant().atZone(FUSO_LOGS).toLocalDateTime());
+        if (fim != null) sessao.setFim(fim.toInstant().atZone(FUSO_LOGS).toLocalDateTime());
+        return sessao;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
 

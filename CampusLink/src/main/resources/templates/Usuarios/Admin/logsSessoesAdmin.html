@@ -1,0 +1,105 @@
+<!-- logs de sessoes lista as sessoes encerradas com pesquisa filtros e paginacao para o administrador consultar -->
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logs de Sessões | CampusLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/painelAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/logsSessoesAdmin.css(v=20261115-1)}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: nav}"></div>
+<main class="admin-page">
+    <div class="admin-container logs-container">
+        <header class="admin-topo">
+            <div>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Logs de Sessões')}"></nav>
+                <h1>Logs de Sessões</h1>
+                <p>Histórico consolidado das sessões encerradas. Horários de Brasília.</p>
+            </div>
+        </header>
+
+        <form th:action="@{/admin/logs-sessoes}" method="get" class="admin-card mb-4" aria-label="Pesquisar sessões">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="busca" class="form-label">Pesquisar</label>
+                    <input id="busca" name="busca" type="search" class="form-control" th:value="${busca}"
+                           placeholder="Nome, ID do usuário ou da sessão, data ou horário" aria-describedby="ajudaBusca">
+                    <div id="ajudaBusca" class="form-text">Datas: dd/mm/aaaa ou aaaa-mm-dd. Horários: hh:mm.</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="usuarioId" class="form-label">ID do usuário</label>
+                    <input id="usuarioId" name="usuarioId" type="number" min="1" step="1" class="form-control" th:value="${usuarioId}">
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="dataInicial" class="form-label">Data inicial da sessão</label>
+                    <input id="dataInicial" name="dataInicial" type="date" class="form-control" th:value="${dataInicial}">
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="dataFinal" class="form-label">Data final do período</label>
+                    <input id="dataFinal" name="dataFinal" type="date" class="form-control" th:value="${dataFinal}">
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="duracaoMin" class="form-label">Duração mínima (min)</label>
+                    <input id="duracaoMin" name="duracaoMin" type="number" min="0" step="1" class="form-control" th:value="${duracaoMin}">
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="duracaoMax" class="form-label">Duração máxima (min)</label>
+                    <input id="duracaoMax" name="duracaoMax" type="number" min="0" step="1" class="form-control" th:value="${duracaoMax}">
+                </div>
+            </div>
+            <p class="form-text mt-2">O período considera a data de início; quando ausente, considera o encerramento.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">Pesquisar</button>
+                <a th:href="@{/admin/logs-sessoes}" class="btn btn-outline-primary">Limpar filtros</a>
+            </div>
+        </form>
+
+        <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
+        <section class="admin-card" aria-labelledby="tituloResultados" th:if="${mensagemErro == null}">
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+                <h2 id="tituloResultados" class="h5 mb-0">Sessões encerradas</h2>
+                <span th:text="${sessoes.totalElements + ' registro(s) · encerramento mais recente primeiro'}"></span>
+            </div>
+            <th:block th:if="${sessoes.empty}"><div th:replace="~{fragments/vazio :: vazio('usuario', 'Nenhuma sessão encerrada encontrada', 'As sessões aparecem aqui depois que o usuário sai ou a sessão expira. Se houver filtros, tente ajustá-los.', null, null)}"></div></th:block>
+            <div class="table-responsive" th:unless="${sessoes.empty}">
+                <table class="table table-hover align-middle logs-tabela">
+                    <caption class="visually-hidden">Histórico de sessões encerradas</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">ID da sessão</th><th scope="col">ID do usuário</th><th scope="col">Nome</th>
+                        <th scope="col">Data da sessão</th><th scope="col">Início</th><th scope="col">Encerramento</th>
+                        <th scope="col">Duração</th><th scope="col">Ação</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="sessao : ${sessoes.content}">
+                        <td class="logs-id" th:text="${sessao.sessaoLogId}"></td>
+                        <td th:text="${sessao.usuarioId != null ? sessao.usuarioId : 'Não disponível'}"></td>
+                        <td th:text="${sessao.nomeUsuario != null ? sessao.nomeUsuario : 'Não disponível'}"></td>
+                        <td th:text="${#temporals.format(sessao.inicio != null ? sessao.inicio : sessao.fim, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${sessao.inicio != null ? #temporals.format(sessao.inicio, 'HH:mm:ss') : 'Não disponível'}"></td>
+                        <td th:text="${#temporals.format(sessao.fim, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td th:text="${sessao.duracao}"></td>
+                        <td><a class="btn btn-sm btn-outline-primary" th:href="@{/admin/logs-sessoes/{id}(id=${sessao.sessaoLogId})}">Visualizar logs</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:if="${sessoes.totalPages > 1}" aria-label="Paginação das sessões" class="logs-paginacao">
+                <a th:if="${sessoes.hasPrevious()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/logs-sessoes(pagina=${sessoes.number - 1},busca=${busca},usuarioId=${usuarioId},dataInicial=${dataInicial},dataFinal=${dataFinal},duracaoMin=${duracaoMin},duracaoMax=${duracaoMax})}">Anterior</a>
+                <span aria-live="polite" th:text="${'Página ' + (sessoes.number + 1) + ' de ' + sessoes.totalPages}"></span>
+                <a th:if="${sessoes.hasNext()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/logs-sessoes(pagina=${sessoes.number + 1},busca=${busca},usuarioId=${usuarioId},dataInicial=${dataInicial},dataFinal=${dataFinal},duracaoMin=${duracaoMin},duracaoMax=${duracaoMax})}">Próxima</a>
+            </nav>
+        </section>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -57,8 +57,7 @@ public class cadastrarProfessorController {
             return "redirect:/home";
         }
 
-        model.addAttribute("professor", new cadastrarProfessorDTO());
-        return "Usuarios/Professor/cadastrarProfessor";
+        return "redirect:/cadastrar?perfil=professor";
     }
 
     // verificar cadastro de professor este metodo guarda os dados na sessao e inicia a confirmacao por email
@@ -89,8 +88,10 @@ public class cadastrarProfessorController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
-            return "Usuarios/Professor/cadastrarProfessor";
+            model.addAttribute("mensagemDeErro", result.getFieldErrors().isEmpty()
+                    ? "Dados inválidos. Verifique o formulário."
+                    : result.getFieldErrors().get(0).getDefaultMessage());
+            return "Geral/cadastrar";
         }
 
         // validar data de nascimento rejeita datas inexistentes antes de guardar os dados na sessao
@@ -98,7 +99,7 @@ public class cadastrarProfessorController {
             LocalDate.parse(professor.getDataNasc());
         } catch (DateTimeParseException e) {
             model.addAttribute("mensagemDeErro", "Informe uma data de nascimento válida.");
-            return "Usuarios/Professor/cadastrarProfessor";
+            return "Geral/cadastrar";
         }
 
         session.removeAttribute("verificado");
@@ -179,7 +180,7 @@ public class cadastrarProfessorController {
             }
             SQLErrorHandler.VerificarErro("professor", erros, model);
             model.addAttribute("professor", professor);
-            return "Usuarios/Professor/cadastrarProfessor";
+            return "Geral/cadastrar";
         }
 
         // salvar novo professor grava o cadastro e retorna ao formulario se o banco falhar
@@ -206,7 +207,7 @@ public class cadastrarProfessorController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            return "Usuarios/Professor/loginProfessor";
+            return "redirect:/login?cadastrado";
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir professor no banco com email: {}", professor.getEmail(), e);
@@ -224,7 +225,7 @@ public class cadastrarProfessorController {
             }
 
             model.addAttribute("professor", professor);
-            return "Usuarios/Professor/cadastrarProfessor";
+            return "Geral/cadastrar";
         }
     }
 }

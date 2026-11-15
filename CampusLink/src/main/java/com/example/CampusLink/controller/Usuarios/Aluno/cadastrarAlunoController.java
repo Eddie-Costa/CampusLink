@@ -57,8 +57,7 @@ public class cadastrarAlunoController {
             return "redirect:/home";
         }
 
-        model.addAttribute("aluno", new cadastrarAlunoDTO());
-        return "Usuarios/Aluno/cadastrarAluno";
+        return "redirect:/cadastrar?perfil=aluno";
     }
 
     // verificar cadastro de aluno este metodo guarda os dados na sessao e inicia a confirmacao por email
@@ -89,8 +88,10 @@ public class cadastrarAlunoController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            model.addAttribute("mensagemDeErro", "Dados inválidos. Verifique o formulário.");
-            return "Usuarios/Aluno/cadastrarAluno";
+            model.addAttribute("mensagemDeErro", result.getFieldErrors().isEmpty()
+                    ? "Dados inválidos. Verifique o formulário."
+                    : result.getFieldErrors().get(0).getDefaultMessage());
+            return "Geral/cadastrar";
         }
 
         // validar data de nascimento rejeita datas inexistentes antes de guardar os dados na sessao
@@ -98,7 +99,7 @@ public class cadastrarAlunoController {
             LocalDate.parse(aluno.getDataNasc());
         } catch (DateTimeParseException e) {
             model.addAttribute("mensagemDeErro", "Informe uma data de nascimento válida.");
-            return "Usuarios/Aluno/cadastrarAluno";
+            return "Geral/cadastrar";
         }
 
         session.removeAttribute("verificado");
@@ -176,7 +177,7 @@ public class cadastrarAlunoController {
             }
             SQLErrorHandler.VerificarErro("aluno", erros, model);
             model.addAttribute("aluno", aluno);
-            return "Usuarios/Aluno/cadastrarAluno";
+            return "Geral/cadastrar";
         }
 
         // salvar novo aluno grava o cadastro e retorna ao formulario se o banco falhar
@@ -203,7 +204,7 @@ public class cadastrarAlunoController {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
             }
-            return "Usuarios/Aluno/loginAluno";
+            return "redirect:/login?cadastrado";
 
         } catch (SQLException e) {
             logger.error("Erro ao inserir aluno no banco com email: {}", aluno.getEmail(), e);
@@ -221,7 +222,7 @@ public class cadastrarAlunoController {
             }
 
             model.addAttribute("aluno", aluno);
-            return "Usuarios/Aluno/cadastrarAluno";
+            return "Geral/cadastrar";
         }
     }
 

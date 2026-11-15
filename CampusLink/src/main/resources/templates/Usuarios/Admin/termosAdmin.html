@@ -7,6 +7,7 @@
     <title>Termos de uso | CampusLink</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/conteudosDenunciados.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
     <style>
         .termo-hash {
             font-family: monospace;
@@ -40,12 +41,11 @@
 
         <header class="admin-topo">
             <div>
-                <p class="admin-etiqueta">Administração · somente administrador master</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Termos de uso (somente administrador master)')}"></nav>
                 <h1>Termos de uso</h1>
                 <p>Versões publicadas não podem ser alteradas. Para mudar o texto, publique uma nova versão.</p>
             </div>
 
-            <a th:href="@{/admin/painel}" class="btn btn-outline-primary">Voltar ao início</a>
         </header>
 
         <div th:if="${mensagemSucesso != null}" class="alert alert-success" role="alert" th:text="${mensagemSucesso}"></div>
@@ -53,7 +53,7 @@
 
         <div class="admin-resumo">
             <strong th:text="${#lists.size(versoes)}">0</strong>
-            <span>versões publicadas</span>
+            <span th:text="${#lists.size(versoes) == 1 ? 'versão publicada' : 'versões publicadas'}">versões publicadas</span>
         </div>
 
         <section class="admin-lista" aria-label="Versões publicadas">

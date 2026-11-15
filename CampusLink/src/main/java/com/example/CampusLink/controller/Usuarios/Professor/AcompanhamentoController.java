@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class AcompanhamentoController {
     private static final Logger logger = LoggerFactory.getLogger(AcompanhamentoController.class);
 
     private static final List<String> NIVEIS = List.of("verde", "amarelo", "vermelho", "concluido", "sem_evento");
+    // quantidade de alunos calculados por vez, so os totais ficam guardados entre um lote e outro
+    private static final int ALUNOS_POR_LOTE = 25;
     private static final List<String> GRAVIDADE = List.of("atrasado", "vermelho", "amarelo", "verde", "concluido", "sem_evento");
 
     private final ProfessorRepository professorRepository;
@@ -128,43 +131,52 @@ public class AcompanhamentoController {
         }
 
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
-        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = calcularParaAlunos(alunos);
-        Map<Long, List<ViabilidadeDTO>> atrasadosPorAluno =
-                viabilidadeService.listarAtrasados(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
+        // eventos depois do ultimo evento da turma nao mudam o risco dos eventos da turma, entao o calculo para nesse dia
+        LocalDate ultimoDiaDaTurma = eventos.stream().map(evento -> evento.getInicio().toLocalDate())
+                .max(Comparator.naturalOrder()).orElse(null);
 
         Map<Long, String> tituloPorConteudo = new HashMap<>();
         Map<Long, Set<Long>> alunosVermelhosPorConteudo = new HashMap<>();
         List<Map<String, Object>> alunosComAtraso = new ArrayList<>();
 
-        for (usuarioAdminDTO aluno : alunos) {
-            long atrasadosDoAluno = resultadosDaTurma(atrasadosPorAluno, aluno, id).size();
-            // destacar alunos atrasados inclui apenas alunos que possuem pendencias vencidas
-            if (atrasadosDoAluno > 0) {
-                alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
-            }
+        // processar alunos em lotes guarda so os totais da turma e evita manter o calculo de todos os alunos na memoria
+        for (int inicioLote = 0; inicioLote < alunos.size(); inicioLote += ALUNOS_POR_LOTE) {
+            List<usuarioAdminDTO> lote = alunos.subList(inicioLote, Math.min(alunos.size(), inicioLote + ALUNOS_POR_LOTE));
+            List<Long> idsLote = lote.stream().map(usuarioAdminDTO::getIdPerfil).toList();
+            Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = ultimoDiaDaTurma == null
+                    ? Map.of() : viabilidadeService.calcularParaAlunosAte(idsLote, ultimoDiaDaTurma);
+            Map<Long, List<ViabilidadeDTO>> atrasadosPorAluno = viabilidadeService.listarAtrasados(idsLote);
 
-            for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
-                // reunir conteudos em risco conta alunos por material quando o nivel indica tempo insuficiente
-                if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())) {
-                    tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
-                    alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
-                            .add(aluno.getIdPerfil());
+            for (usuarioAdminDTO aluno : lote) {
+                long atrasadosDoAluno = resultadosDaTurma(atrasadosPorAluno, aluno, id).size();
+                // destacar alunos atrasados inclui apenas alunos que possuem pendencias vencidas
+                if (atrasadosDoAluno > 0) {
+                    alunosComAtraso.add(Map.of("nome", aluno.getNome(), "atrasados", atrasadosDoAluno));
                 }
 
-                // separar resumo do evento usa resultados sem conteudo para atualizar o total do evento
-                if (resultado.getIdConteudo() == null) {
-                    Map<String, Long> contagemEvento = contagemPorEvento.get(resultado.getIdEvento());
-                    // contar nivel do evento acumula a situacao quando o evento possui contador preparado
-                    if (contagemEvento != null) {
-                        contagemEvento.merge(resultado.getNivel(), 1L, Long::sum);
+                for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
+                    // reunir conteudos em risco conta alunos por material quando o nivel indica tempo insuficiente
+                    if (resultado.getIdConteudo() != null && "vermelho".equals(resultado.getNivel())) {
+                        tituloPorConteudo.put(resultado.getIdConteudo(), resultado.getTituloConteudo());
+                        alunosVermelhosPorConteudo.computeIfAbsent(resultado.getIdConteudo(), idConteudo -> new HashSet<>())
+                                .add(aluno.getIdPerfil());
                     }
-                    continue;
-                }
 
-                Map<Long, Map<String, Long>> contagemConteudos = contagemPorConteudo.get(resultado.getIdEvento());
-                // contar nivel do conteudo acumula a situacao apenas para materiais presentes no resumo
-                if (contagemConteudos != null && contagemConteudos.containsKey(resultado.getIdConteudo())) {
-                    contagemConteudos.get(resultado.getIdConteudo()).merge(resultado.getNivel(), 1L, Long::sum);
+                    // separar resumo do evento usa resultados sem conteudo para atualizar o total do evento
+                    if (resultado.getIdConteudo() == null) {
+                        Map<String, Long> contagemEvento = contagemPorEvento.get(resultado.getIdEvento());
+                        // contar nivel do evento acumula a situacao quando o evento possui contador preparado
+                        if (contagemEvento != null) {
+                            contagemEvento.merge(resultado.getNivel(), 1L, Long::sum);
+                        }
+                        continue;
+                    }
+
+                    Map<Long, Map<String, Long>> contagemConteudos = contagemPorConteudo.get(resultado.getIdEvento());
+                    // contar nivel do conteudo acumula a situacao apenas para materiais presentes no resumo
+                    if (contagemConteudos != null && contagemConteudos.containsKey(resultado.getIdConteudo())) {
+                        contagemConteudos.get(resultado.getIdConteudo()).merge(resultado.getNivel(), 1L, Long::sum);
+                    }
                 }
             }
         }
@@ -226,54 +238,62 @@ public class AcompanhamentoController {
         List<ConteudoDTO> conteudos = conteudoRepository.listarPorEvento(idEvento);
         List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(id);
         boolean eventoPassado = evento.getInicio().isBefore(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = eventoPassado ? Map.of() : calcularParaAlunos(alunos);
-        Map<Long, Set<Long>> conteudosFeitosPorAluno = eventoPassado
-                ? conteudoRepository.listarConcluidosDosAlunos(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList())
-                : Map.of();
 
         Map<Long, Map<Long, String>> nivelPorAlunoEConteudo = new HashMap<>();
         Map<Long, String> situacaoPorAluno = new HashMap<>();
         Map<Long, Long> concluidosPorAluno = new HashMap<>();
 
-        for (usuarioAdminDTO aluno : alunos) {
-            Map<Long, String> niveis = new HashMap<>();
-            String situacao = "sem_evento";
-            long concluidos = 0;
+        // processar alunos em lotes guarda so o resultado deste evento e evita manter o calculo de todos os alunos na memoria
+        for (int inicioLote = 0; inicioLote < alunos.size(); inicioLote += ALUNOS_POR_LOTE) {
+            List<usuarioAdminDTO> lote = alunos.subList(inicioLote, Math.min(alunos.size(), inicioLote + ALUNOS_POR_LOTE));
+            List<Long> idsLote = lote.stream().map(usuarioAdminDTO::getIdPerfil).toList();
+            // eventos depois deste nao mudam o risco dele, entao o calculo para no dia do evento
+            Map<Long, List<ViabilidadeDTO>> resultadosPorAluno = eventoPassado
+                    ? Map.of() : viabilidadeService.calcularParaAlunosAte(idsLote, evento.getInicio().toLocalDate());
+            Map<Long, Set<Long>> conteudosFeitosPorAluno = eventoPassado
+                    ? conteudoRepository.listarConcluidosDosAlunos(idsLote)
+                    : Map.of();
 
-            // avaliar evento passado usa as conclusoes registradas para distinguir materiais feitos e atrasados
-            if (eventoPassado) {
-                Set<Long> feitos = conteudosFeitosPorAluno.getOrDefault(aluno.getIdPerfil(), Set.of());
-                for (ConteudoDTO conteudo : conteudos) {
-                    boolean feito = feitos.contains(conteudo.getId());
-                    niveis.put(conteudo.getId(), feito ? "concluido" : "atrasado");
-                    concluidos += feito ? 1 : 0;
-                }
-                // definir situacao encerrada considera concluido apenas o evento com todos os conteudos feitos
-                if (!conteudos.isEmpty()) {
-                    situacao = concluidos == conteudos.size() ? "concluido" : "atrasado";
-                }
-            }
+            for (usuarioAdminDTO aluno : lote) {
+                Map<Long, String> niveis = new HashMap<>();
+                String situacao = "sem_evento";
+                long concluidos = 0;
 
-            for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
-                // filtrar resultado do evento ignora calculos de outros compromissos
-                if (!idEvento.equals(resultado.getIdEvento())) {
-                    continue;
-                }
-                // separar situacao e materiais guarda o resumo do evento ou o nivel do conteudo identificado
-                if (resultado.getIdConteudo() == null) {
-                    situacao = resultado.getNivel();
-                } else {
-                    niveis.put(resultado.getIdConteudo(), resultado.getNivel());
-                    // contar material finalizado aumenta o progresso quando o conteudo esta concluido
-                    if ("concluido".equals(resultado.getNivel())) {
-                        concluidos++;
+                // avaliar evento passado usa as conclusoes registradas para distinguir materiais feitos e atrasados
+                if (eventoPassado) {
+                    Set<Long> feitos = conteudosFeitosPorAluno.getOrDefault(aluno.getIdPerfil(), Set.of());
+                    for (ConteudoDTO conteudo : conteudos) {
+                        boolean feito = feitos.contains(conteudo.getId());
+                        niveis.put(conteudo.getId(), feito ? "concluido" : "atrasado");
+                        concluidos += feito ? 1 : 0;
+                    }
+                    // definir situacao encerrada considera concluido apenas o evento com todos os conteudos feitos
+                    if (!conteudos.isEmpty()) {
+                        situacao = concluidos == conteudos.size() ? "concluido" : "atrasado";
                     }
                 }
-            }
 
-            nivelPorAlunoEConteudo.put(aluno.getIdPerfil(), niveis);
-            situacaoPorAluno.put(aluno.getIdPerfil(), situacao);
-            concluidosPorAluno.put(aluno.getIdPerfil(), concluidos);
+                for (ViabilidadeDTO resultado : resultadosDaTurma(resultadosPorAluno, aluno, id)) {
+                    // filtrar resultado do evento ignora calculos de outros compromissos
+                    if (!idEvento.equals(resultado.getIdEvento())) {
+                        continue;
+                    }
+                    // separar situacao e materiais guarda o resumo do evento ou o nivel do conteudo identificado
+                    if (resultado.getIdConteudo() == null) {
+                        situacao = resultado.getNivel();
+                    } else {
+                        niveis.put(resultado.getIdConteudo(), resultado.getNivel());
+                        // contar material finalizado aumenta o progresso quando o conteudo esta concluido
+                        if ("concluido".equals(resultado.getNivel())) {
+                            concluidos++;
+                        }
+                    }
+                }
+
+                nivelPorAlunoEConteudo.put(aluno.getIdPerfil(), niveis);
+                situacaoPorAluno.put(aluno.getIdPerfil(), situacao);
+                concluidosPorAluno.put(aluno.getIdPerfil(), concluidos);
+            }
         }
 
         List<usuarioAdminDTO> alunosOrdenados = alunos.stream()
@@ -342,10 +362,6 @@ public class AcompanhamentoController {
                 .orElse(null);
     }
 
-    // calcular risco dos participantes este metodo consulta a viabilidade de estudo dos alunos da turma
-    private Map<Long, List<ViabilidadeDTO>> calcularParaAlunos(List<usuarioAdminDTO> alunos) {
-        return viabilidadeService.calcularParaAlunos(alunos.stream().map(usuarioAdminDTO::getIdPerfil).toList());
-    }
 
     // filtrar resultados da turma este metodo separa os riscos de um aluno na turma escolhida
     private List<ViabilidadeDTO> resultadosDaTurma(Map<Long, List<ViabilidadeDTO>> resultadosPorAluno,

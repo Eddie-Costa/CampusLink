@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/cadastrarTurmaAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
 </head>
 
 <body>
@@ -22,14 +23,11 @@
         <div class="cadastrar-turma-admin-topo">
 
             <div>
-                <p class="cadastrar-turma-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, 'Turmas', @{/admin/turmas}, null, null, 'Cadastrar turma')}"></nav>
                 <h1>Cadastrar turma</h1>
                 <p>Cadastre uma nova turma no CampusLink</p>
             </div>
 
-            <a th:href="@{/admin/turmas}" class="cadastrar-turma-admin-voltar">
-                Voltar para turmas
-            </a>
 
         </div>
 

@@ -35,11 +35,46 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
             """, nativeQuery = true)
     List<String> buscarConteudosDoEvento(@Param("idEvento") Long idEvento);
 
+
+    // buscar nomes de varias turmas este metodo devolve codigo e nome de todas as turmas pedidas em uma unica consulta
+    @Query(value = """
+            SELECT id, nome_turma
+            FROM public."TURMAS"
+            WHERE id IN (:idsTurmas)
+            """, nativeQuery = true)
+    List<Object[]> buscarNomesTurmas(@Param("idsTurmas") Collection<Long> idsTurmas);
+
+
+    // buscar titulos de varios eventos este metodo devolve evento e titulo em ordem alfabetica em uma unica consulta
+    @Query(value = """
+            SELECT ec.id_evento, c.titulo
+            FROM public."EVENTO_CONTEUDO" ec
+            INNER JOIN public."CONTEUDOS" c
+                ON c.id = ec.id_conteudo
+            WHERE ec.id_evento IN (:idsEventos)
+            ORDER BY ec.id_evento, c.titulo
+            """, nativeQuery = true)
+    List<Object[]> buscarConteudosDosEventos(@Param("idsEventos") Collection<Long> idsEventos);
+
+    // buscar eventos das turmas no periodo este metodo traz os eventos que aparecem em algum dia da janela informada
+    @Query("SELECT e FROM Evento e WHERE e.idTurma IN :turmas AND e.inicio < :fim AND (e.fim IS NULL OR e.fim >= :inicio) ORDER BY e.inicio")
+    List<Evento> buscarDasTurmasNoPeriodo(@Param("turmas") Collection<Long> turmas,
+                                          @Param("inicio") LocalDateTime inicio,
+                                          @Param("fim") LocalDateTime fim);
+
     // listar eventos a partir da data este metodo busca eventos das turmas pela situacao em ordem crescente
     List<Evento> findByIdTurmaInAndStatusAndInicioGreaterThanEqualOrderByInicioAsc(
             Collection<Long> idsTurmas,
             String status,
             LocalDateTime inicio
+    );
+
+    // listar eventos entre duas datas este metodo busca eventos das turmas pela situacao dentro do horizonte em ordem crescente
+    List<Evento> findByIdTurmaInAndStatusAndInicioBetweenOrderByInicioAsc(
+            Collection<Long> idsTurmas,
+            String status,
+            LocalDateTime inicio,
+            LocalDateTime fim
     );
 
     // listar eventos anteriores a data este metodo busca eventos das turmas pela situacao em ordem decrescente

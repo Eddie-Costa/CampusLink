@@ -7,8 +7,9 @@
     <title>Eventos | CampusLink</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css}">
+    <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css(v=20261115-2)}">
     <link rel="stylesheet" th:href="@{/css/Geral/agenda-dia.css}">
+    <link rel="stylesheet" th:href="@{/css/Geral/agenda-moderna.css(v=20261112-3)}">
 </head>
 
 <body>
@@ -25,7 +26,8 @@
           data-tipo-usuario=""
           data-url-cadastro="/eventos/cadastrar"
           th:data-tipo-usuario="${session.tipoUsuario}"
-          th:data-url-cadastro="@{/eventos/cadastrar}">
+          th:data-url-cadastro="@{/eventos/cadastrar}"
+          th:data-mes="${mesCalendario}">
 
         <div class="popup-sucesso" th:if="${mensagem}" th:text="${mensagem}" role="alert"></div>
         <div class="alert alert-danger alert-dismissible fade show alerta-flutuante" th:if="${erro}" role="alert">
@@ -45,6 +47,8 @@
                 ›
             </button>
 
+            <button type="button" id="voltarHoje" class="botao-hoje" hidden title="Voltar para o mês atual">Hoje</button>
+
             <label class="month-selector" for="seletorMes">
                 Escolher mês:
                 <input type="month" id="seletorMes">
@@ -61,7 +65,7 @@
 
         <div class="calendar-area">
 
-            <section id="calendar" class="calendar" aria-label="Calendário" role="grid"></section>
+            <section id="calendar" class="calendar" aria-label="Calendário"></section>
 
             <aside class="prioridades-resumo"
                    th:if="${session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno'}"
@@ -126,6 +130,11 @@
                         </a>
                     </li>
                 </ul>
+
+                <p class="prioridades-vazio" th:if="${prioridadesRestantes > 0}"
+                   th:text="${'E mais ' + prioridadesRestantes + ' conteúdos com prioridade. Veja cada turma no Score.'}">
+                    E mais 5 conteúdos com prioridade.
+                </p>
 
             </aside>
 
@@ -218,6 +227,9 @@
                             </div>
 
                             <form class="form-excluir-evento"
+                                  data-confirmar-titulo="Excluir evento?"
+                                  data-confirmar="O evento sairá da agenda dos alunos. Esta ação não pode ser desfeita."
+                                  data-confirmar-botao="Excluir"
                                   th:if="${session.tipoUsuario == 'professor'}"
                                   th:action="@{/eventos/excluir}"
                                   method="post">
@@ -481,7 +493,7 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:src="@{/js/Geral/agendaDia.js}"></script>
-<script th:src="@{/js/Geral/calendario-eventos.js}"></script>
+<script th:src="@{/js/Geral/calendario-eventos.js(v=20261115-2)}"></script>
 
 </body>
 </html>

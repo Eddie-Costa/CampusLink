@@ -1,0 +1,15 @@
+<!-- trilha de navegacao mostra o caminho clicavel ate a pagina atual no lugar dos botoes de voltar -->
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="trilha(n1, l1, n2, l2, n3, l3, atual)" class="trilha" aria-label="Você está em">
+    <link rel="stylesheet" th:href="@{/css/Geral/trilha.css(v='t1')}">
+    <ol>
+        <li th:if="${n1 != null}"><a th:href="${l1}" th:text="${n1}">Nível 1</a></li>
+        <li th:if="${n2 != null}"><a th:href="${l2}" th:text="${n2}">Nível 2</a></li>
+        <li th:if="${n3 != null}"><a th:href="${l3}" th:text="${n3}">Nível 3</a></li>
+        <li aria-current="page"><span th:text="${atual}">Página atual</span></li>
+    </ol>
+</nav>
+</body>
+</html>

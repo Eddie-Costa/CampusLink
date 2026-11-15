@@ -10,6 +10,7 @@ import com.example.CampusLink.dto.FinalidadeCodigoEmail;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -50,7 +51,7 @@ public class ResetPaswordController {
 
     // enviar codigo de recuperacao este metodo gera o codigo e envia ao email informado
     @PostMapping("/ResetVerification")
-    public String ResetVerification(@Valid @ModelAttribute("usuario") redefinirSenhaDTO usuarioDTO, BindingResult result, Model model, HttpSession session){
+    public String ResetVerification(@Valid @ModelAttribute("usuario") redefinirSenhaDTO usuarioDTO, BindingResult result, Model model, HttpSession session) throws SQLException {
 
         // impedir troca de identidade recusa o esqueci a senha para quem ja esta conectado
         if (session.getAttribute("usuarioLogado") != null) {
@@ -68,13 +69,30 @@ public class ResetPaswordController {
         session.setAttribute("email2FA", email);
         session.setAttribute("redirect", "ResetPassword");
 
+        // esconder contas inexistentes mostra a mesma tela do codigo sem enviar email para quem nao tem cadastro
+        if (UsuarioRepository.buscarPorTipoUsuario(email) == null) {
+            logger.info("Pedido de reset de senha para email sem cadastro");
+            return "redirect:/verificar";
+        }
 
+        String codigo = TwoFactorService.gerarCodigoSeLiberado(email);
 
+        // respeitar espera de reenvio mantem o codigo ja enviado quando o pedido se repete antes do prazo
+        if (codigo == null) {
+            return "redirect:/verificar";
+        }
 
-        String codigo = twoFactorService.gerarCodigo(email);
-
-
-        emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.REDEFINICAO_SENHA);
+        // enviar codigo de recuperacao invalida o codigo e avisa o usuario quando o servidor de email falha
+        try {
+            emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.REDEFINICAO_SENHA);
+        } catch (MailException e) {
+            logger.error("Falha ao enviar o código de recuperação de senha para o email: {}", email, e);
+            twoFactorService.invalidarCodigo(email);
+            session.removeAttribute("email2FA");
+            session.removeAttribute("redirect");
+            model.addAttribute("mensagemDeErro", "Não foi possível enviar o e-mail. Aguarde alguns minutos e tente novamente.");
+            return "Geral/ResetPassword_Verification";
+        }
 
         logger.info("Solicitação de reset de senha para o email: {}", email);
         // registro de informacoes confere se esta habilitado ao enviar codigo de recuperacao

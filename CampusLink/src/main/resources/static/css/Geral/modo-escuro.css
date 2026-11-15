@@ -1,0 +1,2709 @@
+/* modo escuro gerado automaticamente a partir dos css do projeto
+   cada bloco indica o arquivo de origem para facilitar ajustes quando as cores claras mudarem
+   a parte manual no fim cobre fundo da pagina cabecalho titulos em degrade e ajustes finos */
+
+/* gerado a partir de Emails/email.css */
+html[data-tema="escuro"] .email-pagina {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .email-cartao {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .email-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .email-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .email-codigo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .email-rotulo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .email-valor {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .email-nota {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .email-rodape {
+    color: #a3abc4;
+}
+
+/* gerado a partir de Geral/agenda-dia.css */
+html[data-tema="escuro"] .agenda-prioridade-media {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Geral/agenda-moderna.css */
+html[data-tema="escuro"] .day-cell,
+html[data-tema="escuro"] .day-cell.tem-evento,
+html[data-tema="escuro"] .day-cell.tem-disponibilidade {
+    background-color: #161d38;
+    color: #e6e9f2;
+    box-shadow: inset 0 0 0 1px #2c3658;
+}
+
+html[data-tema="escuro"] .day-cell.dia-passado {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month,
+html[data-tema="escuro"] .day-cell.calendar-empty {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .day-add {
+    border-color: #2c3658 !important;
+    color: #a3abc4 !important;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .calendar-weekday {
+    background-color: #1c2446 !important;
+    color: #a3abc4 !important;
+}
+
+html[data-tema="escuro"] .prioridades-resumo {
+    background-color: #161d38;
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .prioridades-resumo h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-resumo-item {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .prioridade-item {
+    background-color: #1c2446;
+    color: #e6e9f2;
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .prioridade-item:hover,
+html[data-tema="escuro"] .prioridade-item:focus-visible {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .disponibilidade-resumo {
+    background-color: #161d38;
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .day-cell.dia-hoje {
+    background: linear-gradient(180deg, rgba(45, 156, 229, 0.12), #161d38 70%);
+}
+
+html[data-tema="escuro"] .botao-hoje {
+    border: 1px solid var(--rd-borda, #2c3658);
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .disponibilidade-marcador.sem-disponibilidade {
+    background-color: #1c2446 !important;
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Geral/ambienteTurmaStyle.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .voltar-turmas.acao-turma {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .voltar-turmas.acao-turma:hover {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .acao-turma {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-card {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-descricao {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-midia-link {
+    border: 1px solid #2c3658;
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .conteudo-midia-informacoes {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-midia-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-midia-livro-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-alternar-detalhes {
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-link {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campus-modal {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .campus-modal .modal-body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campus-modal .modal-footer {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] #participantesTurma .participantes-sem-resultados {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #participantesTurma .participantes-lista table {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] #participantesTurma .participantes-lista th,
+html[data-tema="escuro"] #participantesTurma .participantes-lista td {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] #participantesTurma .participantes-lista thead th {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .campus-modal .form-label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campus-modal .form-control {
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sugestoes-pessoas {
+    border: 1px solid #2c3658;
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .sugestao-pessoa,
+html[data-tema="escuro"] .sugestao-pessoa-vazia {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sugestao-pessoa:hover,
+html[data-tema="escuro"] .sugestao-pessoa:focus-visible {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .sugestao-pessoa-detalhes {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-excluir {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-excluir:hover {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .busca-conteudos select {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .busca-conteudos button {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .carregar-mais-resultados {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-selecionado-preview {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .conteudo-selecionado-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-selecionar-item {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-page {
+    background-color: #161d38;
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] main.container > p,
+html[data-tema="escuro"] .sem-conteudos {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .acao-turma,
+html[data-tema="escuro"] .voltar-turmas.acao-turma {
+    background-color: #161d38;
+    color: #e6e9f2;
+    border: 1.5px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .acao-turma:hover,
+html[data-tema="escuro"] .voltar-turmas.acao-turma:hover {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-page .conteudo-card {
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .turmas-page .conteudo-card:hover {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .busca-conteudos input[type="search"],
+html[data-tema="escuro"] .busca-conteudos select {
+    border: 1.5px solid var(--rd-borda, #2c3658);
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .busca-conteudos input[type="search"]:focus,
+html[data-tema="escuro"] .busca-conteudos select:focus {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .busca-conteudos button {
+    border: 1.5px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .conteudo-excluir {
+    border: 1.5px solid var(--rd-borda, #2c3658) !important;
+    background-color: #161d38 !important;
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .conteudo-excluir:hover {
+    background-color: #1c2446 !important;
+}
+
+html[data-tema="escuro"] .conteudo-alternar-detalhes {
+    background-color: #161d38;
+    border-color: var(--rd-borda, #2c3658);
+}
+
+/* gerado a partir de Geral/cadastrar-eventos.css */
+html[data-tema="escuro"] body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month .day-number {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .evento-marcador.evento-meio,
+html[data-tema="escuro"] .evento-marcador.evento-fim,
+html[data-tema="escuro"] .evento-marcador.evento-continuacao {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month .evento-marcador.evento-meio,
+html[data-tema="escuro"] .day-cell.adjacent-month .evento-marcador.evento-fim,
+html[data-tema="escuro"] .day-cell.adjacent-month .evento-marcador.evento-continuacao {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-fundo h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-item-fundo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .evento-item-fundo h3 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-media {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-texto {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .event-form input,
+html[data-tema="escuro"] .event-form select,
+html[data-tema="escuro"] .event-form textarea {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] #buscarConteudo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #buscarConteudo::placeholder {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] #conteudosRelacionados {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #conteudosRelacionados option {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #conteudosRelacionados option:disabled {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] #buscarConteudo:disabled,
+html[data-tema="escuro"] #conteudosRelacionados:disabled {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .register-button {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Geral/calendario-eventos.css */
+html[data-tema="escuro"] body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .page-title {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #mesExibido {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .month-selector {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .month-selector input {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridades-resumo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .prioridades-resumo h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-resumo-item,
+html[data-tema="escuro"] .prioridade-resumo-total {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-resumo-media strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .prioridade-resumo-total strong {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .resumo-legenda {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .calendar-weekday {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .calendar-weekday {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .day-cell.calendar-empty {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .day-cell.dia-passado {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month .day-number {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .day-add {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .day-cell.adjacent-month .day-add {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .evento-marcador.evento-prioridade-media {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .plano-dia {
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .calendar-legend {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .disponibilidade-resumo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .disponibilidade-resumo h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .disponibilidade-resumo p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .disponibilidade-risco strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .ordenacao-eventos {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .ordenacao-eventos select {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-item {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .evento-item h3 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-tipo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .prioridade-media {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-detalhes p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-detalhes strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-conteudos {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-conteudos > strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-refazer {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] #confirmarRefazerModal .modal-body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-ir-turma {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-ir-turma:hover,
+html[data-tema="escuro"] .botao-ir-turma:focus-visible {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .detalhe-evento .evento-item {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .prioridades-vazio {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Geral/chamados.css */
+html[data-tema="escuro"] .chamados-page {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .chamados-topo,
+html[data-tema="escuro"] .chamados-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .chat-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .chat-janela {
+    background-color: #161d38;
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .chat-assunto {
+    background-color: #161d38;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .chat-assunto span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .chat-inicio {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .chat-recebida .chat-balao {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .chat-recebida .chat-autor {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .chat-compositor {
+    border-top: 1px solid #2c3658;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .chat-campo textarea {
+    background-color: #1c2446;
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .chat-campo > span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .chat-resumo {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .chat-resumo .chamados-etiqueta {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .chat-resumo dt {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] #chat-acoes-admin > p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .chat-nota {
+    color: #a3abc4;
+}
+
+/* gerado a partir de Geral/dashboard.css */
+html[data-tema="escuro"] .dashboard-page {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .dashboard-date {
+    background-color: #1c2446;
+}
+
+@media (hover: hover) {
+html[data-tema="escuro"] .dashboard-section-heading > a:hover,
+html[data-tema="escuro"] .dashboard-page .table td > a:hover,
+html[data-tema="escuro"] .dashboard-class > a:hover {
+    color: #e6e9f2;
+}
+}
+
+@media (hover: hover) {
+html[data-tema="escuro"] .dashboard-section > summary:hover,
+html[data-tema="escuro"] .dashboard-chart > summary:hover {
+    background-color: #1c2446;
+}
+}
+
+html[data-tema="escuro"] .dashboard-panel {
+    background-color: #1c2446;
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .dashboard-filters .form-select {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .dashboard-help,
+html[data-tema="escuro"] .dashboard-footnote {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-metric h2 {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-metric p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-chart {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .dashboard-empty {
+    color: #a3abc4;
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .dashboard-page .table th {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-class {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .dashboard-organize p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-section {
+    background-color: #1c2446;
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .dashboard-section > summary small {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-section-count {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-overview .dashboard-metric {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .dashboard-filter-help {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-ranking li {
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .dashboard-ranking-position {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .dashboard-ranking meter {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .dashboard-ranking meter::-webkit-meter-bar {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .dashboard-heading h1 {
+    background-image: linear-gradient(120deg, #e6e9f2, #9ec5ff 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* gerado a partir de Geral/funcionalidadesStyle.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .funcionalidades-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .funcionalidade-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .numero-card {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .funcionalidade-card p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .botao-principal {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-secundario:hover {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Geral/homeStyle.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .home-texto h1 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .home-texto p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-secundario {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .recurso-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .recurso-numero {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .recurso-card h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .recurso-card p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .home-final {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .home-final p {
+    color: #a3abc4;
+}
+
+/* gerado a partir de Geral/publicas.css */
+html[data-tema="escuro"] .home-texto h1,
+html[data-tema="escuro"] .funcionalidades-topo h1,
+html[data-tema="escuro"] .sobre-texto h1 {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .texto-degrade {
+    background-image: linear-gradient(120deg, #e6e9f2, #9ec5ff 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+html[data-tema="escuro"] .home-texto p,
+html[data-tema="escuro"] .funcionalidades-topo p,
+html[data-tema="escuro"] .sobre-texto p {
+    color: #a3abc4 !important;
+}
+
+html[data-tema="escuro"] .botao-secundario {
+    background-color: #161d38 !important;
+    color: #e6e9f2 !important;
+    border: 1.5px solid var(--rd-borda, #2c3658) !important;
+}
+
+html[data-tema="escuro"] .recurso-card,
+html[data-tema="escuro"] .funcionalidade-card,
+html[data-tema="escuro"] .valor-card,
+html[data-tema="escuro"] .sobre-bloco {
+    background-color: #161d38 !important;
+    border: 1px solid var(--rd-borda, #2c3658) !important;
+}
+
+html[data-tema="escuro"] .recurso-card h2,
+html[data-tema="escuro"] .funcionalidade-card h2,
+html[data-tema="escuro"] .valor-card h2,
+html[data-tema="escuro"] .sobre-bloco h2 {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .recurso-card p,
+html[data-tema="escuro"] .funcionalidade-card p,
+html[data-tema="escuro"] .valor-card p,
+html[data-tema="escuro"] .sobre-bloco p {
+    color: #a3abc4 !important;
+}
+
+html[data-tema="escuro"] .home-final,
+html[data-tema="escuro"] .funcionalidades-final,
+html[data-tema="escuro"] .sobre-final {
+    background: radial-gradient(500px 220px at 100% 0%, rgba(45, 156, 229, 0.18), transparent 70%),
+        radial-gradient(420px 200px at 0% 100%, rgba(108, 123, 255, 0.14), transparent 70%),
+        #161d38 !important;
+    border: 1px solid var(--rd-borda, #2c3658) !important;
+}
+
+/* gerado a partir de Geral/sobreNosStyle.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sobre-texto p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .sobre-bloco {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .sobre-bloco p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .valor-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .valor-card > span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .valor-card p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .sobre-final {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .sobre-final p {
+    color: #a3abc4;
+}
+
+/* gerado a partir de Geral/tabela-inteligente.css */
+@media (max-width: 700px) {
+html[data-tema="escuro"] main table.tabela-cartoes tbody tr {
+    border: 1px solid var(--rd-borda, #2c3658);
+    background-color: #161d38;
+}
+}
+
+@media (max-width: 700px) {
+html[data-tema="escuro"] main table.tabela-cartoes td {
+    border-bottom: 1px dashed #2c3658 !important;
+}
+}
+
+@media (max-width: 700px) {
+html[data-tema="escuro"] main table.tabela-cartoes td[data-rotulo]::before {
+    color: #a3abc4;
+}
+}
+
+/* gerado a partir de Geral/turmas-resumo.css */
+html[data-tema="escuro"] .turma-descricao {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .turma-progresso-barra {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .turma-progresso-texto {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .turma-numeros span {
+    background-color: #1c2446;
+    color: #9ec5ff;
+}
+
+/* gerado a partir de Geral/turmasStyle.css */
+html[data-tema="escuro"] .busca-turma {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .busca-turma::placeholder {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .sugestoes-turma {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .sugestao-turma,
+html[data-tema="escuro"] .sugestao-turma-vazia {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sugestao-turma:hover,
+html[data-tema="escuro"] .sugestao-turma:focus {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sugestao-turma-vazia {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .sem-turmas {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-container > h1,
+html[data-tema="escuro"] .turmas-container > h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campus-modal .modal-body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campus-modal .form-control {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .conteudo-card .botao-compacto {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-card .botao-compacto:hover {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Usuarios/Admin/admin-moderno.css */
+html[data-tema="escuro"] main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
+html[data-tema="escuro"] main select,
+html[data-tema="escuro"] main textarea {
+    background-color: #1c2446;
+    border-color: var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):focus,
+html[data-tema="escuro"] main select:focus,
+html[data-tema="escuro"] main textarea:focus {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] main select:not(:disabled):not(:focus) {
+    background-color: #1c2446 !important;
+}
+
+html[data-tema="escuro"] .turmas-admin-busca {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .turmas-admin-busca input {
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+/* gerado a partir de Usuarios/Admin/alunosTurmaAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-select {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-adicionar-botao:disabled {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-sem-disponiveis {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-tabela thead th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-tabela tbody td {
+    color: #a3abc4;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-tabela tbody tr:hover td {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .aluno-turma-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .aluno-turma-inativo {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .aluno-turma-remover {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .alunos-turma-admin-vazio {
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Usuarios/Admin/cadastrarEventoAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-secao-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-grupo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-input,
+html[data-tema="escuro"] .cadastrar-evento-admin-select,
+html[data-tema="escuro"] .cadastrar-evento-admin-textarea {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-input:disabled,
+html[data-tema="escuro"] .cadastrar-evento-admin-select:disabled {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-busca {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-ajuda {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-cancelar {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-evento-admin-cancelar:hover {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Usuarios/Admin/cadastrarTurmaAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-grupo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-input,
+html[data-tema="escuro"] .cadastrar-turma-admin-textarea,
+html[data-tema="escuro"] .cadastrar-turma-admin-select {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-input::placeholder,
+html[data-tema="escuro"] .cadastrar-turma-admin-textarea::placeholder {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-cancelar {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-cancelar:hover {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .cadastrar-turma-admin-salvar:disabled {
+    border-color: #2c3658;
+}
+
+/* gerado a partir de Usuarios/Admin/cadastrarUsuarioAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastro-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastro-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .cadastro-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastro-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .cadastro-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastro-admin-campo input,
+html[data-tema="escuro"] .cadastro-admin-campo select {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .cadastro-admin-ajuda {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastro-admin-cancelar {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .cadastro-admin-cancelar:hover {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+/* gerado a partir de Usuarios/Admin/conteudosAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudos-admin-topo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudos-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudos-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .conteudos-admin-voltar {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudos-admin-painel {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudos-admin-painel-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudos-admin-total span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudos-admin-total strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudos-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudos-admin-campo input,
+html[data-tema="escuro"] .conteudos-admin-campo select {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudo-admin-titulo h3 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-admin-titulo small {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .status-outro {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-admin-informacoes {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .conteudo-admin-informacao-titulo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-admin-informacao strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-admin-detalhes summary {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-admin-detalhes-conteudo {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .conteudo-admin-detalhe strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-admin-detalhe p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudos-admin-vazio {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudos-admin-vazio p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudos-admin-paginacao p,
+html[data-tema="escuro"] .eventos-admin-paginacao p {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de Usuarios/Admin/conteudosDenunciados.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .admin-page {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .admin-topo p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-vazio {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .admin-descricao {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-informacoes {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .admin-informacoes span,
+html[data-tema="escuro"] .admin-endereco span,
+html[data-tema="escuro"] .admin-arquivo span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .admin-endereco p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-sem-denuncias {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-denuncia {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .admin-denuncia p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-denuncia time,
+html[data-tema="escuro"] .admin-denuncia > span {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .admin-reprovar-form .form-label {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .admin-reprovar-form .form-control {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-horario {
+    color: #a3abc4;
+}
+
+/* gerado a partir de Usuarios/Admin/editarTurmaAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-grupo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-input,
+html[data-tema="escuro"] .editar-turma-admin-textarea,
+html[data-tema="escuro"] .editar-turma-admin-select {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-input::placeholder,
+html[data-tema="escuro"] .editar-turma-admin-textarea::placeholder {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-cancelar {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-cancelar:hover {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .editar-turma-admin-salvar:disabled {
+    border-color: #2c3658;
+}
+
+/* gerado a partir de Usuarios/Admin/editarUsuarioAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .editar-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .editar-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .editar-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-admin-campo input {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .editar-admin-campo input[readonly] {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .editar-admin-cancelar {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .editar-admin-cancelar:hover {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+/* gerado a partir de Usuarios/Admin/eventosAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .eventos-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .eventos-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .eventos-admin-card-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .eventos-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-campo input,
+html[data-tema="escuro"] .eventos-admin-campo select {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-tabela thead th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-tabela tbody td {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-tabela tbody tr:hover td {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .evento-admin-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-admin-id {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .evento-admin-tipo {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .evento-admin-prioridade,
+html[data-tema="escuro"] .evento-admin-status {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .status-concluido {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .evento-admin-detalhes-botao,
+html[data-tema="escuro"] .evento-admin-editar,
+html[data-tema="escuro"] .evento-admin-acoes .btn-outline-danger {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-admin-detalhes-conteudo {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .evento-admin-detalhes-conteudo strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .eventos-admin-vazio {
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Usuarios/Admin/painelAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .admin-page {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .admin-topo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .admin-topo p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .admin-descricao {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .painel-numero {
+    background-color: #1c2446;
+    color: #9ec5ff;
+}
+
+/* gerado a partir de Usuarios/Admin/professoresTurmaAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-select {
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-adicionar-botao:disabled {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-sem-disponiveis {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-tabela thead th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-tabela tbody td {
+    color: #a3abc4;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-tabela tbody tr:hover td {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .professor-turma-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .professor-turma-inativo {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .professor-turma-vinculado {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .professor-turma-remover {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .professor-turma-remover-bloqueado {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .professores-turma-admin-vazio {
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Usuarios/Admin/turmasAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .turmas-admin-etiqueta {
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .turmas-admin-voltar {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .turmas-admin-card-topo p {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-busca {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .turmas-admin-busca label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-busca input {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-tabela thead th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-tabela tbody td {
+    color: #a3abc4;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .turmas-admin-tabela tbody tr:hover td {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .turma-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turma-contador {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .turma-alunos-botao {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .turma-alunos-botao:hover {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turma-editar {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turmas-admin-vazio {
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Usuarios/Admin/usuariosAdmin.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .usuarios-admin-page {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .usuarios-admin-topo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .usuarios-admin-topo p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .usuarios-admin-topo .usuarios-admin-etiqueta {
+    color: #9ec5ff;
+}
+
+html[data-tema="escuro"] .usuarios-admin-voltar {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .usuarios-admin-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .usuarios-admin-busca input {
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .usuarios-admin-busca input::placeholder {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .usuarios-admin-tabela thead th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .usuarios-admin-tabela tbody td {
+    color: #a3abc4;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .usuarios-admin-tabela tbody tr:hover td {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .usuario-inativo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .usuario-botao-editar {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .usuario-botao-ativar {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .usuario-botao-desativar {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .usuarios-admin-vazio {
+    color: #a3abc4 !important;
+}
+
+/* gerado a partir de Usuarios/Professor/meusConteudos.css */
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .titulo-pagina p {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .filtros-conteudos .form-label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .filtros-conteudos .form-control,
+html[data-tema="escuro"] .filtros-conteudos .form-select {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .conteudo-card {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudo-titulo h2 {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-descricao {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .botao-analise {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .analise-solicitada {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .botao-remover {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .conteudo-informacoes {
+    border-top: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .informacao-titulo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .informacao-valor {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-alternar-detalhes {
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-midia-link {
+    border: 1px solid #2c3658;
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .conteudo-midia-informacoes {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .conteudo-midia-titulo,
+html[data-tema="escuro"] .conteudo-midia-livro-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-denuncias {
+    border-top: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .denuncias-titulo {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .denunciante {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sem-conteudos {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .resumo-card {
+    background-color: #161d38;
+    border: 1px solid var(--rd-borda, #2c3658);
+}
+
+html[data-tema="escuro"] .resumo-numero {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .resumo-texto {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .titulo-pagina .texto-degrade {
+    background-image: linear-gradient(120deg, #e6e9f2, #9ec5ff 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* gerado a partir de Usuarios/acesso.css */
+html[data-tema="escuro"] .pagina-acesso {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .acesso-cartao {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .acesso-selo {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .acesso-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .acesso-campo label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campo-icone > .icone {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .campo-icone input {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .campo-icone input:hover {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .campo-icone input:focus {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .campo-acao {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .campo-acao:hover,
+html[data-tema="escuro"] .campo-acao:focus-visible {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .acesso-botao:disabled {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .acesso-botao-secundario {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .acesso-botao-secundario:hover {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .acesso-perfil label {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .acesso-perfil label strong {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .acesso-perfil-icone {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .acesso-forca {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .acesso-requisitos li {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .acesso-termos {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] button.acesso-botao-secundario {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] button.acesso-botao-secundario:disabled {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .codigo-digit {
+    color: #e6e9f2;
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .codigo-digit:focus {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .contadores-2fa {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .contador-2fa strong {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de campus-theme.css */
+html[data-tema="escuro"],
+html[data-tema="escuro"] body {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .site-header-nav .nav-link {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .site-footer-container {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .site-footer-container .nav-link {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .site-footer-container .border-bottom {
+    border-color: #2c3658 !important;
+}
+
+html[data-tema="escuro"] .site-footer-container .text-body-secondary {
+    color: #a3abc4 !important;
+}
+
+html[data-tema="escuro"] .campus-modal .form-control,
+html[data-tema="escuro"] .campus-modal .form-select {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .risco-concluido {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .risco-sem_evento {
+    background-color: #1c2446;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .ponto-risco.risco-amarelo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .site-header-nav {
+    background-color: #1c2446;
+}
+
+/* gerado a partir de profileMenu.css */
+html[data-tema="escuro"] .account-dropdown {
+    border: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .account-email {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .account-summary a {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de profileStyle.css */
+html[data-tema="escuro"] body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .profile-eyebrow {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-heading p,
+html[data-tema="escuro"] .profile-description {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-card {
+    border: 1px solid #2c3658;
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .profile-badge {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .profile-email {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-sections {
+    border-top: 1px solid #2c3658;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .profile-sections a {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .profile-sections a:hover {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .profile-logout {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-data > div {
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .profile-data dt {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-note {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .profile-heading h1 {
+    background-image: linear-gradient(120deg, #e6e9f2, #9ec5ff 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+html[data-tema="escuro"] .profile-sections a:hover,
+html[data-tema="escuro"] .profile-sections a:focus-visible {
+    color: #9ec5ff;
+}
+
+/* gerado a partir de redesign.css */
+html[data-tema="escuro"] body {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .site-header-nav {
+    background-color: #161d38 !important;
+}
+
+html[data-tema="escuro"] .site-header-nav .nav-link:hover {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .site-header-nav .nav-link.active,
+html[data-tema="escuro"] .site-header-nav .nav-link[aria-current="page"] {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .account-dropdown {
+    border: 1px solid #2c3658 !important;
+}
+
+html[data-tema="escuro"] .site-footer-container .nav-link:hover {
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .site-footer-container .border-bottom {
+    border-color: #2c3658 !important;
+}
+
+html[data-tema="escuro"] .site-footer-container .text-body-secondary {
+    color: #a3abc4 !important;
+}
+
+html[data-tema="escuro"] .btn-primary:disabled,
+html[data-tema="escuro"] .btn-dark:disabled,
+html[data-tema="escuro"] .btn-campus:disabled {
+    background-color: #1c2446 !important;
+}
+
+html[data-tema="escuro"] .btn-outline-primary,
+html[data-tema="escuro"] .btn-outline-dark,
+html[data-tema="escuro"] .btn-outline-secondary,
+html[data-tema="escuro"] .btn-secondary,
+html[data-tema="escuro"] .btn-light {
+    background-color: #161d38;
+    border: 1.5px solid #2c3658 !important;
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .btn-outline-primary:hover,
+html[data-tema="escuro"] .btn-outline-dark:hover,
+html[data-tema="escuro"] .btn-outline-secondary:hover,
+html[data-tema="escuro"] .btn-secondary:hover,
+html[data-tema="escuro"] .btn-light:hover {
+    background-color: #1c2446 !important;
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] .card,
+html[data-tema="escuro"] .modal-content,
+html[data-tema="escuro"] .list-group {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .card-header,
+html[data-tema="escuro"] .card-footer {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .form-control,
+html[data-tema="escuro"] .form-select {
+    border: 1.5px solid #2c3658;
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .form-control:focus,
+html[data-tema="escuro"] .form-select:focus {
+    background-color: #161d38;
+}
+
+html[data-tema="escuro"] .form-label {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .table {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .table > thead th,
+html[data-tema="escuro"] .table > thead td {
+    color: #a3abc4;
+    background-color: #1c2446;
+    border-bottom: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .table > tbody > tr > * {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .modal-header,
+html[data-tema="escuro"] .modal-footer {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .modal-title {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .dropdown-menu {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .page-link {
+    border-color: #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .progress {
+    background-color: #1c2446;
+}
+
+html[data-tema="escuro"] .busca-turma {
+    border: 1.5px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sugestoes-turma {
+    border-color: #2c3658;
+}
+
+html[data-tema="escuro"] .turma-card {
+    background-color: #161d38;
+    color: #e6e9f2;
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .turma-card:hover {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .turma-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-card {
+    background-color: #161d38;
+    color: #e6e9f2;
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .conteudo-card:hover,
+html[data-tema="escuro"] a.conteudo-card:hover {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-nome {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-meta {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .botao-compacto {
+    background-color: #161d38;
+    color: #e6e9f2;
+    border: 1.5px solid #2c3658;
+}
+
+html[data-tema="escuro"] .botao-compacto:hover,
+html[data-tema="escuro"] .botao-compacto:focus-visible {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .conteudo-card .botao-compacto {
+    background-color: #161d38;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .sem-turmas {
+    background-color: #161d38;
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .turmas-container > h2,
+html[data-tema="escuro"] .turmas-page h2.h5 {
+    color: #e6e9f2;
+}
+
+/* gerado a partir de termos.css */
+html[data-tema="escuro"] .termos-documento {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .termos-documento .termos-titulo {
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .termos-documento .termos-metadados {
+    color: #a3abc4;
+}
+
+html[data-tema="escuro"] .termos-documento .termos-secao {
+    border-top: 1px solid #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .termos-documento th,
+html[data-tema="escuro"] .termos-documento td {
+    border: 1px solid #2c3658;
+}
+
+html[data-tema="escuro"] .termos-documento th {
+    background-color: #1c2446;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .termos-documento tbody tr:nth-child(even) {
+    background-color: #1c2446;
+}
+
+@media (max-width: 575.98px) {
+html[data-tema="escuro"] .termos-documento td::before {
+    color: #e6e9f2;
+}
+}
+
+/* ajustes manuais do modo escuro cobrem fundo cabecalho titulos em degrade logo e o botao de troca de tema */
+
+html[data-tema="escuro"] {
+    color-scheme: dark;
+    --rd-borda: #2c3658;
+    --rd-campo: #1c2446;
+    --rd-texto-suave: #a3abc4;
+    --campus-surface: #1c2446;
+    --campus-surface-alt: #1c2446;
+    --campus-muted: #a3abc4;
+    --bs-body-bg: #0d1226;
+    --bs-body-color: #e6e9f2;
+}
+
+/* fundo da pagina troca o degrade claro por um azul noite com brilho suave */
+html[data-tema="escuro"] body {
+    background: radial-gradient(1200px 600px at 85% -10%, rgba(45, 156, 229, 0.16), transparent 60%),
+                radial-gradient(900px 500px at 0% 0%, rgba(124, 92, 255, 0.10), transparent 55%),
+                #0d1226 !important;
+    color: #e6e9f2;
+}
+
+/* cabecalho fica translucido escuro e o logo fica mais claro com brilho azul para continuar legivel */
+html[data-tema="escuro"] .site-header-nav,
+html[data-tema="escuro"] .site-header-nav > .container,
+html[data-tema="escuro"] .site-header-nav header {
+    background: rgba(13, 18, 38, 0.85) !important;
+    border-color: #2c3658 !important;
+}
+
+html[data-tema="escuro"] .site-header-nav img[alt="CampusLink logo"] {
+    filter: brightness(1.6) drop-shadow(0 0 6px rgba(45, 156, 229, 0.45));
+}
+
+html[data-tema="escuro"] .site-header-nav .nav-link { color: #c8cfe0 !important; }
+html[data-tema="escuro"] .site-header-nav .nav-link:hover,
+html[data-tema="escuro"] .site-header-nav .nav-link.active {
+    background: rgba(45, 156, 229, 0.18);
+    color: #ffffff;
+}
+
+/* titulos em degrade usam tons claros para nao sumir no fundo escuro */
+
+/* campos de formulario recebem fundo escuro e texto claro */
+html[data-tema="escuro"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html[data-tema="escuro"] select,
+html[data-tema="escuro"] textarea {
+    background-color: #1c2446 !important;
+    border-color: #2c3658 !important;
+    color: #e6e9f2 !important;
+}
+
+html[data-tema="escuro"] input::placeholder,
+html[data-tema="escuro"] textarea::placeholder { color: #7d86a3; }
+
+/* tabelas do bootstrap usam as cores do tema escuro */
+html[data-tema="escuro"] .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: #e6e9f2;
+    --bs-table-border-color: #2c3658;
+}
+
+html[data-tema="escuro"] thead th { background-color: #1c2446 !important; color: #a3abc4 !important; }
+
+/* sombras ficam mais profundas para separar os cartoes do fundo */
+html[data-tema="escuro"] [class*="card"],
+html[data-tema="escuro"] [class*="panel"] { box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.9); }
+
+/* componentes novos tambem acompanham o tema escuro */
+html[data-tema="escuro"] .aviso,
+html[data-tema="escuro"] .confirmacao { background: #161d38; color: #e6e9f2; border-color: #2c3658; }
+html[data-tema="escuro"] .confirmacao-item { background: #1c2446; }
+html[data-tema="escuro"] .confirmacao-cancelar { background: #1c2446; border-color: #2c3658; color: #e6e9f2; }
+html[data-tema="escuro"] .estado-vazio { background: #131a33; border-color: #2c3658; }
+html[data-tema="escuro"] .rodape-compacto { border-color: #2c3658; }
+html[data-tema="escuro"] .dropdown-menu { background: #161d38; border-color: #2c3658; }
+html[data-tema="escuro"] .dropdown-item { color: #e6e9f2; }
+html[data-tema="escuro"] .dropdown-item:hover { background: #1c2446; }
+
+/* botao de troca de tema mostra a lua no modo claro e o sol no modo escuro */
+.tema-alternar {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    padding: 0;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 50%;
+    background: #ffffff;
+    color: #22337a;
+    vertical-align: middle;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.tema-alternar:hover,
+.tema-alternar:focus-visible {
+    transform: rotate(-15deg);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.2);
+}
+
+.tema-alternar svg { width: 19px; height: 19px; }
+.tema-alternar .tema-icone-sol { display: none; }
+
+html[data-tema="escuro"] .tema-alternar { background: #1c2446; border-color: #2c3658; color: #f2b705; }
+html[data-tema="escuro"] .tema-alternar .tema-icone-sol { display: block; }
+html[data-tema="escuro"] .tema-alternar .tema-icone-lua { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .tema-alternar { transition: none; }
+    .tema-alternar:hover { transform: none; }
+}
+
+/* botoes contornados deixam o fundo branco e usam a superficie escura */
+html[data-tema="escuro"] .btn-outline-primary,
+html[data-tema="escuro"] .btn-outline-secondary,
+html[data-tema="escuro"] .btn-light {
+    background: #1c2446 !important;
+    border-color: #2c3658 !important;
+    color: #9ec5ff !important;
+}
+
+html[data-tema="escuro"] .btn-outline-primary:hover,
+html[data-tema="escuro"] .btn-outline-secondary:hover {
+    background: #233061 !important;
+    color: #ffffff !important;
+}
+
+/* selos com logo continuam claros para o logo azul escuro aparecer */
+html[data-tema="escuro"] .acesso-selo { background: #f5f7fb !important; }
+
+/* links do rodape de visitantes ganham contraste no fundo escuro */
+html[data-tema="escuro"] .site-footer-container .nav-link { color: #c8cfe0 !important; }
+html[data-tema="escuro"] .site-footer-container .nav-link:hover { color: #ffffff !important; }
+
+/* titulos das telas administrativas mantem o degrade claro so dentro das areas do administrador */
+html[data-tema="escuro"] main [class*="admin"] h1,
+html[data-tema="escuro"] main .chamados-topo h1 {
+    background-image: linear-gradient(120deg, #e6e9f2, #9ec5ff 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* caixas de chamada das paginas publicas trocam o degrade branco por uma superficie escura */
+html[data-tema="escuro"] .home-final,
+html[data-tema="escuro"] .funcionalidades-final,
+html[data-tema="escuro"] .sobre-final {
+    background: radial-gradient(500px 220px at 90% 0%, rgba(45, 156, 229, 0.18), transparent 70%),
+                linear-gradient(135deg, #161d38, #1c2446) !important;
+    border-color: #2c3658 !important;
+}
+
+html[data-tema="escuro"] .home-final h2,
+html[data-tema="escuro"] .funcionalidades-final h2,
+html[data-tema="escuro"] .sobre-final h2 { color: #e6e9f2 !important; }
+
+html[data-tema="escuro"] .home-final p,
+html[data-tema="escuro"] .funcionalidades-final p,
+html[data-tema="escuro"] .sobre-final p { color: #a3abc4 !important; }
+
+/* textos dentro dos paineis azuis continuam claros */
+html[data-tema="escuro"] .painel-item p,
+html[data-tema="escuro"] .sobre-painel p { color: #c8cfe0 !important; }
+
+/* utilitarios do bootstrap usados direto nos templates tambem escurecem */
+html[data-tema="escuro"] .bg-white { background-color: #161d38 !important; }
+html[data-tema="escuro"] .bg-light { background-color: #1c2446 !important; }
+html[data-tema="escuro"] .text-dark { color: #e6e9f2 !important; }
+
+/* so a tela da turma usa turmas-page como cartao, as listas de turmas score e acompanhamento deixam o fundo da pagina aparecer */
+html[data-tema="escuro"] main.turmas-page:not(.container) {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* logs de sessoes do admin usam a superficie escura no texto consolidado e nos textos de ajuda */
+html[data-tema="escuro"] .logs-texto {
+    background-color: #1c2446;
+    border-color: #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .logs-container .form-text,
+html[data-tema="escuro"] .logs-container .text-secondary {
+    color: #a3abc4 !important;
+}

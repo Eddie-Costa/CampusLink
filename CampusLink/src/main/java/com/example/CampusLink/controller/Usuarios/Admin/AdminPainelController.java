@@ -4,6 +4,7 @@ package com.example.CampusLink.controller.Usuarios.Admin;
 import com.example.CampusLink.dto.Admin.loginAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
 import com.example.CampusLink.repository.AdminUsuarioRepository;
+import com.example.CampusLink.repository.PainelAdminRepository;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +21,13 @@ public class AdminPainelController {
     private static final Logger logger = LoggerFactory.getLogger(AdminPainelController.class);
 
     private final AdminUsuarioRepository adminUsuarioRepository;
+    private final PainelAdminRepository painelAdminRepository;
 
-    // preparar painel administrativo este construtor recebe a consulta de administradores
-    public AdminPainelController(AdminUsuarioRepository adminUsuarioRepository) {
+    // preparar painel administrativo este construtor recebe a consulta de administradores e os numeros do painel
+    public AdminPainelController(AdminUsuarioRepository adminUsuarioRepository,
+                                 PainelAdminRepository painelAdminRepository) {
         this.adminUsuarioRepository = adminUsuarioRepository;
+        this.painelAdminRepository = painelAdminRepository;
     }
 
     // abrir painel administrativo este metodo permite a tela inicial apenas ao administrador
@@ -45,6 +49,13 @@ public class AdminPainelController {
             logger.error("Erro ao verificar se o administrador é master.", e);
         }
         model.addAttribute("adminMaster", master);
+
+        // carregar numeros do painel mostra totais e pendencias sem impedir a abertura em caso de falha
+        try {
+            model.addAttribute("resumoPainel", painelAdminRepository.resumir());
+        } catch (RuntimeException e) {
+            logger.error("Erro ao carregar os numeros do painel administrativo.", e);
+        }
 
         return "Usuarios/Admin/painelAdmin";
     }

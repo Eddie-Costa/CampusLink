@@ -1,4 +1,4 @@
-<!-- listar eventos administrativos apresenta filtros detalhes e confirmacao de exclusao dos eventos -->
+<!-- listar eventos administrativos apresenta filtros no servidor detalhes paginacao e confirmacao de exclusao dos eventos -->
 
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
@@ -10,6 +10,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/eventosAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
 </head>
 
 <body>
@@ -23,7 +24,7 @@
         <div class="eventos-admin-topo">
 
             <div>
-                <p class="eventos-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, null, null, null, null, 'Eventos')}"></nav>
                 <h1>Gerenciar eventos</h1>
                 <p>Consulte e gerencie os eventos cadastrados no CampusLink.</p>
             </div>
@@ -34,9 +35,6 @@
                     + Cadastrar evento
                 </a>
 
-                <a th:href="@{/admin/painel}" class="eventos-admin-voltar">
-                    Voltar para o painel
-                </a>
 
             </div>
 
@@ -55,7 +53,7 @@
 
                     <p>
                         Total:
-                        <span th:text="${#lists.size(eventos)}">0</span>
+                        <span id="totalEventos" th:text="${totalEventos}">0</span>
                     </p>
                 </div>
 
@@ -63,7 +61,7 @@
 
                     <div class="eventos-admin-campo">
                         <label for="buscarEvento">Buscar evento</label>
-                        <input type="search" id="buscarEvento" placeholder="Nome ou turma">
+                        <input type="search" id="buscarEvento" placeholder="Nome ou turma" th:value="${busca}">
                     </div>
 
                     <div class="eventos-admin-campo">
@@ -71,10 +69,10 @@
 
                         <select id="filtrarTipoEvento">
                             <option value="">Todos</option>
-                            <option value="PROVA">Prova</option>
-                            <option value="TRABALHO">Trabalho</option>
-                            <option value="APRESENTACAO">Apresentação</option>
-                            <option value="OUTRO">Outro</option>
+                            <option value="PROVA" th:selected="${tipoSelecionado == 'PROVA'}">Prova</option>
+                            <option value="TRABALHO" th:selected="${tipoSelecionado == 'TRABALHO'}">Trabalho</option>
+                            <option value="APRESENTACAO" th:selected="${tipoSelecionado == 'APRESENTACAO'}">Apresentação</option>
+                            <option value="OUTRO" th:selected="${tipoSelecionado == 'OUTRO'}">Outro</option>
                         </select>
                     </div>
 
@@ -83,9 +81,9 @@
 
                         <select id="filtrarStatusEvento">
                             <option value="">Todos</option>
-                            <option value="ATIVO">Ativo</option>
-                            <option value="CANCELADO">Cancelado</option>
-                            <option value="CONCLUIDO">Concluído</option>
+                            <option value="ATIVO" th:selected="${statusSelecionado == 'ATIVO'}">Ativo</option>
+                            <option value="CANCELADO" th:selected="${statusSelecionado == 'CANCELADO'}">Cancelado</option>
+                            <option value="CONCLUIDO" th:selected="${statusSelecionado == 'CONCLUIDO'}">Concluído</option>
                         </select>
                     </div>
 
@@ -110,12 +108,13 @@
                     </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody id="corpoEventos" th:fragment="linhasEventos"
+                           th:attr="data-total=${totalFiltrados}, data-tem-mais=${temMais}, data-proxima-pagina=${proximaPagina}">
 
                     <tr th:each="evento : ${eventos}" class="evento-admin-linha"
                         th:attr="data-nome=${evento.nome}, data-turma=${evento.nomeTurma}, data-tipo=${evento.tipo}, data-status=${evento.status}">
 
-                        <td>
+                        <td data-rotulo="Evento">
                             <span class="evento-admin-nome" th:text="${evento.nome}">
                                 Nome do evento
                             </span>
@@ -125,17 +124,17 @@
                             </small>
                         </td>
 
-                        <td th:text="${evento.nomeTurma != null ? evento.nomeTurma : 'Não informada'}">
+                        <td data-rotulo="Turma" th:text="${evento.nomeTurma != null ? evento.nomeTurma : 'Não informada'}">
                             Nome da turma
                         </td>
 
-                        <td>
+                        <td data-rotulo="Tipo">
                             <span class="evento-admin-tipo" th:text="${evento.tipo != null ? evento.tipo : 'Não informado'}">
                                 Tipo
                             </span>
                         </td>
 
-                        <td>
+                        <td data-rotulo="Início">
                             <span th:if="${evento.inicio != null}"
                                   th:text="${#temporals.format(evento.inicio, 'dd/MM/yyyy HH:mm')}">
                                 Data de início
@@ -146,7 +145,7 @@
                             </span>
                         </td>
 
-                        <td>
+                        <td data-rotulo="Fim">
                             <span th:if="${evento.fim != null}"
                                   th:text="${#temporals.format(evento.fim, 'dd/MM/yyyy HH:mm')}">
                                 Data de fim
@@ -157,7 +156,7 @@
                             </span>
                         </td>
 
-                        <td>
+                        <td data-rotulo="Prioridade">
                             <span class="evento-admin-prioridade"
                                   th:classappend="${evento.prioridade != null ? ' prioridade-' + #strings.toLowerCase(evento.prioridade) : ''}"
                                   th:text="${evento.prioridade != null ? evento.prioridade : 'Não informada'}">
@@ -165,7 +164,7 @@
                             </span>
                         </td>
 
-                        <td>
+                        <td data-rotulo="Status">
                             <span class="evento-admin-status"
                                   th:classappend="${evento.status != null ? ' status-' + #strings.toLowerCase(evento.status) : ''}"
                                   th:text="${evento.status != null ? evento.status : 'Não informado'}">
@@ -173,7 +172,7 @@
                             </span>
                         </td>
 
-                        <td>
+                        <td data-rotulo="Ações">
 
                             <div class="evento-admin-acoes d-flex flex-row align-items-center gap-2">
 
@@ -222,11 +221,18 @@
                                     Editar
                                 </a>
 
-                                <button type="button" class="btn btn-outline-danger btn-sm fw-bold"
-                                        data-bs-toggle="modal"
-                                        th:attr="data-bs-target=${'#excluirEventoModal' + evento.id}">
-                                    Excluir
-                                </button>
+                                <form th:action="@{/admin/eventos/{idEvento}/excluir(idEvento=${evento.id})}" method="post"
+                                      class="m-0"
+                                      data-submit-once
+                                      data-confirmar-titulo="Excluir evento?"
+                                      data-confirmar="O evento sai do calendário dos alunos da turma. Esta ação não poderá ser desfeita."
+                                      data-confirmar-botao="Excluir"
+                                      th:attr="data-confirmar-item=${evento.nome}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">
+                                        Excluir
+                                    </button>
+                                </form>
 
                             </div>
 
@@ -234,13 +240,13 @@
 
                     </tr>
 
-                    <tr th:if="${#lists.isEmpty(eventos)}">
+                    <tr th:if="${totalEventos == 0}">
                         <td colspan="8" class="eventos-admin-vazio">
-                            Nenhum evento cadastrado
+                            <div th:replace="~{fragments/vazio :: vazio('evento', 'Nenhum evento cadastrado', 'Eventos como provas e entregas aparecem no calendário dos alunos da turma.', 'Cadastrar evento', @{/admin/eventos/cadastrar})}"></div>
                         </td>
                     </tr>
 
-                    <tr id="nenhumEventoEncontrado" hidden>
+                    <tr id="nenhumEventoEncontrado" th:if="${totalEventos > 0 and totalFiltrados == 0}">
                         <td colspan="8" class="eventos-admin-vazio">
                             Nenhum evento encontrado com os filtros selecionados
                         </td>
@@ -252,6 +258,25 @@
 
             </div>
 
+            <p id="erroCarregamento" class="alert alert-danger mt-3 d-none" role="alert"></p>
+
+            <div class="eventos-admin-paginacao">
+
+                <p aria-live="polite">
+                    Mostrando
+                    <span id="totalExibido" th:text="${#lists.size(eventos)}">0</span>
+                    de
+                    <span id="totalEncontrado" th:text="${totalFiltrados}">0</span>
+                    eventos
+                </p>
+
+                <button type="button" id="botaoMostrarMais" class="eventos-admin-mostrar-mais"
+                        th:classappend="${!temMais} ? 'd-none'" aria-controls="corpoEventos">
+                    Mostrar mais 25
+                </button>
+
+            </div>
+
         </section>
 
     </div>
@@ -259,66 +284,11 @@
 </main>
 
 
-<div th:each="evento : ${eventos}" class="modal fade"
-     th:id="${'excluirEventoModal' + evento.id}" tabindex="-1"
-     th:attr="aria-labelledby=${'tituloExcluirEvento' + evento.id}" aria-hidden="true">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title" th:id="${'tituloExcluirEvento' + evento.id}">
-                    Excluir evento
-                </h5>
-
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-
-            </div>
-
-            <div class="modal-body">
-
-                <p>Tem certeza que deseja excluir o evento abaixo?</p>
-
-                <p class="fw-bold mb-2" th:text="${evento.nome}">
-                    Nome do evento
-                </p>
-
-                <p class="text-danger mb-0">
-                    Esta ação não poderá ser desfeita.
-                </p>
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <form th:action="@{/admin/eventos/{idEvento}/excluir(idEvento=${evento.id})}" method="post">
-
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                    <button type="submit" class="btn btn-danger">
-                        Confirmar exclusão
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/Usuarios/Admin/eventosAdmin.js}"></script>
 
+<script th:src="@{/js/Geral/tabela-inteligente.js(v=20261112-2)}"></script>
 </body>
 </html>

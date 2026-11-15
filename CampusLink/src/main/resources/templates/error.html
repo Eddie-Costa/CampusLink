@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${status == 404 ? 'Página não encontrada' : (status == 403 ? 'Acesso negado' : 'Erro')} + ' | CampusLink'">Erro | CampusLink</title>
     <link rel="stylesheet" th:href="@{/css/campus-theme.css}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" th:href="@{/css/redesign.css(v=20261112-1)}">
     <style>
         body {
             display: flex;
@@ -14,22 +16,23 @@
             min-height: 100vh;
             margin: 0;
             padding: 24px;
-            background: var(--campus-page-bg) url("/images/bg.png") center / cover fixed;
             color: var(--campus-navy);
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: var(--rd-fonte);
         }
 
         .erro-cartao {
             width: min(520px, 100%);
             padding: 40px 32px 32px;
-            border-radius: 22px;
+            border-radius: 28px;
             background: var(--campus-white);
-            box-shadow: 0 18px 36px rgba(var(--campus-navy-rgb), 0.18);
+            border: 1px solid var(--rd-borda);
+            box-shadow: var(--rd-sombra-forte);
             text-align: center;
         }
 
         .erro-cartao img {
             width: 96px;
+            height: auto;
             margin-bottom: 18px;
         }
 
@@ -43,7 +46,8 @@
 
         .erro-cartao h1 {
             margin: 8px 0 12px;
-            font-size: 26px;
+            font-size: 28px;
+            font-weight: 800;
         }
 
         .erro-cartao p {
@@ -62,8 +66,8 @@
         .erro-acoes a,
         .erro-acoes button {
             padding: 10px 22px;
-            border: 2px solid var(--campus-navy);
-            border-radius: 999px;
+            border: 1.5px solid var(--rd-borda);
+            border-radius: 12px;
             background: transparent;
             color: var(--campus-navy);
             font: inherit;
@@ -74,13 +78,15 @@
         }
 
         .erro-acoes a {
-            background: var(--campus-navy);
+            border-color: transparent;
+            background: var(--rd-degrade);
             color: var(--campus-white);
+            box-shadow: 0 10px 20px -12px rgba(17, 24, 63, 0.7);
         }
 
         .erro-acoes a:hover,
         .erro-acoes a:focus-visible {
-            background: var(--campus-navy-hover);
+            transform: translateY(-1px);
         }
 
         .erro-acoes button:hover,
@@ -92,7 +98,7 @@
 <body>
 
 <main class="erro-cartao" th:switch="${status}">
-    <img th:src="@{/images/LogoCampusLink.png}" alt="CampusLink">
+    <img th:src="@{/images/LogoCampusLink.png}" width="384" height="256" alt="CampusLink">
 
     <p class="erro-codigo" th:text="${'ERRO ' + (status != null ? status : '')}">ERRO</p>
 

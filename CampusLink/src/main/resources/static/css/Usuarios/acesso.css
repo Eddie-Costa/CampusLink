@@ -1,0 +1,798 @@
+/* telas de acesso organizam login e cadastro em um cartao moderno com painel lateral nas cores do campuslink */
+
+.pagina-acesso {
+    --acesso-raio: 14px;
+    --acesso-campo-fundo: #f5f7fb;
+    --acesso-campo-borda: #e1e7f0;
+    --acesso-texto: #1d2433;
+    --acesso-degrade: linear-gradient(135deg, var(--campus-navy, #11183f) 0%, #22337a 55%, var(--campus-accent, #2d9ce5) 130%);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--acesso-texto);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.acesso {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px 56px;
+    isolation: isolate;
+}
+
+/* fundo decorativo usa manchas de cor desfocadas atras do cartao */
+.acesso-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.acesso-fundo span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+}
+
+.acesso-fundo span:nth-child(1) {
+    width: 520px;
+    height: 520px;
+    background: var(--campus-accent, #2d9ce5);
+    top: -160px;
+    left: -120px;
+}
+
+.acesso-fundo span:nth-child(2) {
+    width: 460px;
+    height: 460px;
+    background: #6c7bff;
+    bottom: -180px;
+    right: -100px;
+    opacity: 0.4;
+}
+
+.acesso-fundo span:nth-child(3) {
+    width: 300px;
+    height: 300px;
+    background: var(--campus-navy, #11183f);
+    top: 40%;
+    left: 55%;
+    opacity: 0.18;
+}
+
+.acesso-cartao {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px -20px rgba(17, 24, 63, 0.35);
+    animation: acesso-entrar 0.5s ease-out both;
+}
+
+.acesso-cartao-largo {
+    max-width: 1100px;
+}
+
+/* painel lateral apresenta a marca e os beneficios com formas decorativas */
+.acesso-lateral {
+    position: relative;
+    background: var(--acesso-degrade);
+    color: #ffffff;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    overflow: hidden;
+}
+
+.acesso-lateral::before,
+.acesso-lateral::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.acesso-lateral::before {
+    width: 360px;
+    height: 360px;
+    right: -170px;
+    bottom: -150px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.acesso-lateral::after {
+    width: 200px;
+    height: 200px;
+    right: 30px;
+    top: -90px;
+}
+
+.acesso-selo {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #ffffff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+
+.acesso-selo img {
+    width: 46px;
+    height: auto;
+}
+
+.acesso-lateral-titulo {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.acesso-beneficios {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.acesso-beneficios li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.4;
+}
+
+.acesso-beneficio-icone {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.acesso-beneficio-icone .icone {
+    width: 20px;
+    height: 20px;
+    stroke: #ffffff;
+}
+
+/* icones seguem o mesmo traco fino em todas as telas */
+.icone {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* area do formulario concentra titulo avisos campos e links */
+.acesso-conteudo {
+    padding: 48px 48px 40px;
+}
+
+.acesso-etiqueta {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--campus-accent, #2d9ce5);
+    background: rgba(45, 156, 229, 0.1);
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+}
+
+.acesso-titulo {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--campus-navy, #11183f);
+    margin-bottom: 6px;
+}
+
+.acesso-subtitulo {
+    color: var(--campus-muted, #667085);
+    margin-bottom: 28px;
+}
+
+.acesso-aviso {
+    border-radius: var(--acesso-raio);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    white-space: pre-line;
+}
+
+.acesso-aviso-erro {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #9f1239;
+}
+
+.acesso-aviso-sucesso {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.acesso-form {
+    display: grid;
+    gap: 18px;
+}
+
+.acesso-grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.acesso-campo label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--acesso-texto);
+    margin-bottom: 8px;
+}
+
+/* campo com icone posiciona o desenho dentro da caixa e reserva espaco para o texto */
+.campo-icone {
+    position: relative;
+}
+
+.campo-icone > .icone {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a94a6;
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.campo-icone input {
+    width: 100%;
+    height: 52px;
+    padding: 0 48px 0 48px;
+    border-radius: var(--acesso-raio);
+    border: 1.5px solid var(--acesso-campo-borda);
+    background: var(--acesso-campo-fundo);
+    color: var(--acesso-texto);
+    font-size: 1rem;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.campo-icone input::placeholder {
+    color: #a3abba;
+}
+
+.campo-icone input:hover {
+    border-color: #c9d3e3;
+}
+
+.campo-icone input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--campus-accent, #2d9ce5);
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.15);
+}
+
+.campo-icone:focus-within > .icone {
+    color: var(--campus-accent, #2d9ce5);
+}
+
+.campo-icone input:user-invalid {
+    border-color: #f43f5e;
+    background: #fff7f8;
+}
+
+.campo-acao {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #8a94a6;
+    display: grid;
+    place-items: center;
+}
+
+.campo-acao:hover,
+.campo-acao:focus-visible {
+    background: rgba(17, 24, 63, 0.06);
+    color: var(--campus-navy, #11183f);
+    outline: none;
+}
+
+.icones-olho .icone-ocultar,
+.campo-acao[aria-pressed="true"] .icone-mostrar {
+    display: none;
+}
+
+.campo-acao[aria-pressed="true"] .icone-ocultar {
+    display: block;
+}
+
+.acesso-ajuda {
+    font-size: 0.82rem;
+    color: var(--campus-muted, #667085);
+    margin-top: 6px;
+}
+
+.acesso-rotulo-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.acesso-link-pequeno {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.acesso-conteudo a,
+.acesso-link-botao {
+    color: var(--campus-accent, #2d9ce5);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.acesso-conteudo a:hover,
+.acesso-link-botao:hover {
+    text-decoration: underline;
+}
+
+.acesso-link-botao {
+    border: 0;
+    background: none;
+    padding: 0;
+}
+
+/* botao principal usa degrade com seta que avanca ao passar o mouse */
+.acesso-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 54px;
+    border: 0;
+    border-radius: var(--acesso-raio);
+    background: var(--acesso-degrade);
+    background-size: 160% 100%;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-top: 6px;
+    box-shadow: 0 12px 24px -10px rgba(17, 24, 63, 0.6);
+    transition: transform 0.2s, box-shadow 0.2s, background-position 0.4s;
+}
+
+.acesso-botao:hover:not(:disabled),
+.acesso-botao:focus-visible {
+    transform: translateY(-2px);
+    background-position: 100% 0;
+    box-shadow: 0 18px 30px -12px rgba(17, 24, 63, 0.65);
+    outline: none;
+}
+
+.acesso-botao .icone-seta {
+    stroke: #ffffff;
+    transition: transform 0.2s;
+}
+
+.acesso-botao:hover:not(:disabled) .icone-seta {
+    transform: translateX(4px);
+}
+
+.acesso-botao:disabled {
+    background: #c9d1e0;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.acesso-botao-secundario {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    border-radius: var(--acesso-raio);
+    border: 1.5px solid #dbe2ee;
+    color: var(--campus-navy, #11183f) !important;
+    font-weight: 700;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.acesso-botao-secundario:hover {
+    border-color: var(--campus-navy, #11183f);
+    background: #f7f9fd;
+    text-decoration: none !important;
+}
+
+.acesso-divisor {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 24px 0;
+    color: #a3abba;
+    font-size: 0.85rem;
+}
+
+.acesso-divisor::before,
+.acesso-divisor::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e3e8f1;
+}
+
+.acesso-rodape {
+    text-align: center;
+    margin: 22px 0 0;
+    font-size: 0.92rem;
+    color: var(--campus-muted, #667085);
+}
+
+/* escolha do perfil mostra aluno e professor como cartoes com icone */
+.acesso-perfil {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.acesso-perfil legend {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.acesso-perfil-opcoes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.acesso-perfil input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.acesso-perfil label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1.5px solid #dbe2ee;
+    border-radius: 16px;
+    padding: 14px;
+    cursor: pointer;
+    background: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.acesso-perfil label:hover {
+    border-color: #b5c2d8;
+}
+
+.acesso-perfil label strong {
+    display: block;
+    color: var(--campus-navy, #11183f);
+}
+
+.acesso-perfil label small {
+    display: block;
+    color: var(--campus-muted, #667085);
+    font-size: 0.82rem;
+}
+
+.acesso-perfil-icone {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: var(--acesso-campo-fundo);
+    color: #8a94a6;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.acesso-perfil input:checked + label {
+    border-color: var(--campus-accent, #2d9ce5);
+    background: rgba(45, 156, 229, 0.06);
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.12);
+}
+
+.acesso-perfil input:checked + label .acesso-perfil-icone {
+    background: var(--acesso-degrade);
+    color: #ffffff;
+}
+
+.acesso-perfil input:focus-visible + label {
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.3);
+}
+
+/* forca da senha cresce e muda de cor conforme as regras cumpridas */
+.acesso-forca {
+    height: 6px;
+    border-radius: 999px;
+    background: #e8ecf3;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.acesso-forca span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: #f43f5e;
+    transition: width 0.3s, background-color 0.3s;
+}
+
+.acesso-forca[data-nivel="2"] span,
+.acesso-forca[data-nivel="3"] span {
+    background: #f59e0b;
+}
+
+.acesso-forca[data-nivel="4"] span {
+    background: #84cc16;
+}
+
+.acesso-forca[data-nivel="5"] span {
+    background: #10b981;
+}
+
+/* requisitos da senha aparecem como etiquetas que ficam verdes quando cumpridas */
+.acesso-requisitos {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.acesso-requisitos li {
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #f1f4f9;
+    color: #6b7489;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.acesso-requisitos li::before {
+    content: "○ ";
+}
+
+.acesso-requisitos li.cumprido {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.acesso-requisitos li.cumprido::before {
+    content: "✓ ";
+}
+
+.acesso-termos {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--acesso-raio);
+    border: 1.5px solid var(--acesso-campo-borda);
+    background: var(--acesso-campo-fundo);
+}
+
+.acesso-termos label {
+    display: inline;
+    font-weight: 500;
+}
+
+.acesso-termos .form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+@keyframes acesso-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* menos movimento desliga animacoes para quem pediu isso no sistema */
+@media (prefers-reduced-motion: reduce) {
+    .acesso-cartao,
+    .acesso-botao,
+    .acesso-botao .icone-seta {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* telas medias e pequenas empilham o painel lateral acima do formulario */
+@media (max-width: 860px) {
+    .acesso-cartao,
+    .acesso-cartao-largo {
+        grid-template-columns: 1fr;
+        max-width: 560px;
+    }
+
+    .acesso-lateral {
+        padding: 28px 24px;
+        gap: 16px;
+    }
+
+    .acesso-lateral-titulo {
+        font-size: 1.4rem;
+    }
+
+    .acesso-beneficios {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .acesso {
+        align-items: flex-start;
+        padding: 20px 12px 40px;
+    }
+
+    .acesso-cartao {
+        border-radius: 22px;
+    }
+
+    .acesso-conteudo {
+        padding: 32px 20px 28px;
+    }
+
+    .acesso-titulo {
+        font-size: 1.6rem;
+    }
+
+    .acesso-grade,
+    .acesso-perfil-opcoes {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* botao secundario tambem funciona como botao de formulario */
+button.acesso-botao-secundario {
+    width: 100%;
+    background: #ffffff;
+}
+
+button.acesso-botao-secundario:disabled {
+    color: #a3abba !important;
+    border-color: #e3e8f1;
+    background: #f7f9fc;
+    cursor: not-allowed;
+}
+
+/* painel do administrador usa um degrade mais escuro para diferenciar a area restrita */
+.acesso-lateral-admin {
+    background: linear-gradient(135deg, #0b1030 0%, var(--campus-navy, #11183f) 60%, #22337a 130%);
+}
+
+/* codigo de verificacao mostra seis caixas grandes para os digitos */
+.codigo-inputs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.codigo-digit {
+    width: 100%;
+    height: 60px;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--campus-navy, #11183f);
+    border-radius: var(--acesso-raio);
+    border: 1.5px solid var(--acesso-campo-borda);
+    background: var(--acesso-campo-fundo);
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.codigo-digit:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--campus-accent, #2d9ce5);
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.15);
+}
+
+/* contador da validade mostra o tempo restante e uma barra que diminui */
+.contadores-2fa {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: var(--acesso-raio);
+    background: var(--acesso-campo-fundo);
+    border: 1.5px solid var(--acesso-campo-borda);
+}
+
+.contador-2fa {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--campus-muted, #667085);
+    font-size: 0.9rem;
+}
+
+.contador-2fa strong {
+    font-size: 1.1rem;
+    color: var(--campus-navy, #11183f);
+    font-variant-numeric: tabular-nums;
+}
+
+.barra-validade {
+    width: 100%;
+    height: 6px;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e3e8f1;
+    appearance: none;
+}
+
+.barra-validade::-webkit-progress-bar {
+    background: #e3e8f1;
+}
+
+.barra-validade::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--campus-accent, #2d9ce5), #22337a);
+    border-radius: 999px;
+}
+
+.barra-validade::-moz-progress-bar {
+    background: linear-gradient(90deg, var(--campus-accent, #2d9ce5), #22337a);
+}
+
+.codigo-expirado .contador-2fa strong {
+    color: #be123c;
+}
+
+@media (max-width: 575.98px) {
+    .codigo-digit {
+        height: 50px;
+        font-size: 1.3rem;
+    }
+
+    .codigo-inputs {
+        gap: 6px;
+    }
+}

@@ -31,7 +31,7 @@
 <main class="container turmas-page"
     th:attr="data-abrir-modal-participantes=${abrirModalParticipantes}, data-abrir-modal-conteudo=${abrirModalConteudo}, data-abrir-modal-editar-turma=${abrirModalEditarTurma}, data-abrir-modal-editar-id=${abrirModalEditarId}">
 
-    <a class="voltar-turmas acao-turma" th:href="@{/turmas}">Voltar para turmas</a>
+    <nav th:replace="~{fragments/trilha :: trilha('Turmas', @{/turmas}, null, null, null, null, ${turma.nomeTurma})}"></nav>
     <h1 th:text="${turma.nomeTurma}">Nome da turma</h1>
     <p th:text="${turma.descricao}">Descrição da turma</p>
 
@@ -83,7 +83,10 @@
                                                       th:action="@{/removerPessoas}" method="post"
                                                       class="form-remover-participante"
                                                       data-submit-once
-                                                      th:attr="data-nome=${participante.nomePessoa}">
+                                                      data-confirmar-titulo="Remover participante?"
+                                                      data-confirmar="A pessoa perderá o acesso aos conteúdos e eventos desta turma."
+                                                      data-confirmar-botao="Remover"
+                                                      th:attr="data-nome=${participante.nomePessoa},data-confirmar-item=${participante.nomePessoa}">
                                                     <input type="hidden" name="id" th:value="${turma.id}">
                                                     <input type="hidden" name="emailPessoa"
                                                            th:value="${participante.emailPessoa}">
@@ -183,7 +186,7 @@
             
             <button type="button" class="acao-turma" data-bs-toggle="modal"
                     data-bs-target="#solicitarDominioModal">
-                Solicitar Domínio
+                Solicitar site
             </button>
 
             <button type="button" class="acao-turma participantes-turma" data-bs-toggle="modal"
@@ -198,7 +201,11 @@
 
 
             <form th:if="${isTurmaAdmin}" th:action="@{/excluirTurma}" th:object="${turma}"
-                  method="post" class="form-excluir-turma" data-submit-once>
+                  method="post" class="form-excluir-turma" data-submit-once
+                  data-confirmar-titulo="Excluir turma?"
+                  data-confirmar="Todos os alunos e professores vinculados também serão removidos. Esta ação não pode ser desfeita."
+                  data-confirmar-botao="Excluir turma"
+                  th:attr="data-confirmar-item=${turma.nomeTurma}">
                 <input type="hidden" th:field="*{id}"/>
                 <button type="submit" class="btn btn-danger">Excluir Turma</button>
             </form>
@@ -293,9 +300,10 @@
             <span th:if="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
                 Nenhum conteúdo encontrado para essa busca.
             </span>
-                        <span th:unless="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
-                Essa turma ainda não possui conteúdos cadastrados.
-            </span>
+                        <th:block th:unless="${!#strings.isEmpty(termoBusca) or !#strings.isEmpty(tipoFiltro)}">
+                            <th:block th:if="${isProfessorTurma}"><div th:replace="~{fragments/vazio :: vazio('conteudo', 'Nenhum conteúdo publicado ainda', 'Adicione o primeiro material da turma. Ele aparece para os alunos e entra no plano de estudos deles.', null, null)}"></div></th:block>
+                            <th:block th:if="${!isProfessorTurma}"><div th:replace="~{fragments/vazio :: vazio('conteudo', 'O professor ainda não publicou conteúdos', 'Assim que houver materiais, eles aparecem aqui e entram no seu plano de estudos.', 'Ver meu plano de estudos', @{/eventos})}"></div></th:block>
+                        </th:block>
                 </div>
 
             <div class="conteudo-card" th:each="conteudo : ${conteudos}"
@@ -310,7 +318,7 @@
 
                     <div class="conteudo-meta">
                         <span th:if="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank()}"
-                              th:text="${conteudo.duracaoEstimada}">Tempo</span>
+                              th:text="${(conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada)}">Tempo</span>
 
                         <a th:if="${conteudo.url != null and !conteudo.url.isBlank()}"
                            th:href="${conteudo.url}"
@@ -455,7 +463,7 @@
                             </strong>
                             <span class="conteudo-midia-detalhes"
                                   th:if="${tiposMidiaPorConteudo.get(conteudo.id) == 'Vídeo do YouTube'}"
-                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? conteudo.duracaoEstimada : ''}">
+                                  th:text="${conteudo.duracaoEstimada != null and !conteudo.duracaoEstimada.isBlank() ? (conteudo.duracaoEstimada matches '[0-9]+' ? conteudo.duracaoEstimada + ' min' : conteudo.duracaoEstimada) : ''}">
                                 Duração
                             </span>
                             <span class="conteudo-midia-livro-autor"
@@ -597,7 +605,9 @@
                         <label class="form-label">URL</label>
                         <input type="text" name="url" class="form-control mb-3" th:value="${dados.url}">
                         <div class="form-text mb-3">
-                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                            O link precisa ser de um site liberado pelo administrador. Precisa de outro site?
+                            <button type="button" class="btn btn-link p-0 align-baseline solicitar-site-atalho"
+                                    th:if="${session.tipoUsuario == 'professor'}">Solicitar site</button>
                         </div>
                     </div>
 
@@ -676,7 +686,7 @@
         <div class="modal-content campus-modal">
 
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="solicitarDominioTitulo">Solicitar Domínio</h2>
+                <h2 class="modal-title fs-5" id="solicitarDominioTitulo">Pedir liberação de um site</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
 
@@ -688,16 +698,17 @@
                            th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                     <p class="form-text">
-                        Links só podem ser de domínios autorizados. Se o site que você quer usar
-                        não estiver liberado, solicite aqui e o administrador vai analisar.
+                        Para proteger os alunos, os materiais só aceitam links de sites liberados pelo
+                        administrador. Cole o link do material e nós pedimos a liberação do site inteiro.
                     </p>
 
-                    <label for="dominioSolicitado" class="form-label">Domínio</label>
+                    <label for="dominioSolicitado" class="form-label">Link ou endereço do site</label>
                     <input id="dominioSolicitado" name="dominio" type="text" class="form-control mb-1"
-                           placeholder="Ex: exemplo.com.br" maxlength="253" required>
+                           placeholder="Ex: https://www.khanacademy.org/math" maxlength="253" required>
                     <div class="form-text mb-3">
-                        Informe só o endereço do site. Se colar um link inteiro, usaremos apenas o domínio.
+                        Pode colar o link completo do material. A liberação vale para todas as páginas do site.
                     </div>
+                    <div id="previaSiteSolicitado" class="form-text mb-3" aria-live="polite" hidden></div>
 
                     <label for="justificativaDominio" class="form-label">Por que esse site é necessário? (opcional)</label>
                     <textarea id="justificativaDominio" name="justificativa" class="form-control mb-3"
@@ -714,8 +725,8 @@
                         <table class="table table-sm align-middle mb-0">
                             <thead>
                             <tr>
-                                <th scope="col">Domínio</th>
-                                <th scope="col">Status</th>
+                                <th scope="col">Site</th>
+                                <th scope="col">Situação</th>
                                 <th scope="col">Resposta do administrador</th>
                             </tr>
                             </thead>
@@ -723,9 +734,9 @@
                             <tr th:each="s : ${solicitacoesDominio}">
                                 <td th:text="${s.dominio}">exemplo.com</td>
                                 <td>
-                                    <span class="badge text-bg-warning" th:if="${s.status == 'pendente'}">Em análise</span>
-                                    <span class="badge text-bg-success" th:if="${s.status == 'aprovado'}">Aprovado</span>
-                                    <span class="badge text-bg-danger" th:if="${s.status == 'rejeitado'}">Rejeitado</span>
+                                    <span class="badge text-bg-warning" th:if="${s.status == 'pendente'}">Aguardando análise</span>
+                                    <span class="badge text-bg-success" th:if="${s.status == 'aprovado'}">Liberado</span>
+                                    <span class="badge text-bg-danger" th:if="${s.status == 'rejeitado'}">Recusado</span>
                                 </td>
                                 <td th:text="${s.comentarioAdmin != null ? s.comentarioAdmin : '-'}">Resposta</td>
                             </tr>
@@ -801,7 +812,9 @@
                         <div class="erro-campo" th:if="${#fields.hasErrors('url')}"
                              th:errors="*{url}"></div>
                         <div class="form-text mb-3">
-                            O link precisa ser de um domínio autorizado. Precisa de outro site? Feche e use o botão "Solicitar Domínio".
+                            O link precisa ser de um site liberado pelo administrador. Precisa de outro site?
+                            <button type="button" class="btn btn-link p-0 align-baseline solicitar-site-atalho"
+                                    th:if="${session.tipoUsuario == 'professor'}">Solicitar site</button>
                         </div>
                     </div>
 
@@ -936,7 +949,7 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Geral/ambienteTurma.js(v=20261024-1)}"></script>
+<script th:src="@{/js/Geral/ambienteTurma.js(v=20261115-1)}"></script>
 
 </body>
 </html>

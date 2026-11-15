@@ -13,6 +13,7 @@ import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -264,6 +265,19 @@ public class ArquivoService {
             );
         }
     }
+    // buscar anexos recentes pelo servico este metodo consulta o ultimo arquivo de cada conteudo de uma vez
+    public Map<Long, ArquivoDTO> buscarMaisRecentesPorConteudos(List<Long> idsConteudos) {
+
+        // buscar arquivos recentes consulta todos os conteudos juntos e trata falhas no banco
+        try {
+            return arquivoRepository.buscarMaisRecentesPorConteudos(idsConteudos);
+
+        } catch (SQLException e) {
+            logger.error("Erro ao buscar arquivos dos conteúdos. conteudos={}", idsConteudos.size(), e);
+            throw new RuntimeException("Não foi possível buscar os arquivos dos conteúdos.", e);
+        }
+    }
+
     // buscar anexo recente pelo servico este metodo consulta o ultimo arquivo ligado ao conteudo
     public ArquivoDTO buscarMaisRecentePorConteudo(Long idConteudo) {
 

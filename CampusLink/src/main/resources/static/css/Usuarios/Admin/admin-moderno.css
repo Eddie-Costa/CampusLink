@@ -1,0 +1,139 @@
+/* admin moderno padroniza titulos botoes principais cartoes e campos das telas administrativas */
+
+/* titulos das paginas administrativas ganham o degrade da marca */
+main h1 {
+    background: linear-gradient(120deg, #11183f, #22337a 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+/* botoes principais e contadores saem do azul chapado para o degrade */
+.usuarios-admin-cadastrar,
+.turmas-admin-cadastrar,
+.cadastro-admin-salvar,
+.editar-admin-salvar,
+.cadastrar-turma-admin-salvar,
+.editar-turma-admin-salvar,
+.cadastrar-evento-admin-salvar,
+.alunos-turma-admin-adicionar-botao,
+.professores-turma-admin-adicionar-botao,
+.conteudos-admin-mostrar-mais,
+.usuarios-admin-total,
+.alunos-turma-admin-total,
+.professores-turma-admin-total {
+    border: 0;
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    color: #ffffff;
+}
+
+.usuarios-admin-cadastrar,
+.turmas-admin-cadastrar,
+.cadastro-admin-salvar,
+.editar-admin-salvar,
+.cadastrar-turma-admin-salvar,
+.editar-turma-admin-salvar,
+.cadastrar-evento-admin-salvar,
+.alunos-turma-admin-adicionar-botao,
+.professores-turma-admin-adicionar-botao,
+.conteudos-admin-mostrar-mais {
+    border-radius: 999px;
+    box-shadow: 0 12px 22px -14px rgba(17, 24, 63, 0.8);
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+.usuarios-admin-cadastrar:hover,
+.turmas-admin-cadastrar:hover,
+.cadastro-admin-salvar:hover,
+.editar-admin-salvar:hover,
+.cadastrar-turma-admin-salvar:hover,
+.editar-turma-admin-salvar:hover,
+.cadastrar-evento-admin-salvar:hover,
+.alunos-turma-admin-adicionar-botao:hover,
+.professores-turma-admin-adicionar-botao:hover,
+.conteudos-admin-mostrar-mais:hover {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    color: #ffffff;
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+/* cartoes do painel ganham faixa colorida e sobem ao passar o mouse */
+.admin-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.admin-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.admin-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(45, 156, 229, 0.35);
+    box-shadow: 0 22px 40px -26px rgba(17, 24, 63, 0.55);
+}
+
+.admin-card:hover::before {
+    opacity: 1;
+}
+
+/* campos dos formularios administrativos usam o fundo claro do cadastro */
+main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
+main select,
+main textarea {
+    background-color: var(--rd-campo, #f5f7fb);
+    border-color: var(--rd-borda, #e1e7f0);
+    border-radius: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):focus,
+main select:focus,
+main textarea:focus {
+    background-color: #ffffff;
+    border-color: var(--rd-accent, #2d9ce5);
+    box-shadow: var(--rd-foco, 0 0 0 4px rgba(45, 156, 229, 0.18));
+    outline: none;
+}
+
+/* selects mantem a seta propria mas seguem o mesmo fundo claro dos campos */
+main select:not(:disabled):not(:focus) {
+    background-color: var(--rd-campo, #f5f7fb) !important;
+}
+
+/* busca da lista de turmas fica do tamanho dos outros campos */
+.turmas-admin-busca {
+    gap: 10px;
+    background: #ffffff;
+}
+
+.turmas-admin-busca label {
+    font-weight: 600;
+}
+
+.turmas-admin-busca input {
+    width: 220px;
+    height: 40px;
+    padding: 8px 14px;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 999px;
+    font-size: 14px;
+}
+
+/* faixa de resumo das listas administrativas usa o degrade */
+.admin-resumo {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    border-radius: 18px;
+    box-shadow: 0 16px 30px -22px rgba(17, 24, 63, 0.8);
+}

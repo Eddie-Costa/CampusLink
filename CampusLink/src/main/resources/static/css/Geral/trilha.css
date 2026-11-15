@@ -1,0 +1,57 @@
+/* trilha de navegacao mostra o caminho ate a pagina atual com separadores discretos */
+.trilha {
+    margin: 0 0 10px;
+}
+
+.trilha ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.trilha li {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+/* separador entre os niveis usa uma seta pequena desenhada em css */
+.trilha li + li::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin: 0 10px 0 8px;
+    border-top: 1.6px solid #a3abba;
+    border-right: 1.6px solid #a3abba;
+    transform: rotate(45deg);
+}
+
+.trilha a {
+    padding: 2px 6px;
+    margin: 0 -6px;
+    border-radius: 6px;
+    color: var(--rd-accent, #2d9ce5);
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.trilha a:hover,
+.trilha a:focus-visible {
+    background: rgba(45, 156, 229, 0.1);
+    color: var(--rd-navy-2, #22337a);
+    outline: none;
+}
+
+.trilha [aria-current="page"] span {
+    max-width: 280px;
+    overflow: hidden;
+    color: var(--rd-texto-suave, #667085);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

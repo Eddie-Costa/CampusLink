@@ -560,3 +560,63 @@ body {
         flex-direction: column;
     }
 }
+
+/* visual moderno deixa o titulo em degrade e os cartoes de resumo claros com numero em destaque */
+.titulo-pagina h1 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.resumo-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--rd-borda, #e1e7f0);
+    border-radius: 20px;
+    box-shadow: var(--rd-sombra, 0 8px 24px -12px rgba(17, 24, 63, 0.18));
+}
+
+.resumo-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+}
+
+.resumo-card:first-child {
+    background: var(--rd-degrade, linear-gradient(135deg, #11183f, #22337a 55%, #2d9ce5 130%));
+    border-color: transparent;
+}
+
+.resumo-numero {
+    color: var(--rd-navy, #11183f);
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.resumo-texto {
+    color: var(--rd-texto-suave, #667085);
+    font-weight: 600;
+}
+
+.resumo-card:first-child .resumo-numero,
+.resumo-card:first-child .resumo-texto {
+    color: #ffffff;
+}
+
+/* botao de remover ganha icone desenhado e formato de pilula */
+.botao-remover {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border-color: rgba(220, 53, 69, 0.4);
+}
+
+.titulo-pagina .texto-degrade {
+    background: linear-gradient(120deg, #11183f, #22337a 45%, #2d9ce5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}

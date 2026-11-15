@@ -311,7 +311,11 @@
                                     id=${arquivo.id}
                                 )}"
                                 method="post"
-                                class="d-inline form-excluir-arquivo">
+                                class="d-inline form-excluir-arquivo"
+                                data-confirmar-titulo="Excluir material?"
+                                data-confirmar="O arquivo será removido da turma. Esta ação não pode ser desfeita."
+                                data-confirmar-botao="Excluir"
+                                th:attr="data-confirmar-item=${arquivo.nomeOriginal}">
 
 
 
@@ -348,8 +352,7 @@
                             colspan="5"
                             class="text-center text-muted py-4">
 
-                        Nenhum material acadêmico
-                        foi disponibilizado ainda.
+                        <div th:replace="~{fragments/vazio :: vazio('arquivo', 'Nenhum material disponibilizado ainda', 'Os arquivos enviados pelos professores da turma aparecem nesta lista.', null, null)}"></div>
 
                     </td>
 
@@ -368,7 +371,6 @@
 </div>
 
 
-<script th:src="@{/js/Geral/arquivos.js}"></script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>

@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/editarUsuarioAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
 </head>
 
 <body>
@@ -19,12 +20,11 @@
 
         <header class="editar-admin-topo">
             <div>
-                <p class="editar-admin-etiqueta">Administração</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, 'Usuários', @{/admin/usuarios}, null, null, 'Editar usuário')}"></nav>
                 <h1>Editar usuário</h1>
                 <p>Atualize as informações do aluno ou professor</p>
             </div>
 
-            <a th:href="@{/admin/usuarios}" class="editar-admin-voltar">Voltar</a>
         </header>
 
         <div th:if="${mensagemErro}" class="alert alert-danger editar-admin-mensagem" th:text="${mensagemErro}"></div>
@@ -48,7 +48,7 @@
                 <div class="editar-admin-campo">
                     <label for="nome">Nome</label>
                     <input id="nome" name="nome" type="text" th:value="${usuario.nome}"
-                           minlength="2" maxlength="50" pattern="^[a-zA-Z\s]{2,50}$" required>
+                           minlength="2" maxlength="50" pattern="[\p{L}]+([ '\-][\p{L}]+)*" title="Use apenas letras, com ou sem acento, espaços, apóstrofo ou hífen" required>
                 </div>
 
                 <div class="editar-admin-campo">

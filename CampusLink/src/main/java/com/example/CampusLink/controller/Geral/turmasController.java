@@ -27,6 +27,7 @@ import com.example.CampusLink.repository.UsuarioRepository;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.helpers.MessageFormatter;
 import com.example.CampusLink.service.DominioService;
+import com.example.CampusLink.repository.DashboardRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +64,9 @@ public class turmasController {
     @Autowired
     private DominioService dominioService;
 
+    @Autowired
+    private DashboardRepository dashboardRepository;
+
     // listar minhas turmas este metodo carrega as turmas do usuario e destaca as usadas recentemente
     @GetMapping("/turmas")
     public String Turmas(Model model, HttpSession session) throws SQLException {
@@ -88,8 +92,37 @@ public class turmasController {
         model.addAttribute("turmas", TurmaRepository.ordenarPorNome(turmas));
         model.addAttribute("turmasRecentes",
                 turmaRepository.recentesDentre(session.getAttribute("email2FA").toString(), turmas, 5));
+        model.addAttribute("resumoTurmas", resumirTurmas(tipoUsuario.toLowerCase(Locale.ROOT),
+                session.getAttribute("email2FA").toString(), turmas));
 
         return "Geral/turmas";
+    }
+
+    // resumir turmas do usuario este metodo conta os numeros de todas as turmas da tela, sem o limite do dashboard
+    private Map<Long, Map<String, Object>> resumirTurmas(String tipoUsuario, String email, List<TurmaDTO> turmas) {
+        Map<Long, Map<String, Object>> resumo = new HashMap<>();
+
+        // ignorar perfil sem resumo devolve mapa vazio para quem nao e aluno nem professor
+        if (!"aluno".equals(tipoUsuario) && !"professor".equals(tipoUsuario)) {
+            return resumo;
+        }
+
+        // consultar resumo protege a listagem para que uma falha nos numeros nao esconda as turmas
+        try {
+            Long id = dashboardRepository.buscarIdentidade(email, tipoUsuario);
+
+            // ignorar usuario sem identidade devolve mapa vazio quando o vinculo nao foi encontrado
+            if (id == null) {
+                return resumo;
+            }
+
+            resumo.putAll(dashboardRepository.resumoDaListaDeTurmas(tipoUsuario, id,
+                    turmas.stream().map(TurmaDTO::getId).toList()));
+        } catch (RuntimeException e) {
+            logger.warn("Nao foi possivel resumir as turmas do usuario", e);
+        }
+
+        return resumo;
     }
 
     // abrir ambiente da turma este metodo reune participantes conteudos arquivos e permissoes para a tela
@@ -182,14 +215,9 @@ public class turmasController {
         model.addAttribute("termoBusca", q == null ? "" : q.trim());
         model.addAttribute("tipoFiltro", tipo == null ? "" : tipo);
 
-        Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
-        for (ConteudoDTO conteudo : conteudos) {
-            ArquivoDTO arquivo = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
-            // associar material da turma inclui o arquivo encontrado na lista por conteudo
-            if (arquivo != null) {
-                arquivosPorConteudo.put(conteudo.getId(), arquivo);
-            }
-        }
+        // buscar arquivos de todos os conteudos em uma consulta evita uma ida ao banco por conteudo
+        Map<Long, ArquivoDTO> arquivosPorConteudo = arquivoService.buscarMaisRecentesPorConteudos(
+                conteudos.stream().map(ConteudoDTO::getId).toList());
         model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
         return "Geral/ambienteTurma";
     }

@@ -6,6 +6,7 @@ import com.example.CampusLink.repository.ProfessorRepository;
 import com.example.CampusLink.repository.TurmaRepository;
 import com.example.CampusLink.repository.ConteudoRepository;
 import com.example.CampusLink.dto.ConteudoDTO;
+import com.example.CampusLink.dto.SessaoEstudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
 import com.example.CampusLink.dto.ViabilidadeDTO;
 import com.example.CampusLink.model.Evento;
@@ -38,7 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,9 +67,10 @@ public class EventosController {
     private final ConteudoRepository conteudoRepository;
 
 
-    // abrir calendario este metodo carrega os eventos para o usuario com acesso confirmado
+    // abrir calendario este metodo carrega os eventos do mes escolhido para o usuario com acesso confirmado
     @GetMapping
-    public String exibirCalendario(Model model, HttpSession session) throws SQLException {
+    public String exibirCalendario(Model model, HttpSession session,
+                                   @RequestParam(value = "mes", required = false) String mes) throws SQLException {
 
         // proteger calendario exige login e verificacao antes de listar eventos
         if (!usuarioPassouPeloLoginE2FA(session)) {
@@ -85,7 +89,7 @@ public class EventosController {
             return "redirect:/login";
         }
 
-        carregarDadosDaPagina(model, session);
+        carregarDadosDaPagina(model, session, mesDoCalendario(mes));
         logger.debug("Calendario exibido para {}", obterTipoUsuario(session));
         // registro de detalhes confere se esta habilitado ao abrir calendario
         if (logger.isDebugEnabled()) {
@@ -108,7 +112,8 @@ public class EventosController {
         // proteger cadastro de evento exige login e verificacao antes de abrir o formulario
         if (!usuarioPassouPeloLoginE2FA(session)) {return "redirect:/login";}
 
-        carregarDadosDaPagina(model, session);
+        // cadastro sem mes mantem todos os eventos das turmas porque a data do formulario pode ir para qualquer mes
+        carregarDadosDaPagina(model, session, null);
         return "Geral/cadastrar-eventos";
     }
 
@@ -312,9 +317,7 @@ public class EventosController {
             return "redirect:/eventos";
         }
 
-        Evento eventoEncontrado =
-                eventoService.listarEventos().stream().filter(evento -> evento.getId() != null && evento.getId().equals(eventoId)
-                        ).findFirst().orElse(null);
+        Evento eventoEncontrado = eventoService.buscarEventoPorId(eventoId);
 
         // localizar evento para exclusao informa quando o evento ja nao existe
         if (eventoEncontrado == null) {
@@ -411,12 +414,15 @@ public class EventosController {
 
 
 
-    // carregar calendario por perfil este metodo reune eventos turmas e o plano de estudos do aluno
-    private void carregarDadosDaPagina(Model model, HttpSession session) throws SQLException {
+    // carregar calendario por perfil este metodo reune eventos turmas e o plano de estudos do aluno, so do mes informado quando ha mes
+    private void carregarDadosDaPagina(Model model, HttpSession session, YearMonth mes) throws SQLException {
 
         String tipoUsuario = obterTipoUsuario(session);
-        List<Evento> eventos = eventoService.listarEventos();
-        model.addAttribute("eventos", eventos);
+        LocalDateTime inicioJanela = mes == null ? null : mes.atDay(1).atStartOfDay();
+        LocalDateTime fimJanela = mes == null ? null : mes.plusMonths(1).atDay(1).atStartOfDay();
+        List<Evento> eventos = null;
+        model.addAttribute("mesCalendario", mes == null ? "" : mes.toString());
+        model.addAttribute("prioridadesRestantes", 0);
         model.addAttribute("tipoUsuario", tipoUsuario);
         model.addAttribute("disponibilidades", List.of());
         model.addAttribute("conteudos", List.of());
@@ -438,7 +444,7 @@ public class EventosController {
 
                 List<TurmaDTO> turmasProfessor = turmaRepository.buscarTurmasDoUsuario("professor", idProfessor.toString());
                 model.addAttribute("turmasProfessor", turmasProfessor);
-                model.addAttribute("eventos", eventosDasTurmas(eventos, turmasProfessor));
+                eventos = eventosDasTurmas(turmasProfessor, inicioJanela, fimJanela);
             }
         }
 
@@ -453,8 +459,8 @@ public class EventosController {
                 model.addAttribute("disponibilidades", disponibilidadeService.listarPorAluno(idAluno));
 
                 List<TurmaDTO> turmasAluno = turmaRepository.buscarTurmasDoUsuario("aluno", idAluno.toString());
-                List<Evento> eventosDoAluno = eventosDasTurmas(eventos, turmasAluno);
-                model.addAttribute("eventos", eventosDoAluno);
+                List<Evento> eventosDoAluno = eventosDasTurmas(turmasAluno, inicioJanela, fimJanela);
+                eventos = eventosDoAluno;
                 model.addAttribute("conteudosPorEvento",
                         conteudoRepository.listarPorEventos(eventosDoAluno.stream().map(Evento::getId).toList()));
                 model.addAttribute("conteudosConcluidos",
@@ -462,22 +468,59 @@ public class EventosController {
 
                 List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
                 model.addAttribute("proximoEventoRisco", viabilidadeService.proximoEventoPendente(resultados));
-                model.addAttribute("prioridades", viabilidadeService.listarPrioridades(resultados));
+                List<ViabilidadeDTO> prioridades = viabilidadeService.listarPrioridades(resultados);
+                model.addAttribute("prioridades", prioridades.subList(0, Math.min(ViabilidadeService.PRIORIDADES_NA_TELA, prioridades.size())));
+                model.addAttribute("prioridadesRestantes", Math.max(0, prioridades.size() - ViabilidadeService.PRIORIDADES_NA_TELA));
                 model.addAttribute("nomeTurmaPorId", turmasAluno.stream()
                         .collect(Collectors.toMap(TurmaDTO::getId, TurmaDTO::getNomeTurma, (nome, repetido) -> nome)));
 
-                model.addAttribute("planoEstudo", viabilidadeService.gerarPlano(idAluno));
+                List<SessaoEstudoDTO> plano = viabilidadeService.gerarPlano(idAluno);
+                // limitar plano ao mes mantem as sessoes do mes exibido, as de hoje e as que ainda nao tem data
+                if (mes != null) {
+                    LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+                    plano = plano.stream().filter(sessao -> sessao.getData() == null || sessao.getData().equals(hoje)
+                            || YearMonth.from(sessao.getData()).equals(mes)).toList();
+                }
+                model.addAttribute("planoEstudo", plano);
             }
         }
+
+        // usar todos os eventos mantem o comportamento anterior para quem nao e aluno nem professor identificado
+        if (eventos == null) {
+            eventos = eventoService.listarEventos();
+        }
+        model.addAttribute("eventos", eventos);
     }
 
 
-    // filtrar eventos das turmas este metodo separa os eventos ligados as turmas informadas
-    private List<Evento> eventosDasTurmas(List<Evento> eventos, List<TurmaDTO> turmas) {
+    // buscar eventos das turmas este metodo consulta as turmas informadas e, com janela, apenas os eventos daquele periodo
+    private List<Evento> eventosDasTurmas(List<TurmaDTO> turmas, LocalDateTime inicio, LocalDateTime fim) {
 
-        List<Long> idsTurmas = turmas.stream().map(TurmaDTO::getId).toList();
+        Set<Long> idsTurmas = turmas.stream().map(TurmaDTO::getId).collect(Collectors.toSet());
 
-        return eventos.stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
+        // manter todos os eventos das turmas atende a tela de cadastro, que pode mostrar qualquer data
+        if (inicio == null) {
+            return eventoService.listarEventos().stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
+        }
+
+        return eventoService.listarEventosDasTurmasNoPeriodo(idsTurmas, inicio, fim);
+    }
+
+
+    // ler mes do calendario este metodo usa o mes pedido no endereco ou o mes atual quando o valor e invalido
+    private YearMonth mesDoCalendario(String mes) {
+
+        // usar mes atual quando o endereco nao informa mes
+        if (mes == null || mes.isBlank()) {
+            return YearMonth.now(ZoneId.of("America/Sao_Paulo"));
+        }
+
+        // validar mes informado volta ao mes atual quando o formato nao e ano e mes
+        try {
+            return YearMonth.parse(mes);
+        } catch (DateTimeParseException e) {
+            return YearMonth.now(ZoneId.of("America/Sao_Paulo"));
+        }
     }
 
 

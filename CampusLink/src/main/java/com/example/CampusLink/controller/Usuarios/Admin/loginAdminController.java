@@ -9,6 +9,7 @@ import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
 import com.example.CampusLink.dto.FinalidadeCodigoEmail;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -63,7 +64,8 @@ public class loginAdminController {
             @Valid @ModelAttribute("admin") loginAdminDTO loginAdminDTO,
             BindingResult result,
             Model model,
-            HttpSession session
+            HttpSession session,
+            HttpServletRequest request
     ) throws SQLException {
 
         String email = loginAdminDTO.getEmail();
@@ -128,13 +130,18 @@ public class loginAdminController {
                 encoder.matches(loginAdminDTO.getSenha(), senhaHash)) {
 
             loginAttemptService.loginSucesso(email);
+            // trocar id da sessao impede que um id plantado antes do login seja usado para entrar na conta
+            request.changeSessionId();
 
             // exigir codigo administrativo envia o codigo e abre a verificacao quando essa etapa esta habilitada
             if (twoFactorEnabled) {
 
-                String codigo = twoFactorService.gerarCodigo(email);
+                String codigo = TwoFactorService.gerarCodigoSeLiberado(email);
 
-                emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
+                // enviar codigo novo so quando a espera terminou senao o codigo ja enviado continua valendo
+                if (codigo != null) {
+                    emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
+                }
 
                 session.setAttribute("email2FA", email);
                 session.setAttribute("redirect", "Login");

@@ -1,0 +1,253 @@
+/* paginas publicas modernizam inicio funcionalidades e sobre nos com degrade da marca cartoes elevados e botoes padronizados */
+
+.home-page,
+.funcionalidades-page,
+.sobre-page {
+    font-family: var(--rd-fonte, "Inter", sans-serif);
+}
+
+/* etiqueta de destaque vira uma pilula azul clara acima do titulo */
+.home-destaque,
+.pagina-destaque {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(45, 156, 229, 0.12) !important;
+    color: var(--rd-accent, #2d9ce5) !important;
+    border: 1px solid rgba(45, 156, 229, 0.25);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 14px !important;
+    border-radius: 999px !important;
+}
+
+.home-destaque::before,
+.pagina-destaque::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rd-accent, #2d9ce5);
+    box-shadow: 0 0 0 4px rgba(45, 156, 229, 0.2);
+}
+
+/* titulos principais ficam maiores com a ultima parte em degrade */
+.home-texto h1,
+.funcionalidades-topo h1,
+.sobre-texto h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.035em !important;
+    line-height: 1.08 !important;
+    color: var(--rd-navy, #11183f) !important;
+}
+
+.texto-degrade {
+    background: linear-gradient(90deg, var(--rd-navy-2, #22337a), var(--rd-accent, #2d9ce5));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.home-texto p,
+.funcionalidades-topo p,
+.sobre-texto p {
+    color: var(--rd-texto-suave, #667085) !important;
+    font-size: 1.1rem !important;
+    line-height: 1.65 !important;
+}
+
+/* botoes das paginas publicas seguem o padrao novo com degrade e contorno claro */
+.botao-principal,
+.botao-funcionalidades {
+    background: var(--rd-degrade) !important;
+    background-size: 160% 100% !important;
+    color: #ffffff !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    padding: 13px 24px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 12px 24px -12px rgba(17, 24, 63, 0.7) !important;
+    transition: transform 0.2s, background-position 0.4s, box-shadow 0.2s !important;
+}
+
+.botao-principal:hover,
+.botao-funcionalidades:hover {
+    transform: translateY(-2px);
+    background-position: 100% 0 !important;
+}
+
+.botao-secundario {
+    background: #ffffff !important;
+    color: var(--rd-navy, #11183f) !important;
+    border: 1.5px solid var(--rd-borda, #e1e7f0) !important;
+    border-radius: 12px !important;
+    padding: 12px 22px !important;
+    font-weight: 700 !important;
+    transition: border-color 0.2s, transform 0.2s !important;
+}
+
+.botao-secundario:hover {
+    border-color: var(--rd-navy, #11183f) !important;
+    transform: translateY(-2px);
+}
+
+/* paineis escuros usam o degrade da marca com formas decorativas */
+.home-painel,
+.sobre-painel {
+    position: relative;
+    overflow: hidden;
+    background: var(--rd-degrade) !important;
+    border: 0 !important;
+    border-radius: 28px !important;
+    box-shadow: var(--rd-sombra-forte) !important;
+}
+
+.home-painel::after,
+.sobre-painel::after {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    right: -120px;
+    bottom: -140px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+}
+
+.painel-topo {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.painel-item {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.painel-numero {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1rem !important;
+    font-weight: 800;
+}
+
+.painel-status {
+    background: rgba(16, 185, 129, 0.18) !important;
+    color: #a7f3d0 !important;
+    border: 1px solid rgba(167, 243, 208, 0.4);
+}
+
+/* cartoes de recursos ficam brancos com borda clara e sobem ao passar o mouse */
+.recurso-card,
+.funcionalidade-card,
+.valor-card,
+.sobre-bloco {
+    background: #ffffff !important;
+    border: 1px solid var(--rd-borda, #e1e7f0) !important;
+    border-radius: 22px !important;
+    box-shadow: var(--rd-sombra) !important;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+.recurso-card:hover,
+.funcionalidade-card:hover,
+.valor-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(45, 156, 229, 0.35) !important;
+    box-shadow: 0 24px 40px -24px rgba(17, 24, 63, 0.4) !important;
+}
+
+.recurso-numero,
+.numero-card,
+.valor-card > span {
+    display: inline-grid !important;
+    place-items: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 14px;
+    background: var(--rd-degrade) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 10px 18px -10px rgba(17, 24, 63, 0.7);
+    margin-bottom: 14px;
+}
+
+.recurso-card h2,
+.funcionalidade-card h2,
+.valor-card h2,
+.sobre-bloco h2 {
+    font-weight: 800 !important;
+    letter-spacing: -0.02em;
+    color: var(--rd-navy, #11183f) !important;
+}
+
+.recurso-card p,
+.funcionalidade-card p,
+.valor-card p,
+.sobre-bloco p {
+    color: var(--rd-texto-suave, #667085) !important;
+    line-height: 1.6 !important;
+}
+
+/* bloco final vira uma faixa com degrade suave e texto escuro */
+.home-final,
+.funcionalidades-final,
+.sobre-final {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(500px 220px at 100% 0%, rgba(45, 156, 229, 0.18), transparent 70%),
+        radial-gradient(420px 200px at 0% 100%, rgba(108, 123, 255, 0.14), transparent 70%),
+        #ffffff !important;
+    border: 1px solid var(--rd-borda, #e1e7f0) !important;
+    border-radius: 26px !important;
+    box-shadow: var(--rd-sombra) !important;
+}
+
+.home-final h2,
+.funcionalidades-final h2,
+.sobre-final h2 {
+    font-weight: 800 !important;
+    letter-spacing: -0.02em;
+    color: var(--rd-navy, #11183f) !important;
+}
+
+/* texto do bloco final fica escuro porque o fundo deixou de ser azul */
+.home-final p,
+.funcionalidades-final p,
+.sobre-final p {
+    color: var(--rd-texto-suave, #667085) !important;
+}
+
+/* entrada suave aparece de baixo para cima ao abrir a pagina */
+.home-principal,
+.funcionalidades-topo,
+.sobre-principal {
+    animation: publicas-entrar 0.6s ease-out both;
+}
+
+.home-recursos,
+.funcionalidades-grid,
+.valores-grid {
+    animation: publicas-entrar 0.6s 0.12s ease-out both;
+}
+
+@keyframes publicas-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

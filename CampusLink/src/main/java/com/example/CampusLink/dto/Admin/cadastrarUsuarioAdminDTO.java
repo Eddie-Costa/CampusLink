@@ -23,9 +23,9 @@ public class cadastrarUsuarioAdminDTO {
     @NotBlank(message = "O RGM ou matrícula é obrigatório")
     private String identificador;
 
-    // nome deve conter apenas letras e espacos e ter entre 2 e 50 caracteres
+    // nome deve conter letras com ou sem acento espacos apostrofo ou hifen e ter entre 2 e 50 caracteres
     @Size(min = 2, max = 50, message = "O nome deve ter entre 2 e 50 caracteres")
-    @Pattern(regexp = "^[a-zA-Z\\s]{2,50}$", message = "O nome deve conter apenas letras e espaços")
+    @Pattern(regexp = "^\\p{L}+([ '\\-]\\p{L}+)*$", message = "O nome deve conter apenas letras, com ou sem acento, espaços, apóstrofo ou hífen")
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
 

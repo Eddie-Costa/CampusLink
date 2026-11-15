@@ -1,0 +1,674 @@
+/* visual moderno do campuslink aplica fonte cores cantos sombras e componentes padronizados em todas as paginas */
+
+:root {
+    --rd-fonte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --rd-navy: var(--campus-navy, #11183f);
+    --rd-navy-2: #22337a;
+    --rd-accent: var(--campus-accent, #2d9ce5);
+    --rd-degrade: linear-gradient(135deg, var(--rd-navy) 0%, var(--rd-navy-2) 55%, var(--rd-accent) 130%);
+    --rd-texto: #1d2433;
+    --rd-texto-suave: #667085;
+    --rd-fundo: #f3f6fb;
+    --rd-superficie: #ffffff;
+    --rd-campo: #f5f7fb;
+    --rd-borda: #e1e7f0;
+    --rd-borda-forte: #c9d3e3;
+    --rd-raio-sm: 10px;
+    --rd-raio: 14px;
+    --rd-raio-lg: 20px;
+    --rd-sombra: 0 1px 2px rgba(17, 24, 63, 0.05), 0 8px 24px -12px rgba(17, 24, 63, 0.18);
+    --rd-sombra-forte: 0 24px 50px -20px rgba(17, 24, 63, 0.35);
+    --rd-foco: 0 0 0 4px rgba(45, 156, 229, 0.18);
+    --bs-body-font-family: var(--rd-fonte);
+    --bs-border-radius: var(--rd-raio-sm);
+    --bs-border-radius-lg: var(--rd-raio);
+    --bs-link-color-rgb: 27, 73, 101;
+}
+
+/* fundo da pagina troca o degrade forte por um tom claro com brilhos suaves de cor */
+html,
+body {
+    background-color: var(--rd-fundo);
+}
+
+body,
+.pagina-autenticacao {
+    background-image:
+        radial-gradient(900px 480px at 0% -10%, rgba(45, 156, 229, 0.16), transparent 60%),
+        radial-gradient(800px 460px at 100% 0%, rgba(108, 123, 255, 0.12), transparent 60%) !important;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: auto;
+}
+
+body {
+    font-family: var(--rd-fonte);
+    color: var(--rd-texto);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: var(--rd-fonte);
+    letter-spacing: -0.02em;
+}
+
+h1, .h1 {
+    font-weight: 800;
+}
+
+::selection {
+    background: rgba(45, 156, 229, 0.22);
+}
+
+/* cabecalho fica branco translucido com desfoque e destaca a pagina atual */
+.site-header-nav {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: saturate(160%) blur(14px);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid rgba(225, 231, 240, 0.9);
+    box-shadow: 0 6px 24px -18px rgba(17, 24, 63, 0.45);
+}
+
+.site-header-nav header.border-bottom {
+    border-bottom: 0 !important;
+}
+
+/* colunas do cabecalho deixam logo e conta com a largura que precisam e o menu com o restante */
+@media (min-width: 992px) {
+    .site-header-nav header {
+        flex-wrap: nowrap !important;
+        gap: 16px;
+    }
+
+    .site-header-nav header > .col-md-3 {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 110px;
+    }
+}
+
+.site-header-nav .nav-link {
+    border-radius: 999px;
+    padding: 7px 11px !important;
+    font-size: 0.94rem;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #3b4459 !important;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.site-header-nav .nav-link:hover {
+    background: rgba(17, 24, 63, 0.06);
+    color: var(--rd-navy) !important;
+}
+
+.site-header-nav .nav-link.active,
+.site-header-nav .nav-link[aria-current="page"] {
+    background: rgba(45, 156, 229, 0.12);
+    color: var(--rd-navy) !important;
+}
+
+.site-header-nav .btn {
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-weight: 600;
+}
+
+.account-avatar {
+    background: var(--rd-degrade) !important;
+    box-shadow: 0 6px 16px -6px rgba(17, 24, 63, 0.6);
+}
+
+.account-dropdown {
+    border-radius: var(--rd-raio) !important;
+    border: 1px solid var(--rd-borda) !important;
+    box-shadow: var(--rd-sombra-forte) !important;
+    padding: 8px !important;
+}
+
+.account-dropdown .dropdown-item {
+    border-radius: var(--rd-raio-sm);
+}
+
+/* rodape fica leve com links discretos */
+.site-footer-container footer {
+    margin-top: 48px !important;
+}
+
+.site-footer-container .nav-link {
+    color: #4b5468 !important;
+    font-weight: 500;
+    border-radius: 999px;
+}
+
+.site-footer-container .nav-link:hover {
+    color: var(--rd-navy) !important;
+    background: rgba(17, 24, 63, 0.05);
+}
+
+.site-footer-container .border-bottom {
+    border-color: var(--rd-borda) !important;
+}
+
+.site-footer-container .text-body-secondary {
+    color: #8a94a6 !important;
+}
+
+/* botoes ganham cantos arredondados peso forte e degrade na acao principal */
+.btn {
+    border-radius: var(--rd-raio-sm);
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn:focus-visible {
+    box-shadow: var(--rd-foco) !important;
+}
+
+.btn-primary,
+.btn-dark,
+.btn-campus {
+    background: var(--rd-degrade) !important;
+    background-size: 160% 100% !important;
+    border: 0 !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 20px -12px rgba(17, 24, 63, 0.7);
+}
+
+.btn-primary:hover,
+.btn-dark:hover,
+.btn-campus:hover {
+    background-position: 100% 0 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px -14px rgba(17, 24, 63, 0.75);
+}
+
+.btn-primary:disabled,
+.btn-dark:disabled,
+.btn-campus:disabled {
+    background: #c9d1e0 !important;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-outline-primary,
+.btn-outline-dark,
+.btn-outline-secondary,
+.btn-secondary,
+.btn-light {
+    background: #ffffff;
+    border: 1.5px solid var(--rd-borda) !important;
+    color: var(--rd-navy) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-dark:hover,
+.btn-outline-secondary:hover,
+.btn-secondary:hover,
+.btn-light:hover {
+    background: #f7f9fd !important;
+    border-color: var(--rd-navy) !important;
+    color: var(--rd-navy) !important;
+}
+
+.btn-danger {
+    background: #e11d48;
+    border-color: #e11d48;
+}
+
+.btn-outline-danger {
+    border-width: 1.5px;
+}
+
+.btn-success {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* cartoes e paineis usam cantos maiores borda clara e sombra suave */
+.card,
+.modal-content,
+.list-group {
+    border-radius: var(--rd-raio-lg);
+    border: 1px solid var(--rd-borda);
+    box-shadow: var(--rd-sombra);
+}
+
+.card {
+    overflow: hidden;
+}
+
+.card-header,
+.card-footer {
+    background: #fafbfe;
+    border-color: var(--rd-borda);
+}
+
+/* campos de formulario ficam mais altos com fundo claro e anel de foco azul */
+.form-control,
+.form-select {
+    border-radius: var(--rd-raio-sm);
+    border: 1.5px solid var(--rd-borda);
+    background-color: var(--rd-campo);
+    color: var(--rd-texto);
+    padding: 0.62rem 0.9rem;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:hover,
+.form-select:hover {
+    border-color: var(--rd-borda-forte);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #ffffff;
+    border-color: var(--rd-accent);
+    box-shadow: var(--rd-foco);
+}
+
+.form-control::placeholder {
+    color: #a3abba;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--rd-texto);
+    margin-bottom: 0.45rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--rd-accent);
+    border-color: var(--rd-accent);
+}
+
+.form-check-input:focus {
+    box-shadow: var(--rd-foco);
+}
+
+.input-group > .btn {
+    border-radius: 0 var(--rd-raio-sm) var(--rd-raio-sm) 0;
+}
+
+/* tabelas ganham cabecalho discreto em caixa alta e linhas com destaque ao passar o mouse */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(17, 24, 63, 0.025);
+    --bs-table-hover-bg: rgba(45, 156, 229, 0.06);
+    color: var(--rd-texto);
+    margin-bottom: 0;
+}
+
+.table > thead th,
+.table > thead td {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--rd-texto-suave);
+    background: #f7f9fc;
+    border-bottom: 1px solid var(--rd-borda);
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+}
+
+.table > tbody > tr > * {
+    border-color: #eef1f6;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    vertical-align: middle;
+}
+
+.table > tbody > tr:hover > * {
+    background-color: rgba(45, 156, 229, 0.04);
+}
+
+.table-responsive {
+    border-radius: var(--rd-raio);
+}
+
+/* etiquetas ficam arredondadas e com peso medio */
+.badge {
+    border-radius: 999px;
+    font-weight: 600;
+    padding: 0.42em 0.8em;
+    letter-spacing: 0.01em;
+}
+
+/* avisos usam cores suaves cantos arredondados e borda fina */
+.alert {
+    border-radius: var(--rd-raio);
+    border-width: 1px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.alert-danger {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #9f1239;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.alert-info,
+.alert-primary {
+    background: #eff8ff;
+    border-color: #bfe3fb;
+    color: #0b4a6f;
+}
+
+/* janelas modais ficam arredondadas com cabecalho e rodape sem linhas pesadas */
+.modal-content {
+    border: 0;
+    box-shadow: var(--rd-sombra-forte);
+    overflow: hidden;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: #eef1f6;
+}
+
+.modal-header {
+    padding: 1.15rem 1.4rem;
+}
+
+.modal-body {
+    padding: 1.25rem 1.4rem;
+}
+
+.modal-title {
+    font-weight: 700;
+    color: var(--rd-navy);
+}
+
+.modal-backdrop.show {
+    opacity: 0.45;
+    backdrop-filter: blur(2px);
+}
+
+/* menus suspensos usam cantos arredondados e sombra suave */
+.dropdown-menu {
+    border-radius: var(--rd-raio);
+    border: 1px solid var(--rd-borda);
+    box-shadow: var(--rd-sombra-forte);
+    padding: 6px;
+}
+
+.dropdown-item {
+    border-radius: var(--rd-raio-sm);
+    padding: 0.5rem 0.75rem;
+}
+
+.dropdown-item:active {
+    background: var(--rd-accent);
+}
+
+/* abas e paginacao seguem o estilo de pilulas */
+.nav-pills .nav-link {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.nav-pills .nav-link.active {
+    background: var(--rd-degrade);
+}
+
+.page-link {
+    border-radius: var(--rd-raio-sm) !important;
+    margin: 0 3px;
+    border-color: var(--rd-borda);
+    color: var(--rd-navy);
+}
+
+.page-item.active .page-link {
+    background: var(--rd-navy);
+    border-color: var(--rd-navy);
+}
+
+.progress {
+    border-radius: 999px;
+    background: #e8ecf3;
+}
+
+.progress-bar {
+    background: var(--rd-degrade);
+}
+
+/* barra de rolagem fica fina nos navegadores que permitem */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #c3ccdb transparent;
+}
+
+/* menos movimento desliga transicoes para quem pediu isso no sistema */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* componentes de lista compartilhados por turmas score e acompanhamento */
+
+/* busca de turma ganha icone de lupa e o mesmo campo das telas de acesso */
+.busca-turma {
+    height: 52px;
+    padding: 0 20px 0 48px;
+    border: 1.5px solid var(--rd-borda);
+    border-radius: var(--rd-raio);
+    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 16px center;
+    box-shadow: var(--rd-sombra);
+    color: var(--rd-texto);
+}
+
+.busca-turma:focus {
+    border-color: var(--rd-accent);
+    box-shadow: var(--rd-foco);
+}
+
+.sugestoes-turma {
+    border-color: var(--rd-borda);
+    border-radius: var(--rd-raio);
+    box-shadow: var(--rd-sombra-forte);
+}
+
+/* cartao de turma fica branco com selo de icone em degrade e sobe ao passar o mouse */
+.lista-turmas {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    grid-auto-rows: minmax(200px, auto);
+    gap: 20px;
+}
+
+/* cartao cresce com o conteudo para o nome da turma nao ser espremido ate sumir */
+.turma-card {
+    height: auto;
+    min-height: 200px;
+    align-items: flex-start;
+    justify-content: space-between;
+    text-align: left;
+    padding: 22px;
+    background: #ffffff;
+    color: var(--rd-navy);
+    border: 1px solid var(--rd-borda);
+    box-shadow: var(--rd-sombra);
+    position: relative;
+    overflow: hidden;
+}
+
+.turma-card > * {
+    flex-shrink: 0;
+}
+
+.turma-card::after {
+    content: "";
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    right: -60px;
+    bottom: -70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45, 156, 229, 0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.turma-card:hover {
+    background: #ffffff;
+    color: var(--rd-navy);
+    border-color: rgba(45, 156, 229, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 24px 40px -24px rgba(17, 24, 63, 0.45);
+}
+
+.turma-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--rd-degrade);
+    box-shadow: 0 12px 20px -10px rgba(17, 24, 63, 0.7);
+}
+
+.turma-icon i {
+    font-size: 24px;
+}
+
+.turma-nome {
+    color: var(--rd-navy);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* cartao de conteudo vira uma linha branca com borda clara */
+.conteudo-card {
+    background: #ffffff;
+    color: var(--rd-texto);
+    border: 1px solid var(--rd-borda);
+    box-shadow: var(--rd-sombra);
+    padding: 18px 24px;
+}
+
+.conteudo-card:hover,
+a.conteudo-card:hover {
+    background: #ffffff;
+    color: var(--rd-texto);
+    border-color: rgba(45, 156, 229, 0.4);
+    box-shadow: 0 20px 32px -22px rgba(17, 24, 63, 0.45);
+}
+
+.conteudo-nome {
+    color: var(--rd-navy);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.conteudo-meta {
+    color: var(--rd-texto-suave);
+}
+
+.conteudo-link {
+    color: var(--rd-accent);
+    font-weight: 600;
+}
+
+.aviso-falta {
+    color: #b45309;
+}
+
+/* botao compacto vira uma pilula de contorno claro */
+.botao-compacto {
+    background: #ffffff;
+    color: var(--rd-navy);
+    border: 1.5px solid var(--rd-borda);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    padding: 7px 16px;
+}
+
+.botao-compacto:hover,
+.botao-compacto:focus-visible {
+    background: #f7f9fd;
+    color: var(--rd-navy);
+    border-color: var(--rd-navy);
+}
+
+.conteudo-card .botao-compacto {
+    background: #ffffff;
+    color: var(--rd-navy);
+}
+
+/* aviso de lista vazia usa cartao tracejado claro */
+.sem-turmas {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1.5px dashed var(--rd-borda-forte);
+    color: var(--rd-texto-suave);
+    font-weight: 600;
+}
+
+/* titulos de secao das listas ficam com peso forte */
+.turmas-container > h2,
+.turmas-page h2.h5 {
+    color: var(--rd-navy);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* botao de sair fica com a cara de link porque o logout agora e enviado por formulario */
+.form-sair { margin: 0; }
+.form-sair .dropdown-item,
+.form-sair .profile-logout { width: 100%; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.form-sair .profile-logout { width: auto; padding: 0; }
+
+/* cabecalho no celular mostra logo e botoes em uma linha e recolhe os links no botao de menu */
+@media (max-width: 767.98px) {
+    .site-header-nav header { justify-content: flex-start !important; gap: 8px 4px; }
+    .site-header-nav header > .col-md-3:first-child { margin-bottom: 0 !important; }
+    .site-header-nav .bloco-conta { order: 2; margin-left: auto; white-space: nowrap; }
+    .site-header-nav .menu-celular { order: 3; margin: 0 0 0 auto; }
+    .site-header-nav header:has(.bloco-conta) .menu-celular { margin-left: 0; }
+    .site-header-nav .bloco-visitante { order: 4; width: 100%; display: flex; justify-content: flex-end; align-items: center; }
+    .site-header-nav #menuPrincipal { order: 5; width: 100%; }
+    .site-header-nav #menuPrincipal ul.nav { flex-direction: column; align-items: stretch; text-align: left; }
+    .site-header-nav #menuPrincipal .nav-link { padding: 10px 8px !important; }
+}
+
+/* contraste minimo de 4.5 para 1 nos textos que o teste de acessibilidade apontou, so no modo claro */
+html:not([data-tema="escuro"]) .selo-risco.risco-sem_evento { color: #5a6273; }
+html:not([data-tema="escuro"]) .evento-admin-status.status-ativo,
+html:not([data-tema="escuro"]) .status-ativo { color: #146c43; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-media { color: #7a5d00; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-alta { color: #b42318; }
+html:not([data-tema="escuro"]) .usuario-status.usuario-inativo { color: #4a5263; }
+html:not([data-tema="escuro"]) .day-cell.dia-passado,
+html:not([data-tema="escuro"]) .day-cell.dia-passado .day-number { color: #636b7d; }
+html:not([data-tema="escuro"]) .day-cell.adjacent-month,
+html:not([data-tema="escuro"]) .day-cell.calendar-empty,
+html:not([data-tema="escuro"]) .day-cell.calendar-empty .disponibilidade-marcador { color: #5f6878; }
+html:not([data-tema="escuro"]) .disponibilidade-marcador.sem-disponibilidade { color: #5f6878 !important; }
+html:not([data-tema="escuro"]) .day-cell.dia-hoje .day-number { background: #1a6fb0; }
+html:not([data-tema="escuro"]) .prioridade-item .prioridade-item-meta { color: #5a6273; }
+html:not([data-tema="escuro"]) .prioridade-item .prioridade-item-motivo { color: #11183f; }
+html:not([data-tema="escuro"]) .acesso-link-pequeno,
+html:not([data-tema="escuro"]) .acesso-etiqueta,
+html:not([data-tema="escuro"]) .acesso-link-botao { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .acesso-divisor span { color: #687082; }
+html:not([data-tema="escuro"]) li[data-regra]:not(.cumprido) { color: #565f72; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-baixa { color: #146c43; }
+html:not([data-tema="escuro"]) .conteudo-admin-selo.status-removido { color: #b42318; }
+html:not([data-tema="escuro"]) .acesso-rodape a { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .evento-marcador.evento-prioridade-baixa { background-color: #1a6fb0; }
+html:not([data-tema="escuro"]) .trilha a { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .prioridade-resumo-baixa strong { background: #1a6fb0; }

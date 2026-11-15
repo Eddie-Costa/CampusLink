@@ -5,6 +5,8 @@ import com.example.CampusLink.dto.Aluno.loginAlunoDTO;
 import com.example.CampusLink.dto.Professor.loginProfessorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -22,45 +24,59 @@ public class ProfessorRepository {
     public loginProfessorDTO buscarPorEmailProfessor(String email) throws SQLException {
 
         String sql = "SELECT * FROM public.\"USUARIOS\" WHERE \"email\" = ?";
-        Connection conn = dataSource.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
-        ResultSet rs = stmt.executeQuery();
 
-        // montar credenciais do professor usa email e senha quando a consulta encontra uma conta
-        if (rs.next()) {
-            loginProfessorDTO usuario = new loginProfessorDTO();
-            usuario.setEmail(rs.getString("EMAIL"));
-            usuario.setSenha(rs.getString("SENHA"));
+        // fechar conexao sempre devolve a conexao ao pool mesmo quando a conta e encontrada
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
 
-            return usuario;
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                // montar credenciais do professor usa email e senha quando a consulta encontra uma conta
+                if (rs.next()) {
+                    loginProfessorDTO usuario = new loginProfessorDTO();
+                    usuario.setEmail(rs.getString("EMAIL"));
+                    usuario.setSenha(rs.getString("SENHA"));
+                    return usuario;
+                }
+            }
         }
-
-        rs.close();
-        stmt.close();
-        conn.close();
         return null;
     }
 
     // buscar identificador do professor este metodo consulta o vinculo entre professor e email do usuario
     public String buscarPorIDProfessor(String email) throws SQLException {
 
+        RequestAttributes requisicao = RequestContextHolder.getRequestAttributes();
+        String chave = "idProfessor:" + email;
+
+        // reaproveitar na mesma requisicao evita consultar o banco varias vezes ao montar uma unica pagina
+        if (requisicao != null && requisicao.getAttribute(chave, RequestAttributes.SCOPE_REQUEST) instanceof String salvo) {
+            return salvo;
+        }
+
         String  id = "";
 
         String sql = "SELECT p.id FROM public.\"PROFESSORES\" p\n" + "JOIN public.\"USUARIOS\" u ON p.id_usuario = u.id WHERE u.email = ?";
-        Connection conn = dataSource.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setString(1, email);
-        ResultSet rs = stmt.executeQuery();
 
-        // recuperar codigo do professor guarda o identificador quando existe resultado
-        if (rs.next()) {
-            id = rs.getString("id");
+        // fechar conexao sempre devolve a conexao ao pool mesmo se a consulta falhar
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                // recuperar codigo do professor guarda o identificador quando existe resultado
+                if (rs.next()) {
+                    id = rs.getString("id");
+                }
+            }
         }
 
-        rs.close();
-        stmt.close();
-        conn.close();
+        // guardar na requisicao deixa o id pronto para as proximas chamadas da mesma pagina, vazio nao e guardado
+        if (requisicao != null && !id.isEmpty()) {
+            requisicao.setAttribute(chave, id, RequestAttributes.SCOPE_REQUEST);
+        }
         return id;
     }
 

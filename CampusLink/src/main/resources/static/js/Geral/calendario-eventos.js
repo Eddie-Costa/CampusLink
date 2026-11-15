@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const seletorMes = document.getElementById('seletorMes');
     const mesAnterior = document.getElementById('mesAnterior');
     const mesProximo = document.getElementById('mesProximo');
+    const voltarHoje = document.getElementById('voltarHoje');
 
     const quantidadePrioridadeAlta = document.getElementById('quantidadePrioridadeAlta');
     const quantidadePrioridadeMedia = document.getElementById('quantidadePrioridadeMedia');
@@ -106,8 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const hoje = new Date();
     const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
-    let mesAtual = hoje.getMonth();
-    let anoAtual = hoje.getFullYear();
+    // mes carregado pelo servidor e o unico com eventos na pagina, os outros meses sao pedidos ao servidor
+    const mesCarregado = pagina && /^\d{4}-\d{2}$/.test(pagina.dataset.mes || '') ? pagina.dataset.mes : '';
+
+    let mesAtual = mesCarregado ? Number(mesCarregado.slice(5, 7)) - 1 : hoje.getMonth();
+    let anoAtual = mesCarregado ? Number(mesCarregado.slice(0, 4)) : hoje.getFullYear();
 
 
     // formatar data da navegacao monta ano mes e dia usando a data local
@@ -140,8 +144,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const marcador = document.createElement('span');
 
         marcador.classList.add('disponibilidade-marcador');
-        marcador.textContent = `Disponibilidade ${disponibilidade.horas}h`;
-        marcador.title = `${disponibilidade.horas} horas disponíveis`;
+        // diferenciar dia sem horas deixa o marcador discreto quando nada foi cadastrado
+        if (Number(disponibilidade.horas) > 0) {
+            marcador.textContent = `${disponibilidade.horas}h livres`;
+            marcador.title = `${disponibilidade.horas} horas disponíveis`;
+            marcador.dataset.curto = `${disponibilidade.horas}h`;
+        } else {
+            marcador.classList.add('sem-disponibilidade');
+            marcador.textContent = 'Sem horas';
+            marcador.title = 'Nenhuma hora disponível cadastrada neste dia';
+            marcador.dataset.curto = '0h';
+        }
 
         return marcador;
     }
@@ -192,6 +205,8 @@ document.addEventListener('DOMContentLoaded', function () {
         marcador.classList.add(`evento-prioridade-${prioridade.toLowerCase()}`);
 
         marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
+        // texto curto no celular troca o nome cortado pela quantidade de eventos do dia
+        marcador.dataset.curto = eventos.length > 1 ? `${eventos.length}` : '1';
 
         // descrever eventos do dia retorna os nomes usados no marcador
         marcador.title = eventos.map(function (evento) {
@@ -251,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         marcador.type = 'button';
         marcador.classList.add('estudo-marcador');
         marcador.textContent = `Estudar ${formatarMinutos(minutosPlanejados + horasSugeridas)}`;
+        marcador.dataset.curto = formatarMinutos(minutosPlanejados + horasSugeridas);
         // descrever sessao no marcador mostra conteudo duracao e indicacao de sugestao
         marcador.title = sessoes.map(function (sessao) {
             return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}${sessao.sugestao ? ' (sugestão)' : ''}`;
@@ -506,6 +522,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const mesPedido = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+        // trocar de mes pede ao servidor apenas os eventos do mes escolhido
+        if (mesCarregado && mesPedido !== mesCarregado) {
+            window.location.href = `${window.location.pathname}?mes=${mesPedido}`;
+            return;
+        }
+
         calendario.innerHTML = '';
         mesExibido.textContent = `${meses[mesAtual]} de ${anoAtual}`;
         seletorMes.value = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
@@ -544,7 +567,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = new Date(anoAtual, mesAtual, dia);
             const dataFormatada = formatarData(data);
 
-            celula.setAttribute('role', 'gridcell');
+            // grupo com nome descreve o dia sem exigir a estrutura de linhas de uma grade aria
+            celula.setAttribute('role', 'group');
             celula.setAttribute('aria-label', `${dia} de ${meses[mesAtual]} de ${anoAtual}`);
 
             const numeroDia = document.createElement('span');
@@ -613,6 +637,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             celula.appendChild(numeroDia);
 
+            // destacar dia atual marca a celula de hoje para o usuario se localizar no mes
+            if (data.getTime() === inicioDeHoje.getTime()) {
+                celula.classList.add('dia-hoje');
+                celula.setAttribute('aria-current', 'date');
+                celula.setAttribute('aria-label', `Hoje, ${dia} de ${meses[mesAtual]} de ${anoAtual}`);
+            }
+
             // identificar dia passado aplica o estilo das datas anteriores a hoje
             if (data < inicioDeHoje) {
                 celula.classList.add('dia-passado');
@@ -625,8 +656,42 @@ document.addEventListener('DOMContentLoaded', function () {
             calendario.appendChild(celula);
         }
 
+        // exibir atalho para hoje mostra o botao apenas quando outro mes esta na tela
+        if (voltarHoje) {
+            voltarHoje.hidden = mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear();
+        }
+
         atualizarResumoPrioridades();
     }
+
+    // voltar ao mes atual configura o atalho que leva o calendario para hoje
+    if (voltarHoje) {
+        voltarHoje.addEventListener('click', function () {
+            mesAtual = hoje.getMonth();
+            anoAtual = hoje.getFullYear();
+
+            atualizarCalendario();
+        });
+    }
+
+    // trocar mes pelo teclado usa as setas quando o foco nao esta em um campo
+    document.addEventListener('keydown', function (evento) {
+        const alvo = evento.target;
+        const digitando = alvo && (alvo.closest('input, select, textarea, [contenteditable="true"]'));
+        const modalAberto = document.querySelector('.modal.show, .event-modal:not([hidden])');
+
+        // ignorar atalho evita trocar o mes enquanto o usuario digita ou usa um modal
+        if (digitando || modalAberto || evento.altKey || evento.ctrlKey || evento.metaKey) {
+            return;
+        }
+
+        // aplicar atalho reaproveita os botoes de navegacao ja existentes
+        if (evento.key === 'ArrowLeft' && mesAnterior) {
+            mesAnterior.click();
+        } else if (evento.key === 'ArrowRight' && mesProximo) {
+            mesProximo.click();
+        }
+    });
 
     // navegar ao mes anterior configura o botao para recuar o calendario
     if (mesAnterior) {
@@ -806,18 +871,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // configurar delete evento associa a confirmacao aos formularios de exclusao
-    document.querySelectorAll('.form-excluir-evento').forEach(function (form) {
-        // confirmar delete evento impede a exclusao quando a pessoa cancela
-        form.addEventListener('submit', function (event) {
-            const confirmar = confirm('Deseja realmente excluir este evento?');
-
-            // cancelar acao nao confirmada impede o envio quando a pessoa recusa a confirmacao
-            if (!confirmar) {
-                event.preventDefault();
-            }
-        });
-    });
 
     const confirmarRefazerModal = document.getElementById('confirmarRefazerModal');
     const formRefazerConteudo = document.getElementById('formRefazerConteudo');
