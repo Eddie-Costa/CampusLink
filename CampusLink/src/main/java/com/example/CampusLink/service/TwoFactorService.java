@@ -17,6 +17,8 @@ public class TwoFactorService {
     private static final Map<String, String> codigos = new HashMap<>();
     private static final Map<String, Long> expiracao = new HashMap<>();
     private static final Map<String, Long> proximoReenvio = new HashMap<>();
+    private static final int MAX_TENTATIVAS = 5;
+    private static final Map<String, Integer> tentativas = new HashMap<>();
 
     // gerar codigo de verificacao este metodo cria seis digitos diferentes do anterior e define validade e espera
     public static synchronized String gerarCodigo(String chave) {
@@ -36,9 +38,23 @@ public class TwoFactorService {
         } while (codigo.equals(codigoAnterior));
 
         codigos.put(chave, codigo);
+        tentativas.remove(chave);
         expiracao.put(chave, agora + TEMPO_EXPIRACAO);
         proximoReenvio.put(chave, agora + INTERVALO_REENVIO);
         return codigo;
+    }
+
+    // gerar codigo respeitando a espera este metodo devolve null quando ainda existe um codigo valido dentro da espera de reenvio
+    public static synchronized String gerarCodigoSeLiberado(String chave) {
+
+        // manter codigo atual evita que cada novo login ou pedido de recuperacao dispare outro email antes da espera terminar
+        if (chave != null && codigos.containsKey(chave)
+                && proximoReenvio.getOrDefault(chave, 0L) > System.currentTimeMillis()
+                && expiracao.getOrDefault(chave, 0L) > System.currentTimeMillis()) {
+            return null;
+        }
+
+        return gerarCodigo(chave);
     }
 
     // reenviar codigo validado este metodo exige uma chave e respeita o intervalo antes de gerar outro codigo
@@ -163,6 +179,12 @@ public class TwoFactorService {
 
             // conferir codigo informado rejeita um codigo diferente do valor salvo
             if (!codigoSalvo.equals(codigo.trim())) {
+                int erros = tentativas.merge(chave, 1, Integer::sum);
+
+                // bloquear forca bruta descarta o codigo depois de 5 erros e mantem a espera antes de pedir outro
+                if (erros >= MAX_TENTATIVAS) {
+                    invalidarCodigo(chave);
+                }
                 return false;
             }
 
@@ -179,6 +201,7 @@ public class TwoFactorService {
             codigos.remove(chave);
             expiracao.remove(chave);
             proximoReenvio.remove(chave);
+            tentativas.remove(chave);
         }
     }
 
@@ -188,6 +211,7 @@ public class TwoFactorService {
 
             codigos.remove(chave);
             expiracao.remove(chave);
+            tentativas.remove(chave);
         }
     }
 
@@ -202,6 +226,7 @@ public class TwoFactorService {
                 String chave = registro.getKey();
                 codigos.remove(chave);
                 proximoReenvio.remove(chave);
+                tentativas.remove(chave);
                 return true;
             }
 

@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 // controle de acesso das rotas esta classe bloqueia por padrao e libera cada rota conforme o papel aluno professor ou admin
 @Configuration
@@ -28,6 +29,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRequestHandler(csrfHandler)
+                )
+                // cabecalhos de seguranca evitam vazar o endereco para outros sites e impedem o site de ser embutido por terceiros
+                .headers(cabecalhos -> cabecalhos
+                        .referrerPolicy(r -> r.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        // politica minima nao restringe scripts para nao quebrar os cdns e scripts das paginas
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'; object-src 'none'; base-uri 'self'"))
+                        .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000))
                 )
                 // reconhecer usuario da sessao informa ao spring security o papel de quem fez login
                 .addFilterBefore(new SessaoAutenticacaoFilter(), AuthorizationFilter.class)

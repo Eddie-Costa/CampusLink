@@ -7,6 +7,7 @@ import com.example.CampusLink.service.LoginAttemptService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ExtendedModelMap;
@@ -46,7 +47,7 @@ class AdminLoginLogTests {
         BeanPropertyBindingResult validacao = new BeanPropertyBindingResult(admin, "admin");
         validacao.reject("invalido");
         assertEquals("Usuarios/Admin/loginAdmin", controller.fazerLogin(
-                admin, validacao, new ExtendedModelMap(), new MockHttpSession()));
+                admin, validacao, new ExtendedModelMap(), new MockHttpSession(), new MockHttpServletRequest()));
         verify(usuarios, never()).QueryLoginUsuario(anyString(), anyString());
         verificarAviso("Dados de login inválidos", 1);
     }
@@ -56,7 +57,7 @@ class AdminLoginLogTests {
     void registraFalhasBloqueioENovaTentativaDuranteBloqueio() throws Exception {
         for (int i = 0; i < 6; i++) {
             controller.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"),
-                    new ExtendedModelMap(), new MockHttpSession());
+                    new ExtendedModelMap(), new MockHttpSession(), new MockHttpServletRequest());
         }
         verify(usuarios, times(5)).QueryLoginUsuario("admin", EMAIL);
         verificarAviso("Credenciais inválidas", 5);

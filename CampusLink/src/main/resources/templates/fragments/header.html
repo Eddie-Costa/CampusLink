@@ -195,10 +195,12 @@
                                 Termos de Uso
                             </a>
                             <hr class="dropdown-divider">
-                            <a class="dropdown-item" th:href="@{/logout}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></svg>
-                                Sair
-                            </a>
+                            <form class="form-sair" th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></svg>
+                                    Sair
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

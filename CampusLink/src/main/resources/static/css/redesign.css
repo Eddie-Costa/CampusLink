@@ -626,6 +626,12 @@ a.conteudo-card:hover {
     letter-spacing: -0.01em;
 }
 
+/* botao de sair fica com a cara de link porque o logout agora e enviado por formulario */
+.form-sair { margin: 0; }
+.form-sair .dropdown-item,
+.form-sair .profile-logout { width: 100%; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.form-sair .profile-logout { width: auto; padding: 0; }
+
 /* cabecalho no celular mostra logo e botoes em uma linha e recolhe os links no botao de menu */
 @media (max-width: 767.98px) {
     .site-header-nav header { justify-content: flex-start !important; gap: 8px 4px; }

@@ -7,6 +7,7 @@ import com.example.CampusLink.repository.UsuarioRepository;
 import com.example.CampusLink.service.LoginAttemptService;
 import com.example.CampusLink.service.TwoFactorService;
 import com.example.CampusLink.service.emailService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -67,7 +68,7 @@ public class loginController {
     // entrar na conta este metodo identifica o perfil pelo email confere a senha e inicia a verificacao ou a sessao
     @PostMapping("/login")
     public String entrar(@Valid @ModelAttribute("login") LoginDTO login, BindingResult result,
-                         Model model, HttpSession session) throws SQLException {
+                         Model model, HttpSession session, HttpServletRequest request) throws SQLException {
         // evitar novo login leva ao inicio quando a sessao ja esta autenticada
         if (session.getAttribute("usuarioLogado") != null) {
             return "redirect:/home";
@@ -92,14 +93,19 @@ public class loginController {
         // conferir senha continua o acesso apenas para aluno ou professor com a senha correta
         if (senhaHash != null && !senhaHash.isBlank() && new BCryptPasswordEncoder(10).matches(login.getSenha(), senhaHash)) {
             loginAttemptService.loginSucesso(email);
+            // trocar id da sessao impede que um id plantado antes do login seja usado para entrar na conta
+            request.changeSessionId();
             session.setAttribute("email2FA", email);
             session.setAttribute("redirect", "Login");
             session.setAttribute("tipoUsuario", tipoUsuario);
 
             // exigir codigo envia a verificacao por email quando ela esta habilitada
             if (twoFactorEnabled) {
-                String codigo = TwoFactorService.gerarCodigo(email);
-                emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
+                String codigo = TwoFactorService.gerarCodigoSeLiberado(email);
+                // enviar codigo novo so quando a espera terminou senao o codigo ja enviado continua valendo
+                if (codigo != null) {
+                    emailService.enviarCodigo(email, codigo, FinalidadeCodigoEmail.ACESSO);
+                }
                 return "aluno".equals(tipoUsuario) ? "redirect:/verificarAluno" : "redirect:/verificarProfessor";
             }
 

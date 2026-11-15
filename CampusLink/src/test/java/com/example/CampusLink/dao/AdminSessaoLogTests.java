@@ -226,9 +226,12 @@ class AdminSessaoLogTests {
         ReflectionTestUtils.setField(login, "twoFactorService", new TwoFactorService());
         ReflectionTestUtils.setField(login, "emailService", emails);
         ReflectionTestUtils.setField(login, "twoFactorEnabled", doisFatores);
+        // requisicao com a mesma sessao permite ao login trocar o id da sessao como acontece no servidor
+        MockHttpServletRequest pedidoLogin = new MockHttpServletRequest();
+        pedidoLogin.setSession(session);
         requisicao("/gestao/login-admin", () -> assertEquals(
                 doisFatores ? "redirect:/verificarAdmin" : "redirect:/admin/painel",
-                login.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"), new ExtendedModelMap(), session)));
+                login.fazerLogin(admin, new BeanPropertyBindingResult(admin, "admin"), new ExtendedModelMap(), session, pedidoLogin)));
         // testar segundo fator confirma o codigo enviado antes de validar o acesso administrativo
         if (doisFatores) {
             ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);

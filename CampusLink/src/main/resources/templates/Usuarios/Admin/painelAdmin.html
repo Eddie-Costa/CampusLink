@@ -25,7 +25,7 @@
                 <p>Gerencie os usuários e as principais informações do CampusLink</p>
             </div>
 
-            <a th:href="@{/logout}" class="btn btn-outline-primary">Sair</a>
+            <form class="form-sair" th:action="@{/logout}" method="post"><button type="submit" class="btn btn-outline-primary">Sair</button></form>
         </header>
 
         <section class="row g-4">

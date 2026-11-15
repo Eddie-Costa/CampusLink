@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,7 +27,7 @@ public class LogoutController {
     private static final Logger logger = LoggerFactory.getLogger(LogoutController.class);
 
     // encerrar login este metodo registra a saida e invalida a sessao do usuario
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
 
         Object usuarioLogado = session.getAttribute("usuarioLogado");

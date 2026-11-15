@@ -37,6 +37,7 @@
 
         .aceite-cabecalho img {
             width: 64px;
+            height: auto;
             padding: 8px;
             border-radius: 18px;
             background: #ffffff;
@@ -92,7 +93,7 @@
 
 <main class="aceite-cartao">
     <div class="aceite-cabecalho">
-        <img th:src="@{/images/LogoCampusLink.png}" alt="CampusLink">
+        <img th:src="@{/images/LogoCampusLink.png}" width="384" height="256" alt="CampusLink">
         <div>
             <h1>Termos de Uso e Política de Privacidade</h1>
             <p class="aceite-meta" th:text="${'Versão ' + termo.versao() + ' · publicada em ' + #temporals.format(termo.publicadoEm(), 'dd/MM/yyyy')}">
@@ -150,7 +151,7 @@
                         <a class="btn btn-outline-secondary w-100" th:href="@{/home}">Continuar nas páginas públicas</a>
                     </li>
                     <li>
-                        <a class="btn btn-outline-secondary w-100" th:href="@{/logout}">Sair e decidir depois</a>
+                        <form class="form-sair" th:action="@{/logout}" method="post"><button type="submit" class="btn btn-outline-secondary w-100">Sair e decidir depois</button></form>
                     </li>
                 </ul>
             </div>

@@ -36,7 +36,7 @@
                 <a href="#termos-uso">Termos de uso</a>
                 <a href="#excluir-conta">Excluir conta</a>
             </nav>
-            <a th:href="@{/logout}" class="profile-logout">Sair da conta</a>
+            <form class="form-sair" th:action="@{/logout}" method="post"><button type="submit" class="profile-logout">Sair da conta</button></form>
         </aside>
 
         <div class="profile-content">
