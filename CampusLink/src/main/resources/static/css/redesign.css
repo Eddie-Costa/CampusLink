@@ -672,3 +672,9 @@ html:not([data-tema="escuro"]) .acesso-rodape a { color: #1a6fb0; }
 html:not([data-tema="escuro"]) .evento-marcador.evento-prioridade-baixa { background-color: #1a6fb0; }
 html:not([data-tema="escuro"]) .trilha a { color: #1a6fb0; }
 html:not([data-tema="escuro"]) .prioridade-resumo-baixa strong { background: #1a6fb0; }
+
+/* aviso abaixo do cabecalho ocupa a linha inteira, o cabecalho usa a classe nav do bootstrap que e flex */
+.site-header-nav > .alert {
+    flex: 0 0 100%;
+    width: 100%;
+}
