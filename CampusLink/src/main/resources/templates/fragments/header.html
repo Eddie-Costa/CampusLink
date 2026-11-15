@@ -23,6 +23,12 @@
                     document.documentElement.style.setProperty('--campus-header-altura', limite + 'px');
                 }
 
+                // acompanhar o tamanho real atualiza o espaco no mesmo quadro em que o cabecalho muda e evita que a pagina pule
+                var cabecalho = document.currentScript && document.currentScript.closest('.site-header-nav');
+                if (cabecalho && 'ResizeObserver' in window) {
+                    new ResizeObserver(atualizarAlturaHeader).observe(cabecalho);
+                }
+
                 document.addEventListener('DOMContentLoaded', atualizarAlturaHeader);
                 window.addEventListener('load', atualizarAlturaHeader);
                 document.addEventListener('show.bs.modal', atualizarAlturaHeader);
@@ -36,7 +42,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-        <link rel="stylesheet" th:href="@{/css/redesign.css(v='r2')}">
+        <link rel="stylesheet" th:href="@{/css/redesign.css(v='r7')}">
         <link rel="stylesheet" th:href="@{/css/Geral/avisos.css(v='a1')}">
         <script th:src="@{/js/Geral/avisos.js(v='a1')}" defer></script>
         <script>
@@ -69,11 +75,11 @@
 
                 <div class="col-md-3 mb-2 mb-md-0">
                     <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
-                        <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height="auto" alt="CampusLink logo">
+                        <img th:src="@{/images/LogoCampusLink.png}" class="bi" width="90" height="60" alt="CampusLink logo">
                     </a>
                 </div>
 
-                <div class="flex-grow-1 d-flex justify-content-center">
+                <div id="menuPrincipal" class="flex-grow-1 justify-content-center collapse d-md-flex menu-principal">
 
 
                     <div th:if="${session.usuarioLogado == null}">
@@ -150,7 +156,7 @@
                     </div>
                 </div>
 
-                <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end">
+                <div th:if="${session.usuarioLogado != null}" class="col-md-3 text-end bloco-conta">
                     <button type="button" class="tema-alternar movimento-alternar" data-movimento-alternar aria-pressed="false" aria-label="Reduzir movimento" title="Reduzir movimento">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-1.5"/><path class="movimento-risco" d="M4 4l16 16"/></svg>
                     </button>
@@ -198,7 +204,7 @@
                 </div>
 
 
-                <div th:if="${session.usuarioLogado == null}" class="col-md-3 text-end">
+                <div th:if="${session.usuarioLogado == null}" class="col-md-3 text-end bloco-visitante">
                     <button type="button" class="tema-alternar movimento-alternar" data-movimento-alternar aria-pressed="false" aria-label="Reduzir movimento" title="Reduzir movimento">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-1.5"/><path class="movimento-risco" d="M4 4l16 16"/></svg>
                     </button>
@@ -210,6 +216,11 @@
                     <a href="/cadastrar" class="btn btn-primary btn-sm">Cadastrar</a>
                 </div>
 
+                <!-- menu do celular recolhe os links da navegacao em um botao nas telas pequenas -->
+                <button type="button" class="tema-alternar menu-celular d-md-none" data-bs-toggle="collapse"
+                        data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu de navegação">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
             </header>
         </div>
         <div class="alert alert-warning rounded-0 mb-0 py-2 border-0 border-bottom" role="status"

@@ -7,7 +7,7 @@
     <title>Eventos | CampusLink</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css}">
+    <link rel="stylesheet" href="/css/Geral/calendario-eventos.css" th:href="@{/css/Geral/calendario-eventos.css(v=20261115-2)}">
     <link rel="stylesheet" th:href="@{/css/Geral/agenda-dia.css}">
     <link rel="stylesheet" th:href="@{/css/Geral/agenda-moderna.css(v=20261112-3)}">
 </head>
@@ -64,7 +64,7 @@
 
         <div class="calendar-area">
 
-            <section id="calendar" class="calendar" aria-label="Calendário" role="grid"></section>
+            <section id="calendar" class="calendar" aria-label="Calendário"></section>
 
             <aside class="prioridades-resumo"
                    th:if="${session.tipoUsuario == 'professor' or session.tipoUsuario == 'aluno'}"
@@ -487,7 +487,7 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:src="@{/js/Geral/agendaDia.js}"></script>
-<script th:src="@{/js/Geral/calendario-eventos.js(v=20261112-3)}"></script>
+<script th:src="@{/js/Geral/calendario-eventos.js(v=20261115-2)}"></script>
 
 </body>
 </html>

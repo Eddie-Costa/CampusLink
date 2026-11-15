@@ -145,10 +145,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (Number(disponibilidade.horas) > 0) {
             marcador.textContent = `${disponibilidade.horas}h livres`;
             marcador.title = `${disponibilidade.horas} horas disponíveis`;
+            marcador.dataset.curto = `${disponibilidade.horas}h`;
         } else {
             marcador.classList.add('sem-disponibilidade');
             marcador.textContent = 'Sem horas';
             marcador.title = 'Nenhuma hora disponível cadastrada neste dia';
+            marcador.dataset.curto = '0h';
         }
 
         return marcador;
@@ -200,6 +202,8 @@ document.addEventListener('DOMContentLoaded', function () {
         marcador.classList.add(`evento-prioridade-${prioridade.toLowerCase()}`);
 
         marcador.textContent = eventos.length > 1 ? `+${eventos.length} eventos` : eventos[0].nome;
+        // texto curto no celular troca o nome cortado pela quantidade de eventos do dia
+        marcador.dataset.curto = eventos.length > 1 ? `${eventos.length}` : '1';
 
         // descrever eventos do dia retorna os nomes usados no marcador
         marcador.title = eventos.map(function (evento) {
@@ -259,6 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         marcador.type = 'button';
         marcador.classList.add('estudo-marcador');
         marcador.textContent = `Estudar ${formatarMinutos(minutosPlanejados + horasSugeridas)}`;
+        marcador.dataset.curto = formatarMinutos(minutosPlanejados + horasSugeridas);
         // descrever sessao no marcador mostra conteudo duracao e indicacao de sugestao
         marcador.title = sessoes.map(function (sessao) {
             return `${sessao.conteudo} · ${formatarMinutos(sessao.minutos)}${sessao.sugestao ? ' (sugestão)' : ''}`;
@@ -552,7 +557,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = new Date(anoAtual, mesAtual, dia);
             const dataFormatada = formatarData(data);
 
-            celula.setAttribute('role', 'gridcell');
+            // grupo com nome descreve o dia sem exigir a estrutura de linhas de uma grade aria
+            celula.setAttribute('role', 'group');
             celula.setAttribute('aria-label', `${dia} de ${meses[mesAtual]} de ${anoAtual}`);
 
             const numeroDia = document.createElement('span');

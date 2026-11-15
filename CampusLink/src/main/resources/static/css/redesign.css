@@ -625,3 +625,44 @@ a.conteudo-card:hover {
     font-weight: 800;
     letter-spacing: -0.01em;
 }
+
+/* cabecalho no celular mostra logo e botoes em uma linha e recolhe os links no botao de menu */
+@media (max-width: 767.98px) {
+    .site-header-nav header { justify-content: flex-start !important; gap: 8px 4px; }
+    .site-header-nav header > .col-md-3:first-child { margin-bottom: 0 !important; }
+    .site-header-nav .bloco-conta { order: 2; margin-left: auto; white-space: nowrap; }
+    .site-header-nav .menu-celular { order: 3; margin: 0 0 0 auto; }
+    .site-header-nav header:has(.bloco-conta) .menu-celular { margin-left: 0; }
+    .site-header-nav .bloco-visitante { order: 4; width: 100%; display: flex; justify-content: flex-end; align-items: center; }
+    .site-header-nav #menuPrincipal { order: 5; width: 100%; }
+    .site-header-nav #menuPrincipal ul.nav { flex-direction: column; align-items: stretch; text-align: left; }
+    .site-header-nav #menuPrincipal .nav-link { padding: 10px 8px !important; }
+}
+
+/* contraste minimo de 4.5 para 1 nos textos que o teste de acessibilidade apontou, so no modo claro */
+html:not([data-tema="escuro"]) .selo-risco.risco-sem_evento { color: #5a6273; }
+html:not([data-tema="escuro"]) .evento-admin-status.status-ativo,
+html:not([data-tema="escuro"]) .status-ativo { color: #146c43; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-media { color: #7a5d00; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-alta { color: #b42318; }
+html:not([data-tema="escuro"]) .usuario-status.usuario-inativo { color: #4a5263; }
+html:not([data-tema="escuro"]) .day-cell.dia-passado,
+html:not([data-tema="escuro"]) .day-cell.dia-passado .day-number { color: #636b7d; }
+html:not([data-tema="escuro"]) .day-cell.adjacent-month,
+html:not([data-tema="escuro"]) .day-cell.calendar-empty,
+html:not([data-tema="escuro"]) .day-cell.calendar-empty .disponibilidade-marcador { color: #5f6878; }
+html:not([data-tema="escuro"]) .disponibilidade-marcador.sem-disponibilidade { color: #5f6878 !important; }
+html:not([data-tema="escuro"]) .day-cell.dia-hoje .day-number { background: #1a6fb0; }
+html:not([data-tema="escuro"]) .prioridade-item .prioridade-item-meta { color: #5a6273; }
+html:not([data-tema="escuro"]) .prioridade-item .prioridade-item-motivo { color: #11183f; }
+html:not([data-tema="escuro"]) .acesso-link-pequeno,
+html:not([data-tema="escuro"]) .acesso-etiqueta,
+html:not([data-tema="escuro"]) .acesso-link-botao { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .acesso-divisor span { color: #687082; }
+html:not([data-tema="escuro"]) li[data-regra]:not(.cumprido) { color: #565f72; }
+html:not([data-tema="escuro"]) .evento-admin-prioridade.prioridade-baixa { color: #146c43; }
+html:not([data-tema="escuro"]) .conteudo-admin-selo.status-removido { color: #b42318; }
+html:not([data-tema="escuro"]) .acesso-rodape a { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .evento-marcador.evento-prioridade-baixa { background-color: #1a6fb0; }
+html:not([data-tema="escuro"]) .trilha a { color: #1a6fb0; }
+html:not([data-tema="escuro"]) .prioridade-resumo-baixa strong { background: #1a6fb0; }

@@ -32,6 +32,7 @@
 
         .erro-cartao img {
             width: 96px;
+            height: auto;
             margin-bottom: 18px;
         }
 
@@ -97,7 +98,7 @@
 <body>
 
 <main class="erro-cartao" th:switch="${status}">
-    <img th:src="@{/images/LogoCampusLink.png}" alt="CampusLink">
+    <img th:src="@{/images/LogoCampusLink.png}" width="384" height="256" alt="CampusLink">
 
     <p class="erro-codigo" th:text="${'ERRO ' + (status != null ? status : '')}">ERRO</p>
 
