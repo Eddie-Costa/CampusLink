@@ -1,0 +1,62 @@
+Resultado dos testes automatizados do CampusLink
+Comando: mvn org.jacoco:jacoco-maven-plugin:0.8.14:prepare-agent test org.jacoco:jacoco-maven-plugin:0.8.14:report
+
+Testes executados: 425   Falhas: 0   Erros: 0
+Cobertura (JaCoCo): instrucoes 76.6%  linhas 74.4%  desvios 61.4%  metodos 83.2%
+
+Testes por classe:
+  CampusLinkApplicationTests                                                  1 testes  0 falhas  0 erros
+  config.SecurityConfigTests                                                  5 testes  0 falhas  0 erros
+  config.SessaoLogListenerTests                                               1 testes  0 falhas  0 erros
+  config.TermosInterceptorTests                                               5 testes  0 falhas  0 erros
+  controller.Geral.ArquivoAcessoTests                                         6 testes  0 falhas  0 erros
+  controller.Geral.DenunciaControllerTests                                   10 testes  0 falhas  0 erros
+  controller.Geral.EventosControllerTests                                     7 testes  0 falhas  0 erros
+  controller.Geral.ProfileControllerTests                                    17 testes  0 falhas  0 erros
+  controller.Geral.ResetSenhaSegurancaTests                                   6 testes  0 falhas  0 erros
+  controller.Geral.TurmasAcessoTests                                          7 testes  0 falhas  0 erros
+  controller.Geral.TurmasControllerTests                                     16 testes  0 falhas  0 erros
+  controller.Usuarios.Admin.AdminGerenciarConteudosControllerTests            2 testes  0 falhas  0 erros
+  controller.Usuarios.Admin.AdminLoginLogTests                                2 testes  0 falhas  0 erros
+  controller.Usuarios.Admin.AdminSessaoLogsControllerTests                    6 testes  0 falhas  0 erros
+  controller.Usuarios.Admin.AdminTurmasControllerTests                        8 testes  0 falhas  0 erros
+  controller.Usuarios.Admin.AdminUsuariosControllerTests                      9 testes  0 falhas  0 erros
+  controller.Usuarios.Professor.AcompanhamentoControllerTests                 5 testes  0 falhas  0 erros
+  controller.Usuarios.Professor.MeusConteudosControllerTests                  5 testes  0 falhas  0 erros
+  dao.AdminSessaoLogTests                                                     6 testes  0 falhas  0 erros
+  dao.PerfilDadosTests                                                       10 testes  0 falhas  0 erros
+  repository.AdminTurmaRepositoryTests                                       18 testes  0 falhas  0 erros
+  repository.AdminUsuarioRepositoryTests                                     16 testes  0 falhas  0 erros
+  repository.ArquivoEventoConteudoRepositoryTests                             5 testes  0 falhas  0 erros
+  repository.ChamadoRepositoryTests                                           4 testes  0 falhas  0 erros
+  repository.ConteudoRepositoryTests                                         21 testes  0 falhas  0 erros
+  repository.DashboardRepositoryTests                                         3 testes  0 falhas  0 erros
+  repository.DenunciaRepositoryTests                                          5 testes  0 falhas  0 erros
+  repository.DominioRepositoryTests                                           5 testes  0 falhas  0 erros
+  repository.ProfessorAlunoRepositoryTests                                    6 testes  0 falhas  0 erros
+  repository.TermosRepositoryTests                                            4 testes  0 falhas  0 erros
+  repository.TurmaRepositoryTests                                            27 testes  0 falhas  0 erros
+  repository.UsuarioRepositoryTests                                          20 testes  0 falhas  0 erros
+  service.AcessoServicesTests                                                 7 testes  0 falhas  0 erros
+  service.ArquivoServiceTests                                                 7 testes  0 falhas  0 erros
+  service.AuditoriaConteudoTests                                              7 testes  0 falhas  0 erros
+  service.ChamadoEmailPdfTests                                                8 testes  0 falhas  0 erros
+  service.ChamadoFluxoTests                                                   7 testes  0 falhas  0 erros
+  service.ChamadoServiceTests                                                 4 testes  0 falhas  0 erros
+  service.ConteudoPrazoTests                                                  3 testes  0 falhas  0 erros
+  service.ConteudoServiceTests                                               23 testes  0 falhas  0 erros
+  service.DashboardServiceTests                                               4 testes  0 falhas  0 erros
+  service.DenunciaServiceTests                                                9 testes  0 falhas  0 erros
+  service.DisponibilidadeServiceTests                                         3 testes  0 falhas  0 erros
+  service.DominioServiceTests                                                14 testes  0 falhas  0 erros
+  service.EmailServiceTests                                                   3 testes  0 falhas  0 erros
+  service.EventoServiceTests                                                  8 testes  0 falhas  0 erros
+  service.SessaoLogServiceTests                                               7 testes  0 falhas  0 erros
+  service.SupabaseStorageServiceTests                                         4 testes  0 falhas  0 erros
+  service.TermosServiceTests                                                  8 testes  0 falhas  0 erros
+  service.TwoFactorServiceTests                                               3 testes  0 falhas  0 erros
+  service.ViabilidadeCalculoTests                                             2 testes  0 falhas  0 erros
+  service.ViabilidadeCargaTests                                               6 testes  0 falhas  0 erros
+  service.ViabilidadeServiceTests                                             9 testes  0 falhas  0 erros
+  service.YoutubeGoogleBooksServiceTests                                      7 testes  0 falhas  0 erros
+  validation.UrlValidaValidatorTests                                          4 testes  0 falhas  0 erros
