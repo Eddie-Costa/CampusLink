@@ -60,6 +60,7 @@ public class UsuarioRepository {
         return sessoes;
     }
 
+    // contar sessoes encerradas este metodo usa os mesmos filtros da lista para calcular o total de paginas
     public long contarSessoesEncerradas(String busca, Long usuarioId, LocalDate dataInicial,
             LocalDate dataFinal, Integer duracaoMin, Integer duracaoMax) throws SQLException {
         List<Object> parametros = new ArrayList<>();
@@ -93,6 +94,7 @@ public class UsuarioRepository {
     private String filtrosSessoes(String busca, Long usuarioId, LocalDate dataInicial, LocalDate dataFinal,
             Integer duracaoMin, Integer duracaoMax, List<Object> parametros) {
         StringBuilder sql = new StringBuilder(SQL_SESSOES_ENCERRADAS);
+        // pesquisar texto procura nome codigos e datas no horario de brasilia
         if (busca != null && !busca.isBlank()) {
             sql.append("""
                     AND POSITION(LOWER(?) IN LOWER(CONCAT_WS(' ', u.nome, s.usuario_id::text, s.sessao_log_id::text,
@@ -103,22 +105,27 @@ public class UsuarioRepository {
                     """);
             parametros.add(busca.trim());
         }
+        // filtrar usuario limita ao codigo informado
         if (usuarioId != null) {
             sql.append(" AND s.usuario_id = ?");
             parametros.add(usuarioId);
         }
+        // filtrar inicio do periodo comeca no primeiro instante do dia em brasilia
         if (dataInicial != null) {
             sql.append(" AND COALESCE(s.inicio, s.fim) >= ?");
             parametros.add(Timestamp.from(dataInicial.atStartOfDay(FUSO_LOGS).toInstant()));
         }
+        // filtrar fim do periodo inclui o dia final inteiro
         if (dataFinal != null) {
             sql.append(" AND COALESCE(s.inicio, s.fim) < ?");
             parametros.add(Timestamp.from(dataFinal.plusDays(1).atStartOfDay(FUSO_LOGS).toInstant()));
         }
+        // filtrar duracao minima converte minutos em segundos
         if (duracaoMin != null) {
             sql.append(" AND EXTRACT(EPOCH FROM (s.fim - s.inicio)) >= ?");
             parametros.add(duracaoMin.longValue() * 60);
         }
+        // filtrar duracao maxima converte minutos em segundos
         if (duracaoMax != null) {
             sql.append(" AND EXTRACT(EPOCH FROM (s.fim - s.inicio)) <= ?");
             parametros.add(duracaoMax.longValue() * 60);
@@ -126,10 +133,12 @@ public class UsuarioRepository {
         return sql.toString();
     }
 
+    // preencher parametros este metodo envia os valores dos filtros na mesma ordem em que foram montados
     private void preencherParametrosSessoes(PreparedStatement stmt, List<Object> parametros) throws SQLException {
         for (int i = 0; i < parametros.size(); i++) stmt.setObject(i + 1, parametros.get(i));
     }
 
+    // ler sessao este metodo converte a linha do banco em dto com horarios de brasilia
     private SessaoLogDTO lerSessaoLog(ResultSet rs) throws SQLException {
         SessaoLogDTO sessao = new SessaoLogDTO();
         sessao.setSessaoLogId(rs.getObject("sessao_log_id", UUID.class));

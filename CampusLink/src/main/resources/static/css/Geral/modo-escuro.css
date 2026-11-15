@@ -2695,3 +2695,15 @@ html[data-tema="escuro"] main.turmas-page:not(.container) {
     border: 0 !important;
     box-shadow: none !important;
 }
+
+/* logs de sessoes do admin usam a superficie escura no texto consolidado e nos textos de ajuda */
+html[data-tema="escuro"] .logs-texto {
+    background-color: #1c2446;
+    border-color: #2c3658;
+    color: #e6e9f2;
+}
+
+html[data-tema="escuro"] .logs-container .form-text,
+html[data-tema="escuro"] .logs-container .text-secondary {
+    color: #a3abc4 !important;
+}

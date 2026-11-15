@@ -1,3 +1,4 @@
+// logs de sessoes do administrador recebe a consulta do historico e o detalhe de cada sessao encerrada
 package com.example.CampusLink.controller.Usuarios.Admin;
 
 import com.example.CampusLink.dto.Admin.SessaoLogDTO;
@@ -18,16 +19,18 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.UUID;
 
-// as duas rotas usam a regra /admin/** do SecurityConfig e permitem somente consulta
+// controle dos logs de sessoes esta classe usa a regra /admin/** do SecurityConfig e permite somente consulta
 @Controller
 public class AdminSessaoLogsController {
     private static final Logger logger = LoggerFactory.getLogger(AdminSessaoLogsController.class);
     private final SessaoLogService sessoes;
 
+    // receber servico de sessoes este construtor guarda a consulta usada pelas duas rotas
     public AdminSessaoLogsController(SessaoLogService sessoes) {
         this.sessoes = sessoes;
     }
 
+    // listar sessoes encerradas este metodo aplica pesquisa filtros e pagina e devolve a tela da listagem
     @GetMapping("/admin/logs-sessoes")
     public String listar(Model model,
             @RequestParam(defaultValue = "0") int pagina,
@@ -45,6 +48,7 @@ public class AdminSessaoLogsController {
         model.addAttribute("duracaoMin", duracaoMin);
         model.addAttribute("duracaoMax", duracaoMax);
         model.addAttribute("sessoes", Page.empty());
+        // consultar sessoes mostra o erro de filtro ao administrador e esconde detalhes de falhas do banco
         try {
             model.addAttribute("sessoes", sessoes.listar(pagina, busca, usuarioId, dataInicial, dataFinal, duracaoMin, duracaoMax));
         } catch (IllegalArgumentException e) {
@@ -56,10 +60,13 @@ public class AdminSessaoLogsController {
         return "Usuarios/Admin/logsSessoesAdmin";
     }
 
+    // visualizar sessao este metodo abre o texto consolidado de uma sessao encerrada pelo seu codigo
     @GetMapping("/admin/logs-sessoes/{id}")
     public String visualizar(@PathVariable UUID id, Model model) {
+        // buscar sessao responde 404 quando nao existe e 500 quando o banco falha
         try {
             SessaoLogDTO sessao = sessoes.buscar(id);
+            // recusar sessao inexistente evita abrir a tela sem dados
             if (sessao == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sessão encerrada não encontrada.");
             model.addAttribute("sessao", sessao);
             return "Usuarios/Admin/detalheSessaoLogAdmin";

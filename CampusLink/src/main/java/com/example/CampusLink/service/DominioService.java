@@ -142,7 +142,7 @@ public class DominioService {
             return dominioRepository.hostAutorizado(host);
         } catch (SQLException e) {
             logger.error("Erro ao verificar domínio autorizado. host={}", host, e);
-            throw new RuntimeException("Não foi possível verificar o domínio.", e);
+            throw new RuntimeException("Não foi possível verificar o site.", e);
         }
     }
 

@@ -18,7 +18,9 @@ public class SessaoLogDTO {
     private LocalDateTime fim;
     private String logCompleto;
 
+    // calcular duracao este metodo mostra o tempo da sessao em horas minutos e segundos
     public String getDuracao() {
+        // avisar duracao desconhecida quando falta inicio ou fim ou o fim veio antes do inicio
         if (inicio == null || fim == null || fim.isBefore(inicio)) return "Não disponível";
         long segundos = Duration.between(inicio, fim).getSeconds();
         return String.format("%dh %02dmin %02ds", segundos / 3600, (segundos % 3600) / 60, segundos % 60);

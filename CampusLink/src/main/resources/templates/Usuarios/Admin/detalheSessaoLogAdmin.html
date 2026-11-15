@@ -1,3 +1,5 @@
+<!-- detalhe da sessao mostra os dados da sessao encerrada e o texto consolidado dos logs com dados sensiveis ocultados -->
+
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -6,7 +8,8 @@
     <title>Detalhes da sessão | CampusLink</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/painelAdmin.css}">
-    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/logsSessoesAdmin.css}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/logsSessoesAdmin.css(v=20261115-1)}">
+    <link rel="stylesheet" th:href="@{/css/Usuarios/Admin/admin-moderno.css(v=20261112-2)}">
 </head>
 <body>
 <div th:replace="~{fragments/header :: nav}"></div>
@@ -14,11 +17,10 @@
     <div class="admin-container logs-container">
         <header class="admin-topo">
             <div>
-                <p class="admin-etiqueta">Administração · consulta</p>
+                <nav th:replace="~{fragments/trilha :: trilha('Painel', @{/admin/painel}, 'Logs de Sessões', @{/admin/logs-sessoes}, null, null, 'Detalhes da sessão')}"></nav>
                 <h1>Logs de Sessões</h1>
                 <p>Detalhes da sessão encerrada. Horários de Brasília.</p>
             </div>
-            <a th:href="@{/admin/logs-sessoes}" class="btn btn-outline-primary">Voltar à listagem</a>
         </header>
         <section class="admin-card" aria-labelledby="tituloDetalhes">
             <h2 id="tituloDetalhes" class="h5 mb-3">Detalhes da sessão</h2>
