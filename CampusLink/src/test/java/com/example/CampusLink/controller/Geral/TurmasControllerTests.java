@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -311,8 +312,8 @@ class TurmasControllerTests {
         String aluno = controlador.excluirConteudo(1L, 10L, sessao(ALUNO, "aluno"), redirecionamento);
 
         // verificar exclusao unica e mensagens
-        verify(conteudos).excluir(10L);
-        verify(conteudos, never()).excluir(20L);
+        verify(conteudos).retirarDaTurma(10L, 1L);
+        verify(conteudos, never()).retirarDaTurma(eq(20L), any());
         assertEquals("Este conteúdo não pertence a esta turma.", erroOutraTurma);
         assertTrue(reaberto.contains("disponível novamente"));
         assertEquals("Não foi possível re-disponibilizar este conteúdo.", redirecionamento.getFlashAttributes().get("mensagemErro"));

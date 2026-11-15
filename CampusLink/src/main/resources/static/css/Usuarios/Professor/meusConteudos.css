@@ -620,3 +620,54 @@ body {
     background-clip: text;
     color: transparent;
 }
+
+/* escolher turmas abre a lista de turmas do professor dentro do cartao do conteudo */
+.escolher-turmas {
+    margin-top: 10px;
+}
+
+.escolher-turmas summary {
+    display: inline-flex;
+    align-items: center;
+    list-style: none;
+}
+
+.escolher-turmas summary::-webkit-details-marker {
+    display: none;
+}
+
+.escolher-turmas form {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+    min-width: min(320px, 80vw);
+}
+
+.escolher-turmas fieldset {
+    margin: 0;
+}
+
+.escolher-turmas-legenda {
+    margin-bottom: 2px;
+    color: var(--azul-campus);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.escolher-turmas-ajuda {
+    margin: 0 0 8px;
+    color: var(--cinza-texto);
+    font-size: 12px;
+}
+
+.escolher-turmas-lista {
+    max-height: 12rem;
+    overflow-y: auto;
+    padding: 8px 12px;
+    border: 1px solid var(--campus-border);
+    border-radius: 10px;
+}
+
+.escolher-turmas .btn {
+    justify-self: start;
+}

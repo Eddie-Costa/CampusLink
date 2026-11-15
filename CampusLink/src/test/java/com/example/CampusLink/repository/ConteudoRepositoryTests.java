@@ -46,8 +46,11 @@ class ConteudoRepositoryTests {
         conteudos.inserir(conteudo);
 
         // verificar descricao vazia e dados devolvidos
-        assertEquals(List.of(1L, 2L, "Aula 1", "", "link", "https://www.youtube.com/watch?v=1", "30 min", "alta", 30),
-                banco.ultimo("INSERT INTO public.\"CONTEUDOS\"").valores());
+        // primeiro valor e a lista de turmas, que aqui tem so a turma 1
+        List<Object> valores = banco.ultimo("INSERT INTO public.\"CONTEUDOS\"").valores();
+        assertEquals(List.of(1L), List.of((Object[]) ((java.sql.Array) valores.get(0)).getArray()));
+        assertEquals(List.of(2L, "Aula 1", "", "link", "https://www.youtube.com/watch?v=1", "30 min", "alta", 30),
+                valores.subList(1, valores.size()));
         assertEquals(40L, conteudo.getId());
         assertEquals("ativo", conteudo.getStatus());
         assertNotNull(conteudo.getCreatedAt());

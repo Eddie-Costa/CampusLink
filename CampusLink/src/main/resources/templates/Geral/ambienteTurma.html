@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${turma.nomeTurma}">Ambiente da turma</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261024-2)}">
+    <link rel="stylesheet" th:href="@{/css/Geral/ambienteTurmaStyle.css(v=20261115-2)}">
 </head>
 
 <body th:with="abrirModalConteudo=${abrirModalAdicionarConteudo != null and abrirModalAdicionarConteudo}">
@@ -403,7 +403,9 @@
                               th:action="@{/turmas/{id}/conteudos/{idConteudo}/excluir(id=${turma.id}, idConteudo=${conteudo.id})}"
                               method="post"
                               class="conteudo-excluir-form"
-                              data-confirmar="Excluir este conteúdo? Essa ação não pode ser desfeita.">
+                              th:attr="data-confirmar=${#lists.size(conteudo.idsTurmas) > 1
+                                  ? 'Tirar este conteúdo desta turma? Ele continua nas outras turmas em que foi publicado.'
+                                  : 'Excluir este conteúdo? Essa ação não pode ser desfeita.'}">
 
                             <input type="hidden" th:if="${_csrf != null}"
                                    th:name="${_csrf.parameterName}"
