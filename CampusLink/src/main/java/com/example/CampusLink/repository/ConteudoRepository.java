@@ -71,7 +71,7 @@ public class ConteudoRepository {
         String sql = """
                 INSERT INTO public."CONTEUDOS"
                 ("id_turma", "id_professor", "titulo", "descricao", "tipo", "url", "duracao_estimada", "prioridade", "duracao_estimada_min")
-                VALUES (ARRAY[?::bigint], ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING "id", "created_at", "status"
                 """;
 
@@ -79,7 +79,11 @@ public class ConteudoRepository {
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
 
-                stmt.setLong(1, conteudo.getIdTurma());
+                // gravar turmas usa a turma atual e as outras turmas marcadas sem repetir nenhuma
+                Set<Long> turmas = new java.util.LinkedHashSet<>();
+                turmas.add(conteudo.getIdTurma());
+                turmas.addAll(conteudo.getIdsTurmas());
+                stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", turmas.toArray()));
                 stmt.setLong(2, conteudo.getIdProfessor());
                 stmt.setString(3, conteudo.getTitulo());
 
@@ -627,12 +631,74 @@ public class ConteudoRepository {
         return conteudos;
     }
 
+    // ler turmas do conteudo este metodo converte a lista de turmas do banco em lista de codigos
+    private List<Long> lerTurmas(ResultSet rs) throws SQLException {
+        java.sql.Array turmas = rs.getArray("id_turma");
+        List<Long> ids = new ArrayList<>();
+        // converter lista de turmas ignora conteudo sem turma
+        if (turmas != null) {
+            for (Object id : (Object[]) turmas.getArray()) {
+                ids.add(((Number) id).longValue());
+            }
+        }
+        return ids;
+    }
+
+    // buscar turmas do conteudo este metodo devolve as turmas onde o conteudo aparece
+    public List<Long> buscarTurmasDoConteudo(Long idConteudo) throws SQLException {
+        String sql = """
+                SELECT "id_turma"
+                FROM public."CONTEUDOS"
+                WHERE "id" = ?
+                """;
+
+        // consultar turmas do conteudo devolve lista vazia quando o conteudo nao existe
+        try {
+            List<List<Long>> encontrados = jdbcTemplate.query(sql, (rs, linha) -> lerTurmas(rs), idConteudo);
+            return encontrados.isEmpty() ? List.of() : encontrados.get(0);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // trocar turmas do conteudo este metodo grava a nova lista e solta o conteudo dos eventos das turmas que sairam no mesmo comando
+    public void trocarTurmas(Long idConteudo, List<Long> idsTurmas) throws SQLException {
+        String sql = """
+                WITH desvinculados AS (
+                    DELETE FROM public."EVENTO_CONTEUDO" ec
+                    USING public."EVENTOS" e
+                    WHERE ec."id_evento" = e."id"
+                      AND ec."id_conteudo" = ?
+                      AND NOT (e."id_turma" = ANY(?))
+                )
+                UPDATE public."CONTEUDOS"
+                SET "id_turma" = ?
+                WHERE "id" = ?
+                """;
+
+        // gravar turmas do conteudo troca a lista e os vinculos com eventos juntos e converte falhas do banco
+        try {
+            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                java.sql.Array turmas = stmt.getConnection().createArrayOf("bigint", idsTurmas.toArray());
+                stmt.setLong(1, idConteudo);
+                stmt.setArray(2, turmas);
+                stmt.setArray(3, turmas);
+                stmt.setLong(4, idConteudo);
+                stmt.executeUpdate();
+                return null;
+            });
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
     // montar dados do conteudo este metodo organiza os campos consultados incluindo situacao e pedido de revisao
     private ConteudoDTO montarConteudo(ResultSet rs, Long idTurma) throws SQLException {
         ConteudoDTO conteudo = new ConteudoDTO();
 
         conteudo.setId(rs.getLong("id"));
         conteudo.setIdTurma(idTurma);
+        conteudo.setIdsTurmas(lerTurmas(rs));
         conteudo.setIdProfessor(rs.getLong("id_professor"));
 
         Timestamp createdAt = rs.getTimestamp("created_at");

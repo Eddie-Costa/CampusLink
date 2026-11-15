@@ -253,4 +253,68 @@ class ConteudoServiceTests {
         conteudo.setDuracaoEstimada(duracao);
         return conteudo;
     }
+    // testar conteudo compartilhado este teste confere que excluir numa turma tira o conteudo so dela e mantem nas outras
+    @Test
+    void retiraConteudoCompartilhadoSoDaTurma() throws SQLException {
+        // preparar conteudo 40 publicado nas turmas 1 2 e 3
+        when(repositorio.buscarTurmasDoConteudo(40L)).thenReturn(List.of(1L, 2L, 3L));
+
+        // executar retirada da turma 2
+        boolean continuaEmOutras = conteudos.retirarDaTurma(40L, 2L);
+
+        // verificar que ficou nas turmas 1 e 3 e nao foi excluido
+        assertTrue(continuaEmOutras);
+        verify(repositorio).trocarTurmas(40L, List.of(1L, 3L));
+        verify(repositorio, never()).excluir(anyLong());
+    }
+
+    // testar ultima turma este teste confere que o conteudo e excluido de vez quando sai da sua unica turma
+    @Test
+    void excluiConteudoQuandoSaiDaUltimaTurma() throws SQLException {
+        // preparar conteudo 40 so na turma 1
+        when(repositorio.buscarTurmasDoConteudo(40L)).thenReturn(List.of(1L));
+
+        // executar retirada da turma 1
+        boolean continuaEmOutras = conteudos.retirarDaTurma(40L, 1L);
+
+        // verificar exclusao sem troca de turmas
+        assertFalse(continuaEmOutras);
+        verify(repositorio).excluir(40L);
+        verify(repositorio, never()).trocarTurmas(anyLong(), any());
+    }
+
+    // testar conteudo sem turma este teste confere a recusa de deixar o conteudo sem nenhuma turma
+    @Test
+    void recusaConteudoSemNenhumaTurma() throws SQLException {
+        // preparar lista vazia
+
+        // executar troca e verificar recusa sem gravar
+        assertThrows(IllegalArgumentException.class, () -> conteudos.definirTurmas(40L, List.of()));
+        verify(repositorio, never()).trocarTurmas(anyLong(), any());
+    }
+    // testar autoria este teste confere que um professor nao muda as turmas do conteudo de outro professor
+    @Test
+    void recusaEscolherTurmasDeConteudoAlheio() throws SQLException {
+        // preparar conteudo 40 do professor 9
+        when(repositorio.buscarIdProfessor(40L)).thenReturn(9L);
+
+        // executar escolha pelo professor 4 e verificar recusa sem gravar
+        assertThrows(IllegalArgumentException.class, () -> conteudos.escolherTurmas(40L, 4L, List.of(1L), java.util.Set.of(1L)));
+        verify(repositorio, never()).trocarTurmas(anyLong(), any());
+    }
+
+    // testar turmas marcadas este teste confere que turma alheia enviada e ignorada e turma de outro professor e mantida
+    @Test
+    void escolheTurmasDoProfessorEMantemAsAlheias() throws SQLException {
+        // preparar conteudo 40 do professor 4 nas turmas 1 e 7, onde 7 e de outro professor
+        when(repositorio.buscarIdProfessor(40L)).thenReturn(4L);
+        when(repositorio.buscarTurmasDoConteudo(40L)).thenReturn(List.of(1L, 7L));
+
+        // executar escolha das turmas 2 e 3 com a turma 8 forjada no formulario
+        List<Long> turmas = conteudos.escolherTurmas(40L, 4L, List.of(2L, 3L, 8L), java.util.Set.of(1L, 2L, 3L));
+
+        // verificar turma 7 mantida turma 1 retirada e turma 8 ignorada
+        assertEquals(List.of(7L, 2L, 3L), turmas);
+        verify(repositorio).trocarTurmas(40L, List.of(7L, 2L, 3L));
+    }
 }

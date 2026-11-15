@@ -18,6 +18,9 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -463,6 +466,78 @@ public class ConteudoService {
         } catch (SQLException e) {
             throw new RuntimeException("Não foi possível verificar a turma do conteúdo.", e);
         }
+    }
+
+    // buscar turmas do conteudo este metodo devolve as turmas onde o mesmo conteudo aparece
+    public List<Long> turmasDoConteudo(Long idConteudo) {
+        // consultar turmas converte falhas do banco em erro da aplicacao
+        try {
+            return conteudoRepository.buscarTurmasDoConteudo(idConteudo);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível consultar as turmas do conteúdo.", e);
+        }
+    }
+
+    // definir turmas do conteudo este metodo grava a nova lista de turmas e solta o conteudo dos eventos das turmas retiradas
+    public void definirTurmas(Long idConteudo, List<Long> idsTurmas) {
+        // exigir uma turma impede que o conteudo fique sem nenhuma turma
+        if (idsTurmas == null || idsTurmas.isEmpty()) {
+            throw new IllegalArgumentException("O conteúdo precisa estar em pelo menos uma turma.");
+        }
+        // gravar turmas converte falhas do banco em erro da aplicacao
+        try {
+            conteudoRepository.trocarTurmas(idConteudo, idsTurmas);
+            logger.info("Turmas do conteúdo atualizadas. conteudoId={} turmas={}", idConteudo, idsTurmas);
+        } catch (SQLException e) {
+            logger.error("Erro ao atualizar as turmas do conteúdo. conteudoId={}", idConteudo, e);
+            throw new RuntimeException("Não foi possível atualizar as turmas do conteúdo.", e);
+        }
+    }
+
+    // escolher turmas do conteudo este metodo aplica as turmas marcadas pelo autor e devolve a lista final, so grava quando ela mudou
+    public List<Long> escolherTurmas(Long idConteudo, Long idProfessor, Collection<Long> marcadas, Set<Long> turmasDoProfessor) {
+        // consultar autor e turmas atuais converte falhas do banco em erro da aplicacao
+        try {
+            // exigir autoria impede que um professor mude as turmas do conteudo de outro professor
+            if (!idProfessor.equals(conteudoRepository.buscarIdProfessor(idConteudo))) {
+                throw new IllegalArgumentException("Você só pode escolher as turmas dos seus conteúdos.");
+            }
+
+            List<Long> atuais = conteudoRepository.buscarTurmasDoConteudo(idConteudo);
+            Set<Long> novas = new LinkedHashSet<>();
+            // manter turmas alheias preserva as turmas em que o professor nao participa
+            atuais.stream().filter(turma -> !turmasDoProfessor.contains(turma)).forEach(novas::add);
+            // aceitar so turmas do professor ignora codigos de turmas alheias enviados pelo formulario
+            marcadas.stream().filter(turmasDoProfessor::contains).forEach(novas::add);
+
+            // exigir uma turma orienta a usar remover quando o professor desmarca todas
+            if (novas.isEmpty()) {
+                throw new IllegalArgumentException("Marque pelo menos uma turma. Para tirar o conteúdo de todas, use Remover.");
+            }
+
+            // gravar so mudancas evita escrever no banco quando nada foi alterado
+            if (!new LinkedHashSet<>(atuais).equals(novas)) {
+                definirTurmas(idConteudo, List.copyOf(novas));
+            }
+            return List.copyOf(novas);
+        } catch (SQLException e) {
+            throw new RuntimeException("Não foi possível atualizar as turmas do conteúdo.", e);
+        }
+    }
+
+    // retirar conteudo da turma este metodo tira o conteudo so desta turma e exclui de vez quando era a ultima, devolve true se ainda ficou em outras
+    public boolean retirarDaTurma(Long idConteudo, Long idTurma) {
+        List<Long> restantes = new ArrayList<>(turmasDoConteudo(idConteudo));
+        restantes.remove(idTurma);
+
+        // manter nas outras turmas so troca a lista quando o conteudo continua em alguma turma
+        if (!restantes.isEmpty()) {
+            definirTurmas(idConteudo, restantes);
+            return true;
+        }
+
+        excluir(idConteudo);
+        return false;
     }
 
     // delete material pelo servico este metodo marca o conteudo como removido e registra o resultado

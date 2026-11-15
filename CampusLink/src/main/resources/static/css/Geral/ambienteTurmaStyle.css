@@ -168,6 +168,8 @@ main.container > p {
     margin-top: 48px;
     max-height: 560px;
     overflow-y: auto;
+    /* referencia para os textos escondidos dos botoes, sem ela eles escapam da rolagem e esticam a pagina */
+    position: relative;
     padding: 4px 8px 4px 0;
     scrollbar-width: thin;
     scrollbar-color: #5b6aa8 transparent;
