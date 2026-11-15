@@ -32,6 +32,14 @@
 
             <div class="col-md-6">
                 <article class="admin-card h-100">
+                    <div class="admin-card-topo"><h2>Logs de Sessões</h2></div>
+                    <p class="admin-descricao">Consulte o histórico consolidado das sessões encerradas dos usuários</p>
+                    <a th:href="@{/admin/logs-sessoes}" class="btn btn-primary">Logs de Sessões</a>
+                </article>
+            </div>
+
+            <div class="col-md-6">
+                <article class="admin-card h-100">
                     <div class="admin-card-topo"><h2>Chamados</h2>
                         <span class="painel-numero" th:if="${resumoPainel != null}"
                               th:classappend="${resumoPainel.get('chamados_abertos') > 0 ? 'painel-numero-alerta' : 'painel-numero-ok'}"
