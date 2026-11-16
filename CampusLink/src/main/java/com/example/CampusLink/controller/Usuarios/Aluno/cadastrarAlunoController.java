@@ -20,9 +20,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.slf4j.helpers.MessageFormatter;
+import com.example.CampusLink.validation.IdadeMinima;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -94,11 +93,10 @@ public class cadastrarAlunoController {
             return "Geral/cadastrar";
         }
 
-        // validar data de nascimento rejeita datas inexistentes antes de guardar os dados na sessao
-        try {
-            LocalDate.parse(aluno.getDataNasc());
-        } catch (DateTimeParseException e) {
-            model.addAttribute("mensagemDeErro", "Informe uma data de nascimento válida.");
+        String erroNascimento = IdadeMinima.validar(aluno.getDataNasc());
+        // exigir data valida e idade minima recusa o cadastro de quem tem menos de 17 anos
+        if (erroNascimento != null) {
+            model.addAttribute("mensagemDeErro", erroNascimento);
             return "Geral/cadastrar";
         }
 

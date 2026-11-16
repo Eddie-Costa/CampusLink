@@ -41,6 +41,9 @@
             <div th:if="${param.cadastrado != null}" class="acesso-aviso acesso-aviso-sucesso" role="status">
                 Cadastro concluído! Agora é só entrar com seu e-mail e senha.
             </div>
+            <div th:if="${param.senhaAlterada != null}" class="acesso-aviso acesso-aviso-sucesso" role="status">
+                Senha alterada! Agora é só entrar com a nova senha.
+            </div>
             <div th:if="${param.contaExcluida != null}" class="acesso-aviso acesso-aviso-sucesso" role="status">
                 Sua conta foi excluída e suas sessões foram encerradas.
             </div>

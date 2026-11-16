@@ -89,7 +89,10 @@
                 <div class="cadastro-admin-campo">
                     <label for="dataNasc">Data de nascimento</label>
 
-                    <input id="dataNasc" th:field="*{dataNasc}" type="date" required>
+                    <input id="dataNasc" th:field="*{dataNasc}" type="date"
+                           th:max="${#temporals.format(#temporals.createToday().minusYears(17), 'yyyy-MM-dd')}"
+                           aria-describedby="ajudaNascimento" required>
+                    <p id="ajudaNascimento" class="cadastro-admin-ajuda">A pessoa precisa ter 17 anos ou mais.</p>
 
                     <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('dataNasc')}" th:errors="*{dataNasc}"></div>
                 </div>

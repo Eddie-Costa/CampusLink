@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import com.example.CampusLink.validation.IdadeMinima;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -156,12 +157,10 @@ public class AdminUsuariosController {
             return "Usuarios/Admin/cadastrarUsuarioAdmin";
         }
 
-        // interpretar nascimento do cadastro recusa uma data que nao pode ser convertida
-        try {
-            LocalDate.parse(usuario.getDataNasc());
-
-        } catch (DateTimeParseException e) {
-            model.addAttribute("mensagemErro", "Informe uma data de nascimento válida.");
+        String erroNascimento = IdadeMinima.validar(usuario.getDataNasc());
+        // exigir data valida e idade minima recusa o cadastro de quem tem menos de 17 anos
+        if (erroNascimento != null) {
+            model.addAttribute("mensagemErro", erroNascimento);
             return "Usuarios/Admin/cadastrarUsuarioAdmin";
         }
 
