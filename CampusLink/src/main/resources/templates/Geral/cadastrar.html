@@ -132,8 +132,11 @@
                         <div class="campo-icone">
                             <svg th:replace="~{fragments/icones-acesso :: calendario}"></svg>
                             <input id="dataNasc" name="dataNasc" type="date" autocomplete="bday"
-                                   th:value="${dados != null ? dados.dataNasc : ''}" required>
+                                   th:value="${dados != null ? dados.dataNasc : ''}"
+                                   th:max="${#temporals.format(#temporals.createToday().minusYears(17), 'yyyy-MM-dd')}"
+                                   aria-describedby="ajudaNascimento" required>
                         </div>
+                        <div id="ajudaNascimento" class="acesso-ajuda">É preciso ter 17 anos ou mais.</div>
                     </div>
                 </div>
 
