@@ -150,6 +150,10 @@ public class ResetPaswordController {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
         UsuarioRepository.UpdateSenhaUsuario(encoder.encode(senha), email);
+        // liberar bloqueio por tentativas permite entrar com a senha nova na hora
+        loginAttemptService.loginSucesso(email);
+        // escolher tela de login leva o administrador ao acesso administrativo, o login comum so aceita aluno e professor
+        boolean administrador = "ADMINISTRADOR".equalsIgnoreCase(String.valueOf(UsuarioRepository.buscarPorTipoUsuario(email)).trim());
         session.removeAttribute(SESSAO_RESET_LIBERADO);
         session.removeAttribute("email2FA");
         session.removeAttribute("tipoUsuario");
@@ -166,7 +170,7 @@ public class ResetPaswordController {
             }
         }
 
-        return "redirect:/login";
+        return administrador ? "redirect:/admin/login?senhaAlterada" : "redirect:/login?senhaAlterada";
     }
 
     // conferir liberacao da redefinicao este metodo retorna o email somente quando o codigo foi validado para ele

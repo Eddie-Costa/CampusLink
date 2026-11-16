@@ -35,6 +35,9 @@
             <h1 id="tituloAdmin" class="acesso-titulo">Entrar como administrador</h1>
             <p class="acesso-subtitulo">Use o e-mail e a senha da sua conta de administrador.</p>
 
+            <div th:if="${param.senhaAlterada != null}" class="acesso-aviso acesso-aviso-sucesso" role="status">
+                Senha alterada! Agora é só entrar com a nova senha.
+            </div>
             <div th:if="${mensagemDeErro != null}" class="acesso-aviso acesso-aviso-erro" role="alert" th:text="${mensagemDeErro}"></div>
 
             <form th:action="@{/admin/login}" th:object="${admin}" method="post" class="acesso-form" data-submit-once>

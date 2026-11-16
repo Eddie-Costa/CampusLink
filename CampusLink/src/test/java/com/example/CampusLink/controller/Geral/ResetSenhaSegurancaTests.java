@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -89,11 +90,28 @@ class ResetSenhaSegurancaTests {
 
         mvc.perform(post("/reset").session(session).with(csrf())
                         .param("senha", SENHA_FORTE).param("confirmarSenha", SENHA_FORTE))
-                .andExpect(redirectedUrl("/login"));
+                .andExpect(redirectedUrl("/login?senhaAlterada"));
 
         verify(usuarios).UpdateSenhaUsuario(any(), eq("eu@teste.com"));
+        verify(tentativas).loginSucesso("eu@teste.com");
         assertNull(session.getAttribute(ResetPaswordController.SESSAO_RESET_LIBERADO));
         assertNull(session.getAttribute("email2FA"));
+    }
+
+    // testar troca do administrador este teste confere que o admin volta para o acesso administrativo e sai do bloqueio
+    @Test
+    void administradorVoltaParaOAcessoAdministrativo() throws Exception {
+        // preparar conta de administrador com o codigo validado
+        MockHttpSession session = liberada("chefe@teste.com");
+        when(usuarios.buscarPorTipoUsuario("chefe@teste.com")).thenReturn("ADMINISTRADOR");
+
+        // executar troca de senha e verificar destino e liberacao do bloqueio
+        mvc.perform(post("/reset").session(session).with(csrf())
+                        .param("senha", SENHA_FORTE).param("confirmarSenha", SENHA_FORTE))
+                .andExpect(redirectedUrl("/admin/login?senhaAlterada"));
+
+        verify(usuarios).UpdateSenhaUsuario(any(), eq("chefe@teste.com"));
+        verify(tentativas).loginSucesso("chefe@teste.com");
     }
 
     // testar senha fraca este teste confere que a senha fora das regras e recusada
