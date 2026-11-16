@@ -117,6 +117,15 @@ public class loginController {
             return "redirect:/home";
         }
 
+        // orientar administrador com a senha certa indica o acesso administrativo sem contar como tentativa errada
+        // so com a senha correta a mensagem aparece, assim o login nao revela quais emails sao de administrador
+        if (tipoUsuario == null) {
+            String senhaAdmin = UsuarioRepository.QueryLoginUsuario("admin", email);
+            if (senhaAdmin != null && !senhaAdmin.isBlank() && new BCryptPasswordEncoder(10).matches(login.getSenha(), senhaAdmin)) {
+                return erro(model, "Esta é uma conta de administrador. Entre pelo acesso administrativo.");
+            }
+        }
+
         loginAttemptService.loginFalhou(email);
         registrar("WARN", "Credenciais inválidas. email=" + email + " tentativas=" + loginAttemptService.getTentativas(email));
 
