@@ -1,4 +1,4 @@
-<!-- funcionalidades apresenta os recursos de turmas conteudos eventos e planejamento da plataforma -->
+<!-- funcionalidades apresenta todos os recursos da plataforma para alunos professores e administradores -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -24,11 +24,11 @@
         </span>
 
         <h1>
-            Ferramentas para organizar <span class="texto-degrade">professores e alunos</span>
+            Ferramentas para alunos, professores <span class="texto-degrade">e administradores</span>
         </h1>
 
         <p>
-            Conheça as principais funcionalidades disponíveis no CampusLink.
+            Tudo o que o CampusLink oferece para organizar os estudos, acompanhar as turmas e manter a plataforma segura.
         </p>
 
     </section>
@@ -39,8 +39,7 @@
             <span class="numero-card">01</span>
             <h2>Turmas</h2>
             <p>
-                Professores podem administrar suas turmas e os alunos conseguem
-                acessar os ambientes em que estão cadastrados.
+                Cada turma tem um professor responsável, pode ter outros professores e reúne seus alunos. Alunos e professores entram no ambiente de cada turma em que participam.
             </p>
         </article>
 
@@ -48,62 +47,103 @@
             <span class="numero-card">02</span>
             <h2>Conteúdos</h2>
             <p>
-                Professores podem cadastrar links arquivos e materiais para os
-                alunos acessarem diretamente pela turma.
+                Professores publicam links, arquivos (PDF, imagens, documentos e apresentações de até 50 MB) e textos, com tempo estimado e prioridade. Em Meus Conteúdos, o professor escolhe em quais turmas cada conteúdo aparece, sem criar cópias.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">03</span>
-            <h2>Eventos</h2>
+            <h2>Busca de vídeos e livros</h2>
             <p>
-                Provas atividades e outros eventos podem ser cadastrados e
-                associados às turmas e conteúdos.
+                Ao cadastrar um conteúdo, o professor pesquisa vídeos no YouTube e livros no Google Livros e escolhe o material sem sair da plataforma.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">04</span>
-            <h2>Plano de estudos</h2>
+            <h2>Sites liberados</h2>
             <p>
-                A disponibilidade informada pelo aluno ajuda na organização
-                das atividades e conteúdos dentro do prazo.
+                Para proteger os alunos, os links só podem ser de sites liberados. O professor pede a liberação de um site novo e o administrador aprova ou recusa.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">05</span>
-            <h2>Denúncia de conteúdos</h2>
+            <h2>Eventos e calendário</h2>
             <p>
-                Alunos podem denunciar conteúdos suspeitos e o sistema pode
-                suspender o acesso para análise.
+                Provas, trabalhos e apresentações são cadastrados com data, horário e prioridade, ligados aos conteúdos que precisam ser estudados, e aparecem no calendário do mês.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">06</span>
-            <h2>Controle do professor</h2>
+            <h2>Indicador de risco</h2>
             <p>
-                O professor consegue acompanhar conteúdos cadastrados status
-                denúncias e solicitações de análise.
+                O Score mostra, para cada evento, se o planejamento é possível, precisa ser replanejado ou é impossível, além dos conteúdos concluídos e atrasados. O indicador avalia a viabilidade do planejamento, não o desempenho do aluno.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">07</span>
-            <h2>Segurança</h2>
+            <h2>Plano de estudos</h2>
             <p>
-                O sistema possui autenticação verificação em duas etapas e
-                controle de acesso de acordo com o tipo de usuário.
+                O aluno informa as horas livres de cada dia. O sistema distribui os conteúdos pendentes até cada evento, sugere horas extras quando o tempo não basta e recalcula tudo quando algo muda.
             </p>
         </article>
 
         <article class="funcionalidade-card">
             <span class="numero-card">08</span>
-            <h2>Organização acadêmica</h2>
+            <h2>Acompanhamento do professor</h2>
             <p>
-                Conteúdos turmas eventos e informações ficam reunidos em uma
-                única plataforma.
+                Por turma e por evento, o professor vê quantos alunos estão em cada situação, os conteúdos mais críticos e os alunos com atividades atrasadas. Quando um prazo termina, ele pode re-disponibilizar o conteúdo.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">09</span>
+            <h2>Dashboards</h2>
+            <p>
+                Cada perfil tem um painel com indicadores e filtros: o progresso do aluno, a situação das turmas do professor e as contas, turmas e pendências do administrador.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">10</span>
+            <h2>Administração</h2>
+            <p>
+                O administrador gerencia usuários, turmas e eventos, analisa sites e denúncias, publica novas versões dos Termos de Uso e consulta o histórico das sessões.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">11</span>
+            <h2>Denúncias e moderação</h2>
+            <p>
+                O aluno denuncia um conteúdo suspeito e ele é suspenso. O professor pode pedir uma nova análise, e o administrador libera ou remove o conteúdo com um comentário.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">12</span>
+            <h2>Canal de ajuda</h2>
+            <p>
+                Alunos e professores abrem chamados e conversam com o administrador até a solução, acompanhando cada um como aberto, respondido ou concluído.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">13</span>
+            <h2>Segurança e privacidade</h2>
+            <p>
+                Login com verificação em duas etapas por email, bloqueio após tentativas erradas e acesso de acordo com o perfil. Pela LGPD, o usuário aceita os Termos de Uso, pode exportar os próprios dados e excluir a conta.
+            </p>
+        </article>
+
+        <article class="funcionalidade-card">
+            <span class="numero-card">14</span>
+            <h2>Acessibilidade</h2>
+            <p>
+                Modo escuro, opção de reduzir o movimento das animações, cores com bom contraste e telas que funcionam no celular.
             </p>
         </article>
 

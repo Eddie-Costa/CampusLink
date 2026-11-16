@@ -1,0 +1,176 @@
+{
+ "youtube": {
+  "rota": "/youtube/buscar",
+  "termo": "normalização banco de dados",
+  "status": 200,
+  "resposta": [
+   {
+    "canal": "DesCOMPlica, Oliba!",
+    "duracao": "17:48",
+    "thumbnailUrl": "https://i.ytimg.com/vi/TOFZQ5wm1UI/mqdefault.jpg",
+    "titulo": "Normalização de Dados em Bancos de Dados (1FN, 2FN, 3FN)",
+    "videoId": "TOFZQ5wm1UI"
+   },
+   {
+    "canal": "Estúdio Aulas Concursos",
+    "duracao": "7:34",
+    "thumbnailUrl": "https://i.ytimg.com/vi/__fBDQcESgs/mqdefault.jpg",
+    "titulo": "3 Formas Normalização: -1FN -2FN -3FN | Tabela do Banco de Dados | Concurso Banco do Brasil",
+    "videoId": "__fBDQcESgs"
+   },
+   {
+    "canal": "Hashtag Programação",
+    "duracao": "33:58",
+    "thumbnailUrl": "https://i.ytimg.com/vi/Cj84bb04tio/mqdefault.jpg",
+    "titulo": "O que são as Formas Normais em Bancos de Dados?",
+    "videoId": "Cj84bb04tio"
+   },
+   {
+    "canal": "Mauro | Blog do SQL",
+    "duracao": "18:46",
+    "thumbnailUrl": "https://i.ytimg.com/vi/2RGpyryOAkM/mqdefault.jpg",
+    "titulo": "O Que é Normalização de Dados? Aprenda 1FN, 2FN e 3FN com Exemplos Simples #sql #bancodedados",
+    "videoId": "2RGpyryOAkM"
+   },
+   {
+    "canal": "Cadoná",
+    "duracao": "11:15",
+    "thumbnailUrl": "https://i.ytimg.com/vi/wM09sIxyGKc/mqdefault.jpg",
+    "titulo": "Normalização de Dados",
+    "videoId": "wM09sIxyGKc"
+   },
+   {
+    "canal": "Arnaldo Junior",
+    "duracao": "37:08",
+    "thumbnailUrl": "https://i.ytimg.com/vi/jsx3NlYq8Fo/mqdefault.jpg",
+    "titulo": "Aula de NORMALIZAÇÃO (Banco de Dados) | Concurso TCE-PE - Auditor e Analista",
+    "videoId": "jsx3NlYq8Fo"
+   },
+   {
+    "canal": "UNIVESP",
+    "duracao": "18:02",
+    "thumbnailUrl": "https://i.ytimg.com/vi/Mhd2bI5pJuo/mqdefault.jpg",
+    "titulo": "Banco de Dados - Normalização - Parte 1",
+    "videoId": "Mhd2bI5pJuo"
+   },
+   {
+    "canal": "Bóson Treinamentos",
+    "duracao": "11:08",
+    "thumbnailUrl": "https://i.ytimg.com/vi/eRaAMNjCFYw/mqdefault.jpg",
+    "titulo": "Modelagem de Dados - Normalização - Primeira Forma Normal",
+    "videoId": "eRaAMNjCFYw"
+   },
+   {
+    "canal": "Bóson Treinamentos",
+    "duracao": "10:09",
+    "thumbnailUrl": "https://i.ytimg.com/vi/NpG1Xt8LB_c/mqdefault.jpg",
+    "titulo": "Modelagem de Dados - Normalização e Anomalias - Conceitos",
+    "videoId": "NpG1Xt8LB_c"
+   },
+   {
+    "canal": "Daniel Maia",
+    "duracao": "17:26",
+    "thumbnailUrl": "https://i.ytimg.com/vi/c_WGssorPYc/mqdefault.jpg",
+    "titulo": "Normalização de Banco de Dados - 1FN, 2FN e 3FN",
+    "videoId": "c_WGssorPYc"
+   }
+  ]
+ },
+ "google_livros": {
+  "rota": "/googlebooks/buscar",
+  "termo": "banco de dados",
+  "status": 200,
+  "resposta": [
+   {
+    "anoPublicacao": "2024",
+    "autores": "Célio Azevedo",
+    "editora": "Clube de Autores",
+    "isbn": "9798321817773",
+    "linkGoogleBooks": "https://play.google.com/store/books/details?id=UfkCEQAAQBAJ&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=UfkCEQAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "titulo": "Sql E Banco De Dados"
+   },
+   {
+    "anoPublicacao": "2008",
+    "autores": "Raghu Ramakrishnan, Johannes Gehrke",
+    "editora": "AMGH Editora",
+    "isbn": "9788563308771",
+    "linkGoogleBooks": "https://play.google.com/store/books/details?id=COUJpkH5v38C&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=COUJpkH5v38C&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Sistemas de gerenciamento de banco de dados - 3.ed."
+   },
+   {
+    "anoPublicacao": "2012",
+    "autores": "Mauro Carlos Pichiliani",
+    "editora": "Clube de Autores",
+    "isbn": "",
+    "linkGoogleBooks": "http://books.google.com.br/books?id=Wed7DwAAQBAJ&dq=banco+de+dados&hl=&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=Wed7DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Conversando Sobre Banco De Dados"
+   },
+   {
+    "anoPublicacao": "1980",
+    "autores": "Leonardo Lellis Pereira Leite",
+    "editora": null,
+    "isbn": "",
+    "linkGoogleBooks": "http://books.google.com.br/books?id=ZKpcAAAAMAAJ&dq=banco+de+dados&hl=&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=ZKpcAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "titulo": "Introdução aos sistemas de gerência de banco de dados"
+   },
+   {
+    "anoPublicacao": "2026",
+    "autores": "S. T. Canuto",
+    "editora": "OTUNAC",
+    "isbn": "",
+    "linkGoogleBooks": "https://play.google.com/store/books/details?id=yAcKEgAAQBAJ&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=yAcKEgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Banco de Dados para Concurso Público"
+   },
+   {
+    "anoPublicacao": "2026",
+    "autores": "Fernando Timoteo Fernandes",
+    "editora": "Editora Senac São Paulo",
+    "isbn": "9788539661718",
+    "linkGoogleBooks": "https://play.google.com/store/books/details?id=Y0H7EQAAQBAJ&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=Y0H7EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Administração de banco de dados"
+   },
+   {
+    "anoPublicacao": "2017",
+    "autores": "Vitor Amadeu Souza",
+    "editora": "Clube de Autores",
+    "isbn": "",
+    "linkGoogleBooks": "http://books.google.com.br/books?id=QdloEAAAQBAJ&dq=banco+de+dados&hl=&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=QdloEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Desenvolvendo Um Dicionário Com Banco De Dados Sql Programado No Visual Basic"
+   },
+   {
+    "anoPublicacao": "2026",
+    "autores": "Autor desconhecido",
+    "editora": "Raphael R",
+    "isbn": "",
+    "linkGoogleBooks": "https://play.google.com/store/books/details?id=xm2tEQAAQBAJ&source=gbs_api",
+    "thumbnailUrl": "http://books.google.com/books/content?id=xm2tEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "titulo": "Administração de Banco de Dados – Guia Completo"
+   },
+   {
+    "anoPublicacao": "2008",
+    "autores": "Raghu Ramakrishnan, Johannes Gehrke",
+    "editora": "McGraw Hill Brasil",
+    "isbn": "9788577260270",
+    "linkGoogleBooks": "http://books.google.com.br/books?id=eRSPPgAACAAJ&dq=banco+de+dados&hl=&source=gbs_api",
+    "thumbnailUrl": null,
+    "titulo": "Sistemas de gerenciamento de banco de dados"
+   },
+   {
+    "anoPublicacao": "1977",
+    "autores": "E. de O. e SILVA",
+    "editora": null,
+    "isbn": "",
+    "linkGoogleBooks": "http://books.google.com.br/books?id=xTrUZwEACAAJ&dq=banco+de+dados&hl=&source=gbs_api",
+    "thumbnailUrl": null,
+    "titulo": "Controle de acesso e uso das informações de um banco de dados"
+   }
+  ]
+ }
+}
