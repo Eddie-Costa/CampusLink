@@ -1,4 +1,4 @@
-<!-- sobre o campuslink apresenta a finalidade da plataforma e seus principios de organizacao -->
+<!-- sobre o campuslink apresenta o problema que a plataforma resolve como ela funciona e seus principios -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -7,7 +7,7 @@
     <title>Sobre Nós - CampusLink</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/Geral/sobreNosStyle.css}">
+    <link rel="stylesheet" th:href="@{/css/Geral/sobreNosStyle.css(v=20261115-1)}">
     <link rel="stylesheet" th:href="@{/css/Geral/publicas.css(v=20261112-1)}">
 </head>
 
@@ -30,9 +30,9 @@
             </h1>
 
             <p>
-                O CampusLink foi criado como uma plataforma acadêmica para
-                facilitar a organização e a comunicação dentro do ambiente
-                de ensino.
+                O CampusLink é um projeto de Trabalho de Conclusão de Curso de Engenharia de Software.
+                Ele une a organização das turmas a um cálculo de viabilidade de estudos, que mostra
+                a cada aluno se dá tempo de estudar tudo até cada prova.
             </p>
 
         </div>
@@ -44,8 +44,8 @@
             </span>
 
             <p>
-                Reunir em um único ambiente as principais informações que
-                professores e alunos precisam durante a rotina acadêmica.
+                Ajudar o aluno a planejar os estudos antes que o prazo fique apertado e dar ao
+                professor uma visão clara de quem precisa de apoio em cada turma.
             </p>
 
         </div>
@@ -57,10 +57,16 @@
         <h2>Por que o CampusLink foi criado</h2>
 
         <p>
-            Durante a rotina acadêmica os alunos precisam acompanhar conteúdos
-            atividades eventos e diferentes informações. O CampusLink busca
-            reunir essas informações em um único sistema e facilitar o acesso
-            ao que é importante para cada turma.
+            Durante a graduação, os alunos lidam ao mesmo tempo com conteúdos, atividades e prazos
+            de várias disciplinas, e nem sempre conseguem encaixar tudo no tempo que têm. Muitas
+            vezes, só percebem que não vai dar tempo quando a prova já está perto.
+        </p>
+
+        <p>
+            No CampusLink, o professor cadastra os conteúdos e os eventos com tempo estimado e
+            prioridade, e o aluno informa as horas livres de cada dia. Com isso, a plataforma monta
+            um plano de estudos individual, mostra o risco de cada prova e recalcula tudo quando algo
+            muda. O professor acompanha a situação da turma e pode agir antes do prazo.
         </p>
 
     </section>
@@ -69,26 +75,25 @@
 
         <article class="valor-card">
             <span>01</span>
-            <h2>Organização</h2>
+            <h2>Planejamento possível</h2>
             <p>
-                Facilitar o acesso aos conteúdos e informações acadêmicas.
+                Transformar os conteúdos de cada turma em um plano de estudos que cabe no tempo real do aluno.
             </p>
         </article>
 
         <article class="valor-card">
             <span>02</span>
-            <h2>Integração</h2>
+            <h2>Ação antes do prazo</h2>
             <p>
-                Aproximar professores alunos turmas conteúdos e eventos.
+                Mostrar o risco de cada prova com antecedência, para que aluno e professor ainda tenham tempo de agir.
             </p>
         </article>
 
         <article class="valor-card">
             <span>03</span>
-            <h2>Segurança</h2>
+            <h2>Segurança e privacidade</h2>
             <p>
-                Utilizar controles de acesso e ferramentas para proteger
-                os usuários e os conteúdos da plataforma.
+                Proteger contas e conteúdos com verificação em duas etapas, moderação e respeito à LGPD.
             </p>
         </article>
 

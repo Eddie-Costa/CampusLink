@@ -2541,10 +2541,15 @@ html[data-tema="escuro"] body {
 }
 
 /* cabecalho fica translucido escuro e o logo fica mais claro com brilho azul para continuar legivel */
-html[data-tema="escuro"] .site-header-nav,
+html[data-tema="escuro"] .site-header-nav {
+    background: rgba(13, 18, 38, 0.85) !important;
+    border-color: #2c3658 !important;
+}
+
+/* container e header ficam transparentes, senao as camadas somam e formam uma caixa solida no meio da faixa */
 html[data-tema="escuro"] .site-header-nav > .container,
 html[data-tema="escuro"] .site-header-nav header {
-    background: rgba(13, 18, 38, 0.85) !important;
+    background: transparent !important;
     border-color: #2c3658 !important;
 }
 

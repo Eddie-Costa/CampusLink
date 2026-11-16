@@ -115,6 +115,11 @@ body {
     line-height: 1.7;
 }
 
+/* paragrafos seguidos do bloco ganham espaco entre o problema e a solucao */
+.sobre-bloco p + p {
+    margin-top: 12px;
+}
+
 .valores-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
