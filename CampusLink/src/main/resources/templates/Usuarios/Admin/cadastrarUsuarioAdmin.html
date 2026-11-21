@@ -77,14 +77,6 @@
                     <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                 </div>
 
-                <div class="cadastro-admin-campo">
-                    <label for="telefone">Telefone</label>
-
-                    <input id="telefone" th:field="*{telefone}" type="text"
-                           inputmode="numeric" minlength="10" maxlength="11" pattern="^\d{10,11}$" required>
-
-                    <div class="cadastro-admin-erro" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></div>
-                </div>
 
                 <div class="cadastro-admin-campo">
                     <label for="dataNasc">Data de nascimento</label>

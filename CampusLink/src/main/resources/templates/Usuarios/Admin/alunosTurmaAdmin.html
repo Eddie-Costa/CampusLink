@@ -105,7 +105,6 @@
                         <th>Nome</th>
                         <th>RGM</th>
                         <th>E-mail</th>
-                        <th>Telefone</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -132,9 +131,6 @@
                             E-mail
                         </td>
 
-                        <td th:text="${aluno.telefone != null && !aluno.telefone.isBlank() ? aluno.telefone : 'Não informado'}">
-                            Telefone
-                        </td>
 
                         <td>
 
@@ -170,7 +166,7 @@
 
                     <tr th:if="${#lists.isEmpty(alunos)}">
 
-                        <td colspan="6" class="alunos-turma-admin-vazio">
+                        <td colspan="5" class="alunos-turma-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhum aluno nesta turma', 'Use o campo Adicionar aluno à turma, acima, para vincular o primeiro aluno.', null, null)}"></div>
                         </td>
 

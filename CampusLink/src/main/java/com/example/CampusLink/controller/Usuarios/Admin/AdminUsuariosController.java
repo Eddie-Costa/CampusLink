@@ -169,8 +169,7 @@ public class AdminUsuariosController {
             List<String> erros = UsuarioRepository.validarDadosDuplicados(
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
-                    usuario.getEmail(),
-                    usuario.getTelefone()
+                    usuario.getEmail()
             );
 
             // impedir dados duplicados reapresenta o cadastro com os conflitos encontrados
@@ -187,7 +186,6 @@ public class AdminUsuariosController {
                     usuario.getIdentificador(),
                     usuario.getNome(),
                     usuario.getEmail(),
-                    usuario.getTelefone(),
                     usuario.getDataNasc(),
                     senhaCriptografada
             );
@@ -362,8 +360,7 @@ public class AdminUsuariosController {
                     idUsuario,
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
-                    usuario.getEmail(),
-                    usuario.getTelefone()
+                    usuario.getEmail()
             );
 
             // corrigir duplicidades na edicao reapresenta os dados com os conflitos encontrados

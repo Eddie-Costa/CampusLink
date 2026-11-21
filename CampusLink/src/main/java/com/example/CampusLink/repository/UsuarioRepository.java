@@ -162,7 +162,7 @@ public class UsuarioRepository {
     // consultar dados pessoais ativos este metodo busca o cadastro e o identificador da conta pelo email
     public DadosUsuarioDTO consultarDadosPessoais(String email) throws SQLException {
         String sql = """
-                SELECT u.id, u.nome, u.email, u.telefone, u.datanasc, u.perfil, u.created_at,
+                SELECT u.id, u.nome, u.email, u.datanasc, u.perfil, u.created_at,
                        COALESCE(a.rgm, p.matricula, adm.matricula) AS identificador
                 FROM public."USUARIOS" u
                 LEFT JOIN public."ALUNOS" a ON a.id_usuario = u.id
@@ -185,7 +185,6 @@ public class UsuarioRepository {
                     dadosUsuario.setId(rs.getLong("id"));
                     dadosUsuario.setNome(rs.getString("nome"));
                     dadosUsuario.setEmail(rs.getString("email"));
-                    dadosUsuario.setTelefone(rs.getString("telefone"));
                     dadosUsuario.setDataNascimento(rs.getDate("datanasc").toLocalDate());
                     dadosUsuario.setPerfil(rs.getString("perfil"));
                     dadosUsuario.setIdentificador(rs.getString("identificador"));
@@ -283,10 +282,10 @@ public class UsuarioRepository {
                 // anonimizar rgm e matricula troca o identificador academico por ANON seguido do id interno
                 executarExclusao(conn, "UPDATE public.\"ALUNOS\" SET rgm = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
                 executarExclusao(conn, "UPDATE public.\"PROFESSORES\" SET matricula = 'ANON-' || id WHERE id_usuario = ?", idUsuario);
-                // anonimizar cadastro troca nome email telefone nascimento e senha e marca a conta como inativa e anonimizada
+                // anonimizar cadastro troca nome email nascimento e senha e marca a conta como inativa e anonimizada
                 executarExclusao(conn, """
                         UPDATE public."USUARIOS"
-                        SET nome = 'Usuário removido', email = NULL, telefone = NULL, datanasc = DATE '1900-01-01',
+                        SET nome = 'Usuário removido', email = NULL, datanasc = DATE '1900-01-01',
                             senha = '!anonimizado', status = false, anonimizado_em = now()
                         WHERE id = ?
                         """, idUsuario);
@@ -419,7 +418,7 @@ public class UsuarioRepository {
     }
 
     // cadastrar usuario no banco este metodo grava a conta ativa e o perfil de aluno ou professor
-    public void InsertCadastroUsuarioIntoBD(String Tipo, String IDENTIFICADOR, String NOME, String EMAIL, String TELEFONE, String DATANASC, String SENHA) throws SQLException {
+    public void InsertCadastroUsuarioIntoBD(String Tipo, String IDENTIFICADOR, String NOME, String EMAIL, String DATANASC, String SENHA) throws SQLException {
         String emailNormalizado = normalizarEmail(EMAIL);
         String tabelaEspecifica;
         String colunaIdentificador;
@@ -439,8 +438,8 @@ public class UsuarioRepository {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + Tipo);
         }
 
-        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" (\"nome\", \"email\", \"telefone\", \"datanasc\", \"senha\", \"perfil\", \"status\") "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlUsuario = "INSERT INTO public.\"USUARIOS\" (\"nome\", \"email\", \"datanasc\", \"senha\", \"perfil\", \"status\") "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         String sqlEspecifico = "INSERT INTO public.\"" + tabelaEspecifica + "\" "
                 + "(\"id_usuario\", \"" + colunaIdentificador + "\") VALUES (?, ?)";
@@ -462,11 +461,10 @@ public class UsuarioRepository {
             try (PreparedStatement stmt = conn.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, NOME);
                 stmt.setString(2, emailNormalizado);
-                stmt.setString(3, TELEFONE);
-                stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
-                stmt.setString(5, SENHA);
-                stmt.setString(6, tabelaEspecifica);
-                stmt.setBoolean(7, true);
+                stmt.setDate(3, java.sql.Date.valueOf(java.time.LocalDate.parse(DATANASC)));
+                stmt.setString(4, SENHA);
+                stmt.setString(5, tabelaEspecifica);
+                stmt.setBoolean(6, true);
 
                 // conferir cadastro do usuario avisa quando nenhum usuario foi inserido
                 if (stmt.executeUpdate() == 0) {
@@ -669,8 +667,8 @@ public class UsuarioRepository {
         }
     }
 
-    // validar dados repetidos no cadastro este metodo reune avisos de identificador email e telefone existentes
-    public List<String> validarDadosDuplicados(String tipoUsuario, String identificador, String email, String telefone) {
+    // validar dados repetidos no cadastro este metodo reune avisos de identificador e email existentes
+    public List<String> validarDadosDuplicados(String tipoUsuario, String identificador, String email) {
         List<String> erros = new ArrayList<>();
 
         // validar identificador duplicado acrescenta um erro se o identificador ja esta cadastrado
@@ -681,11 +679,6 @@ public class UsuarioRepository {
         // validar email duplicado acrescenta um erro se o email ja esta cadastrado
         if (verificarExistente(tipoUsuario, "email", email)) {
             erros.add("Email já cadastrado");
-        }
-
-        // validar telefone duplicado acrescenta um erro se o telefone ja esta cadastrado
-        if (verificarExistente(tipoUsuario, "telefone", telefone)) {
-            erros.add("Telefone já cadastrado");
         }
 
         return erros;
@@ -707,10 +700,6 @@ public class UsuarioRepository {
 
             case "email":
                 sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE LOWER(\"email\") = ?";
-                break;
-
-            case "telefone":
-                sql = "SELECT 1 FROM public.\"USUARIOS\" WHERE \"telefone\" = ?";
                 break;
 
             default:

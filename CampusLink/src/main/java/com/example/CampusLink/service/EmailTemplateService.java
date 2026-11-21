@@ -54,7 +54,6 @@ public class EmailTemplateService {
         Map<String, String> campos = new LinkedHashMap<>();
         campos.put("Nome", valor(usuario.getNome()));
         campos.put("E-mail", valor(usuario.getEmail()));
-        campos.put("Telefone", valor(usuario.getTelefone()));
         campos.put("Nascimento", valor(usuario.getDataNascimento()));
         campos.put("Tipo de conta", usuario.getTipoConta());
         campos.put(usuario.getRotuloIdentificador(), valor(usuario.getIdentificador()));

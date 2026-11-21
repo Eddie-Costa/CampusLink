@@ -11,7 +11,6 @@ const REGRAS_SENHA = {
 document.addEventListener("DOMContentLoaded", () => {
     configurarMostrarSenha();
     configurarSomenteNumeros();
-    configurarTelefone();
     configurarRequisitosSenha();
     configurarCadastro();
 });
@@ -49,35 +48,6 @@ function configurarSomenteNumeros() {
         };
         campo.addEventListener("input", atualizar);
         atualizar();
-    });
-}
-
-// mascarar telefone este metodo mostra o telefone como (11) 99999-9999 e envia apenas os numeros
-function configurarTelefone() {
-    document.querySelectorAll("[data-mascara-telefone]").forEach(campo => {
-        const formatar = () => {
-            const numeros = campo.value.replace(/\D/g, "").slice(0, 11);
-            let texto = numeros;
-            // montar mascara aplica o formato conforme a quantidade de digitos ja digitados
-            if (numeros.length > 2) {
-                const meio = numeros.length === 11 ? 7 : 6;
-                texto = `(${numeros.slice(0, 2)}) ${numeros.slice(2, meio)}`;
-                if (numeros.length > meio) {
-                    texto += `-${numeros.slice(meio)}`;
-                }
-            } else if (numeros.length > 0) {
-                texto = `(${numeros}`;
-            }
-            campo.value = texto;
-            campo.setCustomValidity(numeros.length === 10 || numeros.length === 11 || numeros.length === 0
-                ? "" : "Informe o telefone com DDD, com 10 ou 11 números.");
-        };
-        campo.addEventListener("input", formatar);
-        // enviar somente numeros tira a mascara antes do envio porque o servidor guarda apenas os digitos
-        campo.form?.addEventListener("submit", () => {
-            campo.value = campo.value.replace(/\D/g, "");
-        });
-        formatar();
     });
 }
 

@@ -47,7 +47,6 @@ class EmailServiceTests {
         dados = new DadosUsuarioDTO();
         dados.setNome("Ana <img src=x> & Silva");
         dados.setEmail("ana@example.com");
-        dados.setTelefone("11999990000");
         dados.setDataNascimento(LocalDate.of(2001, 2, 3));
         dados.setPerfil("ALUNOS");
         dados.setIdentificador("123456");
@@ -68,7 +67,7 @@ class EmailServiceTests {
         assertTrue(html.contains("Ana &lt;img src=x&gt; &amp; Silva"));
         assertFalse(html.contains("<img src=x>"));
         assertTrue(texto.contains(dados.getNome()));
-        for (String valor : new String[]{"ana@example.com", "11999990000", "03/02/2001",
+        for (String valor : new String[]{"ana@example.com", "03/02/2001",
                 "Aluno", "RGM", "123456", "01/09/2026"}) {
             assertTrue(html.contains(valor), valor);
             assertTrue(texto.contains(valor), valor);
@@ -81,7 +80,6 @@ class EmailServiceTests {
     @Test
     void exportacaoDeProfessorExibeMatriculaECamposAusentes() throws Exception {
         dados.setPerfil("PROFESSORES");
-        dados.setTelefone(null);
         dados.setDataNascimento(null);
         emails.enviarEmailDados(dados);
         mensagem.saveChanges();

@@ -42,7 +42,6 @@ public class AdminUsuarioRepository {
                 p.matricula,
                 u.nome,
                 u.email,
-                u.telefone,
                 u.datanasc,
                 u.status,
                 COALESCE(adm.master, false) AS master
@@ -83,18 +82,14 @@ public class AdminUsuarioRepository {
         }
     }
 
-    // validar edicao sem duplicidade este metodo procura email telefone e identificador usados por outras contas
-    public List<String> validarDadosEdicao(Long idUsuario, String perfil, String identificador, String email, String telefone) throws SQLException {
+    // validar edicao sem duplicidade este metodo procura email e identificador usados por outras contas
+    public List<String> validarDadosEdicao(Long idUsuario, String perfil, String identificador, String email) throws SQLException {
         List<String> erros = new ArrayList<>();
-        // conferir duplicidades da edicao consulta conflitos de email telefone e identificador e trata falhas do banco
+        // conferir duplicidades da edicao consulta conflitos de email e identificador e trata falhas do banco
         try {
             // detectar email em uso inclui o aviso quando outra conta ja possui o email
             if (emailJaExiste(idUsuario, email)) {
                 erros.add("E-mail já cadastrado para outro usuário.");
-            }
-            // detectar telefone em uso inclui o aviso quando outra conta ja possui o telefone
-            if (telefoneJaExiste(idUsuario, telefone)) {
-                erros.add("Telefone já cadastrado para outro usuário.");
             }
             // detectar identificador em uso escolhe o aviso quando o registro academico ja existe
             if (identificadorJaExiste(idUsuario, perfil, identificador)) {
@@ -117,7 +112,6 @@ public class AdminUsuarioRepository {
                 UPDATE public."USUARIOS"
                 SET nome = ?,
                     email = ?,
-                    telefone = ?,
                     datanasc = ?
                 WHERE id = ?
                 """;
@@ -152,7 +146,7 @@ public class AdminUsuarioRepository {
                 }
                 // cancelar conta nao alterada desfaz a operacao quando nenhum dado pessoal foi atualizado
                 if (jdbcTemplate.update(sqlUsuario, usuario.getNome(), normalizarEmail(usuario.getEmail()),
-                        usuario.getTelefone(), Date.valueOf(usuario.getDataNasc()), usuario.getIdUsuario()) == 0) {
+                        Date.valueOf(usuario.getDataNasc()), usuario.getIdUsuario()) == 0) {
                     status.setRollbackOnly();
                     return false;
                 }
@@ -343,17 +337,6 @@ public class AdminUsuarioRepository {
         return jdbcTemplate.query(sql, rs -> { return rs.next(); }, normalizarEmail(email), idUsuario);
     }
 
-    // buscar telefone repetido na edicao este metodo procura o numero em outra conta
-    private boolean telefoneJaExiste(Long idUsuario, String telefone) {
-        String sql = """
-                SELECT 1
-                FROM public."USUARIOS"
-                WHERE telefone = ?
-                AND id <> ?
-                """;
-        return jdbcTemplate.query(sql, rs -> { return rs.next(); }, telefone, idUsuario);
-    }
-
     // buscar identificador repetido na edicao este metodo procura rgm ou matricula em outro usuario
     private boolean identificadorJaExiste(Long idUsuario, String perfil, String identificador) {
         String sql;
@@ -387,7 +370,6 @@ public class AdminUsuarioRepository {
         usuario.setIdUsuario(rs.getLong("id_usuario"));
         usuario.setNome(rs.getString("nome"));
         usuario.setEmail(rs.getString("email"));
-        usuario.setTelefone(rs.getString("telefone"));
         usuario.setStatus(rs.getBoolean("status"));
         usuario.setMaster(rs.getBoolean("master"));
 
