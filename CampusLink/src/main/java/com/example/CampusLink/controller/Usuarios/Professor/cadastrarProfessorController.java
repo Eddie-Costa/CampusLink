@@ -108,7 +108,6 @@ public class cadastrarProfessorController {
         session.setAttribute("Matricula", professor.getMatricula());
         session.setAttribute("Nome", professor.getNome().toLowerCase());
         session.setAttribute("Email", professor.getEmail().toLowerCase());
-        session.setAttribute("Telefone", professor.getTelefone());
         session.setAttribute("DataNasc", professor.getDataNasc());
         session.setAttribute("Senha", encoder.encode(professor.getSenha()));
 
@@ -140,14 +139,12 @@ public class cadastrarProfessorController {
         professor.setMatricula(session.getAttribute("Matricula").toString());;
         professor.setNome(session.getAttribute("Nome").toString());
         professor.setEmail(session.getAttribute("Email").toString());
-        professor.setTelefone(session.getAttribute("Telefone").toString());
         professor.setDataNasc(session.getAttribute("DataNasc").toString());
         professor.setSenha(session.getAttribute("Senha").toString());
 
         session.removeAttribute("Matricula");
         session.removeAttribute("Nome");
         session.removeAttribute("Email");
-        session.removeAttribute("Telefone");
         session.removeAttribute("DataNasc");
         session.removeAttribute("Senha");
         session.removeAttribute("verificado");
@@ -158,8 +155,7 @@ public class cadastrarProfessorController {
         List<String> erros = UsuarioRepository.validarDadosDuplicados(
                 "Professor",
                 professor.getMatricula(),
-                professor.getEmail().toLowerCase(),
-                professor.getTelefone()
+                professor.getEmail().toLowerCase()
         );
 
 
@@ -189,7 +185,6 @@ public class cadastrarProfessorController {
                     professor.getMatricula(),
                     professor.getNome().toLowerCase(),
                     professor.getEmail().toLowerCase(),
-                    professor.getTelefone(),
                     professor.getDataNasc(),
                     professor.getSenha()
             );

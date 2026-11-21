@@ -32,11 +32,6 @@ public class usuarioAdminDTO {
     @Email(message = "Informe um e-mail válido.")
     private String email;
 
-    @NotBlank(message = "Informe o telefone.")
-    @Size(min = 10, max = 11, message = "O telefone deve ter entre 10 e 11 números.")
-    @Pattern(regexp = "^\\d{10,11}$", message = "O telefone deve conter apenas números.")
-    private String telefone;
-
     @NotBlank(message = "Informe a data de nascimento.")
     @Size(min = 10, max = 10, message = "Informe uma data de nascimento válida.")
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Informe uma data de nascimento válida.")

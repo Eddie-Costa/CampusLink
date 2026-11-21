@@ -17,8 +17,6 @@ public class DadosUsuarioDTO {
 
     private String email;
 
-    private String telefone;
-
     private LocalDate dataNascimento;
 
     private String perfil;

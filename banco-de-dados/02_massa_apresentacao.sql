@@ -89,12 +89,12 @@ BEGIN
 
     -- ===================== contas principais =====================
 
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status)
-    VALUES ('Ana Souza', v_email_base || '+aluna@' || v_email_dominio, '11910000001', '2003-04-12', v_senha, 'ALUNOS', true) RETURNING id INTO u_ana;
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status)
-    VALUES ('Renata Oliveira', v_email_base || '+professora@' || v_email_dominio, '11920000001', '1984-05-21', v_senha, 'PROFESSORES', true) RETURNING id INTO u_renata;
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status)
-    VALUES ('Patricia Alves', v_email_base || '+admin@' || v_email_dominio, '11930000001', '1990-08-09', v_senha, 'ADMINISTRADOR', true) RETURNING id INTO u_patricia;
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status)
+    VALUES ('Ana Souza', v_email_base || '+aluna@' || v_email_dominio, '2003-04-12', v_senha, 'ALUNOS', true) RETURNING id INTO u_ana;
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status)
+    VALUES ('Renata Oliveira', v_email_base || '+professora@' || v_email_dominio, '1984-05-21', v_senha, 'PROFESSORES', true) RETURNING id INTO u_renata;
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status)
+    VALUES ('Patricia Alves', v_email_base || '+admin@' || v_email_dominio, '1990-08-09', v_senha, 'ADMINISTRADOR', true) RETURNING id INTO u_patricia;
 
     INSERT INTO public."ALUNOS"(rgm, id_usuario) VALUES ('11251400001', u_ana) RETURNING id INTO a_ana;
     INSERT INTO public."PROFESSORES"(matricula, id_usuario) VALUES ('20240000001', u_renata) RETURNING id INTO p_renata;
@@ -112,8 +112,8 @@ BEGIN
     -- ===================== usuarios de preenchimento =====================
 
     -- 24 alunos com nomes comuns, a ultima fica desativada para o admin reativar
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status, created_at)
-    SELECT n.nome, 'demo.aluno' || lpad(n.g::text, 2, '0') || '@exemplo.com', '119900' || lpad(n.g::text, 5, '0'),
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status, created_at)
+    SELECT n.nome, 'demo.aluno' || lpad(n.g::text, 2, '0') || '@exemplo.com',
            date '2001-01-15' + (n.g::int * 97), v_senha, 'ALUNOS', n.g <> 24, (now() - (n.g * 3 || ' days')::interval)::date
     FROM unnest(ARRAY['Lucas Almeida','Mariana Barbosa','Gabriel Cardoso','Beatriz Dias','Rafael Esteves','Larissa Freitas',
                       'Thiago Gomes','Camila Henriques','Pedro Ivo Martins','Júlia Lacerda','Mateus Moreira','Isabela Nunes',
@@ -127,8 +127,8 @@ BEGIN
     FROM public."ALUNOS" a JOIN public."USUARIOS" u ON u.id = a.id_usuario WHERE u.email LIKE 'demo.aluno%@exemplo.com';
 
     -- 4 professores e 2 administradores comuns
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status)
-    SELECT n.nome, 'demo.prof' || n.g || '@exemplo.com', '119910000' || lpad(n.g::text, 2, '0'), date '1975-03-10' + (n.g::int * 400), v_senha, 'PROFESSORES', true
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status)
+    SELECT n.nome, 'demo.prof' || n.g || '@exemplo.com', date '1975-03-10' + (n.g::int * 400), v_senha, 'PROFESSORES', true
     FROM unnest(ARRAY['Carlos Mendes','Juliana Prado','Marcos Teixeira','Paula Nogueira']) WITH ORDINALITY AS n(nome, g);
     INSERT INTO public."PROFESSORES"(matricula, id_usuario)
     SELECT '2024100000' || substring(u.email from 'demo\.prof(\d)@'), u.id
@@ -138,8 +138,8 @@ BEGIN
     SELECT p.id INTO p_marcos FROM public."PROFESSORES" p JOIN public."USUARIOS" u ON u.id = p.id_usuario WHERE u.email = 'demo.prof3@exemplo.com';
     SELECT p.id INTO p_paula FROM public."PROFESSORES" p JOIN public."USUARIOS" u ON u.id = p.id_usuario WHERE u.email = 'demo.prof4@exemplo.com';
 
-    INSERT INTO public."USUARIOS"(nome, email, telefone, datanasc, senha, perfil, status)
-    SELECT n.nome, 'demo.admin' || n.g || '@exemplo.com', '119920000' || lpad(n.g::text, 2, '0'), date '1985-06-01' + (n.g::int * 300), v_senha, 'ADMINISTRADOR', true
+    INSERT INTO public."USUARIOS"(nome, email, datanasc, senha, perfil, status)
+    SELECT n.nome, 'demo.admin' || n.g || '@exemplo.com', date '1985-06-01' + (n.g::int * 300), v_senha, 'ADMINISTRADOR', true
     FROM unnest(ARRAY['Sérgio Lopes','Vanessa Moura']) WITH ORDINALITY AS n(nome, g);
     INSERT INTO public."ADMINISTRADOR"(matricula, id_usuario, master)
     SELECT 'ADM100000' || substring(u.email from 'demo\.admin(\d)@'), u.id, false
@@ -356,10 +356,10 @@ BEGIN
     VALUES (ch, u_ana, 'Entendi, obrigada! Vou cadastrar mais horas.', 'usuario', now() - interval '1 day 18 hours');
     -- Ana: concluido
     INSERT INTO public."CHAMADOS"(id_usuario, assunto, descricao, status, created_at, concluido_em, id_admin_conclusao)
-    VALUES (u_ana, 'Como alterar meu telefone?', 'Mudei de número e quero atualizar o cadastro.', 'concluido',
+    VALUES (u_ana, 'Como recebo uma cópia dos meus dados?', 'Quero saber quais dados meus estão guardados no CampusLink.', 'concluido',
             now() - interval '15 days', now() - interval '14 days', u_patricia) RETURNING id INTO ch;
     INSERT INTO public."CHAMADO_RESPOSTAS"(id_chamado, id_admin_usuario, resposta, tipo_autor, created_at)
-    VALUES (ch, u_patricia, 'Acesse Meu perfil > Meus dados e altere o telefone. Qualquer dúvida, é só abrir outro chamado.', 'admin', now() - interval '14 days 2 hours');
+    VALUES (ch, u_patricia, 'Acesse Meu perfil e peça a cópia dos seus dados: ela chega no seu e-mail. Qualquer dúvida, é só abrir outro chamado.', 'admin', now() - interval '14 days 2 hours');
 
     -- preenchimento: chamados de outros usuarios em situacoes variadas
     INSERT INTO public."CHAMADOS"(id_usuario, assunto, descricao, status, created_at, concluido_em, id_admin_conclusao)

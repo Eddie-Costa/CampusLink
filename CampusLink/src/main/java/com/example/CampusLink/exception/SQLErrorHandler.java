@@ -26,10 +26,6 @@ public class SQLErrorHandler {
             // avisar email repetido acrescenta o conflito de email encontrado
             else if (erros.get(i).equals("Email já cadastrado")) {
                 mensagem += "\n Email já cadastrado.";
-            }
-            // avisar telefone repetido distingue esse conflito de outras falhas de cadastro
-            else if (erros.get(i).equals("Telefone já cadastrado")) {
-                mensagem += "\n Telefone já cadastrado.";
             } else {
                 mensagem += "\n Verifique os dados e a conexão com o banco.";
             }

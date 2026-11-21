@@ -51,7 +51,6 @@
                         <th scope="col">Nome</th>
                         <th scope="col">Identificador</th>
                         <th scope="col">E-mail</th>
-                        <th scope="col">Telefone</th>
                         <th scope="col">Perfil</th>
                         <th scope="col">Status</th>
                         <th scope="col">Ações</th>
@@ -67,7 +66,6 @@
                         <td th:text="${usuario.nome}">Nome</td>
                         <td th:text="${usuario.identificador}">Identificador</td>
                         <td th:text="${usuario.email}">email@campuslink.com</td>
-                        <td th:text="${usuario.telefone}">Telefone</td>
 
                         <td>
                             <span class="usuario-perfil usuario-aluno" th:if="${usuario.perfil == 'Aluno'}">Aluno</span>
@@ -134,13 +132,13 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">
+                        <td colspan="6" class="usuarios-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('usuario', 'Nenhum usuário cadastrado', 'Cadastre alunos e professores para começar a montar as turmas.', 'Cadastrar usuário', @{/admin/usuarios/cadastrar})}"></div>
                         </td>
                     </tr>
 
                     <tr id="nenhumResultado" th:if="${not #lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
+                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
                     </tr>
                     </tbody>
                 </table>

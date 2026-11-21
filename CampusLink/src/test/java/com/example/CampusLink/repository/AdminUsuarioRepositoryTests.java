@@ -79,19 +79,19 @@ class AdminUsuarioRepositoryTests {
         assertNull(semEmail);
     }
 
-    // testar dados repetidos este teste confere os avisos de email telefone rgm e matricula usados por outra conta
+    // testar dados repetidos este teste confere os avisos de email rgm e matricula usados por outra conta
     @Test
     void avisaDadosUsadosPorOutraConta() throws SQLException {
         // preparar banco com todos os dados ja usados
 
         // executar validacoes de aluno e professor
-        List<String> aluno = usuarios.validarDadosEdicao(2L, "Aluno", "123", " A@Teste.com ", "11999999999");
-        List<String> professor = usuarios.validarDadosEdicao(3L, "Professor", "P1", "p@teste.com", "11988888888");
+        List<String> aluno = usuarios.validarDadosEdicao(2L, "Aluno", "123", " A@Teste.com ");
+        List<String> professor = usuarios.validarDadosEdicao(3L, "Professor", "P1", "p@teste.com");
 
         // verificar avisos e conta ignorada na busca
-        assertEquals(List.of("E-mail já cadastrado para outro usuário.", "Telefone já cadastrado para outro usuário.",
+        assertEquals(List.of("E-mail já cadastrado para outro usuário.",
                 "RGM já cadastrado para outro aluno."), aluno);
-        assertEquals("Matrícula já cadastrada para outro professor.", professor.get(2));
+        assertEquals("Matrícula já cadastrada para outro professor.", professor.get(1));
         assertEquals(List.of("a@teste.com", 2L), banco.comandos().get(0).valores());
     }
 
@@ -102,7 +102,7 @@ class AdminUsuarioRepositoryTests {
         banco.linhasPadrao(0);
 
         // executar validacao
-        List<String> erros = usuarios.validarDadosEdicao(2L, "Aluno", "123", "a@teste.com", "1");
+        List<String> erros = usuarios.validarDadosEdicao(2L, "Aluno", "123", "a@teste.com");
 
         // verificar lista vazia
         assertTrue(erros.isEmpty());
@@ -120,7 +120,7 @@ class AdminUsuarioRepositoryTests {
         // verificar rgm e dados enviados
         assertTrue(editou);
         assertEquals(List.of("999", 2L), banco.ultimo("SET rgm = ?").valores());
-        assertEquals(List.of("Ana", "ana@teste.com", "11999999999", Date.valueOf("2004-03-01"), 2L),
+        assertEquals(List.of("Ana", "ana@teste.com", Date.valueOf("2004-03-01"), 2L),
                 banco.ultimo("SET nome = ?").valores());
     }
 
@@ -310,7 +310,6 @@ class AdminUsuarioRepositoryTests {
         usuario.setIdentificador(identificador);
         usuario.setNome("Ana");
         usuario.setEmail(" Ana@Teste.com ");
-        usuario.setTelefone("11999999999");
         usuario.setDataNasc("2004-03-01");
         return usuario;
     }

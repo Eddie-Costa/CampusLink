@@ -68,7 +68,6 @@ class ProfileControllerTests {
         dados.setId(42L);
         dados.setNome("Ana Campus");
         dados.setEmail("titular@example.com");
-        dados.setTelefone("11999990000");
         dados.setDataNascimento(LocalDate.of(2001, 2, 3));
         dados.setPerfil("ALUNOS");
         dados.setIdentificador("12345678901");

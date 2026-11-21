@@ -108,7 +108,6 @@ public class cadastrarAlunoController {
         session.setAttribute("Rgm", aluno.getRgm());
         session.setAttribute("Nome", aluno.getNome().toLowerCase());
         session.setAttribute("Email", aluno.getEmail().toLowerCase());
-        session.setAttribute("Telefone", aluno.getTelefone());
         session.setAttribute("DataNasc", aluno.getDataNasc());
         session.setAttribute("Senha", encoder.encode(aluno.getSenha()));
 
@@ -140,14 +139,12 @@ public class cadastrarAlunoController {
         aluno.setRgm(session.getAttribute("Rgm").toString());
         aluno.setNome(session.getAttribute("Nome").toString());
         aluno.setEmail(session.getAttribute("Email").toString());
-        aluno.setTelefone(session.getAttribute("Telefone").toString());
         aluno.setDataNasc(session.getAttribute("DataNasc").toString());
         aluno.setSenha(session.getAttribute("Senha").toString());
 
         session.removeAttribute("Rgm");
         session.removeAttribute("Nome");
         session.removeAttribute("Email");
-        session.removeAttribute("Telefone");
         session.removeAttribute("DataNasc");
         session.removeAttribute("Senha");
         session.removeAttribute("verificado");
@@ -155,8 +152,7 @@ public class cadastrarAlunoController {
         List<String> erros = UsuarioRepository.validarDadosDuplicados(
                 "Aluno",
                 aluno.getRgm(),
-                aluno.getEmail().toLowerCase(),
-                aluno.getTelefone()
+                aluno.getEmail().toLowerCase()
         );
 
 
@@ -186,7 +182,6 @@ public class cadastrarAlunoController {
                     aluno.getRgm(),
                     aluno.getNome().toLowerCase(),
                     aluno.getEmail().toLowerCase(),
-                    aluno.getTelefone(),
                     aluno.getDataNasc(),
                     aluno.getSenha()
             );
