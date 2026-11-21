@@ -22,6 +22,9 @@ public class TurmaDTO {
     @Size(max = 1000, message = "A descrição da turma deve ter no máximo 1000 caracteres")
     private String descricao;
 
+    // id do usuario identifica o participante nos formularios para que a tela so precise do email mascarado
+    private Long idPessoa;
+
     private String emailPessoa;
 
     private String nomePessoa;

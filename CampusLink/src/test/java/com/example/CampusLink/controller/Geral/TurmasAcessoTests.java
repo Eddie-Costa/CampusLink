@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // testes das turmas esta classe simula a troca do id da turma na url e acoes em turmas alheias
 @WebMvcTest(turmasController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, com.example.CampusLink.service.MascaraEmail.class})
 class TurmasAcessoTests {
 
     @Autowired MockMvc mvc;
@@ -53,6 +53,7 @@ class TurmasAcessoTests {
     @MockitoBean SessaoLogListener sessoes;
     @MockitoBean ChamadoAcessoService acessoChamados;
     @MockitoBean TermosService termos;
+    @MockitoBean com.example.CampusLink.repository.AdminUsuarioRepository usuariosAdmin;
 
     // testar aluno de fora da turma este teste confere que trocar o id na url nao abre turma alheia
     @Test
