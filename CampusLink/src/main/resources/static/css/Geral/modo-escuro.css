@@ -1288,7 +1288,8 @@ html[data-tema="escuro"] .cadastro-admin-campo select {
     color: #e6e9f2;
 }
 
-html[data-tema="escuro"] .cadastro-admin-ajuda {
+html[data-tema="escuro"] .cadastro-admin-ajuda,
+html[data-tema="escuro"] .editar-admin-ajuda {
     color: #a3abc4;
 }
 

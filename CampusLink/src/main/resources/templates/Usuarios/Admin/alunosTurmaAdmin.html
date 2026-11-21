@@ -127,7 +127,7 @@
                             </span>
                         </td>
 
-                        <td th:text="${aluno.email}">
+                        <td th:text="${@mascaraEmail.mascarar(aluno.email)}">
                             E-mail
                         </td>
 

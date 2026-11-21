@@ -1,4 +1,4 @@
-// lista administrativa de usuarios pesquisa nome email ou identificador
+// lista administrativa de usuarios pesquisa nome ou identificador, o email fica mascarado e e buscado no servidor
 // preparar busca administrativa de usuarios configura a pesquisa e oculta o aviso inicial
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -22,16 +22,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const busca = campoBusca.value.toLowerCase().trim();
         let usuariosVisiveis = 0;
 
-        // comparar usuario administrativo procura o texto no nome no email ou no identificador
+        // comparar usuario administrativo procura o texto no nome ou no identificador
         linhasUsuarios.forEach(function (linha) {
 
             const nome = linha.getAttribute("data-nome").toLowerCase();
-            const email = linha.getAttribute("data-email").toLowerCase();
             const identificador = linha.getAttribute("data-identificador").toLowerCase();
 
             const encontrou =
                 nome.includes(busca) ||
-                email.includes(busca) ||
                 identificador.includes(busca);
 
             // filtrar linhas de usuarios mostra e conta os usuarios encontrados ou oculta os demais

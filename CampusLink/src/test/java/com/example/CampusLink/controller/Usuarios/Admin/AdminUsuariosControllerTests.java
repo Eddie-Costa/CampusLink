@@ -70,7 +70,7 @@ class AdminUsuariosControllerTests {
         when(gestao.buscarAdministradorPorEmail("inativo@teste.com")).thenReturn(conta(3L, "Administrador", false));
         when(gestao.buscarAdministradorPorEmail("falha@teste.com")).thenThrow(new SQLException("banco"));
         List<Function<MockHttpSession, String>> telas = List.of(
-                s -> controlador.listarUsuarios(s, modelo),
+                s -> controlador.listarUsuarios(null, s, modelo),
                 s -> controlador.cadastrarUsuario(s, modelo),
                 s -> controlador.salvarUsuario(novo("Senha@123"), semErros(), s, modelo, redirecionamento),
                 s -> controlador.editarUsuario(2L, s, modelo, redirecionamento),
@@ -97,11 +97,11 @@ class AdminUsuariosControllerTests {
                 conta(6L, "Administrador", false), conta(2L, "Aluno", true)));
 
         // executar listagem e listagem com falha
-        String tela = controlador.listarUsuarios(admin, modelo);
+        String tela = controlador.listarUsuarios(null, admin, modelo);
         long ativos = ((Integer) modelo.get("totalAdministradoresAtivos"));
         when(gestao.listarUsuarios()).thenThrow(new SQLException("banco"));
         ExtendedModelMap modeloFalha = new ExtendedModelMap();
-        controlador.listarUsuarios(admin, modeloFalha);
+        controlador.listarUsuarios(null, admin, modeloFalha);
 
         // verificar contagem e mensagem
         assertEquals("Usuarios/Admin/usuariosAdmin", tela);
@@ -186,6 +186,46 @@ class AdminUsuariosControllerTests {
         verify(gestao).atualizarUsuario(dados);
     }
 
+    // testar busca por email este teste confere que o email completo e comparado no servidor sem mudar a contagem de admins
+    @Test
+    void buscaUsuarioPeloEmailCompleto() throws SQLException {
+        // preparar dois usuarios com email
+        usuarioAdminDTO ana = conta(2L, "Aluno", true);
+        ana.setEmail("ana@teste.com");
+        usuarioAdminDTO bia = conta(1L, "Administrador", true);
+        bia.setEmail("bia@teste.com");
+        when(gestao.listarUsuarios()).thenReturn(List.of(ana, bia));
+
+        // executar busca com espacos e letras maiusculas
+        controlador.listarUsuarios(" ANA@teste.com ", admin, modelo);
+
+        // verificar apenas a conta encontrada e a contagem feita na lista completa
+        assertEquals(List.of(ana), modelo.get("usuarios"));
+        assertEquals("ANA@teste.com", modelo.get("buscaEmail"));
+        assertEquals(1, modelo.get("totalAdministradoresAtivos"));
+    }
+
+    // testar edicao sem email este teste confere que o campo vazio mantem o email cadastrado, pois a tela so mostra a mascara
+    @Test
+    void edicaoComEmailVazioMantemEmailAtual() throws SQLException {
+        // preparar aluno com email cadastrado e edicao sem email
+        usuarioAdminDTO atual = conta(2L, "Aluno", true);
+        atual.setEmail("ana.atual@teste.com");
+        when(gestao.buscarUsuarioPorId(2L)).thenReturn(atual);
+        when(gestao.validarDadosEdicao(eq(2L), eq("Aluno"), any(), eq("ana.atual@teste.com"))).thenReturn(List.of());
+        when(gestao.atualizarUsuario(any())).thenReturn(true);
+        usuarioAdminDTO dados = edicao("Ana Maria");
+        dados.setEmail("");
+
+        // executar gravacao validando o formulario como na tela
+        String destino = controlador.salvarEdicaoUsuario(2L, dados, validar(dados), admin, modelo, redirecionamento);
+
+        // verificar gravacao com o email atual
+        assertEquals("redirect:/admin/usuarios", destino);
+        assertEquals("ana.atual@teste.com", dados.getEmail());
+        verify(gestao).atualizarUsuario(dados);
+    }
+
     // testar campos da edicao este teste confere cada campo obrigatorio a data e os dados repetidos
     @Test
     void validaCamposDaEdicao() throws SQLException {
@@ -193,7 +233,7 @@ class AdminUsuariosControllerTests {
         usuarioAdminDTO semIdentificador = edicao("Ana");
         semIdentificador.setIdentificador(" ");
         usuarioAdminDTO semEmail = edicao("Ana");
-        semEmail.setEmail(null);
+        semEmail.setEmail("sem-arroba");
         usuarioAdminDTO semData = edicao("Ana");
         semData.setDataNasc(null);
         usuarioAdminDTO dataErrada = edicao("Ana");
@@ -206,7 +246,7 @@ class AdminUsuariosControllerTests {
         // campos obrigatorios sao validados pelas anotacoes do dto, entao o teste usa o validador real
         assertCampoRecusado("nome", "Informe o nome do usuário.", edicao(" "));
         assertCampoRecusado("identificador", "Informe o RGM ou matrícula.", semIdentificador);
-        assertCampoRecusado("email", "Informe o e-mail.", semEmail);
+        assertCampoRecusado("email", "Informe um e-mail válido.", semEmail);
         assertCampoRecusado("dataNasc", "Informe a data de nascimento.", semData);
         assertEquals("Informe uma data de nascimento válida.", mensagem(m -> controlador.salvarEdicaoUsuario(2L, dataErrada, validar(dataErrada), admin, m, redirecionamento)));
         assertEquals("E-mail já cadastrado.", mensagem(m -> controlador.salvarEdicaoUsuario(2L, repetido, validar(repetido), admin, m, redirecionamento)));

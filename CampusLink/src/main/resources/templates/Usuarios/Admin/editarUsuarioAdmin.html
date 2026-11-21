@@ -61,9 +61,11 @@
                 </div>
 
                 <div class="editar-admin-campo">
-                    <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email" th:value="${usuario.email}"
-                           minlength="5" maxlength="100" required>
+                    <label for="email">Novo e-mail</label>
+                    <!-- email atual fica mascarado, o campo vazio mantem o email que ja esta cadastrado -->
+                    <input id="email" name="email" type="email" th:placeholder="${@mascaraEmail.mascarar(usuario.email)}"
+                           minlength="5" maxlength="100" aria-describedby="ajudaEmail">
+                    <p id="ajudaEmail" class="editar-admin-ajuda">Deixe em branco para manter o e-mail atual.</p>
                 </div>
 
 
