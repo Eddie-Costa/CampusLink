@@ -43,7 +43,7 @@
                 <tbody>
                 <tr th:each="chamado : ${chamados}">
                     <td><span class="chamados-protocolo" th:text="|#${chamado.id}|"></span><strong class="d-block" th:text="${chamado.assunto}"></strong></td>
-                    <td><span th:text="${chamado.nomeUsuario}"></span><small class="d-block text-secondary" th:text="${chamado.emailUsuario}"></small></td>
+                    <td><span th:text="${chamado.nomeUsuario}"></span><small class="d-block text-secondary" th:text="${@mascaraEmail.mascarar(chamado.emailUsuario)}"></small></td>
                     <td><span class="chamados-status" th:classappend="${chamado.status}" th:text="${chamado.statusDescricao}"></span></td>
                     <td th:text="${#temporals.format(chamado.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                     <td><a th:href="@{/admin/chamados/{id}(id=${chamado.id})}" class="btn btn-outline-primary btn-sm"

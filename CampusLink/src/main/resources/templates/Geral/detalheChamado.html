@@ -71,7 +71,7 @@
             <p class="chat-resumo-assunto" th:text="${chamado.assunto}"></p>
             <dl>
                 <dt>Solicitante</dt><dd th:text="${chamado.nomeUsuario}"></dd>
-                <dt th:if="${administrador}">E-mail</dt><dd th:if="${administrador}" th:text="${chamado.emailUsuario}"></dd>
+                <dt th:if="${administrador}">E-mail</dt><dd th:if="${administrador}" th:text="${@mascaraEmail.mascarar(chamado.emailUsuario)}"></dd>
                 <dt>Aberto em</dt><dd th:text="${#temporals.format(chamado.createdAt, 'dd/MM/yyyy HH:mm')}"></dd>
                 <dt id="chat-conclusao-rotulo" th:hidden="${chamado.concluidoEm == null}">Concluído em</dt>
                 <dd id="chat-conclusao-data" th:hidden="${chamado.concluidoEm == null}" th:text="${chamado.concluidoEm == null ? '' : #temporals.format(chamado.concluidoEm, 'dd/MM/yyyy HH:mm')}"></dd>
