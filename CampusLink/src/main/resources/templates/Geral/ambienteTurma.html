@@ -76,7 +76,7 @@
                                         <tbody>
                                         <tr th:each="participante : ${participantesTurma}">
                                             <td th:text="${participante.nomePessoa}">Nome do participante</td>
-                                            <td th:text="${participante.emailPessoa}">email@exemplo.com</td>
+                                            <td th:text="${@mascaraEmail.mascarar(participante.emailPessoa)}">em***@exemplo.com</td>
                                             <td th:text="${participante.tipoUsuario}">Professor</td>
                                             <td th:if="${isProfessorTurma}">
                                                 <form th:unless="${#strings.equalsIgnoreCase(participante.tipoUsuario, 'Professor Admin')}"
@@ -88,8 +88,8 @@
                                                       data-confirmar-botao="Remover"
                                                       th:attr="data-nome=${participante.nomePessoa},data-confirmar-item=${participante.nomePessoa}">
                                                     <input type="hidden" name="id" th:value="${turma.id}">
-                                                    <input type="hidden" name="emailPessoa"
-                                                           th:value="${participante.emailPessoa}">
+                                                    <input type="hidden" name="idPessoa"
+                                                           th:value="${participante.idPessoa}">
                                                     <input type="hidden" th:if="${_csrf != null}"
                                                            th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                                     <button type="submit" class="btn btn-danger btn-sm">Remover</button>
@@ -134,6 +134,8 @@
                             <div class="modal-body">
 
                                 <input type="hidden" th:field="*{id}"/>
+                                <!-- pessoa escolhida na sugestao vai pelo id, pois o campo so mostra o email mascarado -->
+                                <input type="hidden" id="idPessoaAdicionar" name="idPessoa">
 
                                 <label for="emailPessoaAdicionar" class="form-label">Email da pessoa:</label>
 

@@ -3,6 +3,9 @@ package com.example.CampusLink.controller.Geral;
 
 import com.example.CampusLink.dto.ConteudoDTO;
 import com.example.CampusLink.dto.TurmaDTO;
+import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
+import com.example.CampusLink.repository.AdminUsuarioRepository;
+import com.example.CampusLink.service.MascaraEmail;
 import com.example.CampusLink.repository.AlunoRepository;
 import com.example.CampusLink.repository.ProfessorRepository;
 import com.example.CampusLink.repository.TurmaRepository;
@@ -52,6 +55,7 @@ class TurmasControllerTests {
     private TurmaRepository turmas;
     private ConteudoService conteudos;
     private ArquivoService arquivos;
+    private AdminUsuarioRepository usuariosAdmin;
     private turmasController controlador;
     private ExtendedModelMap modelo;
     private RedirectAttributesModelMap redirecionamento;
@@ -64,6 +68,7 @@ class TurmasControllerTests {
         turmas = mock(TurmaRepository.class);
         conteudos = mock(ConteudoService.class);
         arquivos = mock(ArquivoService.class);
+        usuariosAdmin = mock(AdminUsuarioRepository.class);
         controlador = new turmasController();
         ReflectionTestUtils.setField(controlador, "UsuarioRepository", mock(UsuarioRepository.class));
         ReflectionTestUtils.setField(controlador, "professorRepository", professores);
@@ -72,6 +77,8 @@ class TurmasControllerTests {
         ReflectionTestUtils.setField(controlador, "conteudoService", conteudos);
         ReflectionTestUtils.setField(controlador, "arquivoService", arquivos);
         ReflectionTestUtils.setField(controlador, "dominioService", mock(DominioService.class));
+        ReflectionTestUtils.setField(controlador, "mascaraEmail", new MascaraEmail());
+        ReflectionTestUtils.setField(controlador, "adminUsuarioRepository", usuariosAdmin);
         modelo = new ExtendedModelMap();
         redirecionamento = new RedirectAttributesModelMap();
         TurmaDTO turma = turma(1L, "Calculo", 4L);
@@ -81,7 +88,7 @@ class TurmasControllerTests {
         when(turmas.buscarTurmasDoUsuario("aluno", "7")).thenReturn(List.of(turma));
         when(turmas.buscarTurmaPorId("1")).thenReturn(turma);
         when(turmas.buscarParticipantesDaTurma("1")).thenReturn(List.of(
-                pessoa(PROFESSOR, "Professor Admin"), pessoa(ALUNO, "Aluno"), pessoa("colega@teste.com", "Professor")));
+                pessoa(40L, PROFESSOR, "Professor Admin"), pessoa(70L, ALUNO, "Aluno"), pessoa(50L, "colega@teste.com", "Professor")));
     }
 
     // testar lista de turmas este teste confere a lista do aluno do professor e o pedido sem login
@@ -167,7 +174,7 @@ class TurmasControllerTests {
     @Test
     void sugerePessoasApenasParaProfessoresDaTurma() throws SQLException {
         // preparar sugestao do banco
-        when(turmas.buscarSugestoesPessoasDaTurma("bi", "1")).thenReturn(List.of(pessoa("bia@teste.com", "Aluno")));
+        when(turmas.buscarSugestoesPessoasDaTurma("bi", "1")).thenReturn(new java.util.ArrayList<>(List.of(pessoa(80L, "bia@teste.com", "Aluno"))));
 
         // executar buscas
         List<TurmaDTO> sugestoes = controlador.sugestoesPessoas("1", " bi ", sessao("colega@teste.com", "professor"));
@@ -177,6 +184,8 @@ class TurmasControllerTests {
 
         // verificar sugestoes
         assertEquals(1, sugestoes.size());
+        assertEquals("bi***@teste.com", sugestoes.get(0).getEmailPessoa());
+        assertEquals(80L, sugestoes.get(0).getIdPessoa());
         assertTrue(curta.isEmpty());
     }
 
@@ -399,6 +408,26 @@ class TurmasControllerTests {
         assertEquals("redirect:/turmas", semTurma);
     }
 
+    // testar entrada pela sugestao este teste confere que o id escolhido vira o email no servidor sem passar pela tela
+    @Test
+    void adicionaPessoaSugeridaPeloId() throws SQLException {
+        // preparar conta da pessoa sugerida
+        usuarioAdminDTO bia = new usuarioAdminDTO();
+        bia.setEmail("bia@teste.com");
+        when(usuariosAdmin.buscarUsuarioPorId(80L)).thenReturn(bia);
+        when(turmas.inserirPessoaTurma("bia@teste.com", "1")).thenReturn(true);
+        TurmaDTO escolhida = pedido(1L, "bi***@teste.com");
+        escolhida.setIdPessoa(80L);
+
+        // executar inclusao
+        ExtendedModelMap modeloSucesso = new ExtendedModelMap();
+        controlador.adicionarPessoas(escolhida, sessao(PROFESSOR, "professor"), modeloSucesso, redirecionamento);
+
+        // verificar inclusao com o email real
+        assertEquals("Pessoa adicionada com sucesso.", modeloSucesso.get("mensagemSucesso"));
+        verify(turmas).inserirPessoaTurma("bia@teste.com", "1");
+    }
+
     // testar saida de pessoas este teste confere remocao protecao do professor administrador e recusas
     @Test
     void removePessoasProtegendoProfessorAdministrador() throws SQLException {
@@ -406,17 +435,17 @@ class TurmasControllerTests {
         when(turmas.revomerPessoaTurma(ALUNO, "1")).thenReturn(true);
 
         // executar remocoes
-        controlador.removerPessoas(pedido(1L, " " + ALUNO + " "), sessao(PROFESSOR, "professor"), redirecionamento);
+        controlador.removerPessoas(remocao(1L, 70L), sessao(PROFESSOR, "professor"), redirecionamento);
         String removido = (String) redirecionamento.getFlashAttributes().get("mensagemSucesso");
-        controlador.removerPessoas(pedido(1L, PROFESSOR), sessao("colega@teste.com", "professor"), redirecionamento);
+        controlador.removerPessoas(remocao(1L, 40L), sessao("colega@teste.com", "professor"), redirecionamento);
         String protegido = (String) redirecionamento.getFlashAttributes().get("mensagemErro");
-        controlador.removerPessoas(pedido(1L, "colega@teste.com"), sessao(PROFESSOR, "professor"), redirecionamento);
+        controlador.removerPessoas(remocao(1L, 50L), sessao(PROFESSOR, "professor"), redirecionamento);
         String falha = (String) redirecionamento.getFlashAttributes().get("mensagemErro");
-        controlador.removerPessoas(pedido(1L, " "), sessao(PROFESSOR, "professor"), redirecionamento);
+        controlador.removerPessoas(remocao(1L, null), sessao(PROFESSOR, "professor"), redirecionamento);
         String vazio = (String) redirecionamento.getFlashAttributes().get("mensagemErro");
-        String aluno = controlador.removerPessoas(pedido(1L, PROFESSOR), sessao(ALUNO, "aluno"), redirecionamento);
-        String deFora = controlador.removerPessoas(pedido(1L, ALUNO), sessao("fora@teste.com", "professor"), redirecionamento);
-        String semTurma = controlador.removerPessoas(pedido(null, ALUNO), sessao(PROFESSOR, "professor"), redirecionamento);
+        String aluno = controlador.removerPessoas(remocao(1L, 40L), sessao(ALUNO, "aluno"), redirecionamento);
+        String deFora = controlador.removerPessoas(remocao(1L, 70L), sessao("fora@teste.com", "professor"), redirecionamento);
+        String semTurma = controlador.removerPessoas(remocao(null, 70L), sessao(PROFESSOR, "professor"), redirecionamento);
 
         // verificar mensagens e que o administrador nao foi removido
         assertEquals("Participante removido com sucesso.", removido);
@@ -471,12 +500,21 @@ class TurmasControllerTests {
         return turma;
     }
 
-    // montar participante este metodo cria a pessoa da turma com email e perfil
-    private TurmaDTO pessoa(String email, String tipo) {
+    // montar participante este metodo cria a pessoa da turma com id email e perfil
+    private TurmaDTO pessoa(Long id, String email, String tipo) {
         TurmaDTO pessoa = new TurmaDTO();
+        pessoa.setIdPessoa(id);
         pessoa.setEmailPessoa(email);
         pessoa.setTipoUsuario(tipo);
         return pessoa;
+    }
+
+    // montar pedido de remocao este metodo cria o formulario com turma e id do participante
+    private TurmaDTO remocao(Long idTurma, Long idPessoa) {
+        TurmaDTO pedido = new TurmaDTO();
+        pedido.setId(idTurma);
+        pedido.setIdPessoa(idPessoa);
+        return pedido;
     }
 
     // montar pedido de participante este metodo cria o formulario com turma e email da pessoa

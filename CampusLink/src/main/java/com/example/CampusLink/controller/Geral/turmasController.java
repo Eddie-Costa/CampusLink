@@ -28,6 +28,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.helpers.MessageFormatter;
 import com.example.CampusLink.service.DominioService;
 import com.example.CampusLink.repository.DashboardRepository;
+import com.example.CampusLink.repository.AdminUsuarioRepository;
+import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
+import com.example.CampusLink.service.MascaraEmail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +69,12 @@ public class turmasController {
 
     @Autowired
     private DashboardRepository dashboardRepository;
+
+    @Autowired
+    private AdminUsuarioRepository adminUsuarioRepository;
+
+    @Autowired
+    private MascaraEmail mascaraEmail;
 
     // listar minhas turmas este metodo carrega as turmas do usuario e destaca as usadas recentemente
     @GetMapping("/turmas")
@@ -250,7 +259,10 @@ public class turmasController {
             return List.of();
         }
 
-        return turmaRepository.buscarSugestoesPessoasDaTurma(consulta, id);
+        List<TurmaDTO> sugestoes = turmaRepository.buscarSugestoesPessoasDaTurma(consulta, id);
+        // mascarar sugestoes envia ao navegador so o email mascarado, a escolha segue pelo id da pessoa
+        sugestoes.forEach(sugestao -> sugestao.setEmailPessoa(mascaraEmail.mascarar(sugestao.getEmailPessoa())));
+        return sugestoes;
     }
 
     // registrar uso da turma este metodo guarda a alteracao para o email conectado
@@ -964,8 +976,15 @@ public class turmasController {
             return "redirect:/turmas/" + idTurma;
         }
 
+        String emailPessoa = turmaDTO.getEmailPessoa();
+        // usar pessoa sugerida busca o email no servidor pelo id, porque a sugestao so mostra o email mascarado
+        if (turmaDTO.getIdPessoa() != null) {
+            usuarioAdminDTO sugerida = adminUsuarioRepository.buscarUsuarioPorId(turmaDTO.getIdPessoa());
+            emailPessoa = sugerida == null ? null : sugerida.getEmail();
+        }
+
         // exigir email do participante retorna ao ambiente quando nenhuma pessoa foi informada
-        if (turmaDTO.getEmailPessoa() == null || turmaDTO.getEmailPessoa().isBlank()) {
+        if (emailPessoa == null || emailPessoa.isBlank()) {
             logger.warn("[adicionarPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
             // registro de avisos confere se esta habilitado ao adicionar participante na turma
             if (logger.isWarnEnabled()) {
@@ -980,7 +999,7 @@ public class turmasController {
             return ambienteTurma(String.valueOf(turmaDTO.getId()), null, null, model, session, redirectAttributes);
         }
 
-        boolean pessoaAdicionada = turmaRepository.inserirPessoaTurma(turmaDTO.getEmailPessoa().trim(), idTurma);
+        boolean pessoaAdicionada = turmaRepository.inserirPessoaTurma(emailPessoa.trim(), idTurma);
 
         // confirmar pessoa adicionada registra a alteracao e distingue sucesso de falha no vinculo
         if (pessoaAdicionada) {
@@ -1112,15 +1131,20 @@ public class turmasController {
             return "redirect:/turmas/" + idTurma;
         }
 
-        // exigir participante valido reabre a lista quando o email da pessoa esta ausente
-        if (turmaDTO.getEmailPessoa() == null || turmaDTO.getEmailPessoa().isBlank()) {
-            logger.warn("[removerPessoas] e-mail vazio para turma {}.", turmaDTO.getId());
+        // localizar participante pelo id evita enviar o email da pessoa para a tela
+        TurmaDTO participante = turmaDTO.getIdPessoa() == null ? null : participantes.stream()
+                .filter(p -> turmaDTO.getIdPessoa().equals(p.getIdPessoa()))
+                .findFirst().orElse(null);
+
+        // exigir participante valido reabre a lista quando a pessoa nao participa da turma
+        if (participante == null || participante.getEmailPessoa() == null) {
+            logger.warn("[removerPessoas] participante invalido para turma {}.", turmaDTO.getId());
             // registro de avisos confere se esta habilitado ao delete participante da turma
             if (logger.isWarnEnabled()) {
                 // gravar historico ao delete participante da turma tenta salvar o registro no banco e informa falhas
                 try {
                     UsuarioRepository.InserirLogsNoBD(null, "WARN", turmasController.class.getName(), "removerPessoas", null,
-                            MessageFormatter.arrayFormat("[removerPessoas] e-mail vazio para turma {}.", new Object[]{turmaDTO.getId()}).getMessage(), null, null);
+                            MessageFormatter.arrayFormat("[removerPessoas] participante invalido para turma {}.", new Object[]{turmaDTO.getId()}).getMessage(), null, null);
                 } catch (Exception erroLogBD) {
                     logger.error("Erro ao gravar log no banco.", erroLogBD);
                 }
@@ -1130,11 +1154,8 @@ public class turmasController {
             return "redirect:/turmas/" + idTurma;
         }
 
-        String emailPessoa = turmaDTO.getEmailPessoa().trim();
-        boolean professorAdmin = participantes.stream().anyMatch(participante ->
-                participante.getEmailPessoa() != null
-                        && participante.getEmailPessoa().equalsIgnoreCase(emailPessoa)
-                        && "Professor Admin".equalsIgnoreCase(participante.getTipoUsuario()));
+        String emailPessoa = participante.getEmailPessoa();
+        boolean professorAdmin = "Professor Admin".equalsIgnoreCase(participante.getTipoUsuario());
 
         // proteger responsavel da turma impede a remocao do professor administrador
         if (professorAdmin) {

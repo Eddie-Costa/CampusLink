@@ -309,13 +309,13 @@ public class TurmaRepository {
 
     // listar participantes da turma este metodo consulta alunos professores e responsavel em ordem de perfil e nome
     public List<TurmaDTO> buscarParticipantesDaTurma(String idTurma) throws SQLException {
-        String sql = "SELECT participantes.nome, participantes.email, participantes.tipo_usuario FROM (" +
-                "SELECT u.nome AS nome, u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
+        String sql = "SELECT participantes.id_usuario, participantes.nome, participantes.email, participantes.tipo_usuario FROM (" +
+                "SELECT u.id AS id_usuario, u.nome AS nome, u.email AS email, 'Aluno' AS tipo_usuario FROM public.\"ALUNO_TURMA\" at " +
                 "JOIN public.\"ALUNOS\" a ON a.id = at.id_aluno " +
                 "JOIN public.\"USUARIOS\" u ON u.id = a.id_usuario " +
                 "WHERE at.id_turma = ? " +
                 "UNION ALL " +
-                "SELECT u.nome AS nome, u.email AS email, CASE WHEN t.id_proprietario = pt.id_professor THEN 'Professor Admin' ELSE 'Professor' END AS tipo_usuario FROM public.\"PROFESSOR_TURMA\" pt " +
+                "SELECT u.id AS id_usuario, u.nome AS nome, u.email AS email, CASE WHEN t.id_proprietario = pt.id_professor THEN 'Professor Admin' ELSE 'Professor' END AS tipo_usuario FROM public.\"PROFESSOR_TURMA\" pt " +
                 "JOIN public.\"PROFESSORES\" p ON p.id = pt.id_professor " +
                 "JOIN public.\"USUARIOS\" u ON u.id = p.id_usuario " +
                 "JOIN public.\"TURMAS\" t ON t.id = pt.id_turma " +
@@ -337,6 +337,7 @@ public class TurmaRepository {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TurmaDTO participante = new TurmaDTO();
+                    participante.setIdPessoa(rs.getLong("id_usuario"));
                     participante.setEmailPessoa(rs.getString("email"));
                     participante.setNomePessoa(rs.getString("nome"));
                     participante.setTipoUsuario(rs.getString("tipo_usuario"));
@@ -350,7 +351,7 @@ public class TurmaRepository {
 
     // buscar sugestoes de participantes este metodo procura dez contas ativas por nome ou email ainda fora da turma
     public List<TurmaDTO> buscarSugestoesPessoasDaTurma(String termo, String idTurma) throws SQLException {
-        String sql = "SELECT u.nome, u.email, "
+        String sql = "SELECT u.id, u.nome, u.email, "
                 + "CASE WHEN a.id IS NOT NULL THEN 'Aluno' ELSE 'Professor' END AS tipo_usuario "
                 + "FROM public.\"USUARIOS\" u "
                 + "LEFT JOIN public.\"ALUNOS\" a ON a.id_usuario = u.id "
@@ -380,6 +381,7 @@ public class TurmaRepository {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TurmaDTO sugestao = new TurmaDTO();
+                    sugestao.setIdPessoa(rs.getLong("id"));
                     sugestao.setNomePessoa(rs.getString("nome"));
                     sugestao.setEmailPessoa(rs.getString("email"));
                     sugestao.setTipoUsuario(rs.getString("tipo_usuario"));

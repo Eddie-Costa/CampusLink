@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const campoAutocompletePessoa = document.querySelector('.campo-autocomplete-pessoa');
     const inputPessoa = document.getElementById('emailPessoaAdicionar');
     const listaSugestoesPessoas = document.getElementById('sugestoesPessoasAdicionar');
+    const inputIdPessoa = document.getElementById('idPessoaAdicionar');
 
     // sugerir pessoas configura a busca quando o campo e a lista de sugestoes existem
     if (campoAutocompletePessoa && inputPessoa && listaSugestoesPessoas) {
@@ -438,9 +439,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     detalhes.textContent = `${pessoa.emailPessoa} · ${pessoa.tipoUsuario}`;
 
                     opcao.append(nome, detalhes);
-                    // escolher pessoa copia o email para o campo e fecha as sugestoes
+                    // escolher pessoa mostra o email mascarado e guarda o id que sera enviado ao servidor
                     opcao.addEventListener('click', function () {
                         inputPessoa.value = pessoa.emailPessoa;
+                        if (inputIdPessoa) inputIdPessoa.value = pessoa.idPessoa;
                         fecharSugestoesPessoas();
                         inputPessoa.focus();
                     });
@@ -454,6 +456,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // agendar sugestoes de pessoas cancela a consulta anterior e aguarda pelo menos duas letras
         inputPessoa.addEventListener('input', function () {
+            // digitar de novo descarta a pessoa escolhida para valer o email digitado
+            if (inputIdPessoa) inputIdPessoa.value = '';
             window.clearTimeout(temporizadorSugestoes);
             // interromper busca anterior cancela a consulta de pessoas antes de iniciar outra
             if (requisicaoSugestoes) requisicaoSugestoes.abort();
