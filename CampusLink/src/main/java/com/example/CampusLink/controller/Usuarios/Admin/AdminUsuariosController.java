@@ -15,10 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.PrintWriter;
@@ -49,7 +51,7 @@ public class AdminUsuariosController {
 
     // listar usuarios administrativos este metodo carrega as contas e conta os administradores ativos
     @GetMapping("/admin/usuarios")
-    public String listarUsuarios(HttpSession session, Model model) {
+    public String listarUsuarios(@RequestParam(required = false) String email, HttpSession session, Model model) {
 
 
         // exigir login administrativo encaminha sessoes sem usuario para o acesso do administrador
@@ -79,6 +81,13 @@ public class AdminUsuariosController {
             }
 
             model.addAttribute("totalAdministradoresAtivos", totalAdministradoresAtivos);
+
+            // buscar por email completo compara no servidor porque a tela so recebe o email mascarado
+            if (email != null && !email.isBlank()) {
+                String procurado = email.trim();
+                model.addAttribute("usuarios", usuarios.stream().filter(u -> procurado.equalsIgnoreCase(u.getEmail())).toList());
+                model.addAttribute("buscaEmail", procurado);
+            }
 
         } catch (SQLException e) {
             logger.error("erro ao carregar usuarios para o administrador", e);
@@ -169,8 +178,7 @@ public class AdminUsuariosController {
             List<String> erros = UsuarioRepository.validarDadosDuplicados(
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
-                    usuario.getEmail(),
-                    usuario.getTelefone()
+                    usuario.getEmail()
             );
 
             // impedir dados duplicados reapresenta o cadastro com os conflitos encontrados
@@ -187,7 +195,6 @@ public class AdminUsuariosController {
                     usuario.getIdentificador(),
                     usuario.getNome(),
                     usuario.getEmail(),
-                    usuario.getTelefone(),
                     usuario.getDataNasc(),
                     senhaCriptografada
             );
@@ -341,9 +348,18 @@ public class AdminUsuariosController {
             usuario.setStatus(usuarioAtual.isStatus());
             usuario.setMaster(usuarioAtual.isMaster());
 
+            boolean manterEmail = usuario.getEmail() == null || usuario.getEmail().isBlank();
+            // manter email atual usa o cadastrado quando o admin deixa o campo vazio, ja que a tela nao mostra o email
+            if (manterEmail) {
+                usuario.setEmail(usuarioAtual.getEmail());
+            }
+            FieldError erroCampo = bindingResult.getFieldErrors().stream()
+                    .filter(erro -> !(manterEmail && "email".equals(erro.getField())))
+                    .findFirst().orElse(null);
+
             // corrigir dados administrativos reapresenta o formulario com a primeira regra violada
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("mensagemErro", bindingResult.getFieldError().getDefaultMessage());
+            if (erroCampo != null) {
+                model.addAttribute("mensagemErro", erroCampo.getDefaultMessage());
                 model.addAttribute("usuario", usuario);
 
                 return "Usuarios/Admin/editarUsuarioAdmin";
@@ -362,8 +378,7 @@ public class AdminUsuariosController {
                     idUsuario,
                     usuario.getPerfil(),
                     usuario.getIdentificador(),
-                    usuario.getEmail(),
-                    usuario.getTelefone()
+                    usuario.getEmail()
             );
 
             // corrigir duplicidades na edicao reapresenta os dados com os conflitos encontrados

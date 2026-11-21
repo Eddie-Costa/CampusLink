@@ -72,10 +72,10 @@ class PerfilDadosTests {
         ReflectionTestUtils.setField(usuarios, "storage", storage);
 
         sql("""
-                INSERT INTO pg_temp."USUARIOS" VALUES
-                (1, 'Aluno teste', 'aluno@example.com', '11999990001', '2000-01-01', 'hash', 'ALUNOS', true, CURRENT_DATE),
-                (2, 'Professor teste', 'professor@example.com', '11999990002', '1990-01-01', 'hash', 'PROFESSORES', true, CURRENT_DATE),
-                (3, 'Outro professor', 'outro@example.com', '11999990003', '1990-01-01', 'hash', 'PROFESSORES', true, CURRENT_DATE);
+                INSERT INTO pg_temp."USUARIOS" (id, nome, email, datanasc, senha, perfil, status, created_at) VALUES
+                (1, 'Aluno teste', 'aluno@example.com', '2000-01-01', 'hash', 'ALUNOS', true, CURRENT_DATE),
+                (2, 'Professor teste', 'professor@example.com', '1990-01-01', 'hash', 'PROFESSORES', true, CURRENT_DATE),
+                (3, 'Outro professor', 'outro@example.com', '1990-01-01', 'hash', 'PROFESSORES', true, CURRENT_DATE);
                 INSERT INTO pg_temp."ALUNOS" (id, created_at, rgm, id_usuario) VALUES (10, now(), '12345678901', 1);
                 INSERT INTO pg_temp."PROFESSORES" (id, matricula, created_at, id_usuario) VALUES
                     (20, '12345678902', now(), 2), (30, '12345678903', now(), 3);
@@ -129,7 +129,7 @@ class PerfilDadosTests {
         usuarios.anonimizarDadosPessoais(1, "aluno@example.com");
 
         assertEquals(1, quantidade("USUARIOS", """
-                id = 1 AND nome = 'Usuário removido' AND email IS NULL AND telefone IS NULL
+                id = 1 AND nome = 'Usuário removido' AND email IS NULL
                 AND datanasc = DATE '1900-01-01' AND senha = '!anonimizado' AND status = false
                 AND anonimizado_em IS NOT NULL
                 """));

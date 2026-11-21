@@ -70,7 +70,7 @@ class AdminUsuariosControllerTests {
         when(gestao.buscarAdministradorPorEmail("inativo@teste.com")).thenReturn(conta(3L, "Administrador", false));
         when(gestao.buscarAdministradorPorEmail("falha@teste.com")).thenThrow(new SQLException("banco"));
         List<Function<MockHttpSession, String>> telas = List.of(
-                s -> controlador.listarUsuarios(s, modelo),
+                s -> controlador.listarUsuarios(null, s, modelo),
                 s -> controlador.cadastrarUsuario(s, modelo),
                 s -> controlador.salvarUsuario(novo("Senha@123"), semErros(), s, modelo, redirecionamento),
                 s -> controlador.editarUsuario(2L, s, modelo, redirecionamento),
@@ -97,11 +97,11 @@ class AdminUsuariosControllerTests {
                 conta(6L, "Administrador", false), conta(2L, "Aluno", true)));
 
         // executar listagem e listagem com falha
-        String tela = controlador.listarUsuarios(admin, modelo);
+        String tela = controlador.listarUsuarios(null, admin, modelo);
         long ativos = ((Integer) modelo.get("totalAdministradoresAtivos"));
         when(gestao.listarUsuarios()).thenThrow(new SQLException("banco"));
         ExtendedModelMap modeloFalha = new ExtendedModelMap();
-        controlador.listarUsuarios(admin, modeloFalha);
+        controlador.listarUsuarios(null, admin, modeloFalha);
 
         // verificar contagem e mensagem
         assertEquals("Usuarios/Admin/usuariosAdmin", tela);
@@ -114,14 +114,14 @@ class AdminUsuariosControllerTests {
     @Test
     void cadastraContaComSenhaCriptografada() throws SQLException {
         // preparar dados validos e dados ja usados para o segundo cadastro
-        when(usuarios.validarDadosDuplicados("Aluno", "123", "ana@teste.com", "11999999999")).thenReturn(List.of());
+        when(usuarios.validarDadosDuplicados("Aluno", "123", "ana@teste.com")).thenReturn(List.of());
         cadastrarUsuarioAdminDTO senhaDiferente = novo("Senha@123");
         senhaDiferente.setConfirmarSenha("Outra@123");
         cadastrarUsuarioAdminDTO dataInvalida = novo("Senha@123");
         dataInvalida.setDataNasc("31/02/2000");
         cadastrarUsuarioAdminDTO repetido = novo("Senha@123");
         repetido.setEmail("repetido@teste.com");
-        when(usuarios.validarDadosDuplicados("Aluno", "123", "repetido@teste.com", "11999999999")).thenReturn(List.of("Email já cadastrado"));
+        when(usuarios.validarDadosDuplicados("Aluno", "123", "repetido@teste.com")).thenReturn(List.of("Email já cadastrado"));
         BindingResult comErro = new BeanPropertyBindingResult(novo("x"), "usuario");
         comErro.reject("senha", "fraca");
 
@@ -137,7 +137,7 @@ class AdminUsuariosControllerTests {
         assertEquals("Usuarios/Admin/cadastrarUsuarioAdmin", tela);
         assertEquals("redirect:/admin/usuarios", cadastrado);
         verify(usuarios).InsertCadastroUsuarioIntoBD(eq("Aluno"), eq("123"), eq("Ana"), eq("ana@teste.com"),
-                eq("11999999999"), eq("2004-03-01"), startsWith("$2a$10$"));
+                eq("2004-03-01"), startsWith("$2a$10$"));
         assertEquals("As senhas não são iguais.", senha);
         assertEquals("Informe uma data de nascimento válida.", data);
         assertEquals("Email já cadastrado.", duplicado);
@@ -148,8 +148,8 @@ class AdminUsuariosControllerTests {
     @Test
     void avisaFalhaAoGravarConta() throws SQLException {
         // preparar banco indisponivel
-        when(usuarios.validarDadosDuplicados(any(), any(), any(), any())).thenReturn(List.of());
-        doThrow(new SQLException("banco")).when(usuarios).InsertCadastroUsuarioIntoBD(any(), any(), any(), any(), any(), any(), any());
+        when(usuarios.validarDadosDuplicados(any(), any(), any())).thenReturn(List.of());
+        doThrow(new SQLException("banco")).when(usuarios).InsertCadastroUsuarioIntoBD(any(), any(), any(), any(), any(), any());
 
         // executar cadastro
         String mensagem = mensagem(m -> controlador.salvarUsuario(novo("Senha@123"), semErros(), admin, m, redirecionamento));
@@ -162,7 +162,7 @@ class AdminUsuariosControllerTests {
     @Test
     void editaApenasAlunosEProfessores() throws SQLException {
         // preparar edicao aceita do aluno
-        when(gestao.validarDadosEdicao(eq(2L), eq("Aluno"), any(), any(), any())).thenReturn(List.of());
+        when(gestao.validarDadosEdicao(eq(2L), eq("Aluno"), any(), any())).thenReturn(List.of());
         when(gestao.atualizarUsuario(any())).thenReturn(true);
         usuarioAdminDTO dados = edicao("Ana Maria");
 
@@ -186,6 +186,46 @@ class AdminUsuariosControllerTests {
         verify(gestao).atualizarUsuario(dados);
     }
 
+    // testar busca por email este teste confere que o email completo e comparado no servidor sem mudar a contagem de admins
+    @Test
+    void buscaUsuarioPeloEmailCompleto() throws SQLException {
+        // preparar dois usuarios com email
+        usuarioAdminDTO ana = conta(2L, "Aluno", true);
+        ana.setEmail("ana@teste.com");
+        usuarioAdminDTO bia = conta(1L, "Administrador", true);
+        bia.setEmail("bia@teste.com");
+        when(gestao.listarUsuarios()).thenReturn(List.of(ana, bia));
+
+        // executar busca com espacos e letras maiusculas
+        controlador.listarUsuarios(" ANA@teste.com ", admin, modelo);
+
+        // verificar apenas a conta encontrada e a contagem feita na lista completa
+        assertEquals(List.of(ana), modelo.get("usuarios"));
+        assertEquals("ANA@teste.com", modelo.get("buscaEmail"));
+        assertEquals(1, modelo.get("totalAdministradoresAtivos"));
+    }
+
+    // testar edicao sem email este teste confere que o campo vazio mantem o email cadastrado, pois a tela so mostra a mascara
+    @Test
+    void edicaoComEmailVazioMantemEmailAtual() throws SQLException {
+        // preparar aluno com email cadastrado e edicao sem email
+        usuarioAdminDTO atual = conta(2L, "Aluno", true);
+        atual.setEmail("ana.atual@teste.com");
+        when(gestao.buscarUsuarioPorId(2L)).thenReturn(atual);
+        when(gestao.validarDadosEdicao(eq(2L), eq("Aluno"), any(), eq("ana.atual@teste.com"))).thenReturn(List.of());
+        when(gestao.atualizarUsuario(any())).thenReturn(true);
+        usuarioAdminDTO dados = edicao("Ana Maria");
+        dados.setEmail("");
+
+        // executar gravacao validando o formulario como na tela
+        String destino = controlador.salvarEdicaoUsuario(2L, dados, validar(dados), admin, modelo, redirecionamento);
+
+        // verificar gravacao com o email atual
+        assertEquals("redirect:/admin/usuarios", destino);
+        assertEquals("ana.atual@teste.com", dados.getEmail());
+        verify(gestao).atualizarUsuario(dados);
+    }
+
     // testar campos da edicao este teste confere cada campo obrigatorio a data e os dados repetidos
     @Test
     void validaCamposDaEdicao() throws SQLException {
@@ -193,14 +233,12 @@ class AdminUsuariosControllerTests {
         usuarioAdminDTO semIdentificador = edicao("Ana");
         semIdentificador.setIdentificador(" ");
         usuarioAdminDTO semEmail = edicao("Ana");
-        semEmail.setEmail(null);
-        usuarioAdminDTO semTelefone = edicao("Ana");
-        semTelefone.setTelefone("");
+        semEmail.setEmail("sem-arroba");
         usuarioAdminDTO semData = edicao("Ana");
         semData.setDataNasc(null);
         usuarioAdminDTO dataErrada = edicao("Ana");
         dataErrada.setDataNasc("2004-13-40");
-        when(gestao.validarDadosEdicao(eq(2L), any(), any(), eq("repetido@teste.com"), any())).thenReturn(List.of("E-mail já cadastrado."));
+        when(gestao.validarDadosEdicao(eq(2L), any(), any(), eq("repetido@teste.com"))).thenReturn(List.of("E-mail já cadastrado."));
         usuarioAdminDTO repetido = edicao("Ana");
         repetido.setEmail("repetido@teste.com");
 
@@ -208,8 +246,7 @@ class AdminUsuariosControllerTests {
         // campos obrigatorios sao validados pelas anotacoes do dto, entao o teste usa o validador real
         assertCampoRecusado("nome", "Informe o nome do usuário.", edicao(" "));
         assertCampoRecusado("identificador", "Informe o RGM ou matrícula.", semIdentificador);
-        assertCampoRecusado("email", "Informe o e-mail.", semEmail);
-        assertCampoRecusado("telefone", "Informe o telefone.", semTelefone);
+        assertCampoRecusado("email", "Informe um e-mail válido.", semEmail);
         assertCampoRecusado("dataNasc", "Informe a data de nascimento.", semData);
         assertEquals("Informe uma data de nascimento válida.", mensagem(m -> controlador.salvarEdicaoUsuario(2L, dataErrada, validar(dataErrada), admin, m, redirecionamento)));
         assertEquals("E-mail já cadastrado.", mensagem(m -> controlador.salvarEdicaoUsuario(2L, repetido, validar(repetido), admin, m, redirecionamento)));
@@ -220,7 +257,7 @@ class AdminUsuariosControllerTests {
     @Test
     void avisaFalhasNaEdicao() throws SQLException {
         // preparar gravacao recusada e banco indisponivel para a conta 7
-        when(gestao.validarDadosEdicao(anyLong(), any(), any(), any(), any())).thenReturn(List.of());
+        when(gestao.validarDadosEdicao(anyLong(), any(), any(), any())).thenReturn(List.of());
         when(gestao.atualizarUsuario(any())).thenReturn(false);
         when(gestao.buscarUsuarioPorId(7L)).thenThrow(new SQLException("banco"));
 
@@ -324,7 +361,6 @@ class AdminUsuariosControllerTests {
         usuario.setIdentificador("123");
         usuario.setNome("Ana");
         usuario.setEmail("ana@teste.com");
-        usuario.setTelefone("11999999999");
         usuario.setDataNasc("2004-03-01");
         usuario.setSenha(senha);
         usuario.setConfirmarSenha(senha);
@@ -337,7 +373,6 @@ class AdminUsuariosControllerTests {
         usuario.setNome(nome);
         usuario.setIdentificador("12345678901");
         usuario.setEmail("ana@teste.com");
-        usuario.setTelefone("11999999999");
         usuario.setDataNasc("2004-03-01");
         usuario.setPerfil("Administrador");
         return usuario;

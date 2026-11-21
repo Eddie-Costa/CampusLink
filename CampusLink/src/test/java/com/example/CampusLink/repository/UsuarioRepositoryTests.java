@@ -149,12 +149,12 @@ class UsuarioRepositoryTests {
         banco.chaveGerada(30L);
 
         // executar cadastro
-        usuarios.InsertCadastroUsuarioIntoBD("Aluno", "123", "Ana", " Ana@Teste.com ", "11999999999", "2004-03-01", "hash");
+        usuarios.InsertCadastroUsuarioIntoBD("Aluno", "123", "Ana", " Ana@Teste.com ", "2004-03-01", "hash");
 
         // verificar email normalizado perfil rgm aceite e confirmacao
         List<Object> usuario = banco.ultimo("INSERT INTO public.\"USUARIOS\"").valores();
         assertEquals("ana@teste.com", usuario.get(1));
-        assertEquals("ALUNOS", usuario.get(5));
+        assertEquals("ALUNOS", usuario.get(4));
         assertEquals(List.of(30L, "123"), banco.ultimo("INSERT INTO public.\"ALUNOS\" (\"id_usuario\", \"rgm\")").valores());
         assertEquals(List.of(30L), banco.ultimo("INSERT INTO public.\"CONSENTIMENTOS\"").valores());
         assertEquals(1, banco.commits());
@@ -167,7 +167,7 @@ class UsuarioRepositoryTests {
         banco.chaveGerada(31L);
 
         // executar cadastro
-        usuarios.InsertCadastroUsuarioIntoBD("professor", "P1", "Bia", "bia@teste.com", "11988888888", "1990-05-10", "hash");
+        usuarios.InsertCadastroUsuarioIntoBD("professor", "P1", "Bia", "bia@teste.com", "1990-05-10", "hash");
 
         // verificar matricula
         assertEquals(List.of(31L, "P1"), banco.ultimo("INSERT INTO public.\"PROFESSORES\" (\"id_usuario\", \"matricula\")").valores());
@@ -181,12 +181,12 @@ class UsuarioRepositoryTests {
 
         // executar cadastros invalidos
         assertThrows(IllegalArgumentException.class,
-                () -> usuarios.InsertCadastroUsuarioIntoBD("Admin", "1", "X", "x@teste.com", "1", "2000-01-01", "h"));
+                () -> usuarios.InsertCadastroUsuarioIntoBD("Admin", "1", "X", "x@teste.com", "2000-01-01", "h"));
         SQLException semTermos = assertThrows(SQLException.class,
-                () -> usuarios.InsertCadastroUsuarioIntoBD("Aluno", "1", "X", "x@teste.com", "1", "2000-01-01", "h"));
+                () -> usuarios.InsertCadastroUsuarioIntoBD("Aluno", "1", "X", "x@teste.com", "2000-01-01", "h"));
         banco.quandoAlterar("INSERT INTO public.\"USUARIOS\"", 0);
         SQLException semUsuario = assertThrows(SQLException.class,
-                () -> usuarios.InsertCadastroUsuarioIntoBD("Aluno", "1", "X", "x@teste.com", "1", "2000-01-01", "h"));
+                () -> usuarios.InsertCadastroUsuarioIntoBD("Aluno", "1", "X", "x@teste.com", "2000-01-01", "h"));
 
         // verificar mensagens e nenhuma confirmacao
         assertTrue(semTermos.getMessage().contains("termos"));
@@ -285,18 +285,18 @@ class UsuarioRepositoryTests {
         assertEquals(1, banco.rollbacks());
     }
 
-    // testar dados repetidos este teste confere os avisos de identificador email e telefone ja usados
+    // testar dados repetidos este teste confere os avisos de identificador e email ja usados
     @Test
     void avisaDadosJaCadastrados() {
         // preparar banco com os tres dados ja usados
 
         // executar validacoes de aluno e professor
-        List<String> aluno = usuarios.validarDadosDuplicados("Aluno", "123", " Ana@Teste.com ", "11999999999");
+        List<String> aluno = usuarios.validarDadosDuplicados("Aluno", "123", " Ana@Teste.com ");
         banco.linhasPadrao(0);
-        List<String> professor = usuarios.validarDadosDuplicados("Professor", "P1", "bia@teste.com", "11988888888");
+        List<String> professor = usuarios.validarDadosDuplicados("Professor", "P1", "bia@teste.com");
 
         // verificar avisos e colunas consultadas
-        assertEquals(List.of("Identificador já cadastrado", "Email já cadastrado", "Telefone já cadastrado"), aluno);
+        assertEquals(List.of("Identificador já cadastrado", "Email já cadastrado"), aluno);
         assertTrue(professor.isEmpty());
         assertTrue(banco.executou("p.\"rgm\" = ?"));
         assertTrue(banco.executou("p.\"matricula\" = ?"));
@@ -311,7 +311,7 @@ class UsuarioRepositoryTests {
 
         // executar validacao
         RuntimeException erro = assertThrows(RuntimeException.class,
-                () -> usuarios.validarDadosDuplicados("Aluno", "123", "a@teste.com", "1"));
+                () -> usuarios.validarDadosDuplicados("Aluno", "123", "a@teste.com"));
 
         // verificar causa original
         assertTrue(erro.getCause() instanceof SQLException);

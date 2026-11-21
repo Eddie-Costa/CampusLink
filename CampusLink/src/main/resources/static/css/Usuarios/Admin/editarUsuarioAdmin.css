@@ -216,3 +216,9 @@ body {
         text-align: center;
     }
 }
+
+.editar-admin-ajuda {
+    margin: 6px 0 0;
+    color: var(--cinza-texto);
+    font-size: 12px;
+}

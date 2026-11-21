@@ -116,7 +116,6 @@
                         <th>Nome</th>
                         <th>Matrícula</th>
                         <th>E-mail</th>
-                        <th>Telefone</th>
                         <th>Status</th>
                         <th>Função</th>
                         <th>Ações</th>
@@ -140,13 +139,10 @@
                             </span>
                         </td>
 
-                        <td th:text="${professor.email}">
+                        <td th:text="${@mascaraEmail.mascarar(professor.email)}">
                             E-mail
                         </td>
 
-                        <td th:text="${professor.telefone != null && !professor.telefone.isBlank() ? professor.telefone : 'Não informado'}">
-                            Telefone
-                        </td>
 
                         <td>
 
@@ -205,7 +201,7 @@
 
                     <tr th:if="${#lists.isEmpty(professores)}">
 
-                        <td colspan="7" class="professores-turma-admin-vazio">
+                        <td colspan="6" class="professores-turma-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhum professor nesta turma', 'Use o campo de adicionar professor, acima, para vincular quem vai acompanhar a turma.', null, null)}"></div>
                         </td>
                     </tr>

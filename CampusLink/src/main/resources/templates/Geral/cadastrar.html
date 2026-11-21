@@ -116,16 +116,6 @@
                         </div>
                     </div>
 
-                    <div class="acesso-campo">
-                        <label for="telefone">Telefone com DDD</label>
-                        <div class="campo-icone">
-                            <svg th:replace="~{fragments/icones-acesso :: telefone}"></svg>
-                            <input id="telefone" name="telefone" type="tel" autocomplete="tel-national"
-                                   inputmode="numeric" data-mascara-telefone
-                                   th:value="${dados != null ? dados.telefone : ''}"
-                                   maxlength="15" required placeholder="(11) 99999-9999">
-                        </div>
-                    </div>
 
                     <div class="acesso-campo">
                         <label for="dataNasc">Data de nascimento</label>

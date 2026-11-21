@@ -299,7 +299,6 @@ public class AdminTurmaRepository {
                     u.id AS id_usuario,
                     u.nome,
                     u.email,
-                    u.telefone,
                     u.datanasc,
                     u.status,
                     a.rgm
@@ -327,7 +326,6 @@ public class AdminTurmaRepository {
                     u.id AS id_usuario,
                     u.nome,
                     u.email,
-                    u.telefone,
                     u.datanasc,
                     u.status,
                     a.rgm
@@ -486,7 +484,6 @@ public class AdminTurmaRepository {
                     u.id AS id_usuario,
                     u.nome,
                     u.email,
-                    u.telefone,
                     u.datanasc,
                     u.status,
                     p.matricula
@@ -514,7 +511,6 @@ public class AdminTurmaRepository {
                     u.id AS id_usuario,
                     u.nome,
                     u.email,
-                    u.telefone,
                     u.datanasc,
                     u.status,
                     p.matricula
@@ -704,7 +700,6 @@ public class AdminTurmaRepository {
         aluno.setIdPerfil(rs.getLong("id_aluno"));
         aluno.setNome(rs.getString("nome"));
         aluno.setEmail(rs.getString("email"));
-        aluno.setTelefone(rs.getString("telefone"));
 
         // preencher nascimento do aluno converte a data apenas quando o banco informa um valor
         if (rs.getDate("datanasc") != null) {
@@ -728,7 +723,6 @@ public class AdminTurmaRepository {
         professor.setIdPerfil(rs.getLong("id_professor"));
         professor.setNome(rs.getString("nome"));
         professor.setEmail(rs.getString("email"));
-        professor.setTelefone(rs.getString("telefone"));
 
         // preencher nascimento do professor converte a data apenas quando o banco informa um valor
         if (rs.getDate("datanasc") != null) {

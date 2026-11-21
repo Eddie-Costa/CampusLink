@@ -1,73 +1,148 @@
-CampusLink — Termos de Uso e Política de Privacidade
-Versão: [v1.0.0]
-Última atualização: [28.09.2026]
-1. Apresentação e identificação do responsável
-O CampusLink é uma plataforma de apoio à organização acadêmica, destinada à interação entre alunos e professores, ao gerenciamento de turmas, à disponibilização de materiais educacionais e à organização de eventos e períodos de estudo.
-A plataforma é administrada por CAMPUSLINK.
-O responsável pelas decisões sobre o tratamento dos dados pessoais abrangidos por esta política é Matheus Santhiago Fortonato de Souza. Solicitações relacionadas à privacidade e à proteção de dados devem ser encaminhadas para 11251403617@alunos.umc.br.
-Quando houver participação de uma instituição de ensino na definição dessas finalidades, suas responsabilidades e seu canal de atendimento serão informados via Email.
-2. Cadastro e utilização da conta
-O usuário deve fornecer informações corretas, manter seus dados atualizados e utilizar apenas sua própria identidade e vínculo acadêmico ou profissional.
-A senha e os códigos de verificação são pessoais e não devem ser compartilhados. O usuário deverá comunicar pelo canal 11251405551@alunos.umc.br qualquer suspeita de acesso indevido à sua conta.
-É proibido utilizar a plataforma para praticar fraudes, acessar dados sem autorização, comprometer o funcionamento do serviço, distribuir arquivos maliciosos ou violar direitos de outras pessoas.
+CampusLink â€” Termos de Uso e PolÃ­tica de Privacidade
+
+VersÃ£o: [v3.0.0]
+
+Ãšltima atualizaÃ§Ã£o: [21.11.2026]
+
+Resumo das alteraÃ§Ãµes desta versÃ£o
+
+* O telefone deixou de ser coletado. Os nÃºmeros informados em cadastros anteriores foram eliminados.
+* O e-mail de outros usuÃ¡rios passou a ser exibido de forma mascarada (por exemplo, an***@gmail.com) na listagem de participantes das turmas e nas telas administrativas.
+
+1. ApresentaÃ§Ã£o e identificaÃ§Ã£o do responsÃ¡vel
+
+O CampusLink Ã© uma plataforma de apoio Ã  organizaÃ§Ã£o acadÃªmica, destinada Ã  interaÃ§Ã£o entre alunos e professores, ao gerenciamento de turmas, Ã  disponibilizaÃ§Ã£o de materiais educacionais e Ã  organizaÃ§Ã£o de eventos e perÃ­odos de estudo.
+
+A plataforma Ã© administrada por CAMPUSLINK.
+
+O responsÃ¡vel pelas decisÃµes sobre o tratamento dos dados pessoais abrangidos por esta polÃ­tica Ã© Matheus Santhiago Fortonato de Souza. SolicitaÃ§Ãµes relacionadas Ã  privacidade e Ã  proteÃ§Ã£o de dados devem ser encaminhadas para 11251403617@alunos.umc.br.
+
+Quando houver participaÃ§Ã£o de uma instituiÃ§Ã£o de ensino na definiÃ§Ã£o dessas finalidades, suas responsabilidades e seu canal de atendimento serÃ£o informados via Email.
+
+2. Cadastro e utilizaÃ§Ã£o da conta
+
+O usuÃ¡rio deve fornecer informaÃ§Ãµes corretas, manter seus dados atualizados e utilizar apenas sua prÃ³pria identidade e vÃ­nculo acadÃªmico ou profissional.
+
+A senha e os cÃ³digos de verificaÃ§Ã£o sÃ£o pessoais e nÃ£o devem ser compartilhados. O usuÃ¡rio deverÃ¡ comunicar pelo canal 11251405551@alunos.umc.br qualquer suspeita de acesso indevido Ã  sua conta.
+
+Ã‰ proibido utilizar a plataforma para praticar fraudes, acessar dados sem autorizaÃ§Ã£o, comprometer o funcionamento do serviÃ§o, distribuir arquivos maliciosos ou violar direitos de outras pessoas.
+
 3. Dados pessoais tratados e suas finalidades
-O CampusLink trata informações fornecidas no cadastro, geradas durante a utilização das funcionalidades e incluídas nos conteúdos disponibilizados pelos usuários.
-DadosFinalidadesNome, RGM ou matrícula, perfil de aluno ou professor e identificadores internosIdentificar o usuário, associar sua conta ao perfil correspondente e organizar sua participação nas funcionalidades acadêmicas.E-mailPermitir o acesso, enviar códigos de verificação, apoiar a recuperação da conta e identificar participantes de turmas.Senha e códigos temporários de verificaçãoAutenticar o usuário e proteger o acesso à conta.TelefoneRegistrar o contato informado e verificar a existência de cadastro com o mesmo número, alternativa para envio de código de verificação.Data de nascimentoAvaliar se o usuário está em idade elegível a utilização da plataformaParticipação em turmas, eventos, conteúdos e respectivas associaçõesOrganizar os ambientes acadêmicos e disponibilizar suas funcionalidades.Datas e quantidade de horas disponíveis para estudoRegistrar e apresentar a disponibilidade informada pelo aluno.Arquivos, links, títulos, descrições e metadados dos materiaisArmazenar, organizar e disponibilizar os conteúdos enviados.Registros de autenticação, tentativas de acesso, identificadores e registros de operaçõesApoiar a segurança, investigar falhas e identificar usos indevidos.O preenchimento dos campos obrigatórios é necessário para concluir o cadastro na configuração atual da plataforma. A ausência de informações necessárias a uma funcionalidade poderá impedir sua utilização.
-Os usuários devem evitar a inclusão de dados pessoais de terceiros em títulos, descrições e arquivos quando essas informações não forem necessárias à atividade educacional.
+
+O CampusLink trata informaÃ§Ãµes fornecidas no cadastro, geradas durante a utilizaÃ§Ã£o das funcionalidades e incluÃ­das nos conteÃºdos disponibilizados pelos usuÃ¡rios.
+
+Dados | Finalidades
+Nome, RGM ou matrÃ­cula, perfil de aluno ou professor e identificadores internos | Identificar o usuÃ¡rio, associar sua conta ao perfil correspondente e organizar sua participaÃ§Ã£o nas funcionalidades acadÃªmicas.
+E-mail | Permitir o acesso, enviar cÃ³digos de verificaÃ§Ã£o e avisos da plataforma e apoiar a recuperaÃ§Ã£o da conta. Para outros usuÃ¡rios, o e-mail Ã© exibido apenas de forma mascarada.
+Senha e cÃ³digos temporÃ¡rios de verificaÃ§Ã£o | Autenticar o usuÃ¡rio e proteger o acesso Ã  conta.
+Data de nascimento | Avaliar se o usuÃ¡rio estÃ¡ em idade elegÃ­vel a utilizaÃ§Ã£o da plataforma
+ParticipaÃ§Ã£o em turmas, eventos, conteÃºdos e respectivas associaÃ§Ãµes | Organizar os ambientes acadÃªmicos e disponibilizar suas funcionalidades.
+Datas e quantidade de horas disponÃ­veis para estudo | Registrar e apresentar a disponibilidade informada pelo aluno.
+Arquivos, links, tÃ­tulos, descriÃ§Ãµes e metadados dos materiais | Armazenar, organizar e disponibilizar os conteÃºdos enviados.
+Registros de autenticaÃ§Ã£o, tentativas de acesso, identificadores e registros de operaÃ§Ãµes | Apoiar a seguranÃ§a, investigar falhas e identificar usos indevidos.
+
+O preenchimento dos campos obrigatÃ³rios Ã© necessÃ¡rio para concluir o cadastro na configuraÃ§Ã£o atual da plataforma. A ausÃªncia de informaÃ§Ãµes necessÃ¡rias a uma funcionalidade poderÃ¡ impedir sua utilizaÃ§Ã£o.
+
+Os usuÃ¡rios devem evitar a inclusÃ£o de dados pessoais de terceiros em tÃ­tulos, descriÃ§Ãµes e arquivos quando essas informaÃ§Ãµes nÃ£o forem necessÃ¡rias Ã  atividade educacional.
+
 4. Fundamentos para o tratamento dos dados
-O tratamento necessário à criação da conta e à prestação das funcionalidades contratadas pelo usuário poderá se fundamentar na execução do contrato, observadas as características do serviço e da relação com a instituição de ensino.
-Quando aplicável, dados também poderão ser tratados para cumprir obrigações legais ou regulatórias e para o exercício regular de direitos.
-O uso de legítimo interesse para segurança e prevenção de uso indevido dependerá da avaliação da finalidade, da necessidade e dos impactos sobre os direitos dos usuários. Essa hipótese não autoriza a utilização indiscriminada dos dados. Orientação da ANPD sobre legítimo interesse.
-Quando uma atividade depender de consentimento, ele será solicitado de forma específica, informada e separada, com indicação da finalidade e de como poderá ser revogado. O aceite destes termos não constitui autorização genérica para qualquer tratamento de dados.
-5. Visualização e compartilhamento de informações
-O e-mail e o perfil dos participantes são apresentados na listagem de pessoas das turmas. Os materiais disponibilizados na biblioteca de arquivos podem ser acessados por outros usuários autenticados da plataforma.
-Por esse motivo, professores e demais usuários não devem publicar documentos confidenciais, listas com informações excessivas sobre alunos ou arquivos cuja divulgação não esteja autorizada.
-O funcionamento do CampusLink envolve prestadores de serviços tecnológicos, incluindo:
+
+O tratamento necessÃ¡rio Ã  criaÃ§Ã£o da conta e Ã  prestaÃ§Ã£o das funcionalidades contratadas pelo usuÃ¡rio poderÃ¡ se fundamentar na execuÃ§Ã£o do contrato, observadas as caracterÃ­sticas do serviÃ§o e da relaÃ§Ã£o com a instituiÃ§Ã£o de ensino.
+
+Quando aplicÃ¡vel, dados tambÃ©m poderÃ£o ser tratados para cumprir obrigaÃ§Ãµes legais ou regulatÃ³rias e para o exercÃ­cio regular de direitos.
+
+O uso de legÃ­timo interesse para seguranÃ§a e prevenÃ§Ã£o de uso indevido dependerÃ¡ da avaliaÃ§Ã£o da finalidade, da necessidade e dos impactos sobre os direitos dos usuÃ¡rios. Essa hipÃ³tese nÃ£o autoriza a utilizaÃ§Ã£o indiscriminada dos dados. OrientaÃ§Ã£o da ANPD sobre legÃ­timo interesse.
+
+Quando uma atividade depender de consentimento, ele serÃ¡ solicitado de forma especÃ­fica, informada e separada, com indicaÃ§Ã£o da finalidade e de como poderÃ¡ ser revogado. O aceite destes termos nÃ£o constitui autorizaÃ§Ã£o genÃ©rica para qualquer tratamento de dados.
+
+5. VisualizaÃ§Ã£o e compartilhamento de informaÃ§Ãµes
+
+O nome e o perfil dos participantes sÃ£o apresentados na listagem de pessoas das turmas. O e-mail Ã© exibido de forma mascarada, mostrando apenas as primeiras letras e o domÃ­nio. O mesmo vale para as telas administrativas: o endereÃ§o completo Ã© usado apenas internamente pelo sistema, por exemplo para enviar mensagens ou localizar uma conta quando o prÃ³prio e-mail completo Ã© informado. Os materiais disponibilizados na biblioteca de arquivos podem ser acessados por outros usuÃ¡rios autenticados da plataforma.
+
+Por esse motivo, professores e demais usuÃ¡rios nÃ£o devem publicar documentos confidenciais, listas com informaÃ§Ãµes excessivas sobre alunos ou arquivos cuja divulgaÃ§Ã£o nÃ£o esteja autorizada.
+
+O funcionamento do CampusLink envolve prestadores de serviÃ§os tecnolÃ³gicos, incluindo:
+
 * Supabase, para armazenamento dos arquivos enviados;
 * Brevo, para envio dos e-mails utilizados pela plataforma;
-* Render, para hospedagem da aplicação.
-As páginas também carregam recursos externos de Google Fonts e jsDelivr. Essas conexões podem transmitir aos respectivos provedores informações técnicas da requisição, como o endereço IP.
-O acesso administrativo a dados deverá ocorrer apenas quando necessário à operação, ao suporte, à segurança ou ao cumprimento de obrigações legais, por pessoas autorizadas.
-Quando houver tratamento ou transferência de dados para outros países, deverão ser informados [PAÍSES, FORNECEDORES, FINALIDADES E MECANISMO APLICÁVEL], observadas as garantias exigidas pela legislação brasileira. Regulamentação da ANPD sobre transferências internacionais.
-6. Responsabilidade pelos conteúdos publicados
-O professor é integralmente responsável, no âmbito de seus próprios atos, pelos materiais, arquivos, links, textos, imagens e demais conteúdos que disponibilizar no CampusLink, incluindo sua autoria ou autorização de uso, legalidade, exatidão e adequação à finalidade educacional.
-Ao publicar um conteúdo, o professor declara possuir os direitos, licenças ou autorizações necessárias para sua utilização e disponibilização ao público que poderá acessá-lo na plataforma.
-É proibida a publicação de conteúdos que violem direitos autorais, direitos de imagem, privacidade, sigilo ou outros direitos de terceiros, assim como de materiais ilícitos, discriminatórios, ofensivos ou que contenham programas maliciosos.
-O professor deverá assegurar que a inclusão de dados pessoais de alunos ou terceiros possua fundamento legal e se limite ao necessário para a finalidade educacional. A autorização para ministrar aulas não representa autorização irrestrita para divulgar dados pessoais.
-A disponibilização de um material não representa sua aprovação ou validação pela organização responsável pelo CampusLink.
-Essa atribuição de responsabilidade ao professor não exclui as obrigações legais da organização por suas próprias ações ou omissões, pela segurança do serviço e pelo tratamento de dados pessoais.
-7. Direitos sobre os materiais e comunicação de irregularidades
+* Render, para hospedagem da aplicaÃ§Ã£o.
+
+As pÃ¡ginas tambÃ©m carregam recursos externos de Google Fonts e jsDelivr. Essas conexÃµes podem transmitir aos respectivos provedores informaÃ§Ãµes tÃ©cnicas da requisiÃ§Ã£o, como o endereÃ§o IP.
+
+O acesso administrativo a dados deverÃ¡ ocorrer apenas quando necessÃ¡rio Ã  operaÃ§Ã£o, ao suporte, Ã  seguranÃ§a ou ao cumprimento de obrigaÃ§Ãµes legais, por pessoas autorizadas.
+
+Quando houver tratamento ou transferÃªncia de dados para outros paÃ­ses, deverÃ£o ser informados [PAÃSES, FORNECEDORES, FINALIDADES E MECANISMO APLICÃVEL], observadas as garantias exigidas pela legislaÃ§Ã£o brasileira. RegulamentaÃ§Ã£o da ANPD sobre transferÃªncias internacionais.
+
+6. Responsabilidade pelos conteÃºdos publicados
+
+O professor Ã© integralmente responsÃ¡vel, no Ã¢mbito de seus prÃ³prios atos, pelos materiais, arquivos, links, textos, imagens e demais conteÃºdos que disponibilizar no CampusLink, incluindo sua autoria ou autorizaÃ§Ã£o de uso, legalidade, exatidÃ£o e adequaÃ§Ã£o Ã  finalidade educacional.
+
+Ao publicar um conteÃºdo, o professor declara possuir os direitos, licenÃ§as ou autorizaÃ§Ãµes necessÃ¡rias para sua utilizaÃ§Ã£o e disponibilizaÃ§Ã£o ao pÃºblico que poderÃ¡ acessÃ¡-lo na plataforma.
+
+Ã‰ proibida a publicaÃ§Ã£o de conteÃºdos que violem direitos autorais, direitos de imagem, privacidade, sigilo ou outros direitos de terceiros, assim como de materiais ilÃ­citos, discriminatÃ³rios, ofensivos ou que contenham programas maliciosos.
+
+O professor deverÃ¡ assegurar que a inclusÃ£o de dados pessoais de alunos ou terceiros possua fundamento legal e se limite ao necessÃ¡rio para a finalidade educacional. A autorizaÃ§Ã£o para ministrar aulas nÃ£o representa autorizaÃ§Ã£o irrestrita para divulgar dados pessoais.
+
+A disponibilizaÃ§Ã£o de um material nÃ£o representa sua aprovaÃ§Ã£o ou validaÃ§Ã£o pela organizaÃ§Ã£o responsÃ¡vel pelo CampusLink.
+
+Essa atribuiÃ§Ã£o de responsabilidade ao professor nÃ£o exclui as obrigaÃ§Ãµes legais da organizaÃ§Ã£o por suas prÃ³prias aÃ§Ãµes ou omissÃµes, pela seguranÃ§a do serviÃ§o e pelo tratamento de dados pessoais.
+
+7. Direitos sobre os materiais e comunicaÃ§Ã£o de irregularidades
+
 Os direitos sobre os materiais permanecem com seus respectivos titulares.
-Ao disponibilizar um conteúdo, o responsável concede à organização autorização não exclusiva, limitada ao necessário para armazenar, processar tecnicamente, exibir e permitir o acesso ao material nas funcionalidades da plataforma. Essa autorização não transfere a titularidade nem permite exploração comercial alheia à prestação do serviço.
-Os usuários que acessarem os materiais deverão respeitar as condições de uso e os direitos de seus titulares. A possibilidade de baixar um arquivo não constitui autorização irrestrita para republicá-lo ou comercializá-lo.
-Suspeitas de violação poderão ser comunicadas pelo canal 11251405551@alunos.umc.br, com identificação do material e descrição do problema. A organização poderá restringir o acesso ou remover conteúdos, bem como suspender contas envolvidas, conforme a gravidade da situação, a necessidade de proteção e a legislação aplicável.
-Sempre que cabível, o usuário será informado e poderá apresentar esclarecimentos.
-8. Segurança e funcionamento do serviço
-O CampusLink utiliza mecanismos de proteção de senhas por hash BCrypt, códigos temporários de verificação e limitação de tentativas de login. Essas medidas reduzem riscos, mas não representam garantia de segurança absoluta.
-O usuário deve proteger suas credenciais, encerrar a sessão em dispositivos compartilhados e comunicar situações suspeitas.
-Se ocorrer incidente envolvendo dados pessoais, a organização deverá avaliar seus efeitos, adotar medidas de contenção e realizar as comunicações exigidas pela regulamentação. Incidentes que possam ocasionar risco ou dano relevante aos titulares estão sujeitos à comunicação à ANPD e aos afetados. Orientações da ANPD sobre incidentes de segurança.
-O serviço poderá passar por manutenção ou apresentar indisponibilidades. Essa previsão não afasta direitos dos usuários nem responsabilidades previstas em lei.
-9. Armazenamento e eliminação
-Os dados serão mantidos pelo período necessário às finalidades informadas, observadas as obrigações legais e as hipóteses de conservação permitidas.
-Aplicam-se os seguintes períodos ou critérios:
-* Dados de cadastro e participação acadêmica: 6 meses.
+
+Ao disponibilizar um conteÃºdo, o responsÃ¡vel concede Ã  organizaÃ§Ã£o autorizaÃ§Ã£o nÃ£o exclusiva, limitada ao necessÃ¡rio para armazenar, processar tecnicamente, exibir e permitir o acesso ao material nas funcionalidades da plataforma. Essa autorizaÃ§Ã£o nÃ£o transfere a titularidade nem permite exploraÃ§Ã£o comercial alheia Ã  prestaÃ§Ã£o do serviÃ§o.
+
+Os usuÃ¡rios que acessarem os materiais deverÃ£o respeitar as condiÃ§Ãµes de uso e os direitos de seus titulares. A possibilidade de baixar um arquivo nÃ£o constitui autorizaÃ§Ã£o irrestrita para republicÃ¡-lo ou comercializÃ¡-lo.
+
+Suspeitas de violaÃ§Ã£o poderÃ£o ser comunicadas pelo canal 11251405551@alunos.umc.br, com identificaÃ§Ã£o do material e descriÃ§Ã£o do problema. A organizaÃ§Ã£o poderÃ¡ restringir o acesso ou remover conteÃºdos, bem como suspender contas envolvidas, conforme a gravidade da situaÃ§Ã£o, a necessidade de proteÃ§Ã£o e a legislaÃ§Ã£o aplicÃ¡vel.
+
+Sempre que cabÃ­vel, o usuÃ¡rio serÃ¡ informado e poderÃ¡ apresentar esclarecimentos.
+
+8. SeguranÃ§a e funcionamento do serviÃ§o
+
+O CampusLink utiliza mecanismos de proteÃ§Ã£o de senhas por hash BCrypt, cÃ³digos temporÃ¡rios de verificaÃ§Ã£o e limitaÃ§Ã£o de tentativas de login. Essas medidas reduzem riscos, mas nÃ£o representam garantia de seguranÃ§a absoluta.
+
+O usuÃ¡rio deve proteger suas credenciais, encerrar a sessÃ£o em dispositivos compartilhados e comunicar situaÃ§Ãµes suspeitas.
+
+Se ocorrer incidente envolvendo dados pessoais, a organizaÃ§Ã£o deverÃ¡ avaliar seus efeitos, adotar medidas de contenÃ§Ã£o e realizar as comunicaÃ§Ãµes exigidas pela regulamentaÃ§Ã£o. Incidentes que possam ocasionar risco ou dano relevante aos titulares estÃ£o sujeitos Ã  comunicaÃ§Ã£o Ã  ANPD e aos afetados. OrientaÃ§Ãµes da ANPD sobre incidentes de seguranÃ§a.
+
+O serviÃ§o poderÃ¡ passar por manutenÃ§Ã£o ou apresentar indisponibilidades. Essa previsÃ£o nÃ£o afasta direitos dos usuÃ¡rios nem responsabilidades previstas em lei.
+
+9. Armazenamento e eliminaÃ§Ã£o
+
+Os dados serÃ£o mantidos pelo perÃ­odo necessÃ¡rio Ã s finalidades informadas, observadas as obrigaÃ§Ãµes legais e as hipÃ³teses de conservaÃ§Ã£o permitidas.
+
+Aplicam-se os seguintes perÃ­odos ou critÃ©rios:
+
+* Dados de cadastro e participaÃ§Ã£o acadÃªmica: 6 meses.
 * Materiais e arquivos: 12 meses.
-* Registros de segurança e operações: 1 mês.
-* Cópias de segurança, quando existentes: 36 meses.
-Encerrada a necessidade de conservação, os dados deverão ser eliminados ou anonimizados, conforme aplicável. O encerramento da conta não implica necessariamente a eliminação imediata de todos os registros, quando houver fundamento legal para sua manutenção.
+* Registros de seguranÃ§a e operaÃ§Ãµes: 1 mÃªs.
+* CÃ³pias de seguranÃ§a, quando existentes: 36 meses.
+
+Encerrada a necessidade de conservaÃ§Ã£o, os dados deverÃ£o ser eliminados ou anonimizados, conforme aplicÃ¡vel. O encerramento da conta nÃ£o implica necessariamente a eliminaÃ§Ã£o imediata de todos os registros, quando houver fundamento legal para sua manutenÃ§Ã£o.
+
 10. Direitos dos titulares
-O titular poderá solicitar, conforme as condições legais:
-* Confirmação do tratamento e acesso aos seus dados.
-* Correção de informações incompletas, inexatas ou desatualizadas.
-* Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados irregularmente.
-* Portabilidade, conforme a regulamentação aplicável.
-* Informação sobre compartilhamentos.
-* Eliminação dos dados tratados com consentimento, ressalvadas as hipóteses legais de conservação.
-* Informação sobre a possibilidade de negar consentimento e suas consequências, além de sua revogação.
-* Oposição ao tratamento nas hipóteses legais e revisão de decisões exclusivamente automatizadas que afetem seus interesses, quando existentes.
-As solicitações devem ser enviadas para 11251404847@alunos.umc.br. Poderá ser necessária a confirmação proporcional da identidade do solicitante para evitar a entrega de informações a terceiros.
-Os pedidos serão atendidos gratuitamente, observados os prazos e procedimentos aplicáveis. Eventuais impedimentos serão explicados ao titular, que também poderá apresentar petição à ANPD. Orientações da ANPD sobre o exercício de direitos.
-11. Sessão, menores de idade e alterações
-A plataforma utiliza mecanismos de sessão para manter o acesso autenticado. O bloqueio dos cookies necessários ao funcionamento poderá impedir o uso de determinadas funcionalidades.
-Quando houver tratamento de dados de crianças ou adolescentes, deverá prevalecer seu melhor interesse, com informações adequadas à sua compreensão e participação dos responsáveis quando exigida. Enunciado da ANPD sobre crianças e adolescentes.
-Estes documentos poderão ser atualizados para refletir alterações no serviço ou nas práticas de tratamento. Mudanças relevantes serão comunicadas de forma destacada. Quando necessário, será solicitado novo aceite contratual ou consentimento específico.
+
+O titular poderÃ¡ solicitar, conforme as condiÃ§Ãµes legais:
+
+* ConfirmaÃ§Ã£o do tratamento e acesso aos seus dados.
+* CorreÃ§Ã£o de informaÃ§Ãµes incompletas, inexatas ou desatualizadas.
+* AnonimizaÃ§Ã£o, bloqueio ou eliminaÃ§Ã£o de dados desnecessÃ¡rios, excessivos ou tratados irregularmente.
+* Portabilidade, conforme a regulamentaÃ§Ã£o aplicÃ¡vel.
+* InformaÃ§Ã£o sobre compartilhamentos.
+* EliminaÃ§Ã£o dos dados tratados com consentimento, ressalvadas as hipÃ³teses legais de conservaÃ§Ã£o.
+* InformaÃ§Ã£o sobre a possibilidade de negar consentimento e suas consequÃªncias, alÃ©m de sua revogaÃ§Ã£o.
+* OposiÃ§Ã£o ao tratamento nas hipÃ³teses legais e revisÃ£o de decisÃµes exclusivamente automatizadas que afetem seus interesses, quando existentes.
+
+As solicitaÃ§Ãµes devem ser enviadas para 11251404847@alunos.umc.br. PoderÃ¡ ser necessÃ¡ria a confirmaÃ§Ã£o proporcional da identidade do solicitante para evitar a entrega de informaÃ§Ãµes a terceiros.
+
+Os pedidos serÃ£o atendidos gratuitamente, observados os prazos e procedimentos aplicÃ¡veis. Eventuais impedimentos serÃ£o explicados ao titular, que tambÃ©m poderÃ¡ apresentar petiÃ§Ã£o Ã  ANPD. OrientaÃ§Ãµes da ANPD sobre o exercÃ­cio de direitos.
+
+11. SessÃ£o, menores de idade e alteraÃ§Ãµes
+
+A plataforma utiliza mecanismos de sessÃ£o para manter o acesso autenticado. O bloqueio dos cookies necessÃ¡rios ao funcionamento poderÃ¡ impedir o uso de determinadas funcionalidades.
+
+Quando houver tratamento de dados de crianÃ§as ou adolescentes, deverÃ¡ prevalecer seu melhor interesse, com informaÃ§Ãµes adequadas Ã  sua compreensÃ£o e participaÃ§Ã£o dos responsÃ¡veis quando exigida. Enunciado da ANPD sobre crianÃ§as e adolescentes.
+
+Estes documentos poderÃ£o ser atualizados para refletir alteraÃ§Ãµes no serviÃ§o ou nas prÃ¡ticas de tratamento. MudanÃ§as relevantes serÃ£o comunicadas de forma destacada. Quando necessÃ¡rio, serÃ¡ solicitado novo aceite contratual ou consentimento especÃ­fico.

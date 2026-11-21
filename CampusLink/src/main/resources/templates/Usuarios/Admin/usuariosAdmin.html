@@ -41,8 +41,18 @@
 
             <div class="usuarios-admin-busca">
                 <label for="buscarUsuario" class="visually-hidden">Buscar usuário</label>
-                <input id="buscarUsuario" type="search" placeholder="Buscar por nome, e-mail, ID, RGM ou matrícula">
+                <input id="buscarUsuario" type="search" placeholder="Buscar por nome, ID, RGM ou matrícula">
             </div>
+
+            <!-- buscar por email completo vai ao servidor porque a lista mostra os emails mascarados -->
+            <form class="usuarios-admin-busca" th:action="@{/admin/usuarios}" method="get" role="search">
+                <label for="buscarEmail" class="visually-hidden">Buscar pelo e-mail completo</label>
+                <input id="buscarEmail" name="email" type="email" th:value="${buscaEmail}"
+                       placeholder="Buscar pelo e-mail completo" maxlength="100">
+            </form>
+            <p th:if="${buscaEmail != null}" class="usuarios-admin-mensagem" role="status">
+                Resultado da busca pelo e-mail informado. <a th:href="@{/admin/usuarios}">Mostrar todos</a>
+            </p>
 
             <div class="table-responsive">
                 <table class="usuarios-admin-tabela">
@@ -51,7 +61,6 @@
                         <th scope="col">Nome</th>
                         <th scope="col">Identificador</th>
                         <th scope="col">E-mail</th>
-                        <th scope="col">Telefone</th>
                         <th scope="col">Perfil</th>
                         <th scope="col">Status</th>
                         <th scope="col">Ações</th>
@@ -59,15 +68,14 @@
                     </thead>
 
                     <tbody>
-                    <tr class="usuario-linha" th:each="usuario : ${usuarios}" th:attr="data-nome=${usuario.nome},data-email=${usuario.email},data-identificador=${usuario.identificador}"
+                    <tr class="usuario-linha" th:each="usuario : ${usuarios}" th:attr="data-nome=${usuario.nome},data-identificador=${usuario.identificador}"
                         th:with="ehAdmin=${usuario.perfil == 'Administrador'},propriaConta=${adminLogado != null and usuario.idUsuario == adminLogado.idUsuario},
                                  podeGerenciar=${adminLogado != null and (not usuario.master or adminLogado.master)},
                                  podeRetirar=${podeGerenciar and not propriaConta and (not usuario.status or totalAdministradoresAtivos > 1)}">
 
                         <td th:text="${usuario.nome}">Nome</td>
                         <td th:text="${usuario.identificador}">Identificador</td>
-                        <td th:text="${usuario.email}">email@campuslink.com</td>
-                        <td th:text="${usuario.telefone}">Telefone</td>
+                        <td th:text="${@mascaraEmail.mascarar(usuario.email)}">email@campuslink.com</td>
 
                         <td>
                             <span class="usuario-perfil usuario-aluno" th:if="${usuario.perfil == 'Aluno'}">Aluno</span>
@@ -133,14 +141,18 @@
                         </td>
                     </tr>
 
-                    <tr th:if="${#lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">
+                    <tr th:if="${#lists.isEmpty(usuarios) and buscaEmail != null}">
+                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário com este e-mail</td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(usuarios) and buscaEmail == null}">
+                        <td colspan="6" class="usuarios-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('usuario', 'Nenhum usuário cadastrado', 'Cadastre alunos e professores para começar a montar as turmas.', 'Cadastrar usuário', @{/admin/usuarios/cadastrar})}"></div>
                         </td>
                     </tr>
 
                     <tr id="nenhumResultado" th:if="${not #lists.isEmpty(usuarios)}">
-                        <td colspan="7" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
+                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
                     </tr>
                     </tbody>
                 </table>

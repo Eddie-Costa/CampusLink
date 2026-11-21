@@ -54,10 +54,6 @@
                         <dd th:text="${dados.email}"></dd>
                     </div>
                     <div>
-                        <dt>Telefone</dt>
-                        <dd th:text="${dados.telefone ?: 'Não informado'}"></dd>
-                    </div>
-                    <div>
                         <dt>Data de nascimento</dt>
                         <dd th:text="${#temporals.format(dados.dataNascimento, 'dd/MM/yyyy')}"></dd>
                     </div>
@@ -119,7 +115,7 @@
                 <span class="profile-eyebrow">ENCERRAMENTO DA CONTA</span>
                 <h2>Excluir minha conta</h2>
                 <p class="profile-description">Ao excluir a conta, seus dados pessoais são <strong>anonimizados</strong>:
-                    nome, e-mail, telefone, data de nascimento e RGM ou matrícula deixam de existir no CampusLink e não
+                    nome, e-mail, data de nascimento e RGM ou matrícula deixam de existir no CampusLink e não
                     há como associá-los novamente a você. Você perderá o acesso à conta. Esta ação não pode ser
                     desfeita.</p>
                 <p class="profile-note">Seu histórico acadêmico (participação em turmas, progresso, disponibilidade),

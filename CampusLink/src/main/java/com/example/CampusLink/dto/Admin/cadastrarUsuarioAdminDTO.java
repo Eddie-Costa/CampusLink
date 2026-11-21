@@ -34,12 +34,6 @@ public class cadastrarUsuarioAdminDTO {
     @Email(message = "E-mail inválido")
     private String email;
 
-    // telefone deve conter 10 ou 11 digitos, seguindo o formato dos cadastros existentes
-    @Size(min = 10, max = 11, message = "O telefone deve ter entre 10 e 11 números")
-    @Pattern(regexp = "^\\d{10,11}$", message = "O telefone deve conter apenas números")
-    @NotBlank(message = "O telefone é obrigatório")
-    private String telefone;
-
     @Size(max = 10, message = "A data de nascimento deve ter no máximo 10 caracteres")
     @NotBlank(message = "A data de nascimento é obrigatória")
     private String dataNasc;

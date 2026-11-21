@@ -30,11 +30,6 @@ public class cadastrarAlunoDTO {
     @Email(message = "E-mail inválido")
     private String email;
 
-    @Size(min = 10, max = 11, message = "O telefone deve ter entre 10 e 11 números")
-    @Pattern(regexp = "^\\d{10,11}$", message = "O telefone deve conter apenas números")
-    @NotBlank(message = "O telefone é obrigatório")
-    private String telefone;
-
     @Size(min = 10, max = 10, message = "Informe uma data de nascimento válida")
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Informe uma data de nascimento válida")
     @NotBlank(message = "A Data de nascimento é obrigatória")
