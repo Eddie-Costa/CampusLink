@@ -107,6 +107,23 @@ class EventosControllerTests {
         assertEquals(List.of(5L), ((List<Evento>) modelo.get("eventos")).stream().map(Evento::getId).toList());
     }
 
+    // testar evento cancelado este teste confere que o cancelado da propria turma nao aparece no calendario
+    @Test
+    @SuppressWarnings("unchecked")
+    void escondeEventoCanceladoDoCalendario() throws SQLException {
+        // preparar evento cancelado na turma do aluno junto do evento ativo
+        Evento cancelado = evento(8L, 1L, 4L);
+        cancelado.setStatus("CANCELADO");
+        org.mockito.Mockito.doReturn(List.of(evento(5L, 1L, 4L), cancelado))
+                .when(eventos).listarEventosDasTurmasNoPeriodo(any(), any(), any());
+
+        // executar agenda do aluno
+        controlador.exibirCalendario(modelo, sessao(ALUNO, "aluno"), null);
+
+        // verificar so o evento ativo na tela
+        assertEquals(List.of(5L), ((List<Evento>) modelo.get("eventos")).stream().map(Evento::getId).toList());
+    }
+
     // testar agenda do aluno este teste confere eventos materiais concluidos viabilidade e plano de estudos
     @Test
     @SuppressWarnings("unchecked")
