@@ -435,6 +435,7 @@ public class ViabilidadeService {
 
             ViabilidadeDTO resumoEvento = novoResultado(idAluno, evento);
             resumoEvento.setCargaMin(cargaAcumulada);
+            resumoEvento.setCargaEventoMin(cargaAcumulada - cargaAntesDoEvento);
             resumoEvento.setCapacidadeMin(capacidade);
             // resumir risco do evento usa verde sem conteudos ou o pior nivel dos materiais
             if (conteudos.isEmpty()) {
@@ -474,6 +475,44 @@ public class ViabilidadeService {
         }
 
         return prioridades;
+    }
+
+    // listar eventos prioritarios este metodo traz os resumos de eventos vermelhos antes dos amarelos, por data
+    public List<ViabilidadeDTO> listarEventosPrioritarios(List<ViabilidadeDTO> resultados) {
+        List<ViabilidadeDTO> eventos = new ArrayList<>();
+        for (String nivel : List.of("vermelho", "amarelo")) {
+            for (ViabilidadeDTO resultado : resultados) {
+                // listar evento prioritario usa so o resumo do evento, sem as linhas de cada conteudo
+                if (resultado.getIdConteudo() == null && nivel.equals(resultado.getNivel())) {
+                    eventos.add(resultado);
+                }
+            }
+        }
+        return eventos;
+    }
+
+    // mapear resumo de cada evento este metodo guarda nivel horas necessarias e livres pelo codigo do evento
+    public Map<Long, ViabilidadeDTO> resumosPorEvento(List<ViabilidadeDTO> resultados) {
+        Map<Long, ViabilidadeDTO> resumos = new HashMap<>();
+        for (ViabilidadeDTO resultado : resultados) {
+            // guardar resumo usa so a linha do evento, sem as linhas de cada conteudo
+            if (resultado.getIdConteudo() == null) {
+                resumos.putIfAbsent(resultado.getIdEvento(), resultado);
+            }
+        }
+        return resumos;
+    }
+
+    // agrupar conteudos pendentes este metodo separa por evento os materiais que ainda faltam estudar
+    public Map<Long, List<ViabilidadeDTO>> conteudosPendentesPorEvento(List<ViabilidadeDTO> resultados) {
+        Map<Long, List<ViabilidadeDTO>> pendentes = new HashMap<>();
+        for (ViabilidadeDTO resultado : resultados) {
+            // incluir conteudo pendente ignora resumos de evento e materiais ja concluidos
+            if (resultado.getIdConteudo() != null && !"concluido".equals(resultado.getNivel())) {
+                pendentes.computeIfAbsent(resultado.getIdEvento(), id -> new ArrayList<>()).add(resultado);
+            }
+        }
+        return pendentes;
     }
 
     // buscar proximo evento pendente este metodo prefere o primeiro resumo ainda nao concluido

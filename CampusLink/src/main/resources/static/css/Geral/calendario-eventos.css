@@ -1373,6 +1373,86 @@ button.evento-marcador:focus-visible {
     line-height: 1.4;
 }
 
+/* o item agora e um botao que abre a situacao do evento: tira o visual padrao de botao */
+button.prioridade-item {
+    width: 100%;
+    border: 0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.prioridade-situacao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.prioridade-horas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.prioridade-horas div {
+    padding: 10px 12px;
+    border: 1px solid var(--campus-border);
+    border-radius: 10px;
+}
+
+.prioridade-horas dt {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.prioridade-horas dd {
+    margin: 2px 0 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* situacao do aluno dentro do cartao de detalhes do evento */
+.evento-situacao {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--campus-border);
+    border-radius: 12px;
+}
+
+.evento-situacao .prioridade-horas {
+    margin: 10px 0 6px;
+}
+
+.evento-situacao-motivo {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.prioridade-subtitulo {
+    margin: 14px 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.prioridade-conteudos {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.prioridade-conteudos li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 @media (max-width: 1050px) {
     .calendar-area:has(.prioridades-aluno) {
         width: min(92%, 920px);

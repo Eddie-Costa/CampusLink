@@ -127,6 +127,9 @@ class ViabilidadeServiceTests {
         // verificar 2h ate o conteudo repetido e 3h no total da prova final
         assertEquals(120, item(resultado, 2L, 10L).getCargaMin());
         assertEquals(180, resumo(resultado, 2L).getCargaMin());
+        // a carga so do evento separa o que e dele do que veio da prova anterior
+        assertEquals(60, resumo(resultado, 1L).getCargaEventoMin());
+        assertEquals(120, resumo(resultado, 2L).getCargaEventoMin());
     }
 
     // testar eventos no mesmo dia este teste confere que a prioridade alta e calculada antes da media mesmo sendo mais tarde

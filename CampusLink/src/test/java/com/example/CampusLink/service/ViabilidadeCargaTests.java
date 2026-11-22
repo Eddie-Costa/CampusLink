@@ -150,6 +150,29 @@ class ViabilidadeCargaTests {
         assertNull(nenhum);
     }
 
+    // testar prioridades por evento este teste confere so resumos de evento, vermelho antes de amarelo, e os conteudos que faltam
+    @Test
+    void listaEventosPrioritariosComConteudosPendentes() {
+        // preparar resumos de tres eventos e conteudos de um deles
+        ViabilidadeDTO eventoAmarelo = item(null, "amarelo");
+        ViabilidadeDTO eventoVerde = item(null, "verde");
+        ViabilidadeDTO eventoVermelho = item(null, "vermelho");
+        eventoVermelho.setIdEvento(7L);
+        ViabilidadeDTO conteudoPendente = item(10L, "vermelho");
+        conteudoPendente.setIdEvento(7L);
+        ViabilidadeDTO conteudoConcluido = item(11L, "concluido");
+        conteudoConcluido.setIdEvento(7L);
+        List<ViabilidadeDTO> resultados = List.of(eventoAmarelo, conteudoPendente, eventoVerde, conteudoConcluido, eventoVermelho);
+
+        // executar escolhas
+        List<ViabilidadeDTO> eventos = viabilidade.listarEventosPrioritarios(resultados);
+        var pendentes = viabilidade.conteudosPendentesPorEvento(resultados);
+
+        // verificar ordem, ausencia de conteudos soltos e de concluidos
+        assertEquals(List.of(eventoVermelho, eventoAmarelo), eventos);
+        assertEquals(List.of(conteudoPendente), pendentes.get(7L));
+    }
+
     // testar horas por dia e formatacao este teste confere a divisao da carga pelos dias restantes e o texto das horas
     @Test
     void calculaHorasPorDiaEFormataTempo() {
