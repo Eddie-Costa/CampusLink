@@ -115,25 +115,30 @@
 
                 <p class="prioridades-vazio" th:if="${#lists.isEmpty(prioridades)}">Nada crítico 🎉</p>
 
+                <!-- um item por evento em risco; clicar abre a situacao com horas necessarias e disponiveis -->
                 <ul class="prioridades-lista" th:unless="${#lists.isEmpty(prioridades)}">
                     <li th:each="item : ${prioridades}">
-                        <a class="prioridade-item" th:href="@{/score/turma/{id}(id=${item.idTurma})}">
+                        <button type="button" class="prioridade-item" data-bs-toggle="modal"
+                                th:attr="data-bs-target=${'#prioridadeEvento' + item.idEvento}">
                             <span class="prioridade-item-topo">
-                                <strong th:text="${item.tituloConteudo}">Conteúdo #1</strong>
+                                <strong th:text="${item.nomeEvento}">Prova</strong>
                                 <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
                             </span>
                             <span class="prioridade-item-meta"
-                                  th:text="${nomeTurmaPorId.get(item.idTurma) + ' · ' + item.nomeEvento + ' · ' + #temporals.format(item.dataEvento, 'dd/MM')}">
-                                Turma #1 · Prova · 18/10
+                                  th:text="${nomeTurmaPorId.get(item.idTurma) + ' · ' + #temporals.format(item.dataEvento, 'dd/MM HH:mm')}">
+                                Turma #1 · 18/10 19:00
                             </span>
-                            <span class="prioridade-item-motivo" th:text="${item.motivo}">Motivo</span>
-                        </a>
+                            <span class="prioridade-item-motivo"
+                                  th:text="${#lists.size(conteudosPendentesPorEvento.getOrDefault(item.idEvento, {})) + ' conteúdo(s) pendente(s) · faltam ' + @viabilidadeService.formatarHoras(item.cargaEventoMin)}">
+                                2 conteúdos pendentes · faltam 3h
+                            </span>
+                        </button>
                     </li>
                 </ul>
 
                 <p class="prioridades-vazio" th:if="${prioridadesRestantes > 0}"
-                   th:text="${'E mais ' + prioridadesRestantes + ' conteúdos com prioridade. Veja cada turma no Score.'}">
-                    E mais 5 conteúdos com prioridade.
+                   th:text="${'E mais ' + prioridadesRestantes + ' eventos com prioridade. Veja cada turma no Score.'}">
+                    E mais 5 eventos com prioridade.
                 </p>
 
             </aside>
@@ -290,6 +295,34 @@
                                 Turma não identificada
                             </span>
                         </p>
+
+                        <!-- situacao do aluno no evento: risco, horas necessarias e horas livres ate a data -->
+                        <div class="evento-situacao"
+                             th:if="${session.tipoUsuario == 'aluno' and riscoPorEvento.containsKey(evento.id)}"
+                             th:with="risco=${riscoPorEvento.get(evento.id)}, falta=${riscoPorEvento.get(evento.id).cargaMin - riscoPorEvento.get(evento.id).capacidadeMin}">
+                            <p class="prioridade-situacao">
+                                Situação: <span th:replace="~{fragments/risco :: selo(${risco.nivel}, ${risco.motivo})}"></span>
+                            </p>
+                            <dl class="prioridade-horas">
+                                <div>
+                                    <dt>Estudo deste evento</dt>
+                                    <dd th:text="${@viabilidadeService.formatarHoras(risco.cargaEventoMin)}">3h</dd>
+                                </div>
+                                <div>
+                                    <dt>Estudo necessário até a data</dt>
+                                    <dd th:text="${@viabilidadeService.formatarHoras(risco.cargaMin)}">8h</dd>
+                                </div>
+                                <div>
+                                    <dt>Horas livres até a data</dt>
+                                    <dd th:text="${@viabilidadeService.formatarHoras(risco.capacidadeMin)}">6h</dd>
+                                </div>
+                                <div>
+                                    <dt th:text="${falta > 0 ? 'Faltam' : 'Sobram'}">Faltam</dt>
+                                    <dd th:text="${@viabilidadeService.formatarHoras(falta > 0 ? falta : -falta)}">2h</dd>
+                                </div>
+                            </dl>
+                            <p class="evento-situacao-motivo" th:text="${risco.motivo}">Motivo</p>
+                        </div>
 
                         <div class="evento-conteudos">
 
@@ -486,6 +519,68 @@
                 <p class="plano-dia-nota">O plano é recalculado sempre que você conclui um conteúdo ou muda sua disponibilidade.</p>
             </div>
             <div class="modal-footer plano-dia-turmas" id="turmasPlanoDoDia"></div>
+        </div>
+    </div>
+</div>
+
+<!-- situacao de cada evento prioritario: nivel, horas necessarias, horas livres e conteudos que faltam -->
+<div class="modal fade plano-estudo-modal" tabindex="-1" aria-hidden="true"
+     th:each="item : ${prioridades}"
+     th:id="${'prioridadeEvento' + item.idEvento}"
+     th:attr="aria-labelledby=${'tituloPrioridadeEvento' + item.idEvento}"
+     th:with="falta=${item.cargaMin - item.capacidadeMin}">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="eventos-dia-cabecalho">
+                <div>
+                    <p class="eventos-dia-legenda" th:text="${nomeTurmaPorId.get(item.idTurma)}">Turma</p>
+                    <h2 th:id="${'tituloPrioridadeEvento' + item.idEvento}" th:text="${item.nomeEvento}">Evento</h2>
+                </div>
+                <div class="d-flex align-items-start gap-3">
+                    <time th:text="${#temporals.format(item.dataEvento, 'dd/MM HH:mm')}">23/11 19:00</time>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+            <div class="modal-body plano-dia">
+                <p class="prioridade-situacao">
+                    Situação: <span th:replace="~{fragments/risco :: selo(${item.nivel}, ${item.motivo})}"></span>
+                </p>
+
+                <dl class="prioridade-horas">
+                    <div>
+                        <dt>Estudo deste evento</dt>
+                        <dd th:text="${@viabilidadeService.formatarHoras(item.cargaEventoMin)}">3h</dd>
+                    </div>
+                    <div>
+                        <dt>Estudo necessário até a data</dt>
+                        <dd th:text="${@viabilidadeService.formatarHoras(item.cargaMin)}">8h</dd>
+                    </div>
+                    <div>
+                        <dt>Horas livres até a data</dt>
+                        <dd th:text="${@viabilidadeService.formatarHoras(item.capacidadeMin)}">6h</dd>
+                    </div>
+                    <div>
+                        <dt th:text="${falta > 0 ? 'Faltam' : 'Sobram'}">Faltam</dt>
+                        <dd th:text="${@viabilidadeService.formatarHoras(falta > 0 ? falta : -falta)}">2h</dd>
+                    </div>
+                </dl>
+
+                <p class="plano-dia-nota" th:if="${item.cargaMin > item.cargaEventoMin}">
+                    O estudo necessário até a data soma os eventos anteriores, que usam as mesmas horas livres.
+                </p>
+                <p th:text="${item.motivo}">Motivo</p>
+
+                <h3 class="prioridade-subtitulo">Conteúdos que faltam</h3>
+                <ul class="prioridade-conteudos">
+                    <li th:each="conteudo : ${conteudosPendentesPorEvento.getOrDefault(item.idEvento, {})}">
+                        <span th:text="${conteudo.tituloConteudo}">Conteúdo</span>
+                        <span th:replace="~{fragments/risco :: selo(${conteudo.nivel}, ${conteudo.motivo})}"></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer plano-dia-turmas">
+                <a class="btn btn-outline-light btn-sm" th:href="@{/score/turma/{id}(id=${item.idTurma})}">Ver turma no Score</a>
+            </div>
         </div>
     </div>
 </div>
