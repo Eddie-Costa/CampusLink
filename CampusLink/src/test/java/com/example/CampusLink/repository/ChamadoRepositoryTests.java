@@ -57,22 +57,27 @@ class ChamadoRepositoryTests {
     void abreEListaChamados() {
         // preparar codigo do chamado e chamado sem conclusao
         banco.quandoConsultar("RETURNING id", linha("id", 15L));
+        banco.quandoConsultar("SELECT COUNT(*) FROM public.\"CHAMADOS\"", linha("count", 1L));
         banco.quandoConsultar("ORDER BY c.created_at DESC", linha("id", 15L, "status", "aberto", "concluido_em", null,
                 "id_admin_conclusao", null, "created_at", LocalDateTime.of(2026, 11, 10, 13, 0)));
 
         // executar abertura e listagens
         Long id = chamados.inserir(2L, "Erro", "Nao abre");
         List<ChamadoDTO> doUsuario = chamados.listarDoUsuario(2L);
-        chamados.listarParaAdmin("");
-        chamados.listarParaAdmin("aberto");
+        chamados.listarParaAdmin("", 0);
+        var abertos = chamados.listarParaAdmin("aberto", 3);
 
         // verificar codigo dados e filtros
         assertEquals(15L, id);
         assertNull(doUsuario.get(0).getConcluidoEm());
         assertEquals("aberto", doUsuario.get(0).getStatus());
         assertEquals(List.of(2L), banco.comandos().get(1).valores());
+        // cada listagem conta o total filtrado e busca so a pagina, ajustada para a ultima existente
         assertTrue(banco.comandos().get(2).valores().isEmpty());
-        assertEquals(List.of("aberto"), banco.comandos().get(3).valores());
+        assertEquals(List.of(0), banco.comandos().get(3).valores());
+        assertEquals(List.of("aberto"), banco.comandos().get(4).valores());
+        assertEquals(List.of("aberto", 0), banco.comandos().get(5).valores());
+        assertEquals(0, abertos.getNumber());
     }
 
     // testar chamado de outro usuario este teste confere que a busca exige o dono e permite bloquear a linha

@@ -30,6 +30,9 @@ CREATE INDEX IF NOT EXISTS idx_conteudos_status_criacao ON public."CONTEUDOS" (s
 CREATE INDEX IF NOT EXISTS idx_eventos_turma ON public."EVENTOS" (id_turma, data_hora);
 CREATE INDEX IF NOT EXISTS idx_eventos_data ON public."EVENTOS" (data_hora DESC, id DESC);
 
+-- chamados: a lista do admin sem filtro de situacao ordena pela data de abertura
+CREATE INDEX IF NOT EXISTS idx_chamados_criacao ON public."CHAMADOS" (created_at DESC, id DESC);
+
 -- sites e logs de sessao
 CREATE INDEX IF NOT EXISTS idx_dominios_status ON public."DOMINIOS" (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_logs_sessoes_encerradas ON public."LOGS_SESSOES" (status, fim DESC);
@@ -37,4 +40,4 @@ CREATE INDEX IF NOT EXISTS idx_logs_sessoes_usuario ON public."LOGS_SESSOES" (us
 
 -- atualizar as estatisticas faz o banco escolher os indices novos logo em seguida
 ANALYZE public."ALUNO_TURMA", public."PROFESSOR_TURMA", public."ALUNOS", public."PROFESSORES", public."ADMINISTRADOR",
-        public."USUARIOS", public."TURMAS", public."CONTEUDOS", public."EVENTOS", public."DOMINIOS", public."LOGS_SESSOES";
+        public."USUARIOS", public."TURMAS", public."CONTEUDOS", public."EVENTOS", public."DOMINIOS", public."LOGS_SESSOES", public."CHAMADOS";
