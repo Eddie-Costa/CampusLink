@@ -391,14 +391,31 @@ public class ViabilidadeService {
                                   Map<LocalDate, Integer> horasPorDia) {
 
         List<ViabilidadeDTO> resultado = new ArrayList<>();
-        Map<String, Integer> cargaAteConteudo = new HashMap<>();
+        Map<String, int[]> cargaAteConteudo = new HashMap<>();
         Map<LocalDate, Map<String, Integer>> cargaPorEventoNoDia = new HashMap<>();
+        // carga sobre as horas livres decide entre possivel e replanejar e aparece no motivo
         int cargaAcumulada = 0;
+        // carga total sobre o limite de 8h por dia decide entre replanejar e impossivel
+        int cargaTotal = 0;
         Set<LocalDate> diasDeEvento = diasComEvento(eventos);
+        LocalDate dataAnterior = null;
+        int capacidadeAnterior = 0;
+        int maximoAnterior = 0;
 
         for (Evento evento : ordenarEventos(eventos)) {
             LocalDate dataEvento = evento.getInicio().toLocalDate();
+
+            // limitar carga transportada como o plano de estudos ao passar para uma data seguinte: o que passou das
+            // horas livres da data anterior e feito com horas extras antes dela, entao nao gasta as horas livres
+            // seguintes; e o que passou do limite de 8h por dia nao cabe em lugar nenhum. eventos do mesmo dia
+            // dividem os mesmos dias de estudo, entao continuam somando tudo
+            if (dataAnterior != null && !dataAnterior.equals(dataEvento)) {
+                cargaAcumulada = Math.min(cargaAcumulada, capacidadeAnterior);
+                cargaTotal = Math.min(cargaTotal, maximoAnterior);
+            }
+
             int cargaAntesDoEvento = cargaAcumulada;
+            int cargaTotalAntesDoEvento = cargaTotal;
             String complemento = descreverOutrosEventosDoDia(cargaPorEventoNoDia.getOrDefault(dataEvento, Map.of()));
             int capacidade = capacidadeAte(hoje, dataEvento, horasPorDia, diasDeEvento);
             int maximo = diasDeEstudoAte(hoje, dataEvento, diasDeEvento) * TETO_DIARIO_HORAS * 60;
@@ -421,11 +438,12 @@ public class ViabilidadeService {
                     // acumular carga de estudo conta o tempo do conteudo uma vez para cada data de evento
                     if (!cargaAteConteudo.containsKey(conteudo.getId() + "@" + dataEvento)) {
                         cargaAcumulada += duracaoDe(conteudo);
-                        cargaAteConteudo.put(conteudo.getId() + "@" + dataEvento, cargaAcumulada);
+                        cargaTotal += duracaoDe(conteudo);
+                        cargaAteConteudo.put(conteudo.getId() + "@" + dataEvento, new int[]{cargaAcumulada, cargaTotal});
                     }
-                    int carga = cargaAteConteudo.get(conteudo.getId() + "@" + dataEvento);
-                    item.setCargaMin(carga);
-                    item.setNivel(classificar(carga, capacidade, maximo));
+                    int[] carga = cargaAteConteudo.get(conteudo.getId() + "@" + dataEvento);
+                    item.setCargaMin(carga[0]);
+                    item.setNivel(classificar(carga[0], carga[1], capacidade, maximo));
                     item.setMotivo(montarMotivo(item, complemento));
                 }
 
@@ -435,7 +453,7 @@ public class ViabilidadeService {
 
             ViabilidadeDTO resumoEvento = novoResultado(idAluno, evento);
             resumoEvento.setCargaMin(cargaAcumulada);
-            resumoEvento.setCargaEventoMin(cargaAcumulada - cargaAntesDoEvento);
+            resumoEvento.setCargaEventoMin(cargaTotal - cargaTotalAntesDoEvento);
             resumoEvento.setCapacidadeMin(capacidade);
             // resumir risco do evento usa verde sem conteudos ou o pior nivel dos materiais
             if (conteudos.isEmpty()) {
@@ -450,10 +468,14 @@ public class ViabilidadeService {
             resultado.add(resumoEvento);
 
             // acumular carga do evento registra o tempo adicional de estudo exigido pelo evento
-            if (cargaAcumulada > cargaAntesDoEvento) {
+            if (cargaTotal > cargaTotalAntesDoEvento) {
                 cargaPorEventoNoDia.computeIfAbsent(dataEvento, dia -> new LinkedHashMap<>())
-                        .merge(evento.getNome(), cargaAcumulada - cargaAntesDoEvento, Integer::sum);
+                        .merge(evento.getNome(), cargaTotal - cargaTotalAntesDoEvento, Integer::sum);
             }
+
+            dataAnterior = dataEvento;
+            capacidadeAnterior = capacidade;
+            maximoAnterior = maximo;
         }
 
         return resultado;
@@ -621,13 +643,13 @@ public class ViabilidadeService {
     }
 
     // classificar risco de estudo este metodo escolhe verde amarelo ou vermelho conforme carga e capacidade
-    private String classificar(int cargaMin, int capacidadeMin, int maximoMin) {
+    private String classificar(int cargaLivreMin, int cargaTotalMin, int capacidadeMin, int maximoMin) {
         // classificar risco verde usa verde quando o estudo cabe na disponibilidade
-        if (cargaMin <= capacidadeMin) {
+        if (cargaLivreMin <= capacidadeMin) {
             return "verde";
         }
         // classificar risco amarelo usa amarelo quando o estudo cabe no limite ampliado
-        if (cargaMin <= maximoMin) {
+        if (cargaTotalMin <= maximoMin) {
             return "amarelo";
         }
         return "vermelho";
