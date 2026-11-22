@@ -119,6 +119,7 @@ class ViabilidadeServiceTests {
         Evento provaFinal = evento(2L, "Prova final", 5, 19, "ALTA");
         conteudosPorEvento.put(1L, List.of(conteudo(10L, 60, "alta")));
         conteudosPorEvento.put(2L, List.of(conteudo(10L, 60, "alta"), conteudo(20L, 60, "media")));
+        horasPorDia.put(HOJE, 8);
 
         // executar calculo da viabilidade
         List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, provaFinal),
@@ -130,6 +131,45 @@ class ViabilidadeServiceTests {
         // a carga so do evento separa o que e dele do que veio da prova anterior
         assertEquals(60, resumo(resultado, 1L).getCargaEventoMin());
         assertEquals(120, resumo(resultado, 2L).getCargaEventoMin());
+    }
+
+    // testar excedente que nao passa adiante este teste confere que a falta de tempo de uma prova nao torna a proxima arriscada
+    @Test
+    void excedenteDeUmEventoNaoGastaHorasLivresDosSeguintes() {
+        // preparar prova amanha com 12h e 6h livres hoje; P1 em 7 dias com 7h e 12h livres depois da prova
+        Evento prova = evento(1L, "Prova", 1, 19, "ALTA");
+        Evento p1 = evento(2L, "P1", 7, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 720, "alta")));
+        conteudosPorEvento.put(2L, List.of(conteudo(20L, 420, "alta")));
+        horasPorDia.put(HOJE, 6);
+        horasPorDia.put(HOJE.plusDays(2), 6);
+        horasPorDia.put(HOJE.plusDays(3), 6);
+
+        // executar calculo da viabilidade
+        List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, p1), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar prova impossivel e P1 possivel: as 6h que faltam da prova so poderiam ser feitas antes dela
+        assertEquals("vermelho", resumo(resultado, 1L).getNivel());
+        assertEquals("verde", resumo(resultado, 2L).getNivel());
+        assertEquals(6 * 60 + 420, resumo(resultado, 2L).getCargaMin());
+    }
+
+    // testar limite diario acumulado este teste confere que as horas extras de um evento ocupam os dias antes do seguinte
+    @Test
+    void horasExtrasDeUmEventoContamNoLimiteDiarioDoSeguinte() {
+        // preparar sem horas livres: prova em 2 dias com 10h e trabalho em 3 dias com 15h
+        Evento prova = evento(1L, "Prova", 2, 19, "ALTA");
+        Evento trabalho = evento(2L, "Trabalho", 3, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 600, "alta")));
+        conteudosPorEvento.put(2L, List.of(conteudo(20L, 900, "alta")));
+
+        // executar calculo da viabilidade
+        List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, trabalho), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar prova replanejar (10h em 16h) e trabalho impossivel: 25h para os mesmos 16h,
+        // ja que o dia da prova nao conta; sozinho o trabalho (15h) caberia, entao a soma e que pesa
+        assertEquals("amarelo", resumo(resultado, 1L).getNivel());
+        assertEquals("vermelho", resumo(resultado, 2L).getNivel());
     }
 
     // testar eventos no mesmo dia este teste confere que a prioridade alta e calculada antes da media mesmo sendo mais tarde
