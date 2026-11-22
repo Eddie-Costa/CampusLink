@@ -55,17 +55,22 @@ class DominioRepositoryTests {
         // preparar dominio sem professor e sem analise
         banco.quandoConsultar("DOMINIOS", linha("id", 1L, "dominio", "youtube.com", "status", "aprovado",
                 "id_professor", null, "analisado_em", null, "nome_professor", "Ana"));
+        banco.quandoConsultar("SELECT COUNT(*) FROM public.\"DOMINIOS\"", linha("count", 25L));
 
         // executar listagens
         List<DominioDTO> doProfessor = dominios.listarPorProfessor(4L);
-        List<DominioDTO> pendentes = dominios.listarPendentes();
-        List<DominioDTO> aprovados = dominios.listarAprovados();
+        var paginaPendentes = dominios.listarPendentes(9);
+        List<DominioDTO> pendentes = paginaPendentes.getContent();
+        List<DominioDTO> aprovados = dominios.listarAprovados(0).getContent();
 
         // verificar dados montados
         assertNull(doProfessor.get(0).getIdProfessor());
         assertNull(doProfessor.get(0).getAnalisadoEm());
         assertEquals("Ana", pendentes.get(0).getNomeProfessor());
         assertEquals("youtube.com", aprovados.get(0).getDominio());
+        // 25 pedidos dao 3 paginas de 10; a pagina pedida alem do fim volta para a ultima
+        assertEquals(2, paginaPendentes.getNumber());
+        assertEquals(List.of(20), banco.ultimo("WHERE d.\"status\" = 'pendente'").valores());
     }
 
     // testar analise repetida este teste confere que so pedidos pendentes podem ser analisados
@@ -107,7 +112,7 @@ class DominioRepositoryTests {
         banco.falharAo("DOMINIOS");
 
         // executar consulta
-        SQLException erro = assertThrows(SQLException.class, () -> dominios.listarAprovados());
+        SQLException erro = assertThrows(SQLException.class, () -> dominios.listarAprovados(0));
 
         // verificar mensagem original
         assertTrue(erro.getMessage().contains("falha simulada"));

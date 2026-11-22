@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -49,9 +50,12 @@ public class AdminTurmasController {
         this.adminTurmaRepository = adminTurmaRepository;
     }
 
-    // listar turmas administrativas este metodo carrega as turmas e informa falhas de consulta
+    // listar turmas administrativas este metodo carrega uma pagina de turmas e informa falhas de consulta
     @GetMapping("/admin/turmas")
-    public String listarTurmas(HttpSession session, Model model) {
+    public String listarTurmas(@RequestParam(required = false) String busca,
+                               @RequestParam(defaultValue = "0") int pagina,
+                               HttpSession session, Model model) {
+        model.addAttribute("busca", busca == null ? "" : busca.trim());
 
         // exigir login administrativo encaminha sessoes sem usuario para o acesso do administrador
         if (session.getAttribute("usuarioLogado") == null) {
@@ -65,8 +69,10 @@ public class AdminTurmasController {
 
         // carregar turmas administrativas consulta os registros e informa falha com uma lista vazia
         try {
-            List<turmaAdminDTO> turmas = adminTurmaRepository.listarTurmas();
-            model.addAttribute("turmas", turmas);
+            // filtrar e paginar no banco evita montar as contagens de todas as turmas a cada acesso
+            Page<turmaAdminDTO> paginaTurmas = adminTurmaRepository.listarTurmas(busca, pagina);
+            model.addAttribute("turmas", paginaTurmas.getContent());
+            model.addAttribute("paginaTurmas", paginaTurmas);
 
         } catch (SQLException e) {
             logger.error("erro ao carregar turmas para o administrador", e);
@@ -85,6 +91,7 @@ public class AdminTurmasController {
 
             model.addAttribute("mensagemErro", "Não foi possível carregar as turmas.");
             model.addAttribute("turmas", new ArrayList<turmaAdminDTO>());
+            model.addAttribute("paginaTurmas", Page.empty());
         }
 
         return "Usuarios/Admin/turmasAdmin";
@@ -353,6 +360,7 @@ public class AdminTurmasController {
     @GetMapping("/admin/turmas/{idTurma}/alunos")
     public String listarAlunosDaTurma(
             @PathVariable Long idTurma,
+            @RequestParam(required = false) String buscaAluno,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -378,11 +386,13 @@ public class AdminTurmasController {
             }
 
             List<usuarioAdminDTO> alunos = adminTurmaRepository.listarAlunosDaTurma(idTurma);
-            List<usuarioAdminDTO> alunosDisponiveis = adminTurmaRepository.listarAlunosDisponiveis(idTurma);
+            // sugerir alunos pela busca traz no maximo alguns nomes em vez de todos os alunos ativos
+            List<usuarioAdminDTO> alunosDisponiveis = adminTurmaRepository.listarAlunosDisponiveis(idTurma, buscaAluno);
 
             model.addAttribute("turma", turma);
             model.addAttribute("alunos", alunos);
             model.addAttribute("alunosDisponiveis", alunosDisponiveis);
+            model.addAttribute("buscaAluno", buscaAluno == null ? "" : buscaAluno.trim());
 
             return "Usuarios/Admin/alunosTurmaAdmin";
 

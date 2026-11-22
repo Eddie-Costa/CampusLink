@@ -431,6 +431,8 @@ public class EventosController {
         model.addAttribute("conteudosPorEvento", Map.of());
         model.addAttribute("conteudosConcluidos", Set.of());
         model.addAttribute("prioridades", List.of());
+        model.addAttribute("conteudosPendentesPorEvento", Map.of());
+        model.addAttribute("riscoPorEvento", Map.of());
         model.addAttribute("nomeTurmaPorId", Map.of());
         model.addAttribute("agora", LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
@@ -468,7 +470,10 @@ public class EventosController {
 
                 List<ViabilidadeDTO> resultados = viabilidadeService.calcularParaAluno(idAluno);
                 model.addAttribute("proximoEventoRisco", viabilidadeService.proximoEventoPendente(resultados));
-                List<ViabilidadeDTO> prioridades = viabilidadeService.listarPrioridades(resultados);
+                // prioridades por evento: o detalhe de cada evento mostra os conteudos que ainda faltam
+                List<ViabilidadeDTO> prioridades = viabilidadeService.listarEventosPrioritarios(resultados);
+                model.addAttribute("conteudosPendentesPorEvento", viabilidadeService.conteudosPendentesPorEvento(resultados));
+                model.addAttribute("riscoPorEvento", viabilidadeService.resumosPorEvento(resultados));
                 model.addAttribute("prioridades", prioridades.subList(0, Math.min(ViabilidadeService.PRIORIDADES_NA_TELA, prioridades.size())));
                 model.addAttribute("prioridadesRestantes", Math.max(0, prioridades.size() - ViabilidadeService.PRIORIDADES_NA_TELA));
                 model.addAttribute("nomeTurmaPorId", turmasAluno.stream()
@@ -489,7 +494,10 @@ public class EventosController {
         if (eventos == null) {
             eventos = eventoService.listarEventos();
         }
-        model.addAttribute("eventos", eventos);
+        // esconder cancelados: evento cancelado nao acontece, entao nao aparece no calendario (o admin ainda ve na gestao)
+        model.addAttribute("eventos", eventos.stream()
+                .filter(evento -> !"CANCELADO".equalsIgnoreCase(evento.getStatus()))
+                .toList());
     }
 
 
@@ -500,7 +508,7 @@ public class EventosController {
 
         // manter todos os eventos das turmas atende a tela de cadastro, que pode mostrar qualquer data
         if (inicio == null) {
-            return eventoService.listarEventos().stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
+            return eventoService.listarEventosDasTurmas(idsTurmas);
         }
 
         return eventoService.listarEventosDasTurmasNoPeriodo(idsTurmas, inicio, fim);

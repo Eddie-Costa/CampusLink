@@ -203,7 +203,7 @@ class ConteudoServiceTests {
         operacoes.put("listar os conteúdos da turma", () -> semBanco.listarPorTurma(1L));
         operacoes.put("buscar os conteúdos", () -> semBanco.buscarPorTurma(1L, "a", "link"));
         operacoes.put("conteúdos do professor", () -> semBanco.listarPorProfessor(4L));
-        operacoes.put("enviados para análise", semBanco::listarParaAnaliseAdmin);
+        operacoes.put("enviados para análise", () -> semBanco.listarParaAnaliseAdmin(0));
         operacoes.put("remover o conteúdo", () -> semBanco.removerConteudoProfessor(10L, 4L));
         operacoes.put("re-disponibilizar", () -> semBanco.reabrir(10L, 4L, 1L));
         operacoes.put("solicitar a análise", () -> semBanco.solicitarRevisao(10L, 4L));

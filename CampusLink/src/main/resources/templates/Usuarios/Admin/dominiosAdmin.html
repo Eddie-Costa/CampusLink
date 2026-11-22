@@ -30,8 +30,8 @@
 
 
         <div class="admin-resumo">
-            <strong th:text="${#lists.size(pendentes)}">0</strong>
-            <span th:text="${#lists.size(pendentes) == 1 ? 'pedido aguardando análise' : 'pedidos aguardando análise'}">pedidos aguardando análise</span>
+            <strong th:text="${paginaPendentes.totalElements}">0</strong>
+            <span th:text="${paginaPendentes.totalElements == 1 ? 'pedido aguardando análise' : 'pedidos aguardando análise'}">pedidos aguardando análise</span>
         </div>
 
         <th:block th:if="${#lists.isEmpty(pendentes)}"><div th:replace="~{fragments/vazio :: vazio('ok', 'Tudo em dia', 'Nenhum pedido de site está aguardando análise.', null, null)}"></div></th:block>
@@ -107,9 +107,17 @@
             </article>
         </section>
 
+        <nav th:if="${paginaPendentes.totalPages > 1}" aria-label="Paginação dos pedidos de site" class="admin-paginacao">
+            <a th:if="${paginaPendentes.hasPrevious()}" class="btn btn-outline-primary"
+               th:href="@{/admin/dominios(paginaPendentes=${paginaPendentes.number - 1},paginaAprovados=${paginaAprovados.number})}">Anterior</a>
+            <span aria-live="polite" th:text="${'Página ' + (paginaPendentes.number + 1) + ' de ' + paginaPendentes.totalPages}"></span>
+            <a th:if="${paginaPendentes.hasNext()}" class="btn btn-outline-primary"
+               th:href="@{/admin/dominios(paginaPendentes=${paginaPendentes.number + 1},paginaAprovados=${paginaAprovados.number})}">Próxima</a>
+        </nav>
+
 
         <div class="admin-resumo">
-            <strong th:text="${#lists.size(aprovados)}">0</strong>
+            <strong th:text="${paginaAprovados.totalElements}">0</strong>
             <span>sites liberados</span>
         </div>
 
@@ -131,6 +139,14 @@
             </tr>
             </tbody>
         </table>
+
+        <nav th:if="${paginaAprovados.totalPages > 1}" aria-label="Paginação dos sites liberados" class="admin-paginacao">
+            <a th:if="${paginaAprovados.hasPrevious()}" class="btn btn-outline-primary"
+               th:href="@{/admin/dominios(paginaPendentes=${paginaPendentes.number},paginaAprovados=${paginaAprovados.number - 1})}">Anterior</a>
+            <span aria-live="polite" th:text="${'Página ' + (paginaAprovados.number + 1) + ' de ' + paginaAprovados.totalPages}"></span>
+            <a th:if="${paginaAprovados.hasNext()}" class="btn btn-outline-primary"
+               th:href="@{/admin/dominios(paginaPendentes=${paginaPendentes.number},paginaAprovados=${paginaAprovados.number + 1})}">Próxima</a>
+        </nav>
 
         <p class="admin-horario">Os horários estão em UTC.</p>
 

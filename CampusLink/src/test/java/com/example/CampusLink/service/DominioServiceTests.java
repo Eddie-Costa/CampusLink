@@ -121,8 +121,8 @@ class DominioServiceTests {
         // preparar banco indisponivel
         SQLException falha = new SQLException("fora do ar");
         when(repositorio.listarPorProfessor(4L)).thenThrow(falha);
-        when(repositorio.listarPendentes()).thenThrow(falha);
-        when(repositorio.listarAprovados()).thenThrow(falha);
+        when(repositorio.listarPendentes(0)).thenThrow(falha);
+        when(repositorio.listarAprovados(0)).thenThrow(falha);
         when(repositorio.hostAutorizado("site.com")).thenThrow(falha);
         when(repositorio.existePendenteOuAprovado("site.com")).thenThrow(falha);
         when(repositorio.analisar(9L, "aprovado", null)).thenThrow(falha);
@@ -130,8 +130,8 @@ class DominioServiceTests {
 
         // executar operacoes e verificar mensagens
         assertTrue(assertThrows(RuntimeException.class, () -> dominios.listarPorProfessor(4L)).getMessage().contains("listar as solicitações"));
-        assertTrue(assertThrows(RuntimeException.class, dominios::listarPendentes).getMessage().contains("pendentes"));
-        assertTrue(assertThrows(RuntimeException.class, dominios::listarAprovados).getMessage().contains("sites liberados"));
+        assertTrue(assertThrows(RuntimeException.class, () -> dominios.listarPendentes(0)).getMessage().contains("pendentes"));
+        assertTrue(assertThrows(RuntimeException.class, () -> dominios.listarAprovados(0)).getMessage().contains("sites liberados"));
         assertTrue(assertThrows(RuntimeException.class, () -> dominios.hostAutorizado("site.com")).getMessage().contains("verificar o site"));
         assertTrue(assertThrows(RuntimeException.class, () -> dominios.solicitar(pedido("site.com", null), 4L)).getMessage().contains("registrar"));
         assertTrue(assertThrows(RuntimeException.class, () -> dominios.analisar(9L, true, null)).getMessage().contains("analisar"));

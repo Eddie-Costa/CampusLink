@@ -36,22 +36,21 @@
         <section class="usuarios-admin-card">
             <div class="usuarios-admin-card-topo">
                 <h2>Usuários cadastrados</h2>
-                <span class="usuarios-admin-total" th:text="${#lists.size(usuarios) + (#lists.size(usuarios) == 1 ? ' usuário' : ' usuários')}">0 usuários</span>
+                <span class="usuarios-admin-total" th:text="${paginaUsuarios.totalElements + (paginaUsuarios.totalElements == 1 ? ' usuário' : ' usuários')}">0 usuários</span>
             </div>
 
-            <div class="usuarios-admin-busca">
-                <label for="buscarUsuario" class="visually-hidden">Buscar usuário</label>
-                <input id="buscarUsuario" type="search" placeholder="Buscar por nome, ID, RGM ou matrícula">
-            </div>
-
-            <!-- buscar por email completo vai ao servidor porque a lista mostra os emails mascarados -->
-            <form class="usuarios-admin-busca" th:action="@{/admin/usuarios}" method="get" role="search">
+            <!-- buscar no servidor traz so a pagina pedida; o email completo e comparado la porque a lista mostra o email mascarado -->
+            <form class="usuarios-admin-busca admin-busca-servidor" th:action="@{/admin/usuarios}" method="get" role="search">
+                <label for="buscarUsuario" class="visually-hidden">Buscar por nome, ID, RGM ou matrícula</label>
+                <input id="buscarUsuario" name="busca" type="search" th:value="${busca}"
+                       placeholder="Buscar por nome, ID, RGM ou matrícula" maxlength="100">
                 <label for="buscarEmail" class="visually-hidden">Buscar pelo e-mail completo</label>
                 <input id="buscarEmail" name="email" type="email" th:value="${buscaEmail}"
                        placeholder="Buscar pelo e-mail completo" maxlength="100">
+                <button type="submit" class="btn btn-primary">Buscar</button>
             </form>
-            <p th:if="${buscaEmail != null}" class="usuarios-admin-mensagem" role="status">
-                Resultado da busca pelo e-mail informado. <a th:href="@{/admin/usuarios}">Mostrar todos</a>
+            <p th:if="${!#strings.isEmpty(busca) or buscaEmail != null}" class="usuarios-admin-mensagem" role="status">
+                Resultado da busca. <a th:href="@{/admin/usuarios}">Mostrar todos</a>
             </p>
 
             <div class="table-responsive">
@@ -141,29 +140,33 @@
                         </td>
                     </tr>
 
-                    <tr th:if="${#lists.isEmpty(usuarios) and buscaEmail != null}">
-                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário com este e-mail</td>
+                    <tr th:if="${#lists.isEmpty(usuarios) and (buscaEmail != null or !#strings.isEmpty(busca))}">
+                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
                     </tr>
 
-                    <tr th:if="${#lists.isEmpty(usuarios) and buscaEmail == null}">
+                    <tr th:if="${#lists.isEmpty(usuarios) and buscaEmail == null and #strings.isEmpty(busca)}">
                         <td colspan="6" class="usuarios-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('usuario', 'Nenhum usuário cadastrado', 'Cadastre alunos e professores para começar a montar as turmas.', 'Cadastrar usuário', @{/admin/usuarios/cadastrar})}"></div>
                         </td>
                     </tr>
 
-                    <tr id="nenhumResultado" th:if="${not #lists.isEmpty(usuarios)}">
-                        <td colspan="6" class="usuarios-admin-vazio">Nenhum usuário encontrado</td>
-                    </tr>
                     </tbody>
                 </table>
             </div>
+
+            <nav th:if="${paginaUsuarios.totalPages > 1}" aria-label="Paginação dos usuários" class="admin-paginacao">
+                <a th:if="${paginaUsuarios.hasPrevious()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/usuarios(pagina=${paginaUsuarios.number - 1},busca=${busca},email=${buscaEmail})}">Anterior</a>
+                <span aria-live="polite" th:text="${'Página ' + (paginaUsuarios.number + 1) + ' de ' + paginaUsuarios.totalPages}"></span>
+                <a th:if="${paginaUsuarios.hasNext()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/usuarios(pagina=${paginaUsuarios.number + 1},busca=${busca},email=${buscaEmail})}">Próxima</a>
+            </nav>
         </section>
     </div>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<script th:src="@{/js/Usuarios/Admin/usuariosAdmin.js}"></script>
 
 <script th:src="@{/js/Geral/tabela-inteligente.js(v=20261112-2)}"></script>
 </body>

@@ -52,19 +52,25 @@
 
                     <p>
                         Total:
-                        <span th:text="${#lists.size(turmas)}">0</span>
+                        <span th:text="${paginaTurmas.totalElements}">0</span>
                     </p>
                 </div>
 
-                <div class="turmas-admin-busca">
+                <!-- buscar turma no servidor traz so a pagina pedida em vez de todas as turmas -->
+                <form class="turmas-admin-busca admin-busca-servidor" th:action="@{/admin/turmas}" method="get" role="search">
 
                     <label for="buscarTurma">Buscar turma</label>
 
-                    <input type="text"
+                    <input type="search"
                            id="buscarTurma"
-                           placeholder="Digite o nome da turma">
+                           name="busca"
+                           th:value="${busca}"
+                           maxlength="100"
+                           placeholder="Nome da turma ou do professor">
 
-                </div>
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+
+                </form>
 
             </div>
 
@@ -146,7 +152,7 @@
 
                     </tr>
 
-                    <tr th:if="${#lists.isEmpty(turmas)}">
+                    <tr th:if="${#lists.isEmpty(turmas) and #strings.isEmpty(busca)}">
 
                         <td colspan="6" class="turmas-admin-vazio">
                             <div th:replace="~{fragments/vazio :: vazio('turma', 'Nenhuma turma cadastrada', 'Crie a primeira turma e depois vincule os alunos e professores.', 'Cadastrar turma', @{/admin/turmas/cadastrar})}"></div>
@@ -154,7 +160,7 @@
 
                     </tr>
 
-                    <tr id="nenhumaTurmaEncontrada">
+                    <tr th:if="${#lists.isEmpty(turmas) and !#strings.isEmpty(busca)}">
 
                         <td colspan="6" class="turmas-admin-vazio">
                             Nenhuma turma encontrada com essa busca
@@ -168,6 +174,14 @@
 
             </div>
 
+            <nav th:if="${paginaTurmas.totalPages > 1}" aria-label="Paginação das turmas" class="admin-paginacao">
+                <a th:if="${paginaTurmas.hasPrevious()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/turmas(pagina=${paginaTurmas.number - 1},busca=${busca})}">Anterior</a>
+                <span aria-live="polite" th:text="${'Página ' + (paginaTurmas.number + 1) + ' de ' + paginaTurmas.totalPages}"></span>
+                <a th:if="${paginaTurmas.hasNext()}" class="btn btn-outline-primary"
+                   th:href="@{/admin/turmas(pagina=${paginaTurmas.number + 1},busca=${busca})}">Próxima</a>
+            </nav>
+
         </section>
 
     </div>
@@ -175,8 +189,6 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-
-<script th:src="@{/js/Usuarios/Admin/turmasAdmin.js}"></script>
 
 <script th:src="@{/js/Geral/tabela-inteligente.js(v=20261112-2)}"></script>
 </body>

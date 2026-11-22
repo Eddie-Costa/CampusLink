@@ -27,7 +27,11 @@ public class ViabilidadeDTO {
 
     private String nivel;
 
+    // carga acumulada ate o evento, somando os eventos anteriores que disputam as mesmas horas livres
     private int cargaMin;
+
+    // carga so do evento, preenchida no resumo do evento (sem os eventos anteriores)
+    private int cargaEventoMin;
 
     private int capacidadeMin;
 

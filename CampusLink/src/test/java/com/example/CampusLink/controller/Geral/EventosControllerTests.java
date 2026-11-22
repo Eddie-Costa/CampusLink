@@ -81,6 +81,8 @@ class EventosControllerTests {
         // agenda busca so as turmas do usuario no mes visivel e a exclusao busca o evento pelo id
         when(eventos.listarEventosDasTurmasNoPeriodo(any(), any(), any())).thenAnswer(chamada -> List.of(eventoDaTurma, eventoDeOutraTurma).stream()
                 .filter(evento -> ((java.util.Collection<?>) chamada.getArgument(0)).contains(evento.getIdTurma())).toList());
+        when(eventos.listarEventosDasTurmas(any())).thenAnswer(chamada -> List.of(eventoDaTurma, eventoDeOutraTurma).stream()
+                .filter(evento -> ((java.util.Collection<?>) chamada.getArgument(0)).contains(evento.getIdTurma())).toList());
         when(eventos.buscarEventoPorId(5L)).thenReturn(eventoDaTurma);
         when(eventos.buscarEventoPorId(6L)).thenReturn(eventoDeOutraTurma);
         when(conteudos.listarPorTurma(1L)).thenReturn(List.of(material(10L), material(11L)));
@@ -102,6 +104,23 @@ class EventosControllerTests {
         assertEquals("Geral/calendario-eventos", agenda);
         assertEquals("Geral/cadastrar-eventos", formulario);
         assertEquals("redirect:/login", semLogin);
+        assertEquals(List.of(5L), ((List<Evento>) modelo.get("eventos")).stream().map(Evento::getId).toList());
+    }
+
+    // testar evento cancelado este teste confere que o cancelado da propria turma nao aparece no calendario
+    @Test
+    @SuppressWarnings("unchecked")
+    void escondeEventoCanceladoDoCalendario() throws SQLException {
+        // preparar evento cancelado na turma do aluno junto do evento ativo
+        Evento cancelado = evento(8L, 1L, 4L);
+        cancelado.setStatus("CANCELADO");
+        org.mockito.Mockito.doReturn(List.of(evento(5L, 1L, 4L), cancelado))
+                .when(eventos).listarEventosDasTurmasNoPeriodo(any(), any(), any());
+
+        // executar agenda do aluno
+        controlador.exibirCalendario(modelo, sessao(ALUNO, "aluno"), null);
+
+        // verificar so o evento ativo na tela
         assertEquals(List.of(5L), ((List<Evento>) modelo.get("eventos")).stream().map(Evento::getId).toList());
     }
 

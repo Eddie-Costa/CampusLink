@@ -119,6 +119,7 @@ class ViabilidadeServiceTests {
         Evento provaFinal = evento(2L, "Prova final", 5, 19, "ALTA");
         conteudosPorEvento.put(1L, List.of(conteudo(10L, 60, "alta")));
         conteudosPorEvento.put(2L, List.of(conteudo(10L, 60, "alta"), conteudo(20L, 60, "media")));
+        horasPorDia.put(HOJE, 8);
 
         // executar calculo da viabilidade
         List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, provaFinal),
@@ -127,6 +128,48 @@ class ViabilidadeServiceTests {
         // verificar 2h ate o conteudo repetido e 3h no total da prova final
         assertEquals(120, item(resultado, 2L, 10L).getCargaMin());
         assertEquals(180, resumo(resultado, 2L).getCargaMin());
+        // a carga so do evento separa o que e dele do que veio da prova anterior
+        assertEquals(60, resumo(resultado, 1L).getCargaEventoMin());
+        assertEquals(120, resumo(resultado, 2L).getCargaEventoMin());
+    }
+
+    // testar excedente que nao passa adiante este teste confere que a falta de tempo de uma prova nao torna a proxima arriscada
+    @Test
+    void excedenteDeUmEventoNaoGastaHorasLivresDosSeguintes() {
+        // preparar prova amanha com 12h e 6h livres hoje; P1 em 7 dias com 7h e 12h livres depois da prova
+        Evento prova = evento(1L, "Prova", 1, 19, "ALTA");
+        Evento p1 = evento(2L, "P1", 7, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 720, "alta")));
+        conteudosPorEvento.put(2L, List.of(conteudo(20L, 420, "alta")));
+        horasPorDia.put(HOJE, 6);
+        horasPorDia.put(HOJE.plusDays(2), 6);
+        horasPorDia.put(HOJE.plusDays(3), 6);
+
+        // executar calculo da viabilidade
+        List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, p1), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar prova impossivel e P1 possivel: as 6h que faltam da prova so poderiam ser feitas antes dela
+        assertEquals("vermelho", resumo(resultado, 1L).getNivel());
+        assertEquals("verde", resumo(resultado, 2L).getNivel());
+        assertEquals(6 * 60 + 420, resumo(resultado, 2L).getCargaMin());
+    }
+
+    // testar limite diario acumulado este teste confere que as horas extras de um evento ocupam os dias antes do seguinte
+    @Test
+    void horasExtrasDeUmEventoContamNoLimiteDiarioDoSeguinte() {
+        // preparar sem horas livres: prova em 2 dias com 10h e trabalho em 3 dias com 15h
+        Evento prova = evento(1L, "Prova", 2, 19, "ALTA");
+        Evento trabalho = evento(2L, "Trabalho", 3, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 600, "alta")));
+        conteudosPorEvento.put(2L, List.of(conteudo(20L, 900, "alta")));
+
+        // executar calculo da viabilidade
+        List<ViabilidadeDTO> resultado = viabilidade.calcular(ALUNO, HOJE, List.of(prova, trabalho), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar prova replanejar (10h em 16h) e trabalho impossivel: 25h para os mesmos 16h,
+        // ja que o dia da prova nao conta; sozinho o trabalho (15h) caberia, entao a soma e que pesa
+        assertEquals("amarelo", resumo(resultado, 1L).getNivel());
+        assertEquals("vermelho", resumo(resultado, 2L).getNivel());
     }
 
     // testar eventos no mesmo dia este teste confere que a prioridade alta e calculada antes da media mesmo sendo mais tarde
@@ -201,6 +244,41 @@ class ViabilidadeServiceTests {
         assertTrue(plano.stream().noneMatch(sessao -> HOJE.plusDays(1).equals(sessao.getData())));
         assertEquals(480, plano.stream().filter(sessao -> HOJE.equals(sessao.getData())).mapToInt(SessaoEstudoDTO::getMinutos).sum());
         assertEquals(580, plano.stream().filter(sessao -> sessao.getData() == null).mapToInt(SessaoEstudoDTO::getMinutos).sum());
+    }
+
+    // testar fim de semana no plano este teste confere que sabado e domingo so usam as horas cadastradas, sem horas extras
+    @Test
+    void naoSugereHorasExtrasNoFimDeSemana() {
+        // preparar prova na segunda seguinte (hoje e terca) com 16h40 de estudo e 2h livres so no sabado
+        Evento prova = evento(1L, "Prova", 6, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 1000, "alta")));
+        LocalDate sabado = HOJE.plusDays(4);
+        LocalDate domingo = HOJE.plusDays(5);
+        horasPorDia.put(sabado, 2);
+
+        // executar plano
+        List<SessaoEstudoDTO> plano = viabilidade.planejar(HOJE, List.of(prova), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar sabado so com as 2h cadastradas, domingo vazio e as horas extras apenas nos dias uteis
+        assertEquals(120, minutos(plano, sabado, false));
+        assertEquals(0, minutos(plano, sabado, true));
+        assertTrue(plano.stream().noneMatch(sessao -> domingo.equals(sessao.getData())));
+        assertTrue(plano.stream().filter(SessaoEstudoDTO::isSugestao).allMatch(sessao -> !DiasDeDescanso.ehDescanso(sessao.getData())));
+    }
+
+    // testar fim de semana no risco este teste confere que o maximo possivel conta so as horas cadastradas no fim de semana
+    @Test
+    void fimDeSemanaContaSoAsHorasCadastradasNoMaximo() {
+        // preparar prova na segunda com 35h: 4 dias uteis x 8h + 2h no sabado = 34h possiveis
+        Evento prova = evento(1L, "Prova", 6, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 2100, "alta")));
+        horasPorDia.put(HOJE.plusDays(4), 2);
+
+        // executar calculo da viabilidade
+        ViabilidadeDTO resumo = resumo(viabilidade.calcular(ALUNO, HOJE, List.of(prova), conteudosPorEvento, Set.of(), horasPorDia), 1L);
+
+        // verificar impossivel: antes o fim de semana contava 8h por dia e a prova ficava em replanejar
+        assertEquals("vermelho", resumo.getNivel());
     }
 
     // montar evento do teste este metodo cria um evento da turma 1 a alguns dias de hoje no horario informado

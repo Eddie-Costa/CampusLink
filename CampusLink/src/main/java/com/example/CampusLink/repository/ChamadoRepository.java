@@ -4,6 +4,9 @@ package com.example.CampusLink.repository;
 import com.example.CampusLink.dto.ChamadoDTO;
 import com.example.CampusLink.dto.ChamadoRespostaDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -71,15 +74,23 @@ public class ChamadoRepository {
     }
 
     // listar chamados no banco administrativo este metodo consulta todos os pedidos ou filtra pela situacao
-    public List<ChamadoDTO> listarParaAdmin(String status) {
-        // listar chamados sem filtro consulta todas as situacoes quando nenhum filtro foi informado
-        if (status.isEmpty()) {
-            return jdbcTemplate.query(SQL_CHAMADOS + " ORDER BY c.created_at DESC, c.id DESC",
-                    (rs, linha) -> montarChamado(rs));
-        }
-        return jdbcTemplate.query(SQL_CHAMADOS + " WHERE c.status = ? ORDER BY c.created_at DESC, c.id DESC",
-                (rs, linha) -> montarChamado(rs), status);
+    public Page<ChamadoDTO> listarParaAdmin(String status, int pagina) {
+        // filtrar situacao usa o indice de situacao e data; sem filtro lista todas as situacoes
+        String filtro = status.isEmpty() ? "" : " WHERE c.status = ?";
+        Object[] parametros = status.isEmpty() ? new Object[0] : new Object[]{status};
+
+        long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.\"CHAMADOS\" c" + filtro, Long.class, parametros);
+        int paginaValida = Math.min(Math.max(0, pagina), (int) Math.max(0, (total - 1) / CHAMADOS_POR_PAGINA));
+
+        Object[] parametrosPagina = java.util.Arrays.copyOf(parametros, parametros.length + 1);
+        parametrosPagina[parametros.length] = paginaValida * CHAMADOS_POR_PAGINA;
+        List<ChamadoDTO> chamados = jdbcTemplate.query(SQL_CHAMADOS + filtro
+                + " ORDER BY c.created_at DESC, c.id DESC LIMIT " + CHAMADOS_POR_PAGINA + " OFFSET ?",
+                (rs, linha) -> montarChamado(rs), parametrosPagina);
+        return new PageImpl<>(chamados, PageRequest.of(paginaValida, CHAMADOS_POR_PAGINA), total);
     }
+
+    public static final int CHAMADOS_POR_PAGINA = 20;
 
     // buscar chamado do titular este metodo consulta o pedido sem reservar o registro para alteracao
     public ChamadoDTO buscarDoUsuario(Long id, Long idUsuario) {

@@ -595,8 +595,23 @@ public class ConteudoRepository {
     }
 
     // listar materiais aguardando analise este metodo consulta conteudos suspensos com revisao solicitada
-    public List<ConteudoDTO> listarParaAnaliseAdmin() throws SQLException {
+    public static final int ANALISES_POR_PAGINA = 10;
+
+    public org.springframework.data.domain.Page<ConteudoDTO> listarParaAnaliseAdmin(int pagina) throws SQLException {
         List<ConteudoDTO> conteudos = new ArrayList<>();
+        String filtro = """
+                 WHERE c."status" = 'suspenso_denuncia'
+                AND c."revisao_solicitada" = true
+                """;
+
+        // contar fila de analise permite paginar sem carregar todos os materiais pendentes
+        long total;
+        try {
+            total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.\"CONTEUDOS\" c" + filtro, Long.class);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+        int paginaValida = Math.min(Math.max(0, pagina), (int) Math.max(0, (total - 1) / ANALISES_POR_PAGINA));
 
         String sql = """
                 SELECT c.*, u."nome" AS nome_professor
@@ -605,14 +620,16 @@ public class ConteudoRepository {
                     ON p."id" = c."id_professor"
                 INNER JOIN public."USUARIOS" u
                     ON u."id" = p."id_usuario"
-                WHERE c."status" = 'suspenso_denuncia'
-                AND c."revisao_solicitada" = true
+                """ + filtro + """
                 ORDER BY c."revisao_solicitada_em" ASC, c."id" ASC
+                LIMIT ? OFFSET ?
                 """;
 
         // consultar materiais para analise busca conteudos pendentes e converte falhas do banco
         try {
             jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
+                stmt.setInt(1, ANALISES_POR_PAGINA);
+                stmt.setInt(2, paginaValida * ANALISES_POR_PAGINA);
                 // ler fila de analise monta materiais com seus professores e fecha a consulta
                 try (ResultSet rs = stmt.executeQuery()) {
 
@@ -628,7 +645,8 @@ public class ConteudoRepository {
             throw converterErro(e);
         }
 
-        return conteudos;
+        return new org.springframework.data.domain.PageImpl<>(conteudos,
+                org.springframework.data.domain.PageRequest.of(paginaValida, ANALISES_POR_PAGINA), total);
     }
 
     // ler turmas do conteudo este metodo converte a lista de turmas do banco em lista de codigos

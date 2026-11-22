@@ -35,7 +35,9 @@ public class AdminDominiosController {
 
     // listar dominios administrativos este metodo mostra os pedidos pendentes e os enderecos aprovados
     @GetMapping("/admin/dominios")
-    public String listar(HttpSession session, Model model) {
+    public String listar(@RequestParam(defaultValue = "0") int paginaPendentes,
+                         @RequestParam(defaultValue = "0") int paginaAprovados,
+                         HttpSession session, Model model) {
 
         // exigir login administrativo encaminha sessoes sem usuario para o acesso do administrador
         if (session.getAttribute("usuarioLogado") == null) {
@@ -49,14 +51,21 @@ public class AdminDominiosController {
 
         // carregar dominios administrativos busca pedidos e aprovacoes e apresenta listas vazias em caso de falha
         try {
-            model.addAttribute("pendentes", dominioService.listarPendentes());
-            model.addAttribute("aprovados", dominioService.listarAprovados());
+            // paginar as duas listas no banco evita carregar todo o historico de pedidos e sites
+            var pendentes = dominioService.listarPendentes(paginaPendentes);
+            var aprovados = dominioService.listarAprovados(paginaAprovados);
+            model.addAttribute("pendentes", pendentes.getContent());
+            model.addAttribute("aprovados", aprovados.getContent());
+            model.addAttribute("paginaPendentes", pendentes);
+            model.addAttribute("paginaAprovados", aprovados);
 
         } catch (RuntimeException e) {
             logger.error("erro ao carregar domínios", e);
             model.addAttribute("mensagemErro", "Não foi possível carregar os pedidos de site.");
             model.addAttribute("pendentes", new ArrayList<DominioDTO>());
             model.addAttribute("aprovados", new ArrayList<DominioDTO>());
+            model.addAttribute("paginaPendentes", org.springframework.data.domain.Page.empty());
+            model.addAttribute("paginaAprovados", org.springframework.data.domain.Page.empty());
         }
 
         return "Usuarios/Admin/dominiosAdmin";
