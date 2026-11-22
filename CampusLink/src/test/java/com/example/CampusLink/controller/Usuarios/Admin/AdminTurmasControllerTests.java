@@ -8,6 +8,7 @@ import com.example.CampusLink.repository.AdminTurmaRepository;
 import com.example.CampusLink.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ExtendedModelMap;
@@ -22,6 +23,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -41,6 +43,7 @@ class AdminTurmasControllerTests {
     @BeforeEach
     void preparar() throws SQLException {
         repositorio = mock(AdminTurmaRepository.class);
+        when(repositorio.listarTurmas(any(), anyInt())).thenReturn(Page.empty());
         controlador = new AdminTurmasController(repositorio);
         ReflectionTestUtils.setField(controlador, "UsuarioRepository", mock(UsuarioRepository.class));
         admin = sessaoAdmin("admin@teste.com", "Admin@Teste.com ");
@@ -63,12 +66,12 @@ class AdminTurmasControllerTests {
         MockHttpSession adminTrocado = sessaoAdmin("admin@teste.com", "outro@teste.com");
         MockHttpSession adminSemEmail = sessaoAdmin(" ", " ");
         List<Function<MockHttpSession, String>> telas = List.of(
-                s -> controlador.listarTurmas(s, modelo),
+                s -> controlador.listarTurmas(null, 0, s, modelo),
                 s -> controlador.exibirCadastroTurma(s, modelo),
                 s -> controlador.cadastrarTurma(new cadastrarTurmaAdminDTO(), semErros(), s, modelo, redirecionamento),
                 s -> controlador.exibirEdicaoTurma(1L, s, modelo, redirecionamento),
                 s -> controlador.editarTurma(1L, new editarTurmaAdminDTO(), semErros(), s, modelo, redirecionamento),
-                s -> controlador.listarAlunosDaTurma(1L, s, modelo, redirecionamento),
+                s -> controlador.listarAlunosDaTurma(1L, null, s, modelo, redirecionamento),
                 s -> controlador.adicionarAlunoNaTurma(1L, 7L, s, redirecionamento),
                 s -> controlador.removerAlunoDaTurma(1L, 7L, s, redirecionamento),
                 s -> controlador.listarProfessoresDaTurma(1L, s, modelo, redirecionamento),
@@ -94,7 +97,7 @@ class AdminTurmasControllerTests {
         comErro.reject("nome", "Informe o nome");
 
         // executar telas
-        String lista = controlador.listarTurmas(admin, modelo);
+        String lista = controlador.listarTurmas(null, 0, admin, modelo);
         String cadastro = controlador.exibirCadastroTurma(admin, modelo);
         String gravada = controlador.cadastrarTurma(nova, semErros(), admin, modelo, redirecionamento);
         String invalida = controlador.cadastrarTurma(nova, comErro, admin, modelo, redirecionamento);
@@ -112,13 +115,13 @@ class AdminTurmasControllerTests {
     @Test
     void avisaFalhasNaListagemENoCadastro() throws SQLException {
         // preparar banco indisponivel
-        when(repositorio.listarTurmas()).thenThrow(new SQLException("banco"));
+        when(repositorio.listarTurmas(any(), anyInt())).thenThrow(new SQLException("banco"));
         when(repositorio.listarProfessoresAtivos()).thenThrow(new SQLException("banco"));
         when(repositorio.cadastrarTurma(any())).thenThrow(new SQLException("banco"));
 
         // executar telas
         ExtendedModelMap modeloLista = new ExtendedModelMap();
-        controlador.listarTurmas(admin, modeloLista);
+        controlador.listarTurmas(null, 0, admin, modeloLista);
         ExtendedModelMap modeloCadastro = new ExtendedModelMap();
         controlador.exibirCadastroTurma(admin, modeloCadastro);
         String gravacao = controlador.cadastrarTurma(new cadastrarTurmaAdminDTO(), semErros(), admin, modelo, redirecionamento);
@@ -184,7 +187,7 @@ class AdminTurmasControllerTests {
         when(repositorio.removerAlunoDaTurma(1L, 7L)).thenReturn(true);
 
         // executar telas e acoes
-        String tela = controlador.listarAlunosDaTurma(1L, admin, modelo, redirecionamento);
+        String tela = controlador.listarAlunosDaTurma(1L, null, admin, modelo, redirecionamento);
         String entrou = controlador.adicionarAlunoNaTurma(1L, 7L, admin, redirecionamento);
         String mensagemEntrada = (String) redirecionamento.getFlashAttributes().get("mensagemSucesso");
         String saiu = controlador.removerAlunoDaTurma(1L, 7L, admin, redirecionamento);
@@ -240,7 +243,7 @@ class AdminTurmasControllerTests {
         // preparar turma 2 com banco indisponivel
         when(repositorio.buscarTurmaPorId(2L)).thenThrow(new SQLException("banco"));
         List<Function<Long, String>> acoes = List.of(
-                id -> controlador.listarAlunosDaTurma(id, admin, modelo, redirecionamento),
+                id -> controlador.listarAlunosDaTurma(id, null, admin, modelo, redirecionamento),
                 id -> controlador.adicionarAlunoNaTurma(id, 7L, admin, redirecionamento),
                 id -> controlador.removerAlunoDaTurma(id, 7L, admin, redirecionamento),
                 id -> controlador.listarProfessoresDaTurma(id, admin, modelo, redirecionamento),

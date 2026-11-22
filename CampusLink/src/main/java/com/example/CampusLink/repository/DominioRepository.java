@@ -3,6 +3,9 @@ package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.DominioDTO;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Repository;
@@ -100,70 +103,48 @@ public class DominioRepository {
 
 
 
-    // listar dominios pendentes no banco este metodo consulta pedidos por ordem de chegada com o nome do professor
-    public List<DominioDTO> listarPendentes() throws SQLException {
+    public static final int DOMINIOS_POR_PAGINA = 10;
 
-        String sql = """
+    // listar dominios pendentes no banco este metodo consulta uma pagina de pedidos por ordem de chegada com o nome do professor
+    public Page<DominioDTO> listarPendentes(int pagina) throws SQLException {
+        return paginar("""
                 SELECT d.*, u."nome" AS nome_professor
                 FROM public."DOMINIOS" d
                 LEFT JOIN public."PROFESSORES" p ON p."id" = d."id_professor"
                 LEFT JOIN public."USUARIOS" u ON u."id" = p."id_usuario"
                 WHERE d."status" = 'pendente'
-                ORDER BY d."created_at" ASC
-                """;
-
-        List<DominioDTO> dominios = new ArrayList<>();
-
-        // consultar dominios pendentes busca os pedidos em analise e converte falhas do banco
-        try {
-            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
-                // ler pedidos pendentes monta os dominios com os nomes dos professores e fecha a consulta
-                try (ResultSet rs = stmt.executeQuery()) {
-
-                    while (rs.next()) {
-                        DominioDTO dominio = montar(rs);
-                        dominio.setNomeProfessor(rs.getString("nome_professor"));
-                        dominios.add(dominio);
-                    }
-                }
-                return null;
-            });
-        } catch (DataAccessException e) {
-            throw converterErro(e);
-        }
-
-        return dominios;
+                ORDER BY d."created_at" ASC, d."id" ASC
+                """, "pendente", pagina, true);
     }
 
-    // listar dominios aprovados no banco este metodo consulta os enderecos permitidos em ordem alfabetica
-    public List<DominioDTO> listarAprovados() throws SQLException {
+    // listar dominios aprovados no banco este metodo consulta uma pagina dos enderecos permitidos em ordem alfabetica
+    public Page<DominioDTO> listarAprovados(int pagina) throws SQLException {
+        return paginar("""
+                SELECT d.*
+                FROM public."DOMINIOS" d
+                WHERE d."status" = 'aprovado'
+                ORDER BY d."dominio" ASC, d."id" ASC
+                """, "aprovado", pagina, false);
+    }
 
-        String sql = """
-                SELECT *
-                FROM public."DOMINIOS"
-                WHERE "status" = 'aprovado'
-                ORDER BY "dominio" ASC
-                """;
-
-        List<DominioDTO> dominios = new ArrayList<>();
-
-        // consultar dominios aprovados busca os enderecos liberados e converte falhas do banco
+    // paginar dominios este metodo conta os registros da situacao e busca so a pagina pedida
+    private Page<DominioDTO> paginar(String sql, String status, int pagina, boolean comProfessor) throws SQLException {
+        // consultar pagina de dominios conta o total da situacao e monta apenas as linhas exibidas
         try {
-            jdbcTemplate.execute(sql, (PreparedStatementCallback<Void>) stmt -> {
-                // ler enderecos aprovados monta a lista de dominios e fecha a consulta
-                try (ResultSet rs = stmt.executeQuery()) {
-
-                    while (rs.next()) {
-                        dominios.add(montar(rs));
-                    }
+            long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.\"DOMINIOS\" WHERE \"status\" = ?", Long.class, status);
+            int paginaValida = Math.min(Math.max(0, pagina), (int) Math.max(0, (total - 1) / DOMINIOS_POR_PAGINA));
+            List<DominioDTO> dominios = jdbcTemplate.query(sql + " LIMIT " + DOMINIOS_POR_PAGINA + " OFFSET ?", (rs, linha) -> {
+                DominioDTO dominio = montar(rs);
+                // incluir professor do pedido preenche o nome quando a consulta traz o autor
+                if (comProfessor) {
+                    dominio.setNomeProfessor(rs.getString("nome_professor"));
                 }
-                return null;
-            });
+                return dominio;
+            }, paginaValida * DOMINIOS_POR_PAGINA);
+            return new PageImpl<>(dominios, PageRequest.of(paginaValida, DOMINIOS_POR_PAGINA), total);
         } catch (DataAccessException e) {
             throw converterErro(e);
         }
-
-        return dominios;
     }
 
 

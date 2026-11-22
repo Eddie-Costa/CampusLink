@@ -500,7 +500,7 @@ public class EventosController {
 
         // manter todos os eventos das turmas atende a tela de cadastro, que pode mostrar qualquer data
         if (inicio == null) {
-            return eventoService.listarEventos().stream().filter(evento -> idsTurmas.contains(evento.getIdTurma())).toList();
+            return eventoService.listarEventosDasTurmas(idsTurmas);
         }
 
         return eventoService.listarEventosDasTurmasNoPeriodo(idsTurmas, inicio, fim);

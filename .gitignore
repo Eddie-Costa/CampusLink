@@ -1,1 +1,4 @@
 logs/
+
+# massa da apresentacao com emails reais da equipe e senha das contas
+banco-de-dados/04_massa_equipe.sql

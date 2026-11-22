@@ -2,6 +2,8 @@
 package com.example.CampusLink.repository;
 
 import com.example.CampusLink.model.Evento;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,6 +57,30 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
             ORDER BY ec.id_evento, c.titulo
             """, nativeQuery = true)
     List<Object[]> buscarConteudosDosEventos(@Param("idsEventos") Collection<Long> idsEventos);
+
+    // buscar eventos das turmas este metodo traz so os eventos das turmas da pessoa, sem carregar a agenda inteira
+    @Query("SELECT e FROM Evento e WHERE e.idTurma IN :turmas ORDER BY e.inicio")
+    List<Evento> buscarDasTurmas(@Param("turmas") Collection<Long> turmas);
+
+    // buscar eventos para o administrador este metodo filtra por texto tipo e situacao e devolve so uma pagina
+    @Query(value = """
+            SELECT e.*
+            FROM public."EVENTOS" e
+            LEFT JOIN public."TURMAS" t ON t.id = e.id_turma
+            WHERE (:padrao = '' OR e.titulo ILIKE :padrao OR t.nome_turma ILIKE :padrao)
+              AND (:tipo = '' OR e.tipo = :tipo)
+              AND (:status = '' OR e.status = :status)
+            ORDER BY e.id DESC
+            """, countQuery = """
+            SELECT COUNT(*)
+            FROM public."EVENTOS" e
+            LEFT JOIN public."TURMAS" t ON t.id = e.id_turma
+            WHERE (:padrao = '' OR e.titulo ILIKE :padrao OR t.nome_turma ILIKE :padrao)
+              AND (:tipo = '' OR e.tipo = :tipo)
+              AND (:status = '' OR e.status = :status)
+            """, nativeQuery = true)
+    Page<Evento> buscarParaAdmin(@Param("padrao") String padrao, @Param("tipo") String tipo,
+                                 @Param("status") String status, Pageable pagina);
 
     // buscar eventos das turmas no periodo este metodo traz os eventos que aparecem em algum dia da janela informada
     @Query("SELECT e FROM Evento e WHERE e.idTurma IN :turmas AND e.inicio < :fim AND (e.fim IS NULL OR e.fim >= :inicio) ORDER BY e.inicio")

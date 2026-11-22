@@ -211,17 +211,19 @@ class ConteudoRepositoryTests {
         // preparar material com autor e total filtrado
         banco.quandoConsultar("AS nome_professor", linha("id", 10L, "nome_professor", "Prof. Ana", "turma_id", null));
         banco.quandoConsultar("SELECT COUNT(*) AS quantidade", linha("quantidade", 3));
+        banco.quandoConsultar("SELECT COUNT(*) FROM public.\"CONTEUDOS\" c WHERE", linha("count", 1L));
 
         // executar consultas do administrador
         List<ConteudoDTO> pagina = conteudos.listarTodosParaAdminPaginado(1, "ana", "suspenso_denuncia");
         int total = conteudos.contarFiltradosParaAdmin(null, null);
-        List<ConteudoDTO> revisao = conteudos.listarParaAnaliseAdmin();
+        List<ConteudoDTO> revisao = conteudos.listarParaAnaliseAdmin(0).getContent();
 
         // verificar autor filtros e fila de revisao
         assertEquals("Prof. Ana", pagina.get(0).getNomeProfessor());
         assertEquals(List.of("suspenso_denuncia", "suspenso_denuncia", "ana", "ana", "ana", "ana", 10L), banco.comandos().get(0).valores());
         assertEquals(3, total);
         assertEquals("Prof. Ana", revisao.get(0).getNomeProfessor());
+        assertEquals(List.of(10, 0), banco.ultimo("LIMIT ? OFFSET ?").valores());
     }
 
     // testar dados soltos do material este teste confere autor e situacao e o retorno nulo do material inexistente

@@ -7,6 +7,9 @@ import com.example.CampusLink.dto.Admin.turmaAdminDTO;
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -33,48 +36,82 @@ public class AdminTurmaRepository {
         this.transacao.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
-    // listar turmas no banco administrativo este metodo consulta responsavel e quantidades de participantes
+    public static final int TURMAS_POR_PAGINA = 20;
+    public static final int ALUNOS_SUGERIDOS = 20;
+
+    private static final String SQL_TURMAS = """
+            SELECT
+                t.id,
+                t.nome_turma,
+                t.descricao,
+                t.id_proprietario,
+                u.nome AS nome_proprietario,
+                (
+                    SELECT COUNT(*)
+                    FROM public."ALUNO_TURMA" at
+                    WHERE at.id_turma = t.id
+                ) AS quantidade_alunos,
+                (
+                    SELECT COUNT(*)
+                    FROM public."PROFESSOR_TURMA" pt
+                    WHERE pt.id_turma = t.id
+                ) AS quantidade_professores
+            FROM public."TURMAS" t
+            LEFT JOIN public."PROFESSORES" p ON p.id = t.id_proprietario
+            LEFT JOIN public."USUARIOS" u ON u.id = p.id_usuario
+            """;
+
+    // listar turmas no banco administrativo este metodo consulta todas para os campos de escolha de turma
     public List<turmaAdminDTO> listarTurmas() throws SQLException {
-
-        String sql = """
-                SELECT
-                    t.id,
-                    t.nome_turma,
-                    t.descricao,
-                    t.id_proprietario,
-                    u.nome AS nome_proprietario,
-                    (
-                        SELECT COUNT(*)
-                        FROM public."ALUNO_TURMA" at
-                        WHERE at.id_turma = t.id
-                    ) AS quantidade_alunos,
-                    (
-                        SELECT COUNT(*)
-                        FROM public."PROFESSOR_TURMA" pt
-                        WHERE pt.id_turma = t.id
-                    ) AS quantidade_professores
-                FROM public."TURMAS" t
-                LEFT JOIN public."PROFESSORES" p ON p.id = t.id_proprietario
-                LEFT JOIN public."USUARIOS" u ON u.id = p.id_usuario
-                ORDER BY t.nome_turma
-                """;
-
         // consultar turmas no banco monta os dados e contagens e converte falhas da consulta
         try {
-            return jdbcTemplate.query(sql, (rs, linha) -> {
-                turmaAdminDTO turma = new turmaAdminDTO();
-                turma.setId(rs.getLong("id"));
-                turma.setNomeTurma(rs.getString("nome_turma"));
-                turma.setDescricao(rs.getString("descricao"));
-                turma.setIdProprietario(rs.getObject("id_proprietario", Long.class));
-                turma.setNomeProprietario(rs.getString("nome_proprietario"));
-                turma.setQuantidadeAlunos(rs.getInt("quantidade_alunos"));
-                turma.setQuantidadeProfessores(rs.getInt("quantidade_professores"));
-                return turma;
-            });
+            return jdbcTemplate.query(SQL_TURMAS + " ORDER BY t.nome_turma", (rs, linha) -> montarTurma(rs));
         } catch (DataAccessException e) {
             throw converterErro(e);
         }
+    }
+
+    // listar turmas paginadas este metodo filtra pelo nome da turma ou do responsavel e traz so uma pagina
+    public Page<turmaAdminDTO> listarTurmas(String busca, int pagina) throws SQLException {
+        String filtro = "";
+        Object[] parametros = new Object[0];
+
+        // filtrar turmas procura o trecho no nome da turma ou no nome do professor responsavel
+        if (busca != null && !busca.isBlank()) {
+            String trecho = "%" + busca.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            filtro = " WHERE (t.nome_turma ILIKE ? OR u.nome ILIKE ?)";
+            parametros = new Object[]{trecho, trecho};
+        }
+
+        // consultar pagina de turmas conta o total filtrado e calcula as quantidades so das turmas exibidas
+        try {
+            long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.\"TURMAS\" t"
+                    + " LEFT JOIN public.\"PROFESSORES\" p ON p.id = t.id_proprietario"
+                    + " LEFT JOIN public.\"USUARIOS\" u ON u.id = p.id_usuario" + filtro, Long.class, parametros);
+            int paginaValida = Math.min(Math.max(0, pagina), (int) Math.max(0, (total - 1) / TURMAS_POR_PAGINA));
+
+            Object[] parametrosPagina = java.util.Arrays.copyOf(parametros, parametros.length + 1);
+            parametrosPagina[parametros.length] = paginaValida * TURMAS_POR_PAGINA;
+            List<turmaAdminDTO> turmas = jdbcTemplate.query(SQL_TURMAS + filtro
+                    + " ORDER BY t.nome_turma, t.id LIMIT " + TURMAS_POR_PAGINA + " OFFSET ?",
+                    (rs, linha) -> montarTurma(rs), parametrosPagina);
+            return new PageImpl<>(turmas, PageRequest.of(paginaValida, TURMAS_POR_PAGINA), total);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // montar turma administrativa este metodo le os dados da turma e as quantidades de participantes
+    private turmaAdminDTO montarTurma(ResultSet rs) throws SQLException {
+        turmaAdminDTO turma = new turmaAdminDTO();
+        turma.setId(rs.getLong("id"));
+        turma.setNomeTurma(rs.getString("nome_turma"));
+        turma.setDescricao(rs.getString("descricao"));
+        turma.setIdProprietario(rs.getObject("id_proprietario", Long.class));
+        turma.setNomeProprietario(rs.getString("nome_proprietario"));
+        turma.setQuantidadeAlunos(rs.getInt("quantidade_alunos"));
+        turma.setQuantidadeProfessores(rs.getInt("quantidade_professores"));
+        return turma;
     }
 
     // listar professores ativos no banco este metodo consulta as contas disponiveis para assumir turmas
@@ -318,8 +355,10 @@ public class AdminTurmaRepository {
     }
 
     // listar alunos disponiveis no banco este metodo busca contas ativas ainda sem vinculo com a turma
-    public List<usuarioAdminDTO> listarAlunosDisponiveis(Long idTurma) throws SQLException {
+    public List<usuarioAdminDTO> listarAlunosDisponiveis(Long idTurma, String busca) throws SQLException {
 
+        // buscar alunos limita a sugestao a poucos nomes, ja que sao centenas de alunos ativos
+        String trecho = "%" + (busca == null ? "" : busca.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")) + "%";
         String sql = """
                 SELECT
                     a.id AS id_aluno,
@@ -338,12 +377,13 @@ public class AdminTurmaRepository {
                       WHERE at.id_aluno = a.id
                         AND at.id_turma = ?
                   )
+                  AND (u.nome ILIKE ? OR a.rgm ILIKE ?)
                 ORDER BY u.nome
-                """;
+                """ + " LIMIT " + ALUNOS_SUGERIDOS;
 
         // consultar alunos disponiveis busca candidatos ao vinculo e converte falhas do banco
         try {
-            return jdbcTemplate.query(sql, (rs, linha) -> montarAluno(rs), idTurma);
+            return jdbcTemplate.query(sql, (rs, linha) -> montarAluno(rs), idTurma, trecho, trecho);
         } catch (DataAccessException e) {
             throw converterErro(e);
         }

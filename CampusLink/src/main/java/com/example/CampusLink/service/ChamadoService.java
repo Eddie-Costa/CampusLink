@@ -4,6 +4,7 @@ package com.example.CampusLink.service;
 import com.example.CampusLink.dto.ChamadoDTO;
 import com.example.CampusLink.dto.DadosUsuarioDTO;
 import com.example.CampusLink.repository.ChamadoRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,13 +40,13 @@ public class ChamadoService {
     }
 
     // listar atendimentos para administrador este metodo confere o perfil e valida o filtro de situacao
-    public List<ChamadoDTO> listarParaAdmin(DadosUsuarioDTO admin, String status) {
+    public Page<ChamadoDTO> listarParaAdmin(DadosUsuarioDTO admin, String status, int pagina) {
         validarAdmin(admin);
         // validar filtro de chamados rejeita situacoes que nao fazem parte dos filtros aceitos
         if (!List.of("", "aberto", "respondido", "concluido").contains(status)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Situação inválida");
         }
-        return chamadoRepository.listarParaAdmin(status);
+        return chamadoRepository.listarParaAdmin(status, pagina);
     }
 
     // buscar atendimento do titular este metodo confere o usuario e carrega as respostas do seu pedido

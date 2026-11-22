@@ -262,10 +262,10 @@ public class ConteudoService {
     }
 
     // consultar fila de analise este metodo lista os materiais enviados para revisao e trata falhas
-    public List<ConteudoDTO> listarParaAnaliseAdmin() {
-        // listar conteudos em analise consulta os materiais enviados para revisao e trata falhas
+    public org.springframework.data.domain.Page<ConteudoDTO> listarParaAnaliseAdmin(int pagina) {
+        // listar conteudos em analise consulta uma pagina dos materiais enviados para revisao e trata falhas
         try {
-            return conteudoRepository.listarParaAnaliseAdmin();
+            return conteudoRepository.listarParaAnaliseAdmin(pagina);
 
         } catch (SQLException e) {
             throw new RuntimeException("Não foi possível listar os conteúdos enviados para análise.", e);

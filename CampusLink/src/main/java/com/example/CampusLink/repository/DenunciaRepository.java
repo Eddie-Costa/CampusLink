@@ -5,6 +5,7 @@ import com.example.CampusLink.dto.DenunciaDTO;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -12,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // persistencia de relatos esta classe grava motivos identifica repeticoes e atualiza decisoes de analise
 @Repository
@@ -225,23 +228,7 @@ public class DenunciaRepository {
                 try (ResultSet rs = stmt.executeQuery()) {
 
                     while (rs.next()) {
-
-                        DenunciaDTO denuncia = new DenunciaDTO();
-                        denuncia.setId(rs.getLong("id"));
-                        denuncia.setIdConteudo(rs.getLong("id_conteudo"));
-                        denuncia.setIdAluno(rs.getLong("id_aluno"));
-                        denuncia.setIdProfessor(rs.getLong("id_professor"));
-                        denuncia.setMotivo(rs.getString("motivo"));
-                        denuncia.setStatus(rs.getString("status"));
-                        denuncia.setNomeAluno(rs.getString("nome_aluno"));
-                        Timestamp createdAt = rs.getTimestamp("created_at");
-
-                        // preencher data do relato inclui a data de criacao quando ela existe
-                        if (createdAt != null) {
-                            denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
-                        }
-
-                        denuncias.add(denuncia);
+                        denuncias.add(montarDenuncia(rs));
                     }
                 }
                 return null;
@@ -251,6 +238,58 @@ public class DenunciaRepository {
         }
 
         return denuncias;
+    }
+
+    // listar denuncias de varios materiais este metodo busca tudo em uma consulta e agrupa por conteudo
+    public Map<Long, List<DenunciaDTO>> listarPorConteudos(List<Long> idsConteudos) throws SQLException {
+        Map<Long, List<DenunciaDTO>> denuncias = new HashMap<>();
+
+        // ignorar lista vazia evita consulta sem conteudos
+        if (idsConteudos.isEmpty()) {
+            return denuncias;
+        }
+
+        String sql = """
+                SELECT d.*, u."nome" AS nome_aluno
+                FROM public."DENUNCIAS" d
+                LEFT JOIN public."ALUNOS" a
+                    ON a."id" = d."id_aluno"
+                LEFT JOIN public."USUARIOS" u
+                    ON u."id" = a."id_usuario"
+                WHERE d."id_conteudo" = ANY(?)
+                ORDER BY d."id_conteudo", d."created_at" DESC
+                """;
+
+        // consultar relatos de todos os conteudos de uma vez evita uma consulta por conteudo da pagina
+        try {
+            jdbcTemplate.query(sql, (PreparedStatementSetter) stmt ->
+                    stmt.setArray(1, stmt.getConnection().createArrayOf("bigint", idsConteudos.toArray())), rs -> {
+                DenunciaDTO denuncia = montarDenuncia(rs);
+                denuncias.computeIfAbsent(denuncia.getIdConteudo(), id -> new ArrayList<>()).add(denuncia);
+            });
+            return denuncias;
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // montar denuncia este metodo le autor motivo situacao e data de um relato
+    private DenunciaDTO montarDenuncia(ResultSet rs) throws SQLException {
+        DenunciaDTO denuncia = new DenunciaDTO();
+        denuncia.setId(rs.getLong("id"));
+        denuncia.setIdConteudo(rs.getLong("id_conteudo"));
+        denuncia.setIdAluno(rs.getLong("id_aluno"));
+        denuncia.setIdProfessor(rs.getLong("id_professor"));
+        denuncia.setMotivo(rs.getString("motivo"));
+        denuncia.setStatus(rs.getString("status"));
+        denuncia.setNomeAluno(rs.getString("nome_aluno"));
+        Timestamp createdAt = rs.getTimestamp("created_at");
+
+        // preencher data do relato inclui a data de criacao quando ela existe
+        if (createdAt != null) {
+            denuncia.setCreatedAt(createdAt.toInstant().atOffset(ZoneOffset.UTC));
+        }
+        return denuncia;
     }
 
     // atualizar denuncias pendentes este metodo aplica a decisao de analise aos relatos do conteudo

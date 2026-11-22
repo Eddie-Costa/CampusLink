@@ -52,6 +52,14 @@
                 </tbody>
             </table>
         </div>
+        <nav th:if="${paginaChamados.totalPages > 1}" aria-label="Paginação dos chamados"
+             class="d-flex flex-wrap justify-content-center align-items-center gap-3 pt-3">
+            <a th:if="${paginaChamados.hasPrevious()}" class="btn btn-outline-primary"
+               th:href="@{/admin/chamados(pagina=${paginaChamados.number - 1},status=${statusSelecionado})}">Anterior</a>
+            <span aria-live="polite" th:text="${'Página ' + (paginaChamados.number + 1) + ' de ' + paginaChamados.totalPages + ' (' + paginaChamados.totalElements + ' chamados)'}"></span>
+            <a th:if="${paginaChamados.hasNext()}" class="btn btn-outline-primary"
+               th:href="@{/admin/chamados(pagina=${paginaChamados.number + 1},status=${statusSelecionado})}">Próxima</a>
+        </nav>
     </section>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>

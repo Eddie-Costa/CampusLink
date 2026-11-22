@@ -7,6 +7,7 @@ import com.example.CampusLink.dto.DadosUsuarioDTO;
 import com.example.CampusLink.repository.ChamadoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -83,12 +84,12 @@ class ChamadoFluxoTests {
     @Test
     void filtraChamadosDoAdministrador() {
         // preparar chamados abertos
-        when(repositorio.listarParaAdmin("aberto")).thenReturn(List.of(chamado("aberto")));
+        when(repositorio.listarParaAdmin("aberto", 0)).thenReturn(new PageImpl<>(List.of(chamado("aberto"))));
 
         // executar filtros
-        List<ChamadoDTO> abertos = chamados.listarParaAdmin(admin, "aberto");
-        ResponseStatusException invalida = assertThrows(ResponseStatusException.class, () -> chamados.listarParaAdmin(admin, "apagado"));
-        ResponseStatusException semPermissao = assertThrows(ResponseStatusException.class, () -> chamados.listarParaAdmin(aluno, ""));
+        List<ChamadoDTO> abertos = chamados.listarParaAdmin(admin, "aberto", 0).getContent();
+        ResponseStatusException invalida = assertThrows(ResponseStatusException.class, () -> chamados.listarParaAdmin(admin, "apagado", 0));
+        ResponseStatusException semPermissao = assertThrows(ResponseStatusException.class, () -> chamados.listarParaAdmin(aluno, "", 0));
 
         // verificar resultado e recusas
         assertEquals(1, abertos.size());

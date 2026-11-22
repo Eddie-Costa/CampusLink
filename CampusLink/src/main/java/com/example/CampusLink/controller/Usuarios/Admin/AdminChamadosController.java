@@ -9,6 +9,7 @@ import com.example.CampusLink.service.ChamadoService;
 import com.example.CampusLink.service.emailService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -49,11 +50,15 @@ public class AdminChamadosController {
 
     // listar chamados administrativos este metodo carrega os pedidos conforme a situacao escolhida
     @GetMapping("/admin/chamados")
-    public String listar(@RequestParam(defaultValue = "") String status, HttpSession session, Model model) {
+    public String listar(@RequestParam(defaultValue = "") String status, @RequestParam(defaultValue = "0") int pagina,
+                         HttpSession session, Model model) {
         DadosUsuarioDTO admin = administrador(session);
         // exigir administrador identificado retorna ao login administrativo quando a conta nao foi reconhecida
         if (admin == null) return "redirect:/admin/login";
-        model.addAttribute("chamados", chamadoService.listarParaAdmin(admin, status));
+        // paginar no banco evita carregar todos os chamados do historico a cada acesso
+        Page<ChamadoDTO> paginaChamados = chamadoService.listarParaAdmin(admin, status, pagina);
+        model.addAttribute("chamados", paginaChamados.getContent());
+        model.addAttribute("paginaChamados", paginaChamados);
         model.addAttribute("statusSelecionado", status);
         return "Usuarios/Admin/chamadosAdmin";
     }
