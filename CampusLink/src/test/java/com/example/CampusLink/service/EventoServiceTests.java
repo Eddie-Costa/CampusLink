@@ -8,6 +8,9 @@ import com.example.CampusLink.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataRetrievalFailureException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.sql.SQLException;
@@ -22,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -122,6 +126,23 @@ class EventoServiceTests {
         assertEquals(2, encontrado.getNomesConteudos().size());
         assertNull(inexistente);
         assertNull(semCodigo);
+    }
+
+    // testar lista do administrador este teste confere o filtro enviado ao banco e a volta para a ultima pagina
+    @Test
+    void paginaEventosDoAdministradorNoBanco() {
+        // preparar banco com 30 eventos encontrados: a pagina 9 vem vazia e a pagina 1 traz o evento
+        when(eventos.buscarParaAdmin(eq("%50\\%%"), eq("PROVA"), eq(""), eq(PageRequest.of(9, 25))))
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(9, 25), 30));
+        when(eventos.buscarParaAdmin(eq("%50\\%%"), eq("PROVA"), eq(""), eq(PageRequest.of(1, 25))))
+                .thenReturn(new PageImpl<>(List.of(evento(5L)), PageRequest.of(1, 25), 30));
+
+        // executar busca pedindo uma pagina alem da ultima
+        Page<Evento> pagina = servico.listarEventosParaAdmin(" 50% ", "PROVA", "", 9, 25);
+
+        // verificar pagina corrigida e detalhes preenchidos so nos eventos da pagina
+        assertEquals(1, pagina.getNumber());
+        assertEquals("Calculo", pagina.getContent().get(0).getNomeTurma());
     }
 
     // testar falha na listagem este teste confere que o erro do banco chega ao controlador

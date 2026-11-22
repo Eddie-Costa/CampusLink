@@ -77,10 +77,10 @@ public class DominioService {
 
 
     // consultar pedidos pendentes de dominio este metodo recupera a fila de analise e trata falhas
-    public List<DominioDTO> listarPendentes() {
+    public org.springframework.data.domain.Page<DominioDTO> listarPendentes(int pagina) {
         // listar dominios pendentes consulta as solicitacoes que aguardam analise
         try {
-            return dominioRepository.listarPendentes();
+            return dominioRepository.listarPendentes(pagina);
         } catch (SQLException e) {
             logger.error("Erro ao listar solicitações pendentes.", e);
             throw new RuntimeException("Não foi possível listar as solicitações pendentes.", e);
@@ -88,10 +88,10 @@ public class DominioService {
     }
 
     // consultar enderecos aprovados este metodo recupera os dominios permitidos e trata falhas
-    public List<DominioDTO> listarAprovados() {
+    public org.springframework.data.domain.Page<DominioDTO> listarAprovados(int pagina) {
         // listar dominios aprovados consulta os dominios autorizados e trata falhas
         try {
-            return dominioRepository.listarAprovados();
+            return dominioRepository.listarAprovados(pagina);
         } catch (SQLException e) {
             logger.error("Erro ao listar domínios autorizados.", e);
             throw new RuntimeException("Não foi possível listar os sites liberados.", e);

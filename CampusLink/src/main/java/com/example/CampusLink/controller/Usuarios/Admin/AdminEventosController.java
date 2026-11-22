@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,7 +31,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -95,36 +95,14 @@ public class AdminEventosController {
 
         // listar eventos administrativos filtra no servidor e envia so uma pagina para a tela nao carregar todos os eventos
         try {
-            List<Evento> todos = eventoService.listarEventos();
-            String termoMinusculo = termo.toLowerCase(Locale.ROOT);
-            String tipoBuscado = tipoFiltro;
-            String statusBuscado = statusFiltro;
+            // filtrar e paginar no banco traz so os eventos da pagina, os mais recentes primeiro
+            Page<Evento> paginaEventos = eventoService.listarEventosParaAdmin(termo, tipoFiltro, statusFiltro, pagina, EVENTOS_POR_PAGINA);
 
-            // os mais recentes primeiro mantem uma ordem fixa para mostrar mais sem repetir nem pular eventos
-            List<Evento> filtrados = todos.stream()
-                    .filter(evento -> termoMinusculo.isEmpty()
-                            || (evento.getNome() != null && evento.getNome().toLowerCase(Locale.ROOT).contains(termoMinusculo))
-                            || (evento.getNomeTurma() != null && evento.getNomeTurma().toLowerCase(Locale.ROOT).contains(termoMinusculo)))
-                    .filter(evento -> tipoBuscado.isEmpty() || tipoBuscado.equalsIgnoreCase(evento.getTipo()))
-                    .filter(evento -> statusBuscado.isEmpty() || statusBuscado.equalsIgnoreCase(evento.getStatus()))
-                    .sorted(Comparator.comparing(Evento::getId, Comparator.nullsLast(Comparator.reverseOrder())))
-                    .toList();
-
-            int totalPaginas = Math.max(1, (filtrados.size() + EVENTOS_POR_PAGINA - 1) / EVENTOS_POR_PAGINA);
-
-            // limitar pagina consultada usa a ultima pagina quando o numero pedido ultrapassa os resultados
-            if (pagina >= totalPaginas) {
-                pagina = totalPaginas - 1;
-            }
-
-            int inicio = pagina * EVENTOS_POR_PAGINA;
-            int fim = Math.min(filtrados.size(), inicio + EVENTOS_POR_PAGINA);
-
-            model.addAttribute("eventos", filtrados.subList(inicio, fim));
-            model.addAttribute("totalEventos", todos.size());
-            model.addAttribute("totalFiltrados", filtrados.size());
-            model.addAttribute("proximaPagina", pagina + 1);
-            model.addAttribute("temMais", fim < filtrados.size());
+            model.addAttribute("eventos", paginaEventos.getContent());
+            model.addAttribute("totalEventos", eventoService.contarEventos());
+            model.addAttribute("totalFiltrados", paginaEventos.getTotalElements());
+            model.addAttribute("proximaPagina", paginaEventos.getNumber() + 1);
+            model.addAttribute("temMais", paginaEventos.hasNext());
 
             // responder apenas linhas devolve somente o corpo da tabela quando a busca vem do proprio navegador
             if (fragmento) {

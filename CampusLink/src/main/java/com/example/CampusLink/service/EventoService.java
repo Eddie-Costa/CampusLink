@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -186,6 +188,35 @@ public class EventoService {
         }
     }
 
+
+    // listar eventos das turmas este metodo consulta so as turmas informadas e completa turma e materiais
+    public List<Evento> listarEventosDasTurmas(Collection<Long> idsTurmas) {
+        // ignorar consulta sem turmas devolve lista vazia quando a pessoa nao participa de turmas
+        if (idsTurmas == null || idsTurmas.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Evento> eventos = eventoRepository.buscarDasTurmas(idsTurmas);
+        preencherDetalhesDosEventos(eventos);
+        return eventos;
+    }
+
+    // contar eventos este metodo informa o total cadastrado sem carregar os eventos
+    public long contarEventos() {
+        return eventoRepository.count();
+    }
+
+    // listar eventos para o administrador este metodo filtra e pagina no banco e completa so os eventos da pagina
+    public Page<Evento> listarEventosParaAdmin(String busca, String tipo, String status, int pagina, int tamanho) {
+        String padrao = busca == null || busca.isBlank() ? ""
+                : "%" + busca.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+        Page<Evento> eventos = eventoRepository.buscarParaAdmin(padrao, tipo, status, PageRequest.of(Math.max(0, pagina), tamanho));
+        // voltar para a ultima pagina quando o numero pedido passa do total de resultados
+        if (eventos.getContent().isEmpty() && eventos.getTotalPages() > 0 && pagina >= eventos.getTotalPages()) {
+            eventos = eventoRepository.buscarParaAdmin(padrao, tipo, status, PageRequest.of(eventos.getTotalPages() - 1, tamanho));
+        }
+        preencherDetalhesDosEventos(eventos.getContent());
+        return eventos;
+    }
 
     // listar eventos das turmas no periodo este metodo consulta so os eventos visiveis na janela e completa turma e materiais
     public List<Evento> listarEventosDasTurmasNoPeriodo(Collection<Long> idsTurmas, LocalDateTime inicio, LocalDateTime fim) {

@@ -81,6 +81,8 @@ class EventosControllerTests {
         // agenda busca so as turmas do usuario no mes visivel e a exclusao busca o evento pelo id
         when(eventos.listarEventosDasTurmasNoPeriodo(any(), any(), any())).thenAnswer(chamada -> List.of(eventoDaTurma, eventoDeOutraTurma).stream()
                 .filter(evento -> ((java.util.Collection<?>) chamada.getArgument(0)).contains(evento.getIdTurma())).toList());
+        when(eventos.listarEventosDasTurmas(any())).thenAnswer(chamada -> List.of(eventoDaTurma, eventoDeOutraTurma).stream()
+                .filter(evento -> ((java.util.Collection<?>) chamada.getArgument(0)).contains(evento.getIdTurma())).toList());
         when(eventos.buscarEventoPorId(5L)).thenReturn(eventoDaTurma);
         when(eventos.buscarEventoPorId(6L)).thenReturn(eventoDeOutraTurma);
         when(conteudos.listarPorTurma(1L)).thenReturn(List.of(material(10L), material(11L)));
