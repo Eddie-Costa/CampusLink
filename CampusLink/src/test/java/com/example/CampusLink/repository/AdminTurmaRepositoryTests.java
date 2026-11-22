@@ -166,7 +166,7 @@ class AdminTurmaRepositoryTests {
 
         // executar listagens
         List<usuarioAdminDTO> alunos = turmas.listarAlunosDaTurma(1L);
-        List<usuarioAdminDTO> alunosLivres = turmas.listarAlunosDisponiveis(1L);
+        List<usuarioAdminDTO> alunosLivres = turmas.listarAlunosDisponiveis(1L, " bi ");
         List<usuarioAdminDTO> professores = turmas.listarProfessoresDaTurma(1L);
         List<usuarioAdminDTO> professoresLivres = turmas.listarProfessoresDisponiveis(1L);
 
@@ -176,6 +176,23 @@ class AdminTurmaRepositoryTests {
         assertNull(professores.get(0).getDataNasc());
         assertEquals("P1", professoresLivres.get(0).getIdentificador());
         assertEquals(List.of(1L, 1L), banco.ultimo("t.id_proprietario = p.id").valores());
+        assertEquals(List.of(1L, "%bi%", "%bi%"), banco.ultimo("AND (u.nome ILIKE ? OR a.rgm ILIKE ?)").valores());
+        assertTrue(banco.executou("LIMIT 20"));
+    }
+
+    // testar turmas paginadas este teste confere a busca pelo nome e a pagina limitada ao total
+    @Test
+    void paginaTurmasNoBanco() throws SQLException {
+        // preparar 25 turmas encontradas, o que da 2 paginas de 20
+        banco.quandoConsultar("SELECT COUNT(*) FROM public.\"TURMAS\" t", linha("count", 25L));
+
+        // executar busca pedindo uma pagina alem da ultima
+        var pagina = turmas.listarTurmas(" calc ", 5);
+
+        // verificar filtro, pagina corrigida e deslocamento enviado ao banco
+        assertEquals(1, pagina.getNumber());
+        assertEquals(2, pagina.getTotalPages());
+        assertEquals(List.of("%calc%", "%calc%", 20), banco.ultimo("ORDER BY t.nome_turma, t.id LIMIT").valores());
     }
 
     // testar entrada do aluno este teste confere a inclusao na lista e o vinculo com situacao verde
