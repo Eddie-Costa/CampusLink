@@ -246,6 +246,41 @@ class ViabilidadeServiceTests {
         assertEquals(580, plano.stream().filter(sessao -> sessao.getData() == null).mapToInt(SessaoEstudoDTO::getMinutos).sum());
     }
 
+    // testar fim de semana no plano este teste confere que sabado e domingo so usam as horas cadastradas, sem horas extras
+    @Test
+    void naoSugereHorasExtrasNoFimDeSemana() {
+        // preparar prova na segunda seguinte (hoje e terca) com 16h40 de estudo e 2h livres so no sabado
+        Evento prova = evento(1L, "Prova", 6, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 1000, "alta")));
+        LocalDate sabado = HOJE.plusDays(4);
+        LocalDate domingo = HOJE.plusDays(5);
+        horasPorDia.put(sabado, 2);
+
+        // executar plano
+        List<SessaoEstudoDTO> plano = viabilidade.planejar(HOJE, List.of(prova), conteudosPorEvento, Set.of(), horasPorDia);
+
+        // verificar sabado so com as 2h cadastradas, domingo vazio e as horas extras apenas nos dias uteis
+        assertEquals(120, minutos(plano, sabado, false));
+        assertEquals(0, minutos(plano, sabado, true));
+        assertTrue(plano.stream().noneMatch(sessao -> domingo.equals(sessao.getData())));
+        assertTrue(plano.stream().filter(SessaoEstudoDTO::isSugestao).allMatch(sessao -> !DiasDeDescanso.ehDescanso(sessao.getData())));
+    }
+
+    // testar fim de semana no risco este teste confere que o maximo possivel conta so as horas cadastradas no fim de semana
+    @Test
+    void fimDeSemanaContaSoAsHorasCadastradasNoMaximo() {
+        // preparar prova na segunda com 35h: 4 dias uteis x 8h + 2h no sabado = 34h possiveis
+        Evento prova = evento(1L, "Prova", 6, 19, "ALTA");
+        conteudosPorEvento.put(1L, List.of(conteudo(10L, 2100, "alta")));
+        horasPorDia.put(HOJE.plusDays(4), 2);
+
+        // executar calculo da viabilidade
+        ViabilidadeDTO resumo = resumo(viabilidade.calcular(ALUNO, HOJE, List.of(prova), conteudosPorEvento, Set.of(), horasPorDia), 1L);
+
+        // verificar impossivel: antes o fim de semana contava 8h por dia e a prova ficava em replanejar
+        assertEquals("vermelho", resumo.getNivel());
+    }
+
     // montar evento do teste este metodo cria um evento da turma 1 a alguns dias de hoje no horario informado
     private Evento evento(Long id, String nome, int diasAteEvento, int hora, String prioridade) {
         LocalDateTime inicio = LocalDateTime.of(HOJE.plusDays(diasAteEvento), LocalTime.of(hora, 0));
