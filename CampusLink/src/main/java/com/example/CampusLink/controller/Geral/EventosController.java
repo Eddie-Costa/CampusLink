@@ -494,7 +494,10 @@ public class EventosController {
         if (eventos == null) {
             eventos = eventoService.listarEventos();
         }
-        model.addAttribute("eventos", eventos);
+        // esconder cancelados: evento cancelado nao acontece, entao nao aparece no calendario (o admin ainda ve na gestao)
+        model.addAttribute("eventos", eventos.stream()
+                .filter(evento -> !"CANCELADO".equalsIgnoreCase(evento.getStatus()))
+                .toList());
     }
 
 
