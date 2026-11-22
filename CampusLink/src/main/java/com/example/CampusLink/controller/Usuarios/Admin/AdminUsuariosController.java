@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -49,9 +50,12 @@ public class AdminUsuariosController {
         this.UsuarioRepository = UsuarioRepository;
     }
 
-    // listar usuarios administrativos este metodo carrega as contas e conta os administradores ativos
+    // listar usuarios administrativos este metodo carrega uma pagina de contas e conta os administradores ativos
     @GetMapping("/admin/usuarios")
-    public String listarUsuarios(@RequestParam(required = false) String email, HttpSession session, Model model) {
+    public String listarUsuarios(@RequestParam(required = false) String busca,
+                                 @RequestParam(required = false) String email,
+                                 @RequestParam(defaultValue = "0") int pagina,
+                                 HttpSession session, Model model) {
 
 
         // exigir login administrativo encaminha sessoes sem usuario para o acesso do administrador
@@ -67,26 +71,17 @@ public class AdminUsuariosController {
 
         // carregar usuarios administrativos consulta contas e administradores ativos e trata falhas do banco
         try {
-            List<usuarioAdminDTO> usuarios = adminUsuarioRepository.listarUsuarios();
-            model.addAttribute("usuarios", usuarios);
+            // filtrar e paginar no banco evita carregar todas as contas para mostrar so uma pagina
+            Page<usuarioAdminDTO> paginaUsuarios = adminUsuarioRepository.listarUsuarios(busca, email, pagina);
+            model.addAttribute("usuarios", paginaUsuarios.getContent());
+            model.addAttribute("paginaUsuarios", paginaUsuarios);
+            model.addAttribute("busca", busca == null ? "" : busca.trim());
             model.addAttribute("adminLogado", adminUsuarioRepository.buscarAdministradorPorEmail((String) session.getAttribute("email2FA")));
-
-            int totalAdministradoresAtivos = 0;
-
-            for (usuarioAdminDTO usuario : usuarios) {
-                // contar administradores ativos soma apenas contas administrativas que estao habilitadas
-                if ("Administrador".equals(usuario.getPerfil()) && usuario.isStatus()) {
-                    totalAdministradoresAtivos++;
-                }
-            }
-
-            model.addAttribute("totalAdministradoresAtivos", totalAdministradoresAtivos);
+            model.addAttribute("totalAdministradoresAtivos", adminUsuarioRepository.totalAdministradoresAtivos());
 
             // buscar por email completo compara no servidor porque a tela so recebe o email mascarado
             if (email != null && !email.isBlank()) {
-                String procurado = email.trim();
-                model.addAttribute("usuarios", usuarios.stream().filter(u -> procurado.equalsIgnoreCase(u.getEmail())).toList());
-                model.addAttribute("buscaEmail", procurado);
+                model.addAttribute("buscaEmail", email.trim());
             }
 
         } catch (SQLException e) {
@@ -109,6 +104,8 @@ public class AdminUsuariosController {
 
             model.addAttribute("mensagemErro", "Não foi possível carregar os usuários.");
             model.addAttribute("usuarios", new ArrayList<usuarioAdminDTO>());
+            model.addAttribute("paginaUsuarios", Page.empty());
+            model.addAttribute("busca", busca == null ? "" : busca.trim());
             model.addAttribute("adminLogado", null);
             model.addAttribute("totalAdministradoresAtivos", 0);
         }

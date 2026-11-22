@@ -3,6 +3,9 @@ package com.example.CampusLink.repository;
 
 import com.example.CampusLink.dto.Admin.usuarioAdminDTO;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -51,12 +54,51 @@ public class AdminUsuarioRepository {
             LEFT JOIN public."ADMINISTRADOR" adm ON adm.id_usuario = u.id
             """;
 
-    // listar contas no banco administrativo este metodo consulta usuarios com perfil e ordena por nome
-    public List<usuarioAdminDTO> listarUsuarios() throws SQLException {
-        String sql = SQL_USUARIOS + " WHERE a.id IS NOT NULL OR p.id IS NOT NULL OR adm.id_usuario IS NOT NULL ORDER BY u.nome, u.id";
-        // consultar usuarios no banco monta a lista de contas e converte falhas da consulta
+    public static final int USUARIOS_POR_PAGINA = 20;
+
+    // listar contas paginadas este metodo filtra por nome, rgm, matricula, id ou email completo e traz so uma pagina
+    public Page<usuarioAdminDTO> listarUsuarios(String busca, String email, int pagina) throws SQLException {
+        List<Object> parametros = new ArrayList<>();
+        StringBuilder filtro = new StringBuilder(" WHERE (a.id IS NOT NULL OR p.id IS NOT NULL OR adm.id_usuario IS NOT NULL)");
+
+        // filtrar por texto procura o trecho no nome e nos registros academicos ou o id exato
+        if (busca != null && !busca.isBlank()) {
+            String trecho = "%" + busca.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            filtro.append(" AND (u.nome ILIKE ? OR a.rgm ILIKE ? OR p.matricula ILIKE ? OR u.id::text = ?)");
+            parametros.addAll(List.of(trecho, trecho, trecho, busca.trim()));
+        }
+        // filtrar por email compara o endereco completo, ja que a tela so mostra o email mascarado
+        if (email != null && !email.isBlank()) {
+            filtro.append(" AND LOWER(u.email) = ?");
+            parametros.add(normalizarEmail(email));
+        }
+
+        // consultar pagina de usuarios conta o total filtrado e busca apenas as linhas da pagina pedida
         try {
-            return jdbcTemplate.query(sql, (rs, linha) -> montarUsuario(rs));
+            long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.\"USUARIOS\" u"
+                    + " LEFT JOIN public.\"ALUNOS\" a ON a.id_usuario = u.id"
+                    + " LEFT JOIN public.\"PROFESSORES\" p ON p.id_usuario = u.id"
+                    + " LEFT JOIN public.\"ADMINISTRADOR\" adm ON adm.id_usuario = u.id" + filtro,
+                    Long.class, parametros.toArray());
+            int ultima = (int) Math.max(0, (total - 1) / USUARIOS_POR_PAGINA);
+            int paginaValida = Math.min(Math.max(0, pagina), ultima);
+
+            List<Object> parametrosPagina = new ArrayList<>(parametros);
+            parametrosPagina.add(paginaValida * USUARIOS_POR_PAGINA);
+            List<usuarioAdminDTO> usuarios = jdbcTemplate.query(SQL_USUARIOS + filtro
+                    + " ORDER BY u.nome, u.id LIMIT " + USUARIOS_POR_PAGINA + " OFFSET ?",
+                    (rs, linha) -> montarUsuario(rs), parametrosPagina.toArray());
+            return new PageImpl<>(usuarios, PageRequest.of(paginaValida, USUARIOS_POR_PAGINA), total);
+        } catch (DataAccessException e) {
+            throw converterErro(e);
+        }
+    }
+
+    // contar administradores ativos para a lista este metodo informa quantos admins continuam habilitados
+    public int totalAdministradoresAtivos() throws SQLException {
+        // contar administradores converte falhas do banco no erro usado pelas telas
+        try {
+            return contarAdministradoresAtivos();
         } catch (DataAccessException e) {
             throw converterErro(e);
         }

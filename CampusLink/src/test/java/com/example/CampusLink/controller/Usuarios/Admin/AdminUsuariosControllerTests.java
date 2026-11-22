@@ -8,6 +8,7 @@ import com.example.CampusLink.repository.AdminUsuarioRepository;
 import com.example.CampusLink.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -70,7 +71,7 @@ class AdminUsuariosControllerTests {
         when(gestao.buscarAdministradorPorEmail("inativo@teste.com")).thenReturn(conta(3L, "Administrador", false));
         when(gestao.buscarAdministradorPorEmail("falha@teste.com")).thenThrow(new SQLException("banco"));
         List<Function<MockHttpSession, String>> telas = List.of(
-                s -> controlador.listarUsuarios(null, s, modelo),
+                s -> controlador.listarUsuarios(null, null, 0, s, modelo),
                 s -> controlador.cadastrarUsuario(s, modelo),
                 s -> controlador.salvarUsuario(novo("Senha@123"), semErros(), s, modelo, redirecionamento),
                 s -> controlador.editarUsuario(2L, s, modelo, redirecionamento),
@@ -93,15 +94,16 @@ class AdminUsuariosControllerTests {
     @Test
     void listaContasContandoAdministradoresAtivos() throws SQLException {
         // preparar dois administradores ativos um inativo e um aluno
-        when(gestao.listarUsuarios()).thenReturn(List.of(conta(1L, "Administrador", true), conta(5L, "Administrador", true),
-                conta(6L, "Administrador", false), conta(2L, "Aluno", true)));
+        when(gestao.listarUsuarios(null, null, 0)).thenReturn(new PageImpl<>(List.of(conta(1L, "Administrador", true),
+                conta(5L, "Administrador", true), conta(6L, "Administrador", false), conta(2L, "Aluno", true))));
+        when(gestao.totalAdministradoresAtivos()).thenReturn(2);
 
         // executar listagem e listagem com falha
-        String tela = controlador.listarUsuarios(null, admin, modelo);
+        String tela = controlador.listarUsuarios(null, null, 0, admin, modelo);
         long ativos = ((Integer) modelo.get("totalAdministradoresAtivos"));
-        when(gestao.listarUsuarios()).thenThrow(new SQLException("banco"));
+        when(gestao.listarUsuarios(null, null, 0)).thenThrow(new SQLException("banco"));
         ExtendedModelMap modeloFalha = new ExtendedModelMap();
-        controlador.listarUsuarios(null, admin, modeloFalha);
+        controlador.listarUsuarios(null, null, 0, admin, modeloFalha);
 
         // verificar contagem e mensagem
         assertEquals("Usuarios/Admin/usuariosAdmin", tela);
@@ -186,21 +188,21 @@ class AdminUsuariosControllerTests {
         verify(gestao).atualizarUsuario(dados);
     }
 
-    // testar busca por email este teste confere que o email completo e comparado no servidor sem mudar a contagem de admins
+    // testar busca e pagina este teste confere que texto email e pagina vao para o banco e a tela recebe a pagina
     @Test
     void buscaUsuarioPeloEmailCompleto() throws SQLException {
-        // preparar dois usuarios com email
+        // preparar a pagina devolvida pelo banco
         usuarioAdminDTO ana = conta(2L, "Aluno", true);
         ana.setEmail("ana@teste.com");
-        usuarioAdminDTO bia = conta(1L, "Administrador", true);
-        bia.setEmail("bia@teste.com");
-        when(gestao.listarUsuarios()).thenReturn(List.of(ana, bia));
+        when(gestao.listarUsuarios("ana", " ANA@teste.com ", 1)).thenReturn(new PageImpl<>(List.of(ana)));
+        when(gestao.totalAdministradoresAtivos()).thenReturn(1);
 
         // executar busca com espacos e letras maiusculas
-        controlador.listarUsuarios(" ANA@teste.com ", admin, modelo);
+        controlador.listarUsuarios("ana", " ANA@teste.com ", 1, admin, modelo);
 
-        // verificar apenas a conta encontrada e a contagem feita na lista completa
+        // verificar a conta encontrada, o email repassado e a contagem de admins
         assertEquals(List.of(ana), modelo.get("usuarios"));
+        assertEquals("ana", modelo.get("busca"));
         assertEquals("ANA@teste.com", modelo.get("buscaEmail"));
         assertEquals(1, modelo.get("totalAdministradoresAtivos"));
     }

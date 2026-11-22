@@ -137,3 +137,26 @@ main select:not(:disabled):not(:focus) {
     border-radius: 18px;
     box-shadow: 0 16px 30px -22px rgba(17, 24, 63, 0.8);
 }
+
+/* paginacao das listas administrativas: anterior, pagina atual e proxima */
+.admin-paginacao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 18px 24px;
+}
+
+/* busca enviada ao servidor: campos lado a lado e quebram no celular */
+.admin-busca-servidor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-busca-servidor input {
+    flex: 1 1 220px;
+    width: auto;
+}

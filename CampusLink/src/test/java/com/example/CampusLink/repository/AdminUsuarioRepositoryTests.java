@@ -37,6 +37,22 @@ class AdminUsuarioRepositoryTests {
         banco.quandoConsultar(ADMINS_ATIVOS, linha("count", 3));
     }
 
+    // testar filtros da lista este teste confere busca por texto e email no banco e a pagina limitada ao total
+    @Test
+    void filtraEPaginaUsuariosNoBanco() throws SQLException {
+        // preparar 45 contas encontradas, o que da 3 paginas de 20
+        banco.quandoConsultar("SELECT COUNT(*) FROM public.\"USUARIOS\" u LEFT JOIN", linha("count", 45L));
+
+        // executar busca pedindo uma pagina alem da ultima
+        var pagina = usuarios.listarUsuarios(" ana ", " Ana@Teste.com ", 9);
+
+        // verificar filtros enviados e pagina corrigida para a ultima
+        assertEquals(2, pagina.getNumber());
+        assertEquals(3, pagina.getTotalPages());
+        assertEquals(List.of("%ana%", "%ana%", "%ana%", "ana", "ana@teste.com", 40),
+                banco.ultimo("ORDER BY u.nome, u.id LIMIT").valores());
+    }
+
     // testar listagem este teste confere o perfil identificado para administrador aluno e professor
     @Test
     void identificaPerfilDeCadaUsuario() throws SQLException {
@@ -47,7 +63,7 @@ class AdminUsuarioRepositoryTests {
                 linha("id_usuario", 3L, "id_aluno", null, "id_professor", 4L, "id_admin", null, "matricula", "P1", "datanasc", null));
 
         // executar listagem
-        List<usuarioAdminDTO> lista = usuarios.listarUsuarios();
+        List<usuarioAdminDTO> lista = usuarios.listarUsuarios(null, null, 0).getContent();
 
         // verificar perfis e identificadores
         assertEquals("Administrador", lista.get(0).getPerfil());
