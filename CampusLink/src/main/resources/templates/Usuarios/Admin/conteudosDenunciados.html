@@ -30,8 +30,8 @@
         <div th:if="${mensagemErro != null}" class="alert alert-danger" role="alert" th:text="${mensagemErro}"></div>
 
         <div class="admin-resumo">
-            <strong th:text="${#lists.size(conteudos)}">0</strong>
-            <span th:text="${#lists.size(conteudos) == 1 ? 'solicitação aguardando análise' : 'solicitações aguardando análise'}">solicitações aguardando análise</span>
+            <strong th:text="${paginaConteudos.totalElements}">0</strong>
+            <span th:text="${paginaConteudos.totalElements == 1 ? 'solicitação aguardando análise' : 'solicitações aguardando análise'}">solicitações aguardando análise</span>
         </div>
 
         <th:block th:if="${#lists.isEmpty(conteudos)}"><div th:replace="~{fragments/vazio :: vazio('ok', 'Tudo em dia', 'Nenhum conteúdo está aguardando análise neste momento.', 'Ver todos os conteúdos', @{/admin/conteudos})}"></div></th:block>
@@ -199,6 +199,14 @@
             </article>
 
         </section>
+
+        <nav th:if="${paginaConteudos.totalPages > 1}" aria-label="Paginação dos conteúdos em análise" class="admin-paginacao">
+            <a th:if="${paginaConteudos.hasPrevious()}" class="btn btn-outline-primary"
+               th:href="@{/admin/conteudos-denunciados(pagina=${paginaConteudos.number - 1})}">Anterior</a>
+            <span aria-live="polite" th:text="${'Página ' + (paginaConteudos.number + 1) + ' de ' + paginaConteudos.totalPages}"></span>
+            <a th:if="${paginaConteudos.hasNext()}" class="btn btn-outline-primary"
+               th:href="@{/admin/conteudos-denunciados(pagina=${paginaConteudos.number + 1})}">Próxima</a>
+        </nav>
 
         <p class="admin-horario">
             Os horários das denúncias e solicitações estão em UTC.

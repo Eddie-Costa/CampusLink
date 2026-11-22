@@ -308,4 +308,15 @@ public class DenunciaService {
             throw new RuntimeException("Não foi possível listar as denúncias do conteúdo", e);
         }
     }
+
+    // consultar relatos de varios conteudos este metodo traz as denuncias da pagina inteira em uma consulta
+    public java.util.Map<Long, List<DenunciaDTO>> listarPorConteudos(List<Long> idsConteudos) {
+        // listar denuncias dos conteudos consulta os registros juntos e trata falhas no banco
+        try {
+            return denunciaRepository.listarPorConteudos(idsConteudos);
+        } catch (SQLException e) {
+            logger.error("Erro ao consultar denúncias dos conteúdos. conteudos={}", idsConteudos.size(), e);
+            throw new RuntimeException("Não foi possível listar as denúncias dos conteúdos", e);
+        }
+    }
 }

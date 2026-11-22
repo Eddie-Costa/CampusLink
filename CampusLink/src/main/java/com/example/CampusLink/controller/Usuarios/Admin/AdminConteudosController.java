@@ -18,6 +18,7 @@ import com.example.CampusLink.service.RevisaoConteudoService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +63,7 @@ public class AdminConteudosController {
 
     // listar conteudos denunciados este metodo reune materiais denuncias e anexos para analise administrativa
     @GetMapping("/admin/conteudos-denunciados")
-    public String listarConteudos(HttpSession session, Model model) {
+    public String listarConteudos(@RequestParam(defaultValue = "0") int pagina, HttpSession session, Model model) {
 
         // exigir login administrativo encaminha sessoes sem usuario para o acesso do administrador
         if (session.getAttribute("usuarioLogado") == null) {
@@ -76,25 +77,17 @@ public class AdminConteudosController {
 
         // carregar conteudos denunciados busca materiais relatos e arquivos e mostra listas vazias se houver falha
         try {
-            List<ConteudoDTO> conteudos = conteudoService.listarParaAnaliseAdmin();
-            Map<Long, List<DenunciaDTO>> denunciasPorConteudo = new HashMap<>();
-            Map<Long, ArquivoDTO> arquivosPorConteudo = new HashMap<>();
+            Page<ConteudoDTO> paginaConteudos = conteudoService.listarParaAnaliseAdmin(pagina);
+            List<ConteudoDTO> conteudos = paginaConteudos.getContent();
+            List<Long> ids = conteudos.stream().map(ConteudoDTO::getId).toList();
 
-            for (ConteudoDTO conteudo : conteudos) {
-                denunciasPorConteudo.put(
-                        conteudo.getId(),
-                        denunciaService.listarPorConteudo(conteudo.getId())
-                );
-
-                ArquivoDTO arquivo = arquivoService.buscarMaisRecentePorConteudo(conteudo.getId());
-
-                // incluir arquivo para analise associa o material quando existe arquivo vinculado ao conteudo
-                if (arquivo != null) {
-                    arquivosPorConteudo.put(conteudo.getId(), arquivo);
-                }
-            }
+            // buscar denuncias e arquivos da pagina inteira em duas consultas, sem uma consulta por conteudo
+            Map<Long, List<DenunciaDTO>> denunciasPorConteudo = new HashMap<>(denunciaService.listarPorConteudos(ids));
+            ids.forEach(id -> denunciasPorConteudo.putIfAbsent(id, List.of()));
+            Map<Long, ArquivoDTO> arquivosPorConteudo = arquivoService.buscarMaisRecentesPorConteudos(ids);
 
             model.addAttribute("conteudos", conteudos);
+            model.addAttribute("paginaConteudos", paginaConteudos);
             model.addAttribute("denunciasPorConteudo", denunciasPorConteudo);
             model.addAttribute("arquivosPorConteudo", arquivosPorConteudo);
 
@@ -115,6 +108,7 @@ public class AdminConteudosController {
 
             model.addAttribute("mensagemErro", "Não foi possível carregar os conteúdos para análise.");
             model.addAttribute("conteudos", new ArrayList<ConteudoDTO>());
+            model.addAttribute("paginaConteudos", Page.empty());
             model.addAttribute("denunciasPorConteudo", new HashMap<Long, List<DenunciaDTO>>());
             model.addAttribute("arquivosPorConteudo", new HashMap<Long, ArquivoDTO>());
         }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.CampusLink.repository.BancoSimulado.linha;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -99,6 +100,25 @@ class DenunciaRepositoryTests {
         assertEquals(List.of("Ana"), nomes);
         assertEquals("Ofensivo", lista.get(0).getMotivo());
         assertEquals(List.of("aceita", 10L), banco.ultimo("UPDATE public.\"DENUNCIAS\"").valores());
+    }
+
+    // testar denuncias de varios conteudos este teste confere uma unica consulta agrupada por conteudo
+    @Test
+    void listaDenunciasDeVariosConteudosDeUmaVez() throws SQLException {
+        // preparar duas denuncias de conteudos diferentes
+        banco.quandoConsultar("ANY(?)",
+                linha("id", 3L, "id_conteudo", 10L, "motivo", "Ofensivo", "nome_aluno", "Ana"),
+                linha("id", 4L, "id_conteudo", 11L, "motivo", "Link quebrado", "nome_aluno", "Bia"));
+
+        // executar consulta da pagina e consulta vazia
+        Map<Long, List<DenunciaDTO>> porConteudo = denuncias.listarPorConteudos(List.of(10L, 11L));
+        Map<Long, List<DenunciaDTO>> vazio = denuncias.listarPorConteudos(List.of());
+
+        // verificar agrupamento e que a lista vazia nao consulta o banco
+        assertEquals("Ofensivo", porConteudo.get(10L).get(0).getMotivo());
+        assertEquals("Bia", porConteudo.get(11L).get(0).getNomeAluno());
+        assertTrue(vazio.isEmpty());
+        assertEquals(1, banco.comandos().stream().filter(c -> c.sql().contains("ANY(?)")).count());
     }
 
     // testar falha do banco este teste confere que o erro original chega ao servico
